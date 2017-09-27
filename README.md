@@ -20,6 +20,14 @@ To install the plugin, follow these instructions.
 
 3. In the Control Panel, go to Settings → Plugins and click the “Install” button for CKEditor.
 
+## Configuration
+
+### HTML Purifier Configs
+
+You can create custom HTML Purifier configs that will be available to your Redactor fields. They should be created as JSON files in your `config/htmlpurifier/` folder.
+
+See the [HTML Purifier documentation] for a list of available config options. 
+
 ## Roadmap
 
 You can track our progress toward the 1.0 GA release from the [1.0 project](https://github.com/craftcms/ckeditor/projects/1).
