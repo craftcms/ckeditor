@@ -1,8 +1,7 @@
 <?php
 
-namespace craft\ckeditor;
+namespace craft\ckeditor\assets\ckeditor;
 
-use Craft;
 use craft\web\AssetBundle;
 
 /**
@@ -11,11 +10,11 @@ use craft\web\AssetBundle;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  1.0
  */
-class Asset extends AssetBundle
+class CkeditorAsset extends AssetBundle
 {
     public function init()
     {
-        $this->sourcePath = dirname(__DIR__).'/lib/ckeditor/build';
+        $this->sourcePath = dirname(__DIR__, 3).'/lib/ckeditor/dist';
         $this->js = [
             'ckeditor.js',
         ];
