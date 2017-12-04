@@ -2,7 +2,7 @@
   "private": true,
   "main": "gulpfile.js",
   "devDependencies": {
-    "@ckeditor/ckeditor5-build-classic": "^1.0.0-alpha.1",
+    "@ckeditor/ckeditor5-build-classic": "^1.0.0-alpha.2",
     "gulp": "^3.9.1"
   }
 }
