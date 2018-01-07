@@ -5,6 +5,7 @@ namespace craft\ckeditor;
 use Craft;
 use craft\base\ElementInterface;
 use craft\ckeditor\assets\ckeditor\CkeditorAsset;
+use craft\ckeditor\assets\field\FieldAsset;
 use craft\helpers\FileHelper;
 use craft\helpers\HtmlPurifier;
 use craft\helpers\Json;
@@ -149,7 +150,7 @@ JS;
 }
 CSS;
 
-        $view->registerAssetBundle(CkeditorAsset::class);
+        $view->registerAssetBundle(FieldAsset::class);
         $view->registerCss($css);
         $view->registerJs($js);
 
