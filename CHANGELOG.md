@@ -1,7 +1,7 @@
 Changelog
 =========
 
-## Unreleased
+## 1.0.0-beta.2 - 2018-01-15
 
 ### Changed
 - Improved the field content legibility.
