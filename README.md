@@ -24,7 +24,7 @@ To install the plugin, follow these instructions.
 
 ### HTML Purifier Configs
 
-You can create custom HTML Purifier configs that will be available to your Redactor fields. They should be created as JSON files in your `config/htmlpurifier/` folder.
+You can create custom HTML Purifier configs that will be available to your CK Editor fields. They should be created as JSON files in your `config/htmlpurifier/` folder.
 
 See the [HTML Purifier documentation] for a list of available config options. 
 
