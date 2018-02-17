@@ -4,7 +4,6 @@ namespace craft\ckeditor;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\ckeditor\assets\ckeditor\CkeditorAsset;
 use craft\ckeditor\assets\field\FieldAsset;
 use craft\helpers\FileHelper;
 use craft\helpers\HtmlPurifier;
@@ -17,7 +16,7 @@ use yii\db\Schema;
  * CKEditor field type
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  1.0
+ * @since 1.0
  */
 class Field extends \craft\base\Field
 {
@@ -173,7 +172,6 @@ CSS;
      * Returns the available Redactor config options.
      *
      * @param string $dir The directory name within the config/ folder to look for config files
-     *
      * @return array
      */
     private function _getCustomConfigOptions(string $dir): array
@@ -216,9 +214,8 @@ CSS;
     /**
      * Returns a JSON-decoded config, if it exists.
      *
-     * @param string      $dir  The directory name within the config/ folder to look for the config file
+     * @param string $dir The directory name within the config/ folder to look for the config file
      * @param string|null $file The filename to load
-     *
      * @return array|false The config, or false if the file doesn't exist
      */
     private function _getConfig(string $dir, string $file = null)
