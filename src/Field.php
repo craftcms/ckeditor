@@ -116,10 +116,10 @@ class Field extends \craft\base\Field
     /**
      * @inheritdoc
      */
-    public function isEmpty($value): bool
+    public function isValueEmpty($value, ElementInterface $element): bool
     {
         /** @var \Twig_Markup|null $value */
-        return $value === null || parent::isEmpty((string)$value);
+        return $value === null || parent::isValueEmpty((string)$value);
     }
 
     /**
