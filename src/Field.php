@@ -80,6 +80,11 @@ class Field extends \craft\base\Field
             return $value;
         }
 
+        if ($value === '<p>&nbsp;</p>') {
+            $value = null;
+            return $value;
+        }
+
         // Prevent everyone from having to use the |raw filter when outputting RTE content
         return Template::raw($value);
     }
