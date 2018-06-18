@@ -81,8 +81,7 @@ class Field extends \craft\base\Field
         }
 
         if ($value === '<p>&nbsp;</p>') {
-            $value = null;
-            return $value;
+            return null;
         }
 
         // Prevent everyone from having to use the |raw filter when outputting RTE content
