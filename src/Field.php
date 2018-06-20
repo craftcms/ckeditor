@@ -80,6 +80,7 @@ class Field extends \craft\base\Field
             return $value;
         }
 
+        // TODO: See if this is still necessary after updating to latest CKEditor.
         if ($value === '<p>&nbsp;</p>') {
             return null;
         }
