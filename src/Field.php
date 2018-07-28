@@ -80,6 +80,11 @@ class Field extends \craft\base\Field
             return $value;
         }
 
+        // TODO: See if this is still necessary after updating to latest CKEditor.
+        if ($value === '<p>&nbsp;</p>') {
+            return null;
+        }
+
         // Prevent everyone from having to use the |raw filter when outputting RTE content
         return Template::raw($value);
     }
