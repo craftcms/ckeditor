@@ -1,4 +1,4 @@
-# CKEditor (Beta) plugin for Craft
+# CKEditor (Beta) for Craft CMS
 
 This plugin adds a “CKEditor” field type to Craft CMS, which provides a rich text editor powered by [CKEditor 5] (Developer Preview v0.11.0).
 

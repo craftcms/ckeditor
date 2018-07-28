@@ -1,5 +1,4 @@
-Changelog
-=========
+# Release Notes for CKEditor
 
 ## Unreleased
 
