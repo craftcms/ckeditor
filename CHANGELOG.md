@@ -1,4 +1,4 @@
-# Release Notes for CKEditor
+# Release Notes for CKEditor for Craft CMS
 
 ## Unreleased
 
