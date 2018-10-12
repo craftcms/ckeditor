@@ -17,7 +17,7 @@ use yii\db\Schema;
  * CKEditor field type
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  1.0
+ * @since 1.0
  */
 class Field extends \craft\base\Field
 {
@@ -118,7 +118,6 @@ class Field extends \craft\base\Field
             $value = HtmlPurifier::process($value, $this->_getPurifierConfig());
         }
 
-        // CUSTOM CHARACTER LIMITER, BASSO
         if ($this->limitChars){
             if($this->limitParam == 'words'){
                 $limit = $this->charLimitConfig;
