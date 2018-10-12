@@ -1,0 +1,72 @@
+{% import '_includes/forms' as forms %}
+
+{{ forms.checkboxField({
+    label: "Purify HTML?"|t('ckeditor'),
+    instructions: 'Removes any potentially-malicious code on save, by running the submitted data through <a href="http://htmlpurifier.org/" target="_blank">HTML Purifier</a>.'|t('ckeditor'),
+    warning: 'Disable this at your own risk!'|t('ckeditor'),
+    id: 'purifyHtml',
+    name: 'purifyHtml',
+    checked: field.purifyHtml,
+    toggle: 'purifier-config-container'
+}) }}
+
+<div id="purifier-config-container"{% if not field.purifyHtml %} class="hidden"{% endif %}>
+    {{ forms.selectField({
+        label: "HTML Purifier Config"|t('ckeditor'),
+        instructions: "You can save custom {name} configs as {ext} files in {path}."|t('ckeditor', {
+            name: 'HTML Purifier Config',
+            ext: '`.json`',
+            path: '`config/htmlpurifier/`'
+        }) ~
+        ' <a href="http://htmlpurifier.org/live/configdoc/plain.html" target="_blank">'~"View available settings"|t('ckeditor')~'</a>',
+        id: 'purifierConfig',
+        name: 'purifierConfig',
+        options: purifierConfigOptions,
+        value: field.purifierConfig
+    }) }}
+</div>
+
+{{ forms.checkboxField({
+    label: "Limit character or word count"|t('ckeditor'),
+    instructions: 'Limits the character or word count in the selected field'|t('ckeditor'),
+    id: 'limitChars',
+    name: 'limitChars',
+    checked: field.limitChars,
+    toggle: 'character-limit-config'
+}) }}
+
+<div id="character-limit-config"{% if not field.limitChars %} class="hidden"{% endif %}>
+    {{ forms.selectField({
+        label: "Set Word or Character Limit"|t('ckeditor'),
+        instructions: "Choose to limit by characters or words"|t('ckeditor'),
+        id: 'limitParam',
+        name: 'limitParam',
+        options: [
+            { value: 'words', label: 'Words'},
+            { value: 'characters', label: 'Characters' },
+        ],
+        value: field.limitParam
+    }) }}
+    {{ forms.textField({
+        instructions: 'Enter the limit in numbers here'|t('ckeditor'),
+        style: 'max-width: 80px;',
+        id: 'charLimitConfig',
+        name: 'charLimitConfig',
+        value: field.charLimitConfig
+    }) }}
+</div>
+
+{% if craft.app.db.isMysql %}
+    {{ forms.selectField({
+        label: "Column Type"|t('ckeditor'),
+        id: 'column-type',
+        name: 'columnType',
+        instructions: "The type of column this field should get in the database."|t('ckeditor'),
+        options: [
+            { value: 'text', label: 'text (~64KB)' },
+            { value: 'mediumtext', label: 'mediumtext (~16MB)' },
+        ],
+        value: field.columnType,
+        warning: (field.id ? "Changing this may result in data loss."|t('ckeditor')),
+    }) }}
+{% endif %}

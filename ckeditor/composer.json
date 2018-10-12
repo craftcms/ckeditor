@@ -1,0 +1,41 @@
+{
+  "name": "craftcms/ckeditor",
+  "description": "Edit rich text content in Craft CMS using CKEditor.",
+  "version": "1.0.0-beta.2",
+  "type": "craft-plugin",
+  "keywords": [
+    "html",
+    "cms",
+    "craftcms",
+    "ckeditor",
+    "yii2"
+  ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Pixel & Tonic",
+      "homepage": "https://pixelandtonic.com/"
+    }
+  ],
+  "support": {
+    "email": "support@craftcms.com",
+    "issues": "https://github.com/craftcms/ckeditor/issues?state=open",
+    "source": "https://github.com/craftcms/ckeditor",
+    "docs": "https://github.com/craftcms/ckeditor",
+    "rss": "https://github.com/craftcms/ckeditor/commits/master.atom"
+  },
+  "require": {
+    "craftcms/cms": "^3.0.0-RC1"
+  },
+  "autoload": {
+    "psr-4": {
+      "craft\\ckeditor\\": "src/"
+    }
+  },
+  "extra": {
+    "name": "CKEditor",
+    "handle": "ckeditor",
+    "changelogUrl": "https://raw.githubusercontent.com/craftcms/ckeditor/master/CHANGELOG.md",
+    "downloadUrl": "https://github.com/craftcms/ckeditor/archive/master.zip"
+  }
+}
