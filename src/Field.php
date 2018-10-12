@@ -4,6 +4,7 @@ namespace craft\ckeditor;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\ckeditor\assets\ckeditor\CkeditorAsset;
 use craft\ckeditor\assets\field\FieldAsset;
 use craft\helpers\FileHelper;
 use craft\helpers\HtmlPurifier;
@@ -16,7 +17,7 @@ use yii\db\Schema;
  * CKEditor field type
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 1.0
+ * @since  1.0
  */
 class Field extends \craft\base\Field
 {
@@ -33,6 +34,18 @@ class Field extends \craft\base\Field
 
     // Properties
     // =========================================================================
+
+    /**
+    * @var string Limit the characters to a certain number
+    */
+    public $charLimitConfig = Schema::TYPE_TEXT;
+
+    public $limitParam = Schema::TYPE_TEXT;
+
+    /**
+    *@var bool If the characters should be limited
+    */
+    public $limitChars = false;
 
     /**
      * @var string|null The HTML Purifier config file to use
@@ -80,11 +93,6 @@ class Field extends \craft\base\Field
             return $value;
         }
 
-        // TODO: See if this is still necessary after updating to latest CKEditor.
-        if ($value === '<p>&nbsp;</p>') {
-            return null;
-        }
-
         // Prevent everyone from having to use the |raw filter when outputting RTE content
         return Template::raw($value);
     }
@@ -110,6 +118,20 @@ class Field extends \craft\base\Field
             $value = HtmlPurifier::process($value, $this->_getPurifierConfig());
         }
 
+        // CUSTOM CHARACTER LIMITER, BASSO
+        if ($this->limitChars){
+            if($this->limitParam == 'words'){
+                $limit = $this->charLimitConfig;
+                if(str_word_count($value, 0) > $limit){
+                    $words = str_word_count($value, 2);
+                    $pos = array_keys($words);
+                    $value = substr($value, 0, $pos[$limit]) . '</' . end($words) . '>';
+                }
+            } else if ($this->limitParam == 'characters'){
+                return substr($value, 0, $this->charLimitConfig);
+            };
+        }
+
         if (Craft::$app->getDb()->getIsMysql()) {
             // Encode any 4-byte UTF-8 characters.
             $value = StringHelper::encodeMb4($value);
@@ -121,10 +143,10 @@ class Field extends \craft\base\Field
     /**
      * @inheritdoc
      */
-    public function isValueEmpty($value, ElementInterface $element): bool
+    public function isEmpty($value): bool
     {
         /** @var \Twig_Markup|null $value */
-        return $value === null || parent::isValueEmpty((string)$value);
+        return $value === null || parent::isEmpty((string)$value);
     }
 
     /**
@@ -177,6 +199,7 @@ CSS;
      * Returns the available Redactor config options.
      *
      * @param string $dir The directory name within the config/ folder to look for config files
+     *
      * @return array
      */
     private function _getCustomConfigOptions(string $dir): array
@@ -219,8 +242,9 @@ CSS;
     /**
      * Returns a JSON-decoded config, if it exists.
      *
-     * @param string $dir The directory name within the config/ folder to look for the config file
+     * @param string      $dir  The directory name within the config/ folder to look for the config file
      * @param string|null $file The filename to load
+     *
      * @return array|false The config, or false if the file doesn't exist
      */
     private function _getConfig(string $dir, string $file = null)
