@@ -212,6 +212,7 @@ CSS;
         // Default config
         return [
             'Attr.AllowedFrameTargets' => ['_blank'],
+            'Attr.EnableID' => true,
         ];
     }
 
