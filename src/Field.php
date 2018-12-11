@@ -212,7 +212,6 @@ CSS;
         // Default config
         return [
             'Attr.AllowedFrameTargets' => ['_blank'],
-            'HTML.AllowedComments' => ['pagebreak'],
         ];
     }
 
