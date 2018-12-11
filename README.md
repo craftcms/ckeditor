@@ -33,7 +33,18 @@ composer require craftcms/ckeditor
 
 ### HTML Purifier Configs
 
+CKEditor fields use [HTML Purifier](http://htmlpurifier.org) to ensure that no malicious code makes it into its field values, to prevent XSS attacks and other vulnerabilities.
+
 You can create custom HTML Purifier configs that will be available to your CKEditor fields. They should be created as JSON files in your `config/htmlpurifier/` folder.
+
+Use this as a starting point, which is the default config that CKEditor fields use if no custom HTML Purifier config is selected:
+
+```json
+{
+    "Attr.AllowedFrameTargets": ["_blank"],
+    "Attr.EnableID": true
+}
+```
 
 See the [HTML Purifier documentation] for a list of available config options. 
 
