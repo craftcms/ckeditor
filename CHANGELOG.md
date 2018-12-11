@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Fixed
-- Fixed a deprecation error when running Redactor on Craft 3.0.0-RC15 or later.
+- Fixed a deprecation error when running CKEditor on Craft 3.0.0-RC15 or later.
 - Fixed a bug where an empty CKEditor field would return some HTML content.
 
 ## 1.0.0-beta.2 - 2018-01-15
