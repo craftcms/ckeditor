@@ -21,7 +21,7 @@
     "email": "support@craftcms.com",
     "issues": "https://github.com/craftcms/ckeditor/issues?state=open",
     "source": "https://github.com/craftcms/ckeditor",
-    "docs": "https://github.com/craftcms/ckeditor",
+    "docs": "https://github.com/craftcms/ckeditor/blob/master/README.md",
     "rss": "https://github.com/craftcms/ckeditor/commits/master.atom"
   },
   "require": {
@@ -35,7 +35,6 @@
   "extra": {
     "name": "CKEditor",
     "handle": "ckeditor",
-    "changelogUrl": "https://raw.githubusercontent.com/craftcms/ckeditor/master/CHANGELOG.md",
-    "downloadUrl": "https://github.com/craftcms/ckeditor/archive/master.zip"
+    "documentationUrl": "https://github.com/craftcms/ckeditor/blob/master/README.md"
   }
 }
