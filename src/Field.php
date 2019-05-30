@@ -124,7 +124,7 @@ class Field extends \craft\base\Field
     public function isValueEmpty($value, ElementInterface $element): bool
     {
         /** @var \Twig_Markup|null $value */
-        return $value === null || parent::isValueEmpty((string)$value);
+        return $value === null || parent::isValueEmpty((string)$value, $element);
     }
 
     /**
