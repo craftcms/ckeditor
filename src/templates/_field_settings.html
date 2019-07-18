@@ -1,5 +1,22 @@
 {% import '_includes/forms' as forms %}
 
+<div id="purifier-config-container">
+    {{ forms.selectField({
+        label: "CKEditor Config"|t('ckeditor'),
+        instructions: "You can save custom {name} configs as {ext} files in {path}."|t('ckeditor', {
+            name: 'CKEditor Config',
+            ext: '`.json`',
+            path: '`config/ckeditor/`'
+        }) ~
+        ' <a href="https://ckeditor.com/docs/ckeditor5/latest/builds/guides/integration/configuration.html"
+            target="_blank">'~"View available settings"|t('ckeditor')~'</a>',
+        id: 'ckeditorConfig',
+        name: 'ckeditorConfig',
+        options: ckeditorConfigOptions,
+        value: field.ckeditorConfig
+    }) }}
+</div>
+
 {{ forms.checkboxField({
     label: "Purify HTML?"|t('ckeditor'),
     instructions: 'Removes any potentially-malicious code on save, by running the submitted data through <a href="http://htmlpurifier.org/" target="_blank">HTML Purifier</a>.'|t('ckeditor'),
@@ -10,7 +27,7 @@
     toggle: 'purifier-config-container'
 }) }}
 
-<div id="purifier-config-container"{% if not field.purifyHtml %} class="hidden"{% endif %}>
+<div id="purifier-config-container" {% if not field.purifyHtml %} class="hidden" {% endif %}>
     {{ forms.selectField({
         label: "HTML Purifier Config"|t('ckeditor'),
         instructions: "You can save custom {name} configs as {ext} files in {path}."|t('ckeditor', {
@@ -27,7 +44,7 @@
 </div>
 
 {% if craft.app.db.isMysql %}
-    {{ forms.selectField({
+{{ forms.selectField({
         label: "Column Type"|t('ckeditor'),
         id: 'column-type',
         name: 'columnType',

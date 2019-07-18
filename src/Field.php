@@ -40,6 +40,11 @@ class Field extends \craft\base\Field
     public $purifierConfig;
 
     /**
+     * @var string|null The CKEditor config file to use
+     */
+    public $ckeditorConfig;
+
+    /**
      * @var bool Whether the HTML should be purified on save
      */
     public $purifyHtml = true;
@@ -60,6 +65,7 @@ class Field extends \craft\base\Field
         return Craft::$app->getView()->renderTemplate('ckeditor/_field_settings', [
             'field' => $this,
             'purifierConfigOptions' => $this->_getCustomConfigOptions('htmlpurifier'),
+            'ckeditorConfigOptions' => $this->_getCustomConfigOptions('ckeditor'),
         ]);
     }
 
@@ -136,13 +142,17 @@ class Field extends \craft\base\Field
         $id = $view->formatInputId($this->handle);
         $nsId = $view->namespaceInputId($id);
         $encValue = htmlentities((string)$value, ENT_NOQUOTES, 'UTF-8');
+        $ckeditorConfig = Json::encode($this->_getCkeditorConfig());
 
         $js = <<<JS
 ClassicEditor
-    .create(document.getElementById('{$nsId}'))
+    .create(document.getElementById('{$nsId}'), {$ckeditorConfig})
     .then(function(editor) {
         $(editor.element).closest('form').on('submit', function() {
-            editor.updateEditorElement();
+            editor.updateSourceElement();
+        });
+        editor.model.document.on( 'change:data', () => {
+            editor.updateSourceElement();
         });
     })
 ;
@@ -158,7 +168,7 @@ CSS;
         $view->registerCss($css);
         $view->registerJs($js);
 
-        return "<textarea id='{$id}' name='{$this->handle}'>{$encValue}</textarea>";
+        return "<textarea style=\"display: none;\" id='{$id}' name='{$this->handle}'>{$encValue}</textarea>";
     }
 
     /**
@@ -216,6 +226,16 @@ CSS;
         ];
     }
 
+    private function _getCkeditorConfig(): array
+    {
+        if ($config = $this->_getConfig('ckeditor', $this->ckeditorConfig)) {
+            return $config;
+        }
+
+        // Default config
+        return Json::decode('{}');
+    }
+
     /**
      * Returns a JSON-decoded config, if it exists.
      *
@@ -234,7 +254,6 @@ CSS;
         if (!is_file($path)) {
             return false;
         }
-
         return Json::decode(file_get_contents($path));
     }
 }
