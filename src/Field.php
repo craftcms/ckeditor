@@ -106,7 +106,7 @@ class Field extends \craft\base\Field
         }
 
         // Get the raw value
-        $value = (string)$value;
+        $value = (string) $value;
 
         if (!$value) {
             return null;
@@ -130,7 +130,7 @@ class Field extends \craft\base\Field
     public function isValueEmpty($value, ElementInterface $element): bool
     {
         /** @var \Twig_Markup|null $value */
-        return $value === null || parent::isValueEmpty((string)$value);
+        return $value === null || parent::isValueEmpty((string) $value, $element);
     }
 
     /**
@@ -141,7 +141,7 @@ class Field extends \craft\base\Field
         $view = Craft::$app->getView();
         $id = $view->formatInputId($this->handle);
         $nsId = $view->namespaceInputId($id);
-        $encValue = htmlentities((string)$value, ENT_NOQUOTES, 'UTF-8');
+        $encValue = htmlentities((string) $value, ENT_NOQUOTES, 'UTF-8');
         $ckeditorConfig = Json::encode($this->_getCkeditorConfig());
 
         $js = <<<JS
@@ -177,7 +177,7 @@ CSS;
     public function getStaticHtml($value, ElementInterface $element): string
     {
         /** @var \Twig_Markup|null $value */
-        return '<div class="text">'.($value ?: '&nbsp;').'</div>';
+        return '<div class="text">' . ($value ?: '&nbsp;') . '</div>';
     }
 
     // Private Methods
@@ -192,7 +192,7 @@ CSS;
     private function _getCustomConfigOptions(string $dir): array
     {
         $options = ['' => Craft::t('app', 'Default')];
-        $path = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.$dir;
+        $path = Craft::$app->getPath()->getConfigPath() . DIRECTORY_SEPARATOR . $dir;
 
         if (is_dir($path)) {
             $files = FileHelper::findFiles($path, [
@@ -249,7 +249,7 @@ CSS;
             return false;
         }
 
-        $path = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.$dir.DIRECTORY_SEPARATOR.$file;
+        $path = Craft::$app->getPath()->getConfigPath() . DIRECTORY_SEPARATOR . $dir . DIRECTORY_SEPARATOR . $file;
 
         if (!is_file($path)) {
             return false;
