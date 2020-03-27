@@ -6,7 +6,7 @@
 - CKEditor fields’ default HTML Purifier config now allows `id` attributes. ([craftcms/redactor#82](https://github.com/craftcms/redactor/issues/82)) 
 
 ### Fixed
-- Fixed a deprecation error when running CKEditor on Craft 3.0.0-RC15 or later.
+- Fixed a deprecation error. ([#17](https://github.com/craftcms/ckeditor/issues/17)) 
 - Fixed a bug where an empty CKEditor field would return some HTML content.
 
 ## 1.0.0-beta.2 - 2018-01-15
