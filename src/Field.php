@@ -141,7 +141,8 @@ class Field extends \craft\base\Field
 ClassicEditor
     .create(document.getElementById('{$nsId}'))
     .then(function(editor) {
-        $(editor.element).closest('form').on('submit', function() {
+        // https://stackoverflow.com/a/45145797/1688568
+        editor.document.on('change', () => {
             editor.updateEditorElement();
         });
     })
