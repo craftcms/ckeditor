@@ -1,5 +1,10 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+### Changed
+- The plugin now requires Craft 3.6 or later.
+
 ## 1.0.0-beta.3 - 2020-03-27
 
 ### Changed
