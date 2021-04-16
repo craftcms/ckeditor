@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 1.0.0 - 2021-04-16
 
 ### Added
 - Added partial support for CKEditor 4.
