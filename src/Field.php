@@ -11,6 +11,7 @@ use craft\helpers\HtmlPurifier;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
+use HTMLPurifier_Config;
 use Twig\Markup;
 use yii\db\Schema;
 
@@ -21,6 +22,25 @@ use yii\db\Schema;
  */
 class Field extends \craft\base\Field
 {
+    /**
+     * @event ModifyPurifierConfigEvent The event that is triggered when creating HTML Purifier config
+     *
+     * Plugins can get notified when HTML Purifier config is being constructed.
+     *
+     * ```php
+     * use craft\redactor\events\ModifyPurifierConfigEvent;
+     * use craft\redactor\Field;
+     * use HTMLPurifier_AttrDef_Text;
+     * use yii\base\Event;
+     *
+     * Event::on(Field::class, Field::EVENT_MODIFY_PURIFIER_CONFIG, function(ModifyPurifierConfigEvent $e) {
+     *      // Allow the use of the Redactor Variables plugin
+     *      $e->config->getHTMLDefinition(true)->addAttribute('span', 'data-redactor-type', new HTMLPurifier_AttrDef_Text());
+     * });
+     * ```
+     */
+    const EVENT_MODIFY_PURIFIER_CONFIG = 'modifyPurifierConfig';
+
     /**
      * @inheritdoc
      */
@@ -204,19 +224,32 @@ JS;
     /**
      * Returns the HTML Purifier config used by this field.
      *
-     * @return array
+     * @return HTMLPurifier_Config
      */
-    private function _getPurifierConfig(): array
+    private function _getPurifierConfig(): HTMLPurifier_Config
     {
-        if ($config = $this->_getConfig('htmlpurifier', $this->purifierConfig)) {
-            return $config;
-        }
+        $purifierConfig = HTMLPurifier_Config::createDefault();
+        $purifierConfig->autoFinalize = false;
 
-        // Default config
-        return [
+        $config = $this->_getConfig('htmlpurifier', $this->purifierConfig) ?: [
             'Attr.AllowedFrameTargets' => ['_blank'],
             'Attr.EnableID' => true,
+            'HTML.SafeIframe' => true,
+            'URI.SafeIframeRegexp' => '%^(https?:)?//(www.youtube.com/embed/|player.vimeo.com/video/)%',
         ];
+
+        foreach ($config as $option => $value) {
+            $purifierConfig->set($option, $value);
+        }
+
+        // Give plugins a chance to modify the HTML Purifier config, or add new ones
+        $event = new ModifyPurifierConfigEvent([
+            'config' => $purifierConfig,
+        ]);
+
+        $this->trigger(self::EVENT_MODIFY_PURIFIER_CONFIG, $event);
+
+        return $event->config;
     }
 
     /**
