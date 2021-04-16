@@ -2,8 +2,14 @@
 
 ## Unreleased
 
+### Added
+- Added partial support for CKEditor 4.
+- Added the “CKEditor Build URL” plugin setting, making it possible to customize which CKEditor build is used.
+- Added the “Initialization Code” field setting, making it possible to take control over the editor initialization and configuration.
+
 ### Changed
 - The plugin now requires Craft 3.6 or later.
+- CKEditor 5 (27.0.0, “classic” build) is now used by default.
 
 ## 1.0.0-beta.3 - 2020-03-27
 

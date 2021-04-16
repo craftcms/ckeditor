@@ -6,23 +6,21 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\ckeditor\assets\field\FieldAsset;
 use craft\helpers\FileHelper;
+use craft\helpers\Html;
 use craft\helpers\HtmlPurifier;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
+use Twig\Markup;
 use yii\db\Schema;
 
 /**
  * CKEditor field type
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 1.0
  */
 class Field extends \craft\base\Field
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -31,8 +29,10 @@ class Field extends \craft\base\Field
         return Craft::t('ckeditor', 'CKEditor');
     }
 
-    // Properties
-    // =========================================================================
+    /**
+     * @var string|null The initialization JS code
+     */
+    public $initJs;
 
     /**
      * @var string|null The HTML Purifier config file to use
@@ -49,15 +49,24 @@ class Field extends \craft\base\Field
      */
     public $columnType = Schema::TYPE_TEXT;
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        if ($this->initJs === '') {
+            $this->initJs = null;
+        }
+
+        parent::init();
+    }
 
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): string
     {
-        return Craft::$app->getView()->renderTemplate('ckeditor/_field_settings', [
+        return Craft::$app->getView()->renderTemplate('ckeditor/_field-settings', [
             'field' => $this,
             'purifierConfigOptions' => $this->_getCustomConfigOptions('htmlpurifier'),
         ]);
@@ -74,9 +83,9 @@ class Field extends \craft\base\Field
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue($value, ElementInterface $element = null): ?Markup
     {
-        if ($value === null || $value instanceof \Twig_Markup) {
+        if ($value === null || $value instanceof Markup) {
             return $value;
         }
 
@@ -92,9 +101,8 @@ class Field extends \craft\base\Field
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ElementInterface $element = null)
+    public function serializeValue($value, ElementInterface $element = null): ?string
     {
-        /** @var \Twig_Markup|null $value */
         if (!$value) {
             return null;
         }
@@ -123,7 +131,6 @@ class Field extends \craft\base\Field
      */
     public function isValueEmpty($value, ElementInterface $element): bool
     {
-        /** @var \Twig_Markup|null $value */
         return parent::isValueEmpty((string)$value, $element);
     }
 
@@ -133,33 +140,32 @@ class Field extends \craft\base\Field
     public function getInputHtml($value, ElementInterface $element = null): string
     {
         $view = Craft::$app->getView();
-        $id = $view->formatInputId($this->handle);
-        $nsId = $view->namespaceInputId($id);
-        $encValue = htmlentities((string)$value, ENT_NOQUOTES, 'UTF-8');
+        $view->registerJsFile(Plugin::getInstance()->getBuildUrl());
+        $view->registerAssetBundle(FieldAsset::class);
 
-        $js = <<<JS
-ClassicEditor
-    .create(document.getElementById('{$nsId}'))
-    .then(function(editor) {
-        // https://stackoverflow.com/a/45145797/1688568
-        editor.document.on('change', () => {
-            editor.updateEditorElement();
+        $js = $this->initJs ?? <<<JS
+if (typeof CKEDITOR !== 'undefined') {
+    // CKEditor 4
+    return CKEDITOR.replace('__EDITOR__', {
+        language: Craft.language.toLowerCase(),
+    });
+} else {
+    // CKEditor 5
+    return await (ClassicEditor || InlineEditor || BalloonEditor || DecoupledEditor)
+        .create(document.querySelector('#__EDITOR__'), {
+            language: Craft.language.toLowerCase(),
         });
-    })
-;
+}
 JS;
 
-        $css = <<<CSS
-.ck-editor .ck-editor__editable_inline {
-    padding: 1em 2em;
-}
-CSS;
+        $id = Html::id($this->handle);
+        $nsId = $view->namespaceInputId($id);
+        $js = str_replace('__EDITOR__', $nsId, $js);
+        $view->registerJs("initCkeditor('$nsId', async function(){\n$js\n})");
 
-        $view->registerAssetBundle(FieldAsset::class);
-        $view->registerCss($css);
-        $view->registerJs($js);
-
-        return "<textarea id='{$id}' name='{$this->handle}'>{$encValue}</textarea>";
+        return Html::textarea($this->handle, $value, [
+            'id' => $id,
+        ]);
     }
 
     /**
@@ -167,12 +173,8 @@ CSS;
      */
     public function getStaticHtml($value, ElementInterface $element): string
     {
-        /** @var \Twig_Markup|null $value */
-        return '<div class="text">'.($value ?: '&nbsp;').'</div>';
+        return Html::tag('div', (string)$value ?: '&nbsp;');
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the available Redactor config options.
@@ -182,13 +184,13 @@ CSS;
      */
     private function _getCustomConfigOptions(string $dir): array
     {
-        $options = ['' => Craft::t('app', 'Default')];
-        $path = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.$dir;
+        $options = ['' => Craft::t('ckeditor', 'Default')];
+        $path = Craft::$app->getPath()->getConfigPath() . DIRECTORY_SEPARATOR . $dir;
 
         if (is_dir($path)) {
             $files = FileHelper::findFiles($path, [
                 'only' => ['*.json'],
-                'recursive' => false
+                'recursive' => false,
             ]);
 
             foreach ($files as $file) {
@@ -230,7 +232,7 @@ CSS;
             return false;
         }
 
-        $path = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.$dir.DIRECTORY_SEPARATOR.$file;
+        $path = Craft::$app->getPath()->getConfigPath() . DIRECTORY_SEPARATOR . $dir . DIRECTORY_SEPARATOR . $file;
 
         if (!is_file($path)) {
             return false;
