@@ -1,5 +1,10 @@
 # Release Notes for CKEditor for Craft CMS
 
+## 1.0.0.1 - 2021-04-14
+
+### Fixed
+- Fixed a PHP error that occurred when saving CKEditor fields.
+
 ## 1.0.0 - 2021-04-16
 
 ### Added

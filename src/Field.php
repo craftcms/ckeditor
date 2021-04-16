@@ -5,6 +5,7 @@ namespace craft\ckeditor;
 use Craft;
 use craft\base\ElementInterface;
 use craft\ckeditor\assets\field\FieldAsset;
+use craft\ckeditor\events\ModifyPurifierConfigEvent;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\HtmlPurifier;
