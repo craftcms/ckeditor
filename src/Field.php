@@ -172,7 +172,22 @@ if (typeof CKEDITOR !== 'undefined') {
     });
 } else {
     // CKEditor 5
-    return await (ClassicEditor || InlineEditor || BalloonEditor || DecoupledEditor)
+    let editorClass;
+    if (typeof ClassicEditor !== 'undefined') {
+        editorClass = ClassicEditor;
+    } else {
+        if (typeof InlineEditor !== 'undefined') {
+            editorClass = InlineEditor;
+        } else if (typeof BalloonEditor !== 'undefined') {
+            editorClass = BalloonEditor;
+        } else if (typeof DecoupledEditor !== 'undefined') {
+            editorClass = DecoupledEditor;
+        } else {
+            throw 'No CKEditor class detected';
+        }
+        
+    }
+    return await editorClass
         .create(document.querySelector('#__EDITOR__'), {
             language: Craft.language.toLowerCase(),
         });

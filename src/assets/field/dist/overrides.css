@@ -1,3 +1,2 @@
-.input .ck-editor .ck-editor__editable_inline {
-  padding: 20px;
-}
+.ck.ck-editor__editable:not(.ck-editor__nested-editable).ck-content.ck-editor__editable_inline{padding:20px}.input>.ck.ck-editor__editable:not(.ck-editor__nested-editable).ck-content.ck-editor__editable_inline{border-radius:3px;border:1px solid rgba(96,125,159,.25);background-color:#fbfcfe;background-clip:padding-box}.ck.ck-editor__editable:not(.ck-editor__nested-editable).ck-content.ck-editor__editable_inline.ck-focused{border-color:#127fbf;box-shadow:0 0 0 2px rgba(18,127,191,.5)}
+/*# sourceMappingURL=overrides.css.map */

@@ -24,10 +24,36 @@ async function initCkeditor(id, init) {
         Garnish.on(Craft.LivePreview, 'enter exit', realInit);
     } else {
         // CKEditor 5
-        const editor = await init();
-        // Keep the source element updated with changes
-        editor.model.document.on('change', () => {
-            editor.updateSourceElement();
-        });
+        try {
+            const editor = await init();
+            // Keep the source element updated with changes
+            editor.model.document.on('change', () => {
+                editor.updateSourceElement();
+            });
+        } catch (error) {
+            if (error.message.includes('editor-wrong-element')) {
+                // Try again with a <div>
+                const $textarea = $(`#${id}`);
+                const $input = $('<input/>', {
+                    type: 'hidden',
+                    name: $textarea.attr('name'),
+                    val: $textarea.val(),
+                }).insertAfter($textarea);
+                $textarea.replaceWith(
+                    $('<div/>', {
+                        id: id,
+                        html: $textarea.val(),
+                    })
+                );
+                const editor = await init();
+                // Keep the source element updated with changes
+                editor.model.document.on('change', () => {
+                    $input.val(editor.getData());
+                });
+            } else {
+                throw error;
+            }
+        }
+
     }
 }

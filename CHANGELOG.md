@@ -1,5 +1,13 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+### Added
+- Added support for the “Inline” and “Balloon” CKEditor 5 distributions.
+
+### Changed
+- Improved the focussed editor styling.
+
 ## 1.0.0.1 - 2021-04-14
 
 ### Fixed
