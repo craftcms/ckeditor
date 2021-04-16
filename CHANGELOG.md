@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 1.1.1 - 2021-04-14
 
 ### Changed
 - Improved content styles.
