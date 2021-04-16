@@ -199,9 +199,12 @@ JS;
         $js = str_replace('__EDITOR__', $nsId, $js);
         $view->registerJs("initCkeditor('$nsId', async function(){\n$js\n})");
 
-        return Html::textarea($this->handle, $value, [
-            'id' => $id,
-        ]);
+        return Html::tag('div',
+            Html::textarea($this->handle, $value, [
+                'id' => $id,
+            ]), [
+                'class' => 'readable',
+            ]);
     }
 
     /**
