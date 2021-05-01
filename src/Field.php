@@ -254,7 +254,7 @@ JS;
             'Attr.AllowedFrameTargets' => ['_blank'],
             'Attr.EnableID' => true,
             'HTML.SafeIframe' => true,
-            'URI.SafeIframeRegexp' => '%^(https?:)?//(www.youtube.com/embed/|player.vimeo.com/video/)%',
+            'URI.SafeIframeRegexp' => '%^(https?:)?//(www\.youtube(-nocookie)?\.com/embed/|player\.vimeo\.com/video/)%',
         ];
 
         foreach ($config as $option => $value) {
