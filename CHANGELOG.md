@@ -3,7 +3,7 @@
 ## 1.1.2 - 2021-05-01
 
 ### Changed
-- The list of Redactor config files is now sorted alphabetically. ([#308](https://github.com/craftcms/redactor/pull/308))
+- Fixed a bug where privacy-enhanced YouTube video embeds were getting stripped out by HTML Purifier. ([craftcms/redactor#312](https://github.com/craftcms/redactor/issues/312))
 
 ## 1.1.1 - 2021-04-16
 
