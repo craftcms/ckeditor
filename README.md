@@ -26,7 +26,7 @@ cd /path/to/my-project.test
 composer require craftcms/ckeditor
 
 # tell Craft to install the plugin
-./craft install/plugin ckeditor
+./craft plugin/install ckeditor
 ```
 
 ## Providing a CKEditor Build
