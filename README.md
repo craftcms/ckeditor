@@ -4,7 +4,7 @@ This plugin adds a “CKEditor” field type to Craft CMS, which provides a wrap
 
 ## Requirements
 
-This plugin requires Craft CMS 3.6 or later.
+This plugin requires Craft CMS 3.7.31 or later.
 
 ## Installation
 
@@ -49,14 +49,16 @@ Reference the source `<textarea>` element’s ID using “`__EDITOR__`”, and b
 ```js
 // CKEditor 4
 return CKEDITOR.replace('__EDITOR__', {
-    language: Craft.language.toLowerCase(),
+    language,
+    filebrowserBrowseUrl, // CKE4 only
+    filebrowserImageBrowseUrl, // CKE4 only
     // ...
 });
 
 // CKEditor 5
 return await ClassicEditor
     .create(document.querySelector('#__EDITOR__'), {
-        language: Craft.language.toLowerCase(),
+        language,
         // ...
     });
 ```

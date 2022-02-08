@@ -1,5 +1,23 @@
 # Release Notes for CKEditor for Craft CMS
 
+## 1.2.0 - 2022-02-08
+
+### Added
+- Added support for CKEditor 4’s [file manager integration](https://ckeditor.com/docs/ckeditor4/latest/guide/dev_file_browse_upload.html). ([#11](https://github.com/craftcms/ckeditor/issues/11))
+- Added the “Show unpermitted volumes” field setting (CKEditor 4 only).
+- Added the “Available unpermitted files” field setting (CKEditor 4 only).
+- Added the “Available Volumes” field setting (CKEditor 4 only).
+- Added the “Available Transforms” field setting (CKEditor 4 only).
+- Added the “Default Transform” field setting (CKEditor 4 only).
+- CKEditor fields now convert static element URLs to reference tags on save.
+
+### Changed
+- CKEditor now requires Craft 3.7.31 or later.
+- The “Initialization Code” field setting now auto-expands its height to fit the contents.
+- Custom initialization code can now reference `language`, `filebrowserBrowseUrl`, and `filebrowserImageBrowseUrl` constants, which are predefined.
+- It’s now possible to include SVG images within field values, without them being removed by HTML Purifier. They will be sanitized with SVG Sanitizer instead.
+- CKEditor 5 32.0.0 is now used by default, if a custom CKEditor Build URL hasn’t been set.
+
 ## 1.1.2 - 2021-05-01
 
 ### Changed

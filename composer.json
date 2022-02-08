@@ -1,7 +1,7 @@
 {
   "name": "craftcms/ckeditor",
   "description": "Edit rich text content in Craft CMS using CKEditor.",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "type": "craft-plugin",
   "keywords": [
     "html",
