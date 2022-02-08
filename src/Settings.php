@@ -21,7 +21,7 @@ class Settings extends Model
     /**
      * @var string The URL to the CKEditor build.
      */
-    public $buildUrl = 'https://cdn.ckeditor.com/ckeditor5/27.0.0/classic/ckeditor.js';
+    public $buildUrl = 'https://cdn.ckeditor.com/ckeditor5/32.0.0/classic/ckeditor.js';
 
     /**
      * @inheritdoc
