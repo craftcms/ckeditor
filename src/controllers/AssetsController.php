@@ -113,6 +113,7 @@ JS;
                 'fullscreen' => true,
                 'hideOnShadeClick' => false,
                 'hideOnSelect' => false,
+                'resizable' => false,
             ],
         ]);
 
