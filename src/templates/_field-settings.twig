@@ -12,6 +12,56 @@
 }) }}
 
 <hr>
+<a class="fieldtoggle" data-target="assets">{{ 'Assets (CKEditor 4 only)'|t('ckeditor') }}</a>
+<div id="assets" class="hidden">
+  {{ forms.checkboxField({
+    label: 'Show unpermitted volumes'|t('app'),
+    instructions: 'Whether to show volumes that the user doesn’t have permission to view.'|t('app'),
+    id: 'showUnpermittedVolumes',
+    name: 'showUnpermittedVolumes',
+    checked: field.showUnpermittedVolumes,
+  }) }}
+
+  {{ forms.checkboxField({
+    label: 'Show unpermitted files'|t('app'),
+    instructions: 'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'|t('app'),
+    id: 'showUnpermittedFiles',
+    name: 'showUnpermittedFiles',
+    checked: field.showUnpermittedFiles,
+  }) }}
+
+  {{ forms.checkboxSelectField({
+    id: 'availableVolumes',
+    name: 'availableVolumes',
+    label: 'Available Volumes'|t('ckeditor'),
+    instructions: 'The volumes that should be available when browsing assets.'|t('ckeditor'),
+    options: volumeOptions,
+    values: field.availableVolumes,
+    showAllOption: volumeOptions|length ? true : false
+  }) }}
+
+  {{ forms.checkboxSelectField({
+    id: 'availableTransforms',
+    name: 'availableTransforms',
+    label: 'Available Transforms'|t('ckeditor'),
+    instructions: 'The transforms that should be available when browsing assets.'|t('ckeditor'),
+    options: transformOptions,
+    values: field.availableTransforms,
+    showAllOption: transformOptions|length ? true : false
+  }) }}
+
+  {{ forms.selectField({
+    id: 'defaultTransform',
+    name: 'defaultTransform',
+    label: 'Default Transform'|t('ckeditor'),
+    instructions: 'The default transform that should be applied when browsing assets.'|t('ckeditor'),
+    options: defaultTransformOptions,
+    value: field.defaultTransform,
+  }) }}
+</div>
+
+<hr>
+
 <a class="fieldtoggle" data-target="advanced">{{ "Advanced"|t('ckeditor') }}</a>
 <div id="advanced" class="hidden">
   {{ forms.checkboxField({
