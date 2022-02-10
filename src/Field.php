@@ -33,14 +33,13 @@ class Field extends \craft\base\Field
      * Plugins can get notified when HTML Purifier config is being constructed.
      *
      * ```php
-     * use craft\redactor\events\ModifyPurifierConfigEvent;
-     * use craft\redactor\Field;
+     * use craft\ckeditor\events\ModifyPurifierConfigEvent;
+     * use craft\ckeditor\Field;
      * use HTMLPurifier_AttrDef_Text;
      * use yii\base\Event;
      *
      * Event::on(Field::class, Field::EVENT_MODIFY_PURIFIER_CONFIG, function(ModifyPurifierConfigEvent $e) {
-     *      // Allow the use of the Redactor Variables plugin
-     *      $e->config->getHTMLDefinition(true)->addAttribute('span', 'data-redactor-type', new HTMLPurifier_AttrDef_Text());
+     *      // ...
      * });
      * ```
      */
@@ -433,7 +432,7 @@ JS;
     }
 
     /**
-     * Returns the available Redactor config options.
+     * Returns the available config options in a given directory.
      *
      * @param string $dir The directory name within the config/ folder to look for config files
      * @return array
