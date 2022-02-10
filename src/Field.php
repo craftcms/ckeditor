@@ -145,7 +145,7 @@ class Field extends \craft\base\Field
             'transformOptions' => $transformOptions,
             'defaultTransformOptions' => array_merge([
                 [
-                    'label' => Craft::t('redactor', 'No transform'),
+                    'label' => Craft::t('ckeditor', 'No transform'),
                     'value' => null
                 ]
             ], $transformOptions),

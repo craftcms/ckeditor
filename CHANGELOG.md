@@ -1,5 +1,10 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+### Fixed
+- Fixed an error that occurred if Redactor wasn’t also installed.
+
 ## 1.2.0 - 2022-02-08
 
 ### Added
