@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 1.3.0 - 2022-02-11
 
 ### Changed
 - Static element URLs that contain query string parameters are no longer converted to reference tags.
