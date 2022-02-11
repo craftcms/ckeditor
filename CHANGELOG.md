@@ -1,5 +1,16 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+### Changed
+- Static element URLs that contain query string parameters are no longer converted to reference tags.
+
+### Deprecated
+- Deprecated `craft\ckeditor\events\ModifyPurifierConfigEvent`. `craft\htmlfield\events\ModifyPurifierConfigEvent` should be used instead.
+
+### Fixed
+- Fixed a bug where reference tags weren’t getting parsed on the front end.
+
 ## 1.2.1 - 2022-02-10
 
 ### Fixed

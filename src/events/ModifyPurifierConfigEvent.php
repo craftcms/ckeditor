@@ -7,21 +7,14 @@
 
 namespace craft\ckeditor\events;
 
-use HTMLPurifier_Config;
-use yii\base\Event;
-
-/**
- * ModifyPurifierConfig class.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- */
-class ModifyPurifierConfigEvent extends Event
-{
-    // Properties
-    // =========================================================================
-
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @var HTMLPurifier_Config $config the HTML Purifier config
+     * @deprecated in 1.3.0. Use `craft\htmlfield\events\ModifyPurifierConfigEvent` instead.
      */
-    public $config;
+    class ModifyPurifierConfigEvent
+    {
+    }
 }
+
+class_exists(\craft\htmlfield\events\ModifyPurifierConfigEvent::class);
