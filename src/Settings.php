@@ -21,12 +21,12 @@ class Settings extends Model
     /**
      * @var string The URL to the CKEditor build.
      */
-    public $buildUrl = 'https://cdn.ckeditor.com/ckeditor5/32.0.0/classic/ckeditor.js';
+    public string $buildUrl = 'https://cdn.ckeditor.com/ckeditor5/32.0.0/classic/ckeditor.js';
 
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
         $behaviors['parser'] = [

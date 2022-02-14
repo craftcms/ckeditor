@@ -3,7 +3,9 @@
 namespace craft\ckeditor;
 
 use Craft;
+use craft\base\Model;
 use craft\events\RegisterComponentTypesEvent;
+use craft\helpers\App;
 use craft\services\Fields;
 use yii\base\Event;
 
@@ -20,7 +22,7 @@ class Plugin extends \craft\base\Plugin
     /**
      * @inheritdoc
      */
-    public $hasCpSettings = true;
+    public bool $hasCpSettings = true;
 
     /**
      * @inheritdoc
@@ -37,7 +39,7 @@ class Plugin extends \craft\base\Plugin
     /**
      * @inheritdoc
      */
-    protected function createSettingsModel()
+    protected function createSettingsModel(): ?Model
     {
         return new Settings();
     }
@@ -45,7 +47,7 @@ class Plugin extends \craft\base\Plugin
     /**
      * @inheritdoc
      */
-    protected function settingsHtml()
+    protected function settingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('ckeditor/_plugin-settings', [
             'settings' => $this->getSettings(),
@@ -59,6 +61,6 @@ class Plugin extends \craft\base\Plugin
      */
     public function getBuildUrl(): string
     {
-        return Craft::parseEnv($this->getSettings()->buildUrl);
+        return App::parseEnv($this->getSettings()->buildUrl);
     }
 }

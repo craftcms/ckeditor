@@ -8,6 +8,8 @@ use craft\elements\Asset;
 use craft\helpers\Db;
 use craft\web\Controller;
 use craft\web\View;
+use yii\base\ExitException;
+use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -19,7 +21,7 @@ use yii\web\Response;
  */
 class AssetsController extends Controller
 {
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
             return false;
@@ -30,8 +32,8 @@ class AssetsController extends Controller
     }
 
     /**
-     * @throws \yii\base\ExitException
-     * @throws \yii\base\InvalidConfigException
+     * @throws ExitException
+     * @throws InvalidConfigException
      * @throws BadRequestHttpException
      */
     public function actionBrowse(?string $kind = null): Response
@@ -49,7 +51,7 @@ class AssetsController extends Controller
         }
 
         if ($field->defaultTransform) {
-            $transform = Craft::$app->getAssetTransforms()->getTransformByUid($field->defaultTransform);
+            $transform = Craft::$app->getImageTransforms()->getTransformByUid($field->defaultTransform);
         }
 
         $this->view->registerJsWithVars(function($funcNum, $elementType, $defaultTransform, $settings) {
@@ -150,7 +152,7 @@ JS;
 
         foreach ($allVolumes as $volume) {
             $allowedBySettings = $field->availableVolumes === '*' || (is_array($field->availableVolumes) && in_array($volume->uid, $field->availableVolumes));
-            if ($allowedBySettings && ($field->showUnpermittedVolumes || $userService->checkPermission("viewVolume:{$volume->uid}"))) {
+            if ($allowedBySettings && ($field->showUnpermittedVolumes || $userService->checkPermission("viewVolume:$volume->uid"))) {
                 $allowedVolumes[] = $volume->uid;
             }
         }
@@ -188,7 +190,7 @@ JS;
 
         $transforms = [];
 
-        foreach (Craft::$app->getAssetTransforms()->getAllTransforms() as $transform) {
+        foreach (Craft::$app->getImageTransforms()->getAllTransforms() as $transform) {
             if (!is_array($field->availableTransforms) || in_array($transform->uid, $field->availableTransforms, false)) {
                 $transforms[] = [
                     'handle' => $transform->handle,

@@ -7,7 +7,6 @@
 
 namespace craft\ckeditor\assets\field;
 
-use craft\ckeditor\assets\ckeditor\CkeditorAsset;
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 

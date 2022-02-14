@@ -53,7 +53,7 @@ class Field extends HtmlField
     /**
      * @var string|null The initialization JS code
      */
-    public $initJs;
+    public ?string $initJs = null;
 
     /**
      * @var string|array|null The volumes that should be available for image selection.
@@ -70,25 +70,25 @@ class Field extends HtmlField
     /**
      * @var string|null The default transform to use.
      */
-    public $defaultTransform;
+    public ?string $defaultTransform = null;
 
     /**
      * @var bool Whether to show volumes the user doesn’t have permission to view.
      * @since 1.2.0
      */
-    public $showUnpermittedVolumes = false;
+    public bool $showUnpermittedVolumes = false;
 
     /**
      * @var bool Whether to show files the user doesn’t have permission to view, per the
      * “View files uploaded by other users” permission.
      * @since 1.2.0
      */
-    public $showUnpermittedFiles = false;
+    public bool $showUnpermittedFiles = false;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         if ($this->initJs === '') {
             $this->initJs = null;
@@ -104,7 +104,7 @@ class Field extends HtmlField
     {
         $volumeOptions = [];
         foreach (Craft::$app->getVolumes()->getPublicVolumes() as $volume) {
-            if ($volume->hasUrls) {
+            if ($volume->getFs()->hasUrls) {
                 $volumeOptions[] = [
                     'label' => $volume->name,
                     'value' => $volume->uid
@@ -113,7 +113,7 @@ class Field extends HtmlField
         }
 
         $transformOptions = [];
-        foreach (Craft::$app->getAssetTransforms()->getAllTransforms() as $transform) {
+        foreach (Craft::$app->getImageTransforms()->getAllTransforms() as $transform) {
             $transformOptions[] = [
                 'label' => $transform->name,
                 'value' => $transform->uid
