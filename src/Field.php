@@ -100,7 +100,7 @@ class Field extends HtmlField
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml(): string
+    public function getSettingsHtml(): ?string
     {
         $volumeOptions = [];
         foreach (Craft::$app->getVolumes()->getPublicVolumes() as $volume) {
@@ -137,7 +137,7 @@ class Field extends HtmlField
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ElementInterface $element = null): string
     {
         $view = Craft::$app->getView();
         $view->registerJsFile(Plugin::getInstance()->getBuildUrl());
@@ -207,7 +207,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, ElementInterface $element): string
+    public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         return Html::tag('div', $this->prepValueForInput($value, $element) ?: '&nbsp;');
     }
