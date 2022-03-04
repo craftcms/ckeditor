@@ -28,8 +28,10 @@
     "craftcms/cms": "^3.7.31",
     "craftcms/html-field": "^1.0.4"
   },
+  "minimum-stability": "dev",
+  "prefer-stable":  true,
   "require-dev": {
-    "phpstan/phpstan": "^0.12.96"
+    "craftcms/phpstan": "dev-main"
   },
   "autoload": {
     "psr-4": {
