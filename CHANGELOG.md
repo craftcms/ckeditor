@@ -1,5 +1,10 @@
 # Release Notes for CKEditor for Craft CMS
 
+## 2.0.0-beta.1 - 2022-03-04
+
+### Added
+- Added Craft 4 compatibility
+
 ## 1.3.0 - 2022-02-11
 
 ### Changed
