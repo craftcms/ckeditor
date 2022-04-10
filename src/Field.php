@@ -40,7 +40,7 @@ class Field extends HtmlField
      * );
      * ```
      */
-    const EVENT_MODIFY_PURIFIER_CONFIG = 'modifyPurifierConfig';
+    public const EVENT_MODIFY_PURIFIER_CONFIG = 'modifyPurifierConfig';
 
     /**
      * @inheritdoc
