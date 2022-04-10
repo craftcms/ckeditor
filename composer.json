@@ -24,13 +24,14 @@
     "docs": "https://github.com/craftcms/ckeditor/blob/master/README.md",
     "rss": "https://github.com/craftcms/ckeditor/commits/master.atom"
   },
+  "minimum-stability": "dev",
+  "prefer-stable":  true,
   "require": {
     "craftcms/cms": "^3.7.31",
     "craftcms/html-field": "^1.0.4"
   },
-  "minimum-stability": "dev",
-  "prefer-stable":  true,
   "require-dev": {
+    "craftcms/ecs": "dev-main",
     "craftcms/phpstan": "dev-main"
   },
   "autoload": {
@@ -39,6 +40,8 @@
     }
   },
   "scripts": {
+    "check-cs": "ecs check --ansi",
+    "fix-cs": "ecs check --ansi --fix",
     "phpstan": "phpstan --memory-limit=1G"
   },
   "extra": {

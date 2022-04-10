@@ -192,7 +192,7 @@ JS;
             if (!is_array($field->availableTransforms) || in_array($transform->uid, $field->availableTransforms, false)) {
                 $transforms[] = [
                     'handle' => $transform->handle,
-                    'name' => $transform->name
+                    'name' => $transform->name,
                 ];
             }
         }

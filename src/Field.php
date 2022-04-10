@@ -107,7 +107,7 @@ class Field extends HtmlField
             if ($volume->hasUrls) {
                 $volumeOptions[] = [
                     'label' => $volume->name,
-                    'value' => $volume->uid
+                    'value' => $volume->uid,
                 ];
             }
         }
@@ -116,7 +116,7 @@ class Field extends HtmlField
         foreach (Craft::$app->getAssetTransforms()->getAllTransforms() as $transform) {
             $transformOptions[] = [
                 'label' => $transform->name,
-                'value' => $transform->uid
+                'value' => $transform->uid,
             ];
         }
 
@@ -128,8 +128,8 @@ class Field extends HtmlField
             'defaultTransformOptions' => array_merge([
                 [
                     'label' => Craft::t('ckeditor', 'No transform'),
-                    'value' => null
-                ]
+                    'value' => null,
+                ],
             ], $transformOptions),
         ]);
     }
