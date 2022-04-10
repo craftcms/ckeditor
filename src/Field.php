@@ -103,7 +103,7 @@ class Field extends HtmlField
     public function getSettingsHtml(): ?string
     {
         $volumeOptions = [];
-        foreach (Craft::$app->getVolumes()->getPublicVolumes() as $volume) {
+        foreach (Craft::$app->getVolumes()->getAllVolumes() as $volume) {
             if ($volume->getFs()->hasUrls) {
                 $volumeOptions[] = [
                     'label' => $volume->name,

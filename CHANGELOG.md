@@ -1,5 +1,10 @@
 # Release Notes for CKEditor for Craft CMS
 
+## 2.0.0-beta.2 - 2022-04-10
+
+### Fixed
+- Fixed an error that occurred when editing a CKEditor field.
+
 ## 2.0.0-beta.1 - 2022-03-04
 
 ### Added
