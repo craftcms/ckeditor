@@ -1,14 +1,14 @@
 async function initCkeditor(id, init) {
   if (typeof CKEDITOR !== 'undefined') {
     // CKEditor 4
-    const realInit = async function() {
+    const realInit = async function () {
       const editor = await init();
       // Keep the source element updated with changes
       editor.on('change', () => {
         editor.updateElement();
       });
     };
-    const deinit = function() {
+    const deinit = function () {
       if (typeof CKEDITOR.instances[id] !== 'undefined') {
         CKEDITOR.instances[id].updateElement();
         CKEDITOR.instances[id].destroy();

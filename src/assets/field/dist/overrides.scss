@@ -1,7 +1,9 @@
 @charset "UTF-8";
-@import "../../../../node_modules/craftcms-sass/mixins";
+@import '../../../../node_modules/craftcms-sass/mixins';
 
-.ck.ck-editor__editable:not(.ck-editor__nested-editable).ck-content.ck-editor__editable_inline {
+.ck.ck-editor__editable:not(
+    .ck-editor__nested-editable
+  ).ck-content.ck-editor__editable_inline {
   padding: 20px;
 
   .input > .readable > & {
