@@ -5,7 +5,6 @@ namespace craft\ckeditor\controllers;
 use Craft;
 use craft\ckeditor\Field;
 use craft\elements\Asset;
-use craft\helpers\Db;
 use craft\web\Controller;
 use craft\web\View;
 use yii\base\ExitException;
