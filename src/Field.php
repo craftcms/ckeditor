@@ -143,19 +143,35 @@ class Field extends HtmlField
         $view->registerJsFile(Plugin::getInstance()->getBuildUrl());
         $view->registerAssetBundle(FieldAsset::class);
 
-        $language = Json::encode(mb_strtolower(Craft::$app->language));
+        $appLanguage = mb_strtolower(Craft::$app->language);
+        $language = Json::encode($appLanguage); // for v4
         $filebrowserBrowseUrl = Json::encode($this->availableVolumes ? UrlHelper::actionUrl('ckeditor/assets/browse', [
             'fieldId' => $this->id,
-        ]) : null);
+        ]) : null); // for v4
         $filebrowserImageBrowseUrl = Json::encode($this->availableVolumes ? UrlHelper::actionUrl('ckeditor/assets/browse', [
             'fieldId' => $this->id,
             'kind' => Asset::KIND_IMAGE,
-        ]) : null);
+        ]) : null); // for v4
+        $langClass = ''; // for v4, ignored in v5
+
+        // Explicitly set the text direction
+        $contentsLangDirection = Json::encode("ltr"); // for v4
+        $v5language = Json::encode($appLanguage); // for v5
+
+        if ($this->translationMethod != self::TRANSLATION_METHOD_NONE) {
+            $elementSite = ($element ? $element->getSite() : Craft::$app->getSites()->getCurrentSite());
+            $contentLocale = Craft::$app->getI18n()->getLocaleById($elementSite->language);
+
+            $langClass = ' cke_' . $contentLocale->getOrientation();
+            $contentsLangDirection = Json::encode($contentLocale->getOrientation()); // for v4
+            $v5language = Json::encode($contentLocale->id); // for v5
+        }
 
         $js = <<<JS
 const language = $language;
 const filebrowserBrowseUrl = $filebrowserBrowseUrl;
 const filebrowserImageBrowseUrl = $filebrowserImageBrowseUrl;
+const contentsLangDirection = $contentsLangDirection;
 
 JS;
 
@@ -166,6 +182,7 @@ if (typeof CKEDITOR !== 'undefined') {
         language,
         filebrowserBrowseUrl,
         filebrowserImageBrowseUrl,
+        contentsLangDirection,
     });
 } else {
     // CKEditor 5
@@ -186,7 +203,10 @@ if (typeof CKEDITOR !== 'undefined') {
     }
     return await editorClass
         .create(document.querySelector('#__EDITOR__'), {
-            language,
+            language: {
+				ui: $v5language,
+				content: $v5language,
+			}
         });
 }
 JS;
@@ -200,7 +220,7 @@ JS;
             Html::textarea($this->handle, $this->prepValueForInput($value, $element), [
                 'id' => $id,
             ]), [
-                'class' => 'readable',
+                'class' => 'readable' . $langClass,
             ]);
     }
 
