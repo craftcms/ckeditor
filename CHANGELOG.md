@@ -1,9 +1,15 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+- Added RTL language support. ([#33](https://github.com/craftcms/ckeditor/issues/33), [#55](https://github.com/craftcms/ckeditor/pull/55))
+
 ## 2.0.0 - 2022-05-03
 
 ### Added
 - Added Craft 4 compatibility
+
+## 1.4.0 - 2022-12-16
+- Added RTL language support. ([#33](https://github.com/craftcms/ckeditor/issues/33), [#55](https://github.com/craftcms/ckeditor/pull/55))
 
 ## 1.3.0 - 2022-02-11
 
