@@ -5,7 +5,6 @@ namespace craft\ckeditor\controllers;
 use Craft;
 use craft\ckeditor\Field;
 use craft\elements\Asset;
-use craft\helpers\Db;
 use craft\web\Controller;
 use craft\web\View;
 use yii\base\ExitException;
@@ -144,39 +143,15 @@ JS;
             throw new BadRequestHttpException('The CKEditor field does not have access to any volumes.');
         }
 
-        $criteria = ['parentId' => ':empty:'];
-
         $allVolumes = Craft::$app->getVolumes()->getAllVolumes();
-        $allowedVolumes = [];
         $userService = Craft::$app->getUser();
+        $sources = [];
 
         foreach ($allVolumes as $volume) {
             $allowedBySettings = $field->availableVolumes === '*' || (is_array($field->availableVolumes) && in_array($volume->uid, $field->availableVolumes));
-            if ($allowedBySettings && ($field->showUnpermittedVolumes || $userService->checkPermission("viewVolume:$volume->uid"))) {
-                $allowedVolumes[] = $volume->uid;
+            if ($allowedBySettings && ($field->showUnpermittedVolumes || $userService->checkPermission("viewAssets:$volume->uid"))) {
+                $sources[] = "volume:$volume->uid";
             }
-        }
-
-        $criteria['volumeId'] = Db::idsByUids('{{%volumes}}', $allowedVolumes);
-
-        $folders = Craft::$app->getAssets()->findFolders($criteria);
-
-        // Sort volumes in the same order as they are sorted in the CP
-        $sortedVolumeIds = Craft::$app->getVolumes()->getAllVolumeIds();
-        $sortedVolumeIds = array_flip($sortedVolumeIds);
-
-        $sources = [];
-
-        usort($folders, function($a, $b) use ($sortedVolumeIds) {
-            // In case Temporary volumes ever make an appearance in RTF modals, sort them to the end of the list.
-            $aOrder = $sortedVolumeIds[$a->volumeId] ?? PHP_INT_MAX;
-            $bOrder = $sortedVolumeIds[$b->volumeId] ?? PHP_INT_MAX;
-
-            return $aOrder - $bOrder;
-        });
-
-        foreach ($folders as $folder) {
-            $sources[] = "folder:$folder->uid";
         }
 
         return $sources;

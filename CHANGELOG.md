@@ -2,6 +2,7 @@
 
 ## Unreleased
 - Added RTL language support. ([#33](https://github.com/craftcms/ckeditor/issues/33), [#55](https://github.com/craftcms/ckeditor/pull/55))
+- Fixed a bug where it wasn’t possible to browse files. ([#45](https://github.com/craftcms/ckeditor/issues/45))
 
 ## 2.0.0 - 2022-05-03
 
