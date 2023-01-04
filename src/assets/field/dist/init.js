@@ -25,10 +25,10 @@ async function initCkeditor(id, init) {
 
     // https://github.com/craftcms/ckeditor/issues/23
     // for when using "move up" and "move down" menu options
-    Garnish.on(Garnish.Base, 'beforeMoveUp beforeMoveDown', deinit);
-    Garnish.on(Garnish.Base, 'moveUp moveDown', realInit);
+    Garnish.on(Craft.MatrixInput, 'beforeMoveBlockUp beforeMoveBlockDown', deinit);
+    Garnish.on(Craft.MatrixInput, 'moveBlockUp moveBlockDown', realInit);
     // for when dragging and dropping
-    Garnish.on(Garnish.BaseDrag, 'dragStop', null, function() {
+    Garnish.on(Craft.MatrixInput, 'blockSortDragStop', null, function() {
       deinit();
       realInit();
     });
