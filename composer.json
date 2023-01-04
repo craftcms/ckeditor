@@ -27,7 +27,7 @@
   "minimum-stability": "dev",
   "prefer-stable":  true,
   "require": {
-    "craftcms/cms": "^3.7.31",
+    "craftcms/cms": "^3.7.63",
     "craftcms/html-field": "^1.0.4"
   },
   "require-dev": {
