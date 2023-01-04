@@ -1,7 +1,7 @@
 # Release Notes for CKEditor for Craft CMS
 
 ## Unreleased
-- Fixed a bug where CKEditor 4 stopped working when used within a Matrix block, if the block was moved to a new position. ([#23](https://github.com/craftcms/ckeditor/issues/23)) 
+- Fixed a bug where CKEditor 4 stopped working when used within a Matrix block, if the block was moved to a new position. ([#23](https://github.com/craftcms/ckeditor/issues/23))
 - Fixed a bug where changes made in source mode weren’t saved unless additional changes were made in WYSIWYG mode afterward. ([#34](https://github.com/craftcms/ckeditor/pull/56))
 
 ## 1.4.0 - 2022-12-16
