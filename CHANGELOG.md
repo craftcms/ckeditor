@@ -1,5 +1,8 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+- Fixed a bug where CKEditor 4 stopped working when used within a Matrix block, if the block was moved to a new position. ([#23](https://github.com/craftcms/ckeditor/issues/23)) 
+
 ## 1.4.0 - 2022-12-16
 - Added RTL language support. ([#33](https://github.com/craftcms/ckeditor/issues/33), [#55](https://github.com/craftcms/ckeditor/pull/55))
 
