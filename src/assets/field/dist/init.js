@@ -7,6 +7,18 @@ async function initCkeditor(id, init) {
       editor.on('change', () => {
         editor.updateElement();
       });
+
+      // Keep the source element updated with changes when in source mode too;
+      // change event only fires in wysiwyg mode:
+      // https://ckeditor.com/docs/ckeditor4/latest/api/CKEDITOR_editor.html#event-change
+      editor.on('mode', function() {
+        if (this.mode === 'source') {
+          const editable = editor.editable();
+          editable.attachListener(editable, 'input', function() {
+            editor.updateElement();
+          });
+        }
+      });
     };
     const deinit = function () {
       if (typeof CKEDITOR.instances[id] !== 'undefined') {
@@ -22,6 +34,16 @@ async function initCkeditor(id, init) {
     Garnish.on(Craft.Preview, 'open close', realInit);
     Garnish.on(Craft.LivePreview, 'beforeEnter beforeExit', deinit);
     Garnish.on(Craft.LivePreview, 'enter exit', realInit);
+
+    // https://github.com/craftcms/ckeditor/issues/23
+    // for when using "move up" and "move down" menu options
+    Garnish.on(Craft.MatrixInput, 'beforeMoveBlockUp beforeMoveBlockDown', deinit);
+    Garnish.on(Craft.MatrixInput, 'moveBlockUp moveBlockDown', realInit);
+    // for when dragging and dropping
+    Garnish.on(Craft.MatrixInput, 'blockSortDragStop', null, function() {
+      deinit();
+      realInit();
+    });
   } else {
     // CKEditor 5
     try {

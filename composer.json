@@ -27,7 +27,7 @@
   "prefer-stable": true,
   "require": {
     "php": "^8.0.2",
-    "craftcms/cms": "^4.0.0-alpha.1",
+    "craftcms/cms": "^4.3.6",
     "craftcms/html-field": "^2.0.0-alpha.2"
   },
   "require-dev": {

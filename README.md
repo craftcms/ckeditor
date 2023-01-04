@@ -4,7 +4,7 @@ This plugin adds a “CKEditor” field type to Craft CMS, which provides a wrap
 
 ## Requirements
 
-This plugin requires Craft CMS 4.0 or later.
+This plugin requires Craft CMS 4.3.6 or later.
 
 ## Installation
 
