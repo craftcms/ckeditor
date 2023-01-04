@@ -1,0 +1,9 @@
+*.md
+*.php
+composer.lock
+cpresources/*
+lib/*
+src/templates/*
+tests/_craft/*
+vendor/*
+.ddev/*

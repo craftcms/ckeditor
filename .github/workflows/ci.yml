@@ -18,7 +18,7 @@ jobs:
       php_version: '7.2'
   notify-slack:
     name: Notify Slack
-    needs: [ ecs, phpstan ]
+    needs: [ecs, phpstan]
     if: ${{ always() }}
     uses: craftcms/.github/.github/workflows/notify-slack.yml@v1
     with:

@@ -1,7 +1,7 @@
 async function initCkeditor(id, init) {
   if (typeof CKEDITOR !== 'undefined') {
     // CKEditor 4
-    const realInit = async function() {
+    const realInit = async function () {
       const editor = await init();
       // Keep the source element updated with changes
       editor.on('change', () => {
@@ -11,16 +11,16 @@ async function initCkeditor(id, init) {
       // Keep the source element updated with changes when in source mode too;
       // change event only fires in wysiwyg mode:
       // https://ckeditor.com/docs/ckeditor4/latest/api/CKEDITOR_editor.html#event-change
-      editor.on('mode', function() {
+      editor.on('mode', function () {
         if (this.mode === 'source') {
           const editable = editor.editable();
-          editable.attachListener(editable, 'input', function() {
+          editable.attachListener(editable, 'input', function () {
             editor.updateElement();
           });
         }
       });
     };
-    const deinit = function() {
+    const deinit = function () {
       if (typeof CKEDITOR.instances[id] !== 'undefined') {
         CKEDITOR.instances[id].updateElement();
         CKEDITOR.instances[id].destroy();
@@ -37,10 +37,14 @@ async function initCkeditor(id, init) {
 
     // https://github.com/craftcms/ckeditor/issues/23
     // for when using "move up" and "move down" menu options
-    Garnish.on(Craft.MatrixInput, 'beforeMoveBlockUp beforeMoveBlockDown', deinit);
+    Garnish.on(
+      Craft.MatrixInput,
+      'beforeMoveBlockUp beforeMoveBlockDown',
+      deinit
+    );
     Garnish.on(Craft.MatrixInput, 'moveBlockUp moveBlockDown', realInit);
     // for when dragging and dropping
-    Garnish.on(Craft.MatrixInput, 'blockSortDragStop', null, function() {
+    Garnish.on(Craft.MatrixInput, 'blockSortDragStop', null, function () {
       deinit();
       realInit();
     });
