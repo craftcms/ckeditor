@@ -86,3 +86,11 @@ Use this as a starting point, which is the default config that CKEditor fields u
 ```
 
 See the [HTML Purifier documentation](http://htmlpurifier.org/live/configdoc/plain.html) for a list of available config options.
+
+## Embedding Videos/Media in CKEditor 5
+
+CKEditor 5 uses `oembed` to add media. Craft CMS' HTML purifier has been adjusted to support `oembed`.
+If you want to change the allowed domains, please use the HTML Purifier `URI.SafeIframeRegexp` option.
+
+Please note that to display the embedded media on your website, you'll have to follow the 
+[CKEditor 5 documentation](https://ckeditor.com/docs/ckeditor5/latest/features/media-embed.html#displaying-embedded-media-on-your-website).
