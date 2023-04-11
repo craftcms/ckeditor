@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ec722b8ac4365359e27aa6562b23976a",
+    "content-hash": "0c361d46f2ea6ee1f953a6fa2ee336f7",
     "packages": [
         {
             "name": "cebe/markdown",
@@ -678,16 +678,16 @@
         },
         {
             "name": "craftcms/cms",
-            "version": "4.5.x-dev",
+            "version": "4.4.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/craftcms/cms.git",
-                "reference": "a3e5f84e8846eec5627308127376a04c4d91b3df"
+                "reference": "08687f7f76c75a346616729ef4adf9e8f07ccdf7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/cms/zipball/a3e5f84e8846eec5627308127376a04c4d91b3df",
-                "reference": "a3e5f84e8846eec5627308127376a04c4d91b3df",
+                "url": "https://api.github.com/repos/craftcms/cms/zipball/08687f7f76c75a346616729ef4adf9e8f07ccdf7",
+                "reference": "08687f7f76c75a346616729ef4adf9e8f07ccdf7",
                 "shasum": ""
             },
             "require": {
@@ -697,7 +697,7 @@
                 "craftcms/plugin-installer": "~1.6.0",
                 "craftcms/server-check": "~2.1.2",
                 "creocoder/yii2-nested-sets": "~0.9.0",
-                "elvanto/litemoji": "~4.3.0",
+                "elvanto/litemoji": "^4.3.0",
                 "enshrined/svg-sanitize": "~0.16.0",
                 "ext-bcmath": "*",
                 "ext-curl": "*",
@@ -793,7 +793,7 @@
                 "rss": "https://github.com/craftcms/cms/releases.atom",
                 "source": "https://github.com/craftcms/cms"
             },
-            "time": "2023-04-10T12:56:02+00:00"
+            "time": "2023-04-11T22:11:19+00:00"
         },
         {
             "name": "craftcms/html-field",
@@ -2417,16 +2417,16 @@
         },
         {
             "name": "nystudio107/craft-code-editor",
-            "version": "1.0.7",
+            "version": "1.0.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nystudio107/craft-code-editor.git",
-                "reference": "68ddd78f0988d6702b5849ae69241a473a58f08c"
+                "reference": "6e9cd8a7078915660c99e934357eafc720492b88"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nystudio107/craft-code-editor/zipball/68ddd78f0988d6702b5849ae69241a473a58f08c",
-                "reference": "68ddd78f0988d6702b5849ae69241a473a58f08c",
+                "url": "https://api.github.com/repos/nystudio107/craft-code-editor/zipball/6e9cd8a7078915660c99e934357eafc720492b88",
+                "reference": "6e9cd8a7078915660c99e934357eafc720492b88",
                 "shasum": ""
             },
             "require": {
@@ -2478,7 +2478,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2022-12-16T03:52:43+00:00"
+            "time": "2023-04-13T03:43:09+00:00"
         },
         {
             "name": "paragonie/random_compat",
@@ -6880,16 +6880,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.10.11",
+            "version": "1.10.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "8aa62e6ea8b58ffb650e02940e55a788cbc3fe21"
+                "reference": "f07bf8c6980b81bf9e49d44bd0caf2e737614a70"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/8aa62e6ea8b58ffb650e02940e55a788cbc3fe21",
-                "reference": "8aa62e6ea8b58ffb650e02940e55a788cbc3fe21",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/f07bf8c6980b81bf9e49d44bd0caf2e737614a70",
+                "reference": "f07bf8c6980b81bf9e49d44bd0caf2e737614a70",
                 "shasum": ""
             },
             "require": {
@@ -6938,7 +6938,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-04-04T19:17:42+00:00"
+            "time": "2023-04-12T19:29:52+00:00"
         },
         {
             "name": "rector/rector",
