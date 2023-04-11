@@ -9,6 +9,7 @@ use craft\ckeditor\events\DefineLinkOptionsEvent;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\htmlfield\events\ModifyPurifierConfigEvent;
@@ -72,11 +73,6 @@ class Field extends HtmlField
     public ?string $ckeConfig = null;
 
     /**
-     * @var string|null The initialization JS code
-     */
-    public ?string $initJs = null;
-
-    /**
      * @var string|array|null The volumes that should be available for image selection.
      * @since 1.2.0
      */
@@ -109,13 +105,10 @@ class Field extends HtmlField
     /**
      * @inheritdoc
      */
-    public function init(): void
+    public function __construct($config = [])
     {
-        if ($this->initJs === '') {
-            $this->initJs = null;
-        }
-
-        parent::init();
+        ArrayHelper::remove($config, 'initJs');
+        parent::__construct($config);
     }
 
     /**
