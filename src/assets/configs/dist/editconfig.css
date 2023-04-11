@@ -1,0 +1,116 @@
+.ckeditor-tb {
+    padding: calc(var(--m) - var(--ck-spacing-small)) var(--m) 0;
+    overflow: hidden;
+    /* use the `#content .pane` styles in slideouts too */
+    background-color: var(--gray-050);
+    border: 1px solid var(--hairline-color);
+    box-shadow: none;
+}
+
+.errors > .ckeditor-tb {
+    border-color: var(--error-color);
+}
+
+.ckeditor-tb:after {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: calc(var(--m) * 2 - 1px);
+    border-radius: 0 0 calc(var(--small-border-radius)) calc(var(--small-border-radius));
+    background: linear-gradient(to bottom, hsl(var(--gray-050-hsl), 0), hsl(var(--gray-050-hsl), 1));
+}
+
+.ckeditor-tb--items,
+.ckeditor-tb--item {
+    --ckeditor-min-item-height: calc(var(--ck-font-size-base) * var(--ck-line-height-base) + var(--ck-spacing-tiny) * 2) !important;
+}
+
+.ckeditor-tb .ck.ck-toolbar__items {
+    align-items: stretch !important;
+    min-height: calc(var(--ckeditor-min-item-height) + var(--ck-spacing-small) * 2) !important;
+}
+
+.ckeditor-tb--item,
+.ckeditor-tb--insertion {
+    display: flex;
+    border-radius: var(--small-border-radius);
+    min-width: var(--xl);
+}
+
+.ckeditor-tb--item {
+    align-items: center;
+    justify-content: center;
+    min-height: var(--ckeditor-min-item-height) !important;
+    background-color: hsl(212, 25%, 50%, 0.075) !important;
+}
+
+.ckeditor-tb--item:not(.draghelper) {
+    position: relative !important;
+}
+
+.ckeditor-tb--item.draghelper {
+    border: none !important;
+    background-color: var(--white) !important;
+    box-shadow: 0 0 0 1px hsla(210, 24%, 16%, 0.15), 0 2px 6px -2px hsla(210, 24%, 16%, 0.1) !important;
+}
+
+body:not(.dragging) .ckeditor-tb--item:hover {
+    background-color: var(--ui-control-bg-color) !important;
+}
+
+.ckeditor-tb--insertion {
+    border: 2px dashed var(--ck-color-base-border) !important;
+}
+
+.ckeditor-tb--separator .ck.ck-toolbar__separator {
+    display: inline-block !important;
+    align-self: center !important;
+    height: calc(var(--ckeditor-min-item-height) - var(--ck-spacing-tiny) * 2) !important;
+    margin: 0 !important;
+    background: hsl(212, 25%, 50%, 0.5) !important;
+}
+
+.ckeditor-tb--item > :not(.ck-toolbar__line-break):not(:first-child) {
+    margin-left: var(--ck-spacing-small);
+}
+
+.ckeditor-tb--item:after {
+    content: '';
+    position: absolute;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    cursor: grab;
+}
+
+.ckeditor-tb--source .ck.ck-toolbar {
+    border: none;
+    padding: 0;
+    background-color: transparent !important;
+    margin-bottom: calc(var(--m) - var(--ck-spacing-small));
+}
+
+.ckeditor-tb--target {
+    position: relative;
+}
+
+.ckeditor-tb--target .ck.ck-toolbar {
+    box-shadow: 0 2px 2px -1px hsl(var(--gray-900-hsl), 0.1), 0 4px 14px -4px hsl(var(--gray-900-hsl), 0.1);
+    position: relative;
+}
+
+.ckeditor-tb--target .ck.ck-content {
+    height: calc(var(--m) * 2);
+    border-radius: 0 !important;
+    border-bottom: none;
+}
+
+.offset-drag-helper .ck.ck-toolbar {
+    border: none !important;
+    background: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}

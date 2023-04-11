@@ -1,0 +1,37 @@
+{% extends '_layouts/cp.twig' %}
+{% set title = 'CKEditor Configs'|t('app') %}
+
+{% set crumbs = [
+  { label: 'Settings'|t('app'), url: url('settings') }
+] %}
+
+{% block actionButton %}
+  <a href="{{ url('settings/ckeditor/new') }}" class="btn submit add icon">{{ 'New config'|t('app') }}</a>
+{% endblock %}
+
+
+{% block content %}
+  <div id="cke-configs-vue-admin-table"></div>
+{% endblock %}
+
+{% set tableData = ckeConfigs|map(config => {
+  id: config.uid,
+  name: config.name|e,
+  title: config.name|e,
+  url: url("settings/ckeditor/#{config.uid}"),
+}) %}
+
+{% js %}
+var columns = [
+  { name: '__slot:title', title: Craft.t('app', 'Name') },
+];
+
+new Craft.VueAdminTable({
+  columns: columns,
+  container: '#cke-configs-vue-admin-table',
+  deleteAction: 'ckeditor/cke-configs/delete',
+  //deleteConfirmationMessage: Craft.t('app', 'Are you sure you want to delete “{name}” and all its entries?'),
+  emptyMessage: Craft.t('app', 'No CKEditor configs exist yet.'),
+  tableData: {{ tableData|json_encode|raw }}
+});
+{% endjs %}

@@ -1,0 +1,95 @@
+{% import '_includes/forms.twig' as forms %}
+{% import 'codeeditor/codeEditor.twig' as codeEditor %}
+
+{% set baseMonacoOptions = {
+  tabSize: 2,
+  showUnused: false,
+} %}
+
+{% set baseCodeEditorOptions = {
+  wrapperClass: 'monaco-editor-background-frame',
+} %}
+
+{% if ckeConfig.uid %}
+  {{ hiddenInput('uid', ckeConfig.uid) }}
+{% endif %}
+
+{{ forms.textField({
+  first: true,
+  label: 'Name'|t('app'),
+  id: 'name',
+  name: 'name',
+  value: ckeConfig.name,
+  errors: ckeConfig.getErrors('name'),
+  autofocus: true,
+  required: true,
+}) }}
+
+{% embed '_includes/forms/field.twig' with {
+  label: 'Toolbar'|t('ckeditor'),
+  instructions: 'Drag toolbar items into the editor.'|t('ckeditor'),
+  id: 'toolbar',
+  fieldClass: 'last',
+  ckeConfig: ckeConfig,
+} %}
+  {% block input %}
+    <div id="toolbar-builder" class="ckeditor-tb pane">
+      <div class="ck ck-reset_all">
+        <div class="ckeditor-tb--items ckeditor-tb--source ck ck-reset ck-editor ck-rounded-corners">
+          <div class="ck ck-toolbar">
+            <div class="ck ck-toolbar__items"></div>
+          </div>
+        </div>
+
+        <div class="ckeditor-tb--items ckeditor-tb--target ck ck-reset ck-editor ck-rounded-corners">
+          <div class="ck ck-editor__top">
+            <div class="ck ck-sticky-panel">
+              <div class="ck ck-toolbar">
+                <div class="ck ck-toolbar__items"></div>
+              </div>
+            </div>
+          </div>
+          <div class="ck ck-editor__main">
+            <div class="ck ck-content ck-editor__editable ck-editor__editable_inline"></div>
+          </div>
+        </div>
+      </div>
+
+      {{ hiddenInput('toolbar', ckeConfig.toolbar|json_encode) }}
+    </div>
+  {% endblock %}
+{% endembed %}
+
+{{ codeEditor.textareaField(
+  {
+    label: 'Custom Properties'|t('ckeditor'),
+    instructions: 'Define additional [config properties]({link}) which should be merged with the default config.'|t('ckeditor', {
+      link: 'https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html',
+    }),
+    id: 'js',
+    name: 'js',
+    value: ckeConfig.js ?? "{\n  \n}",
+  },
+  'ckeditor:EditorConfig',
+  baseMonacoOptions|merge({
+    language: 'javascript',
+  }),
+  baseCodeEditorOptions,
+) }}
+
+{{ codeEditor.textareaField(
+  {
+    label: 'Custom Styles'|t('ckeditor'),
+    instructions: 'Define CSS styles that should be registered for editors, such as [style classes]({url}).'|t('ckeditor', {
+    url: 'https://ckeditor.com/docs/ckeditor5/latest/features/style.html',
+  }),
+    id: 'css',
+    name: 'css',
+    value: ckeConfig.css,
+  },
+  'CodeEditor',
+  baseMonacoOptions|merge({
+    language: 'css',
+  }),
+  baseCodeEditorOptions,
+) }}

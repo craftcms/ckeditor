@@ -1,40 +1,48 @@
-{% import '_includes/forms' as forms %}
+{% import '_includes/forms.twig' as forms %}
 
-{{ forms.textareaField({
-  label: 'Initialization Code'|t('ckeditor'),
-  instructions: 'JavaScript code that should be used to initialize the editor, and then return it.'|t('ckeditor', {
-    id: '`__EDITOR__`',
-  }),
-  id: 'init-js',
-  name: 'initJs',
-  value: field.initJs,
-  class: 'code nicetext',
-}) }}
+{% embed '_includes/forms/field.twig' with {
+  label: 'CKEditor Config'|t('ckeditor'),
+  id: 'cke-config',
+  field: field,
+} %}
+  {% block input %}
+    {% set addOptionFn %}
+      (createOption, selectize) => {
+        const slideout = new Craft.CpScreenSlideout('ckeditor/cke-configs/edit');
+        slideout.on('submit', ev => {
+          debugger;
+          createOption({
+              text: ev.data.name,
+              value: ev.data.uid,
+          });
+        });
+        slideout.on('close', () => {
+          selectize.focus();
+        });
+      }
+    {% endset %}
+
+    {% include '_includes/forms/selectize' with {
+        name: 'ckeConfig',
+        options: plugin('ckeditor').ckeConfigs.getAll()|map(ckeConfig => {
+          label: ckeConfig.name,
+          value: ckeConfig.uid,
+        }),
+        addOptionLabel: 'Create a new config…'|t('ckeditor'),
+        value: field.ckeConfig,
+    } %}
+  {% endblock %}
+{% endembed %}
 
 <hr>
-<a class="fieldtoggle" data-target="assets">{{ 'Assets (CKEditor 4 only)'|t('ckeditor') }}</a>
+
+<a class="fieldtoggle" data-target="assets">{{ 'Assets'|t('app') }}</a>
 <div id="assets" class="hidden">
-  {{ forms.checkboxField({
-    label: 'Show unpermitted volumes'|t('app'),
-    instructions: 'Whether to show volumes that the user doesn’t have permission to view.'|t('app'),
-    id: 'showUnpermittedVolumes',
-    name: 'showUnpermittedVolumes',
-    checked: field.showUnpermittedVolumes,
-  }) }}
-
-  {{ forms.checkboxField({
-    label: 'Show unpermitted files'|t('app'),
-    instructions: 'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'|t('app'),
-    id: 'showUnpermittedFiles',
-    name: 'showUnpermittedFiles',
-    checked: field.showUnpermittedFiles,
-  }) }}
-
   {{ forms.checkboxSelectField({
     id: 'availableVolumes',
     name: 'availableVolumes',
-    label: 'Available Volumes'|t('ckeditor'),
-    instructions: 'The volumes that should be available when browsing assets.'|t('ckeditor'),
+    label: 'Available Volumes'|t('app'),
+    instructions: 'The volumes that should be available when browsing assets.'|t('app'),
     options: volumeOptions,
     values: field.availableVolumes,
     showAllOption: volumeOptions|length ? true : false
@@ -58,6 +66,22 @@
     options: defaultTransformOptions,
     value: field.defaultTransform,
   }) }}
+
+  {{ forms.checkboxField({
+    label: 'Show unpermitted volumes'|t('app'),
+    instructions: 'Whether to show volumes that the user doesn’t have permission to view.'|t('app'),
+    id: 'showUnpermittedVolumes',
+    name: 'showUnpermittedVolumes',
+    checked: field.showUnpermittedVolumes,
+  }) }}
+
+  {{ forms.checkboxField({
+    label: 'Show unpermitted files'|t('app'),
+    instructions: 'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'|t('app'),
+    id: 'showUnpermittedFiles',
+    name: 'showUnpermittedFiles',
+    checked: field.showUnpermittedFiles,
+  }) }}
 </div>
 
 <hr>
@@ -75,19 +99,19 @@
   }) }}
 
   <div id="purifier-config-container"{% if not field.purifyHtml %} class="hidden"{% endif %}>
-      {{ forms.selectField({
-        label: "HTML Purifier Config"|t('ckeditor'),
-        instructions: "You can save custom {name} configs as {ext} files in {path}."|t('ckeditor', {
-          name: 'HTML Purifier Config',
-          ext: '`.json`',
-          path: '`config/htmlpurifier/`'
-        }) ~
-        ' <a href="http://htmlpurifier.org/live/configdoc/plain.html" rel="noopener" target="_blank">'~"View available settings"|t('ckeditor')~'</a>',
-        id: 'purifier-config',
-        name: 'purifierConfig',
-        options: purifierConfigOptions,
-        value: field.purifierConfig
-      }) }}
+    {{ forms.selectField({
+      label: "HTML Purifier Config"|t('ckeditor'),
+      instructions: "You can save custom {name} configs as {ext} files in {path}."|t('ckeditor', {
+        name: 'HTML Purifier Config',
+        ext: '`.json`',
+        path: '`config/htmlpurifier/`'
+      }) ~
+      ' <a href="http://htmlpurifier.org/live/configdoc/plain.html" rel="noopener" target="_blank">'~"View available settings"|t('ckeditor')~'</a>',
+      id: 'purifier-config',
+      name: 'purifierConfig',
+      options: purifierConfigOptions,
+      value: field.purifierConfig
+    }) }}
   </div>
 
   {% if craft.app.db.isMysql %}

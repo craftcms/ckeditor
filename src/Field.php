@@ -4,14 +4,23 @@ namespace craft\ckeditor;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\ckeditor\assets\field\FieldAsset;
+use craft\ckeditor\assets\ckeditor\CkeditorAsset;
+use craft\ckeditor\events\DefineLinkOptionsEvent;
 use craft\elements\Asset;
+use craft\elements\Category;
+use craft\elements\Entry;
 use craft\helpers\Html;
 use craft\helpers\Json;
-use craft\helpers\UrlHelper;
 use craft\htmlfield\events\ModifyPurifierConfigEvent;
 use craft\htmlfield\HtmlField;
+use craft\models\CategoryGroup;
+use craft\models\ImageTransform;
+use craft\models\Section;
+use craft\models\Volume;
+use craft\web\View;
 use HTMLPurifier_Config;
+use Illuminate\Support\Collection;
+use yii\base\InvalidArgumentException;
 
 /**
  * CKEditor field type
@@ -43,12 +52,24 @@ class Field extends HtmlField
     public const EVENT_MODIFY_PURIFIER_CONFIG = 'modifyPurifierConfig';
 
     /**
+     * @event RegisterLinkOptionsEvent The event that is triggered when registering the link options for the field.
+     * @since 3.0.0
+     */
+    public const EVENT_DEFINE_LINK_OPTIONS = 'defineLinkOptions';
+
+    /**
      * @inheritdoc
      */
     public static function displayName(): string
     {
         return Craft::t('ckeditor', 'CKEditor');
     }
+
+    /**
+     * @var string|null The CKEditor config UUID
+     * @since 3.0.0
+     */
+    public ?string $ckeConfig = null;
 
     /**
      * @var string|null The initialization JS code
@@ -59,13 +80,13 @@ class Field extends HtmlField
      * @var string|array|null The volumes that should be available for image selection.
      * @since 1.2.0
      */
-    public $availableVolumes = '*';
+    public string|array|null $availableVolumes = '*';
 
     /**
      * @var string|array|null The transforms available when selecting an image.
      * @since 1.2.0
      */
-    public $availableTransforms = '*';
+    public string|array|null $availableTransforms = '*';
 
     /**
      * @var string|null The default transform to use.
@@ -102,6 +123,8 @@ class Field extends HtmlField
      */
     public function getSettingsHtml(): ?string
     {
+        $view = Craft::$app->getView();
+
         $volumeOptions = [];
         foreach (Craft::$app->getVolumes()->getAllVolumes() as $volume) {
             if ($volume->getFs()->hasUrls) {
@@ -120,7 +143,7 @@ class Field extends HtmlField
             ];
         }
 
-        return Craft::$app->getView()->renderTemplate('ckeditor/_field-settings', [
+        return $view->renderTemplate('ckeditor/_field-settings.twig', [
             'field' => $this,
             'purifierConfigOptions' => $this->configOptions('htmlpurifier'),
             'volumeOptions' => $volumeOptions,
@@ -140,88 +163,56 @@ class Field extends HtmlField
     protected function inputHtml(mixed $value, ElementInterface $element = null): string
     {
         $view = Craft::$app->getView();
-        $view->registerJsFile(Plugin::getInstance()->getBuildUrl());
-        $view->registerAssetBundle(FieldAsset::class);
+        $view->registerAssetBundle(CkeditorAsset::class);
 
-        $appLanguage = mb_strtolower(Craft::$app->language);
-        $language = Json::encode($appLanguage); // for v4
-        $filebrowserBrowseUrl = Json::encode($this->availableVolumes ? UrlHelper::actionUrl('ckeditor/assets/browse', [
-            'fieldId' => $this->id,
-        ]) : null); // for v4
-        $filebrowserImageBrowseUrl = Json::encode($this->availableVolumes ? UrlHelper::actionUrl('ckeditor/assets/browse', [
-            'fieldId' => $this->id,
-            'kind' => Asset::KIND_IMAGE,
-        ]) : null); // for v4
-        $langClass = ''; // for v4, ignored in v5
-
-        // Explicitly set the text direction
-        $contentsLangDirection = Json::encode("ltr"); // for v4
-        $v5language = Json::encode($appLanguage); // for v5
-
-        if ($this->translationMethod != self::TRANSLATION_METHOD_NONE) {
-            $elementSite = ($element ? $element->getSite() : Craft::$app->getSites()->getCurrentSite());
-            $contentLocale = Craft::$app->getI18n()->getLocaleById($elementSite->language);
-
-            $langClass = ' cke_' . $contentLocale->getOrientation();
-            $contentsLangDirection = Json::encode($contentLocale->getOrientation()); // for v4
-            $v5language = Json::encode($contentLocale->id); // for v5
+        $ckeConfig = null;
+        if ($this->ckeConfig) {
+            try {
+                $ckeConfig = Plugin::getInstance()->getCkeConfigs()->getByUid($this->ckeConfig);
+            } catch (InvalidArgumentException) {
+            }
+        }
+        if (!$ckeConfig) {
+            $ckeConfig = new CkeConfig();
         }
 
-        $js = <<<JS
-const language = $language;
-const filebrowserBrowseUrl = $filebrowserBrowseUrl;
-const filebrowserImageBrowseUrl = $filebrowserImageBrowseUrl;
-const contentsLangDirection = $contentsLangDirection;
-
-JS;
-
-        $js .= $this->initJs ?? <<<JS
-if (typeof CKEDITOR !== 'undefined') {
-    // CKEditor 4
-    return CKEDITOR.replace('__EDITOR__', {
-        language,
-        filebrowserBrowseUrl,
-        filebrowserImageBrowseUrl,
-        contentsLangDirection,
-    });
-} else {
-    // CKEditor 5
-    let editorClass;
-    if (typeof ClassicEditor !== 'undefined') {
-        editorClass = ClassicEditor;
-    } else {
-        if (typeof InlineEditor !== 'undefined') {
-            editorClass = InlineEditor;
-        } else if (typeof BalloonEditor !== 'undefined') {
-            editorClass = BalloonEditor;
-        } else if (typeof DecoupledEditor !== 'undefined') {
-            editorClass = DecoupledEditor;
+        if ($this->defaultTransform) {
+            $defaultTransform = Craft::$app->getImageTransforms()->getTransformByUid($this->defaultTransform);
         } else {
-            throw 'No CKEditor class detected';
+            $defaultTransform = null;
         }
-        
-    }
-    return await editorClass
-        .create(document.querySelector('#__EDITOR__'), {
-            language: {
-				ui: $v5language,
-				content: $v5language,
-			}
-        });
-}
-JS;
 
         $id = Html::id($this->handle);
-        $nsId = $view->namespaceInputId($id);
-        $js = str_replace('__EDITOR__', $nsId, $js);
-        $view->registerJs("initCkeditor('$nsId', async function(){\n$js\n})");
+        $idJs = Json::encode($view->namespaceInputId($id));
+        $configJs = Json::encode([
+            'toolbar' => $ckeConfig->toolbar,
+            'language' => [
+                'ui' => Craft::$app->language,
+                'content' => $element?->getSite()->language ?? Craft::$app->language,
+            ],
+            'linkOptions' => $this->_linkOptions($element),
+            'transforms' => $this->_transforms(),
+            'defaultTransform' => $defaultTransform?->handle,
+            'elementSiteId' => $element?->siteId,
+        ]);
+        $additionalJs = $ckeConfig->js ?? '{}';
+
+        $view->registerJs(<<<JS
+Ckeditor.create($idJs, Object.assign($configJs, $additionalJs));
+JS,
+            View::POS_END,
+        );
+
+        if ($ckeConfig->css) {
+            $view->registerCss($ckeConfig->css);
+        }
 
         return Html::tag('div',
             Html::textarea($this->handle, $this->prepValueForInput($value, $element), [
                 'id' => $id,
-            ]), [
-                'class' => 'readable' . $langClass,
-            ]);
+                'class' => 'hidden',
+            ]),
+        );
     }
 
     /**
@@ -247,5 +238,182 @@ JS;
         $this->trigger(self::EVENT_MODIFY_PURIFIER_CONFIG, $event);
 
         return $event->config;
+    }
+
+    /**
+     * Returns the link options available to the field.
+     *
+     * Each link option is represented by an array with the following keys:
+     * - `label` (required) – the user-facing option label that appears in the Link dropdown menu
+     * - `elementType` (required) – the element type class that the option should be linking to
+     * - `sources` (optional) – the sources that the user should be able to select elements from
+     * - `criteria` (optional) – any specific element criteria parameters that should limit which elements the user can select
+     *
+     * @param ElementInterface|null $element The element the field is associated with, if there is one
+     * @return array
+     */
+    private function _linkOptions(?ElementInterface $element = null): array
+    {
+        $linkOptions = [];
+
+        $sectionSources = $this->_sectionSources($element);
+        $categorySources = $this->_categorySources($element);
+        $volumeSources = $this->_volumeSources();
+
+        if (!empty($sectionSources)) {
+            $linkOptions[] = [
+                'label' => Craft::t('ckeditor', 'Link to an entry'),
+                'elementType' => Entry::class,
+                'refHandle' => Entry::refHandle(),
+                'sources' => $sectionSources,
+                'criteria' => ['uri' => ':notempty:'],
+            ];
+        }
+
+        if (!empty($categorySources)) {
+            $linkOptions[] = [
+                'label' => Craft::t('ckeditor', 'Link to a category'),
+                'elementType' => Category::class,
+                'refHandle' => Category::refHandle(),
+                'sources' => $categorySources,
+            ];
+        }
+
+        if (!empty($volumeSources)) {
+            $criteria = [];
+            if ($this->showUnpermittedFiles) {
+                $criteria['uploaderId'] = null;
+            }
+            $linkOptions[] = [
+                'label' => Craft::t('ckeditor', 'Link to an asset'),
+                'elementType' => Asset::class,
+                'refHandle' => Asset::refHandle(),
+                'sources' => $volumeSources,
+                'criteria' => $criteria,
+            ];
+        }
+
+        // Give plugins a chance to add their own
+        $event = new DefineLinkOptionsEvent([
+            'linkOptions' => $linkOptions,
+        ]);
+        $this->trigger(self::EVENT_DEFINE_LINK_OPTIONS, $event);
+        $linkOptions = $event->linkOptions;
+
+        // Fill in any missing ref handles
+        foreach ($linkOptions as &$linkOption) {
+            if (!isset($linkOption['refHandle'])) {
+                /** @var class-string<ElementInterface> $class */
+                $class = $linkOption['elementType'];
+                $linkOption['refHandle'] = $class::refHandle() ?? $class;
+            }
+        }
+
+        return $linkOptions;
+    }
+
+    /**
+     * Returns the available section sources.
+     *
+     * @param ElementInterface|null $element The element the field is associated with, if there is one
+     * @return array
+     */
+    private function _sectionSources(?ElementInterface $element = null): array
+    {
+        $sources = [];
+        $sections = Craft::$app->getSections()->getAllSections();
+        $showSingles = false;
+
+        // Get all sites
+        $sites = Craft::$app->getSites()->getAllSites();
+
+        foreach ($sections as $section) {
+            if ($section->type === Section::TYPE_SINGLE) {
+                $showSingles = true;
+            } elseif ($element) {
+                $sectionSiteSettings = $section->getSiteSettings();
+                foreach ($sites as $site) {
+                    if (isset($sectionSiteSettings[$site->id]) && $sectionSiteSettings[$site->id]->hasUrls) {
+                        $sources[] = 'section:' . $section->uid;
+                    }
+                }
+            }
+        }
+
+        if ($showSingles) {
+            array_unshift($sources, 'singles');
+        }
+
+        if (!empty($sources)) {
+            array_unshift($sources, '*');
+        }
+
+        return $sources;
+    }
+
+    /**
+     * Returns the available category sources.
+     *
+     * @param ElementInterface|null $element The element the field is associated with, if there is one
+     * @return array
+     */
+    private function _categorySources(?ElementInterface $element = null): array
+    {
+        return Collection::make(Craft::$app->getCategories()->getAllGroups())
+            ->filter(fn(CategoryGroup $group) => $group->getSiteSettings()[$element->siteId]?->hasUrls ?? false)
+            ->map(fn(CategoryGroup $group) => "group:$group->uid")
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Returns the available volume sources.
+     *
+     * @return string[]
+     */
+    private function _volumeSources(): array
+    {
+        if (!$this->availableVolumes) {
+            return [];
+        }
+
+        $volumes = Collection::make(Craft::$app->getVolumes()->getAllVolumes());
+
+        if (is_array($this->availableVolumes)) {
+            $volumes = $volumes->filter(fn(Volume $volume) => in_array($volume->uid, $this->availableVolumes));
+        }
+
+        if (!$this->showUnpermittedVolumes) {
+            $userService = Craft::$app->getUser();
+            $volumes = $volumes->filter(fn(Volume $volume) => $userService->checkPermission("viewAssets:$volume->uid"));
+        }
+
+        return $volumes
+            ->map(fn(Volume $volume) => "volume:$volume->uid")
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Get available transforms.
+     *
+     * @return array
+     */
+    private function _transforms(): array
+    {
+        if (!$this->availableTransforms) {
+            return [];
+        }
+
+        $transforms = Collection::make(Craft::$app->getImageTransforms()->getAllTransforms());
+
+        if (is_array($this->availableTransforms)) {
+            $transforms = $transforms->filter(fn(ImageTransform $transform) => in_array($transform->uid, $this->availableTransforms));
+        }
+
+        return $transforms->map(fn(ImageTransform $transform) => [
+            'handle' => $transform->handle,
+            'name' => $transform->name,
+        ])->values()->all();
     }
 }

@@ -3,64 +3,57 @@
 namespace craft\ckeditor;
 
 use Craft;
-use craft\base\Model;
 use craft\events\RegisterComponentTypesEvent;
-use craft\helpers\App;
+use craft\events\RegisterUrlRulesEvent;
 use craft\services\Fields;
+use craft\web\UrlManager;
 use yii\base\Event;
 
 /**
  * CKEditor plugin.
  *
  * @method static Plugin getInstance()
- * @property-read Settings $settings
- * @method Settings getSettings()
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @property-read CkeConfigs $ckeConfigs
  */
 class Plugin extends \craft\base\Plugin
 {
-    /**
-     * @inheritdoc
-     */
+    public static function config(): array
+    {
+        return [
+            'components' => [
+                'ckeConfigs' => CkeConfigs::class,
+            ],
+        ];
+    }
+
+    public string $schemaVersion = '3.0.0.0';
     public bool $hasCpSettings = true;
 
-    /**
-     * @inheritdoc
-     */
     public function init()
     {
         parent::init();
 
-        Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, function(RegisterComponentTypesEvent $e) {
-            $e->types[] = Field::class;
+        Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, function(RegisterComponentTypesEvent $event) {
+            $event->types[] = Field::class;
+        });
+
+        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
+            $event->rules += [
+                'settings/ckeditor' => 'ckeditor/cke-configs/index',
+                'settings/ckeditor/new' => 'ckeditor/cke-configs/edit',
+                'settings/ckeditor/<uid:{uid}>' => 'ckeditor/cke-configs/edit',
+            ];
         });
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function createSettingsModel(): ?Model
+    public function getCkeConfigs(): CkeConfigs
     {
-        return new Settings();
+        return $this->get('ckeConfigs');
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function settingsHtml(): ?string
+    public function getSettingsResponse(): mixed
     {
-        return Craft::$app->getView()->renderTemplate('ckeditor/_plugin-settings', [
-            'settings' => $this->getSettings(),
-        ]);
-    }
-
-    /**
-     * Returns the CKEditor build URL.
-     *
-     * @return string
-     */
-    public function getBuildUrl(): string
-    {
-        return App::parseEnv($this->getSettings()->buildUrl);
+        return Craft::$app->controller->redirect('settings/ckeditor');
     }
 }
