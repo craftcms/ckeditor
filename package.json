@@ -36,15 +36,15 @@
     "@ckeditor/ckeditor5-word-count": "^37.0.1"
   },
   "devDependencies": {
-    "@craftcms/webpack": "^1.1.0",
+    "@craftcms/webpack": "^1.1.2",
     "@craftcms/sass": "^1.1.0",
     "css-loader": "^6.7.3",
-    "postcss-loader": "^7.2.4",
-    "raw-loader": "^4.0.2",
-    "style-loader": "^3.3.2",
     "husky": "^7.0.4",
     "lint-staged": "^12.4.0",
-    "prettier": "^2.7.1"
+    "postcss-loader": "^7.2.4",
+    "prettier": "^2.7.1",
+    "raw-loader": "^4.0.2",
+    "style-loader": "^3.3.2"
   },
   "scripts": {
     "prebuild": "npm run fix-prettier",
