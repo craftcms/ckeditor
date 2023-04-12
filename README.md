@@ -1,10 +1,14 @@
-# CKEditor for Craft CMS
+<p align="center"><img src="./src/icon.svg" width="100" height="100" alt="CKEditor icon"></p>
 
-This plugin adds a “CKEditor” field type to Craft CMS, which provides a wrapper for [CKEditor](https://ckeditor.com/).
+<h1 align="center">CKEditor</h1>
+
+This plugin adds a “CKEditor” field type to Craft CMS, which provides a deeply-integrated rich text editor, powered by [CKEditor 5](https://ckeditor.com/).
+
+![A CKEditor field.](field.png)
 
 ## Requirements
 
-This plugin requires Craft CMS 4.3.6 or later.
+This plugin requires Craft CMS 4.4.7 or later.
 
 ## Installation
 
@@ -29,42 +33,15 @@ composer require craftcms/ckeditor
 ./craft plugin/install ckeditor
 ```
 
-## Providing a CKEditor Build
-
-CKEditor 5 (27.0.0, “classic” build) is used by default. To customize the CKEditor build, go to **Settings** → **CKEditor**, and edit the **CKEditor Build URL** setting.
-
-You can set this to a build provided by the [CKEditor CDN](https://cdn.ckeditor.com/), or you can supply your own customized CKEditor build, published somewhere within your web root.
-
-- [CKEditor 4 builder](https://ckeditor.com/cke4/builder)
-- [CKEditor 5 builder](https://ckeditor.com/ckeditor-5/online-builder/)
-
 ## Configuration
 
-### Editor Configuration
+CKEditor configurations are managed globally from **Settings** → **CKEditor**.
 
-If you want to customize a field’s configuration options, you can do that by providing custom initialization code for the field, from its **Initialization Code** setting.
+Configurations define the available toolbar buttons, as well as any custom [config options](https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html) and CSS styles that should be regisered with the field.
 
-Reference the source `<textarea>` element’s ID using “`__EDITOR__`”, and be sure that the code returns the editor instance.
+New configurations can also be created inline from CKEditor field settings.
 
-```js
-// CKEditor 4
-return CKEDITOR.replace('__EDITOR__', {
-    language,
-    filebrowserBrowseUrl, // CKE4 only
-    filebrowserImageBrowseUrl, // CKE4 only
-    // ...
-});
-
-// CKEditor 5
-return await ClassicEditor
-    .create(document.querySelector('#__EDITOR__'), {
-        language,
-        // ...
-    });
-```
-
-- [CKEditor 4 config options](https://ckeditor.com/docs/ckeditor4/latest/api/CKEDITOR_config.html)
-- [CKEditor 5 config options](https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html)
+![A “Create a new field” page within the Craft CMS control panel, with “CKEditor” as the chosen field type. A slideout is open with CKEditor configuration settings.](field-settings.png)
 
 ### HTML Purifier Configs
 
