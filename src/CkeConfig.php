@@ -43,7 +43,7 @@ class CkeConfig extends Model
     {
         if (isset($config['js'])) {
             $config['js'] = trim($config['js']);
-            if ($config['js'] === '' || preg_match('/^\{\s*\}$/', $config['js'])) {
+            if ($config['js'] === '' || preg_match('/^return\s*\{\s*\}$/', $config['js'])) {
                 unset($config['js']);
             }
         }

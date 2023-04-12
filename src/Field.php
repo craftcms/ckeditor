@@ -188,10 +188,12 @@ class Field extends HtmlField
             'defaultTransform' => $defaultTransform?->handle,
             'elementSiteId' => $element?->siteId,
         ]);
-        $additionalJs = $ckeConfig->js ?? '{}';
+        $additionalJs = $ckeConfig->js ?? 'return {}';
 
         $view->registerJs(<<<JS
-Ckeditor.create($idJs, Object.assign($configJs, $additionalJs));
+Ckeditor.create($idJs, Object.assign($configJs, (() => {
+  $additionalJs
+})()));
 JS,
             View::POS_END,
         );
