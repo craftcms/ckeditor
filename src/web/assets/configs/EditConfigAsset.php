@@ -40,6 +40,6 @@ class EditConfigAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'editconfig.css',
+        'css/editconfig.css',
     ];
 }
