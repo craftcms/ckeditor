@@ -40,6 +40,6 @@ class CkeditorAsset extends AssetBundle
      * @inheritdoc
      */
     public $css = [
-        'ckeditor.css',
+        'css/ckeditor.css',
     ];
 }

@@ -1,3 +1,4 @@
+import './ckeditor.css';
 import {Alignment} from '@ckeditor/ckeditor5-alignment';
 import {
   AutoImage,
@@ -46,7 +47,7 @@ import CraftImageInsertUI from './plugins/imageinsertui';
 
 ClassicEditor.builtinPlugins = [];
 
-window.Ckeditor = {
+export default {
   Plugin,
   ClassicEditor,
   create: async function (element, config) {
