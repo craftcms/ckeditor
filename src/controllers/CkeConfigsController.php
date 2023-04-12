@@ -3,9 +3,9 @@
 namespace craft\ckeditor\controllers;
 
 use Craft;
-use craft\ckeditor\assets\configs\EditConfigAsset;
 use craft\ckeditor\CkeConfig;
 use craft\ckeditor\Plugin;
+use craft\ckeditor\web\assets\ckeconfig\CkeConfigAsset;
 use craft\helpers\StringHelper;
 use craft\web\assets\admintable\AdminTableAsset;
 use craft\web\Controller;
@@ -73,7 +73,7 @@ class CkeConfigsController extends Controller
                 'ckeConfig' => $ckeConfig,
             ])
             ->prepareScreen(function() {
-                $this->view->registerAssetBundle(EditConfigAsset::class);
+                $this->view->registerAssetBundle(CkeConfigAsset::class);
                 $this->view->registerJsWithVars(
                     fn($id) => <<<JS
 new Ckeditor.ToolbarBuilder($id);
