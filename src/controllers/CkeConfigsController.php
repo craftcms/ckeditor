@@ -3,7 +3,7 @@
 namespace craft\ckeditor\controllers;
 
 use Craft;
-use craft\ckeditor\assets\configs\EditConfigAsset;
+use craft\ckeditor\web\assets\configs\EditConfigAsset;
 use craft\ckeditor\CkeConfig;
 use craft\ckeditor\Plugin;
 use craft\helpers\StringHelper;
