@@ -1,5 +1,19 @@
 # Release Notes for CKEditor for Craft CMS
 
+## 3.0.0 (Unreleased)
+
+> **Warning**
+> This is a major overhaul of the plugin. Your existing CKEditor fields will remain in-tact, however they will lose their custom configuration code, and be set to use a shared “Simple” CKEditor configuration. 
+
+- CKEditor 5 now comes bundled with the plugin.
+- Dropped support for CKEditor 4 and custom builds.
+- Added globally-managed CKEditor configurations, featuring drag-n-drop toolbars, and inputs for defining custom config options and CSS styles.
+- Added the ability to create links to entries, categories, and assets.
+- Added the ability to insert asset images, optionally with a transform pre-applied.
+- The “Available Volumes”, “Available Transforms”, “Default Transform”, “Show unpermitted volumes”, and “Show unpermitted files” field settings are now supported for CKEditor 5.
+- Removed the “Initialization Code” field setting.
+- Removed `craft\ckeditor\events\ModifyPurifierConfigEvent`.
+
 ## 2.2.0 - 2023-01-04
 - CKEditor now requires Craft CMS 4.3.6 or later.
 - Fixed a bug where CKEditor 4 stopped working when used within a Matrix block, if the block was moved to a new position. ([#23](https://github.com/craftcms/ckeditor/issues/23))
