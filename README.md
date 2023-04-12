@@ -4,7 +4,7 @@
 
 This plugin adds a “CKEditor” field type to Craft CMS, which provides a deeply-integrated rich text editor, powered by [CKEditor 5](https://ckeditor.com/).
 
-![A CKEditor field.](field.png)
+![A CKEditor field with example content filled in.](field.png)
 
 ## Requirements
 
@@ -35,13 +35,53 @@ composer require craftcms/ckeditor
 
 ## Configuration
 
-CKEditor configurations are managed globally from **Settings** → **CKEditor**.
+CKEditor configs are managed globally from **Settings** → **CKEditor**.
 
 Configurations define the available toolbar buttons, as well as any custom [config options](https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html) and CSS styles that should be regisered with the field.
 
-New configurations can also be created inline from CKEditor field settings.
+New configs can also be created inline from CKEditor field settings.
 
-![A “Create a new field” page within the Craft CMS control panel, with “CKEditor” as the chosen field type. A slideout is open with CKEditor configuration settings.](field-settings.png)
+![A “Create a new field” page within the Craft CMS control panel, with “CKEditor” as the chosen field type. A slideout is open with CKEditor config settings.](field-settings.png)
+
+### Registering Custom Styles
+
+CKEditor’s [Styles](https://ckeditor.com/docs/ckeditor5/latest/features/style.html) plugin makes it easy to apply custom styles to your content via CSS classes.
+
+You can define custom styles within CKEditor configs using the [`style`](https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html#member-style) config option:
+
+```js
+{
+  style: {
+    definitions: [
+      {
+        name: 'Tip',
+        element: 'p',
+        classes: ['note']
+      },
+      {
+        name: 'Warning',
+        element: 'p',
+        classes: ['note', 'note--warning']
+      },
+    ]
+  }
+}
+```
+
+You can then register custom CSS styles that should be applied within the editor when those styles are selected:
+
+```css
+.ck.ck-content p.note {
+    border-left: 4px solid #4a7cf6;
+    padding-left: 1rem;
+    color: #4a7cf6;
+}
+
+.ck.ck-content p.note--warning {
+    border-left-color: #e5422b;
+    color: #e5422b;
+}
+```
 
 ### HTML Purifier Configs
 
@@ -64,10 +104,8 @@ Use this as a starting point, which is the default config that CKEditor fields u
 
 See the [HTML Purifier documentation](http://htmlpurifier.org/live/configdoc/plain.html) for a list of available config options.
 
-## Embedding Videos/Media in CKEditor 5
+### Embedding Media
 
-CKEditor 5 uses `oembed` to add media. Craft CMS' HTML purifier has been adjusted to support `oembed`.
-If you want to change the allowed domains, please use the HTML Purifier `URI.SafeIframeRegexp` option.
+CKEditor 5 stores references to embedded media embeds using `oembed` tags. Craft CMS configures HTML Purifier to support these tags, however you will need to ensure that the `URI.SafeIframeRegexp` HTML Purifier setting is set to allow any domains you wish to embed content from. 
 
-Please note that to display the embedded media on your website, you'll have to follow the 
-[CKEditor 5 documentation](https://ckeditor.com/docs/ckeditor5/latest/features/media-embed.html#displaying-embedded-media-on-your-website).
+See CKEditor’s [media embed documentation](https://ckeditor.com/docs/ckeditor5/latest/features/media-embed.html#displaying-embedded-media-on-your-website) for examples of how to show the embedded media on your front end.
