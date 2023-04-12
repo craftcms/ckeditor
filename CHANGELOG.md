@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## 3.0.0 (Unreleased)
+## 3.0.0 - 2023-04-12
 
 > **Warning**
 > This is a major overhaul of the plugin. Your existing CKEditor fields and content will remain in-tact, however you’ll need to reconfigure your fields with a new CKEditor Config. 
