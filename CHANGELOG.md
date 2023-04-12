@@ -3,7 +3,7 @@
 ## 3.0.0 (Unreleased)
 
 > **Warning**
-> This is a major overhaul of the plugin. Your existing CKEditor fields will remain in-tact, however they will lose their custom configuration code, and be set to use a shared “Simple” CKEditor configuration. 
+> This is a major overhaul of the plugin. Your existing CKEditor fields and content will remain in-tact, however you’ll need to reconfigure your fields with a new CKEditor Config. 
 
 - CKEditor 5 now comes bundled with the plugin.
 - Dropped support for CKEditor 4 and custom builds.
