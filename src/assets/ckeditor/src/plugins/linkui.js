@@ -1,7 +1,12 @@
 import {Collection} from 'ckeditor5/src/utils';
-import {Model, SplitButtonView, createDropdown, addListToDropdown} from 'ckeditor5/src/ui';
+import {
+  Model,
+  SplitButtonView,
+  createDropdown,
+  addListToDropdown,
+} from 'ckeditor5/src/ui';
 import linkIcon from '../node_modules/@ckeditor/ckeditor5-link/theme/icons/link.svg';
-import {LinkUI} from "@ckeditor/ckeditor5-link";
+import {LinkUI} from '@ckeditor/ckeditor5-link';
 import {LINK_KEYSTROKE} from '@ckeditor/ckeditor5-link/src/utils';
 
 export default class CraftLinkUI extends LinkUI {
@@ -22,7 +27,7 @@ export default class CraftLinkUI extends LinkUI {
     }
     const linkCommand = editor.commands.get('link');
     const t = editor.t;
-    editor.ui.componentFactory.add('link', locale => {
+    editor.ui.componentFactory.add('link', (locale) => {
       const dropdownView = createDropdown(locale, SplitButtonView);
       const splitButtonView = dropdownView.buttonView;
       splitButtonView.isEnabled = true;
@@ -32,14 +37,16 @@ export default class CraftLinkUI extends LinkUI {
       splitButtonView.tooltip = true;
       splitButtonView.isToggleable = true;
       this.listenTo(splitButtonView, 'execute', () => this._showUI(true));
-      dropdownView.on('execute', evt => {
+      dropdownView.on('execute', (evt) => {
         const linkOption = evt.source.linkOption;
         this._showElementSelectorModal(linkOption);
       });
       dropdownView.class = 'ck-code-block-dropdown';
       dropdownView.bind('isEnabled').to(linkCommand, 'isEnabled');
-      splitButtonView.bind('isOn').to(linkCommand, 'value', value => !!value);
-      addListToDropdown(dropdownView, () => this._getLinkListItemDefinitions(linkOptions));
+      splitButtonView.bind('isOn').to(linkCommand, 'value', (value) => !!value);
+      addListToDropdown(dropdownView, () =>
+        this._getLinkListItemDefinitions(linkOptions)
+      );
       return dropdownView;
     });
   }
@@ -53,8 +60,8 @@ export default class CraftLinkUI extends LinkUI {
         model: new Model({
           label: option.label,
           linkOption: option,
-          withText: true
-        })
+          withText: true,
+        }),
       };
       itemDefinitions.add(definition);
     }
@@ -86,12 +93,12 @@ export default class CraftLinkUI extends LinkUI {
       editor.editing.view.focus();
       if (!isCollapsed && range) {
         // Restore the previous range
-        model.change(writer => {
-          writer.setSelection(range)
+        model.change((writer) => {
+          writer.setSelection(range);
         });
       }
       this._hideFakeVisualSelection();
-    }
+    };
 
     // When there's no link under the selection, go straight to the editing UI.
     if (!this._getSelectedLinkElement()) {
@@ -113,23 +120,27 @@ export default class CraftLinkUI extends LinkUI {
           editor.editing.view.focus();
           if (!isCollapsed && range) {
             // Restore the previous range
-            model.change(writer => {
-              writer.setSelection(range)
+            model.change((writer) => {
+              writer.setSelection(range);
             });
             const linkCommand = editor.commands.get('link');
             linkCommand.execute(url);
           } else {
-            model.change(writer => {
-              writer.insertText(element.label, {
-                linkHref: url,
-              }, selection.getFirstPosition());
+            model.change((writer) => {
+              writer.insertText(
+                element.label,
+                {
+                  linkHref: url,
+                },
+                selection.getFirstPosition()
+              );
             });
           }
 
           this._hideFakeVisualSelection();
           setTimeout(() => {
             editor.editing.view.focus();
-          }, 100)
+          }, 100);
         } else {
           onCancel();
         }

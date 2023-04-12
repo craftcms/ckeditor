@@ -6,4 +6,4 @@ lib/*
 src/templates/*
 tests/_craft/*
 vendor/*
-.ddev/*
+src/assets/**/dist

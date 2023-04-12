@@ -10,7 +10,9 @@ export default class CraftImageInsertUI extends ImageInsertUI {
   init() {
     // Make sure there are linked volumes
     if (!this._linkOption) {
-      console.warn('Omitting the "image" CKEditor toolbar button, because there aren’t any permitted volumes.');
+      console.warn(
+        'Omitting the "image" CKEditor toolbar button, because there aren’t any permitted volumes.'
+      );
       return;
     }
 
@@ -25,7 +27,9 @@ export default class CraftImageInsertUI extends ImageInsertUI {
 
   get _linkOption() {
     const linkOptions = this.editor.config.get('linkOptions');
-    return linkOptions.find(option => option.elementType === 'craft\\elements\\Asset');
+    return linkOptions.find(
+      (option) => option.elementType === 'craft\\elements\\Asset'
+    );
   }
 
   _createToolbarImageButton(locale) {
@@ -88,29 +92,36 @@ export default class CraftImageInsertUI extends ImageInsertUI {
 
       for (const asset of assets) {
         queue.push(
-          () => new Promise((resolve) => {
-            const hasTransform = this._isTransformUrl(asset.url);
-            // Do we need to apply the default transform?
-            if (!hasTransform && defaultTransform) {
-              this._getTransformUrl(asset.id, defaultTransform, (url) => {
+          () =>
+            new Promise((resolve) => {
+              const hasTransform = this._isTransformUrl(asset.url);
+              // Do we need to apply the default transform?
+              if (!hasTransform && defaultTransform) {
+                this._getTransformUrl(asset.id, defaultTransform, (url) => {
+                  urls.push(url);
+                  // editor.execute('insertImage', {source: url});
+                  resolve();
+                });
+              } else {
+                const url = this._buildAssetUrl(
+                  asset.id,
+                  asset.url,
+                  hasTransform ? transform : defaultTransform
+                );
                 urls.push(url);
                 // editor.execute('insertImage', {source: url});
                 resolve();
-              });
-            } else {
-              const url = this._buildAssetUrl(asset.id, asset.url, hasTransform ? transform : defaultTransform)
-              urls.push(url);
-              // editor.execute('insertImage', {source: url});
-              resolve();
-            }
-          })
+              }
+            })
         );
       }
     });
   }
 
   _buildAssetUrl(assetId, assetUrl, transform) {
-    return `${assetUrl}#asset:${assetId}:${transform ? 'transform:' + transform : 'url'}`;
+    return `${assetUrl}#asset:${assetId}:${
+      transform ? 'transform:' + transform : 'url'
+    }`;
   }
 
   _removeTransformFromUrl(url) {
