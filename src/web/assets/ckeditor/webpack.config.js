@@ -1,60 +1,48 @@
-'use strict';
-
-const path = require('path');
 const {styles} = require('@ckeditor/ckeditor5-dev-utils');
+const {getConfig} = require('@craftcms/webpack');
 
-module.exports = {
-  name: 'ckeditor',
-  context: path.join(__dirname, 'src'),
-  // https://webpack.js.org/configuration/entry-context/
-  entry: './app.js',
-
-  // https://webpack.js.org/configuration/output/
-  output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: 'ckeditor.js',
+const config = getConfig({
+  context: __dirname,
+  config: {
+    entry: {
+      ckeditor: './ckeditor.js',
+    },
   },
+});
 
-  module: {
-    rules: [
+config.module.rules = [
+  {
+    test: /ckeditor5-[^/\\]+[/\\]theme[/\\]icons[/\\][^/\\]+\.svg$/,
+
+    use: ['raw-loader'],
+  },
+  {
+    test: /ckeditor5-[^/\\]+[/\\]theme[/\\].+\.css$/,
+
+    use: [
       {
-        test: /ckeditor5-[^/\\]+[/\\]theme[/\\]icons[/\\][^/\\]+\.svg$/,
-
-        use: ['raw-loader'],
+        loader: 'style-loader',
+        options: {
+          injectType: 'singletonStyleTag',
+          attributes: {
+            'data-cke': true,
+          },
+        },
       },
+      'css-loader',
       {
-        test: /ckeditor5-[^/\\]+[/\\]theme[/\\].+\.css$/,
-
-        use: [
-          {
-            loader: 'style-loader',
-            options: {
-              injectType: 'singletonStyleTag',
-              attributes: {
-                'data-cke': true,
-              },
+        loader: 'postcss-loader',
+        options: {
+          postcssOptions: styles.getPostCssConfig({
+            themeImporter: {
+              themePath: require.resolve('@ckeditor/ckeditor5-theme-lark'),
             },
-          },
-          'css-loader',
-          {
-            loader: 'postcss-loader',
-            options: {
-              postcssOptions: styles.getPostCssConfig({
-                themeImporter: {
-                  themePath: require.resolve('@ckeditor/ckeditor5-theme-lark'),
-                },
-                minify: true,
-              }),
-            },
-          },
-        ],
+            minify: true,
+          }),
+        },
       },
     ],
   },
+];
 
-  // Useful for debugging.
-  devtool: 'source-map',
-
-  // By default webpack logs warnings if the bundle is bigger than 200kb.
-  performance: {hints: false},
-};
+module.exports = config;

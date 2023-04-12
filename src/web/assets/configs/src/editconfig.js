@@ -1,4 +1,5 @@
 import './editconfig.css';
+
 (($) => {
   Ckeditor.ToolbarBuilder = Garnish.Base.extend({
     $sourceContainer: null,
