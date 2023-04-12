@@ -12,6 +12,8 @@
 - Added the ability to insert asset images, optionally with a transform pre-applied.
 - The “Available Volumes”, “Available Transforms”, “Default Transform”, “Show unpermitted volumes”, and “Show unpermitted files” field settings are now supported for CKEditor 5.
 - Removed the “Initialization Code” field setting.
+- Added `craft\ckeditor\Field::EVENT_DEFINE_LINK_OPTIONS`.
+- Added `craft\ckeditor\events\DefineLinkOptionsEvent`.
 - Removed `craft\ckeditor\events\ModifyPurifierConfigEvent`.
 
 ## 2.2.0 - 2023-01-04
