@@ -6,7 +6,7 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     entry: {
-      editconfig: './editconfig.js',
+      ckeconfig: './ckeconfig.js',
     },
   },
 });

@@ -5,7 +5,7 @@
  * @license MIT
  */
 
-namespace craft\ckeditor\web\assets\configs;
+namespace craft\ckeditor\web\assets\ckeconfig;
 
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
 use craft\web\AssetBundle;
@@ -15,7 +15,7 @@ use craft\web\AssetBundle;
  *
  * @since 3.0.0
  */
-class EditConfigAsset extends AssetBundle
+class CkeConfigAsset extends AssetBundle
 {
     /**
      * @inheritdoc
@@ -33,13 +33,13 @@ class EditConfigAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'editconfig.js',
+        'ckeconfig.js',
     ];
 
     /**
      * @inheritdoc
      */
     public $css = [
-        'css/editconfig.css',
+        'css/ckeconfig.css',
     ];
 }

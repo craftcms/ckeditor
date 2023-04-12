@@ -1,5 +1,5 @@
 /** global: Ckeditor, Garnish */
-import './editconfig.css';
+import './ckeconfig.css';
 import $ from 'jquery';
 
 Ckeditor.ToolbarBuilder = Garnish.Base.extend({
