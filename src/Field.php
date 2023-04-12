@@ -53,7 +53,7 @@ class Field extends HtmlField
     public const EVENT_MODIFY_PURIFIER_CONFIG = 'modifyPurifierConfig';
 
     /**
-     * @event RegisterLinkOptionsEvent The event that is triggered when registering the link options for the field.
+     * @event DefineLinkOptionsEvent The event that is triggered when registering the link options for the field.
      * @since 3.0.0
      */
     public const EVENT_DEFINE_LINK_OPTIONS = 'defineLinkOptions';
