@@ -4,8 +4,8 @@ namespace craft\ckeditor;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
 use craft\ckeditor\events\DefineLinkOptionsEvent;
+use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
