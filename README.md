@@ -50,7 +50,7 @@ CKEditor’s [Styles](https://ckeditor.com/docs/ckeditor5/latest/features/style.
 You can define custom styles within CKEditor configs using the [`style`](https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html#member-style) config option:
 
 ```js
-{
+return {
   style: {
     definitions: [
       {
