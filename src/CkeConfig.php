@@ -4,7 +4,9 @@ namespace craft\ckeditor;
 
 use Craft;
 use craft\base\Model;
+use craft\helpers\Json;
 use Illuminate\Support\Collection;
+use yii\base\InvalidArgumentException;
 use yii\validators\Validator;
 
 /**
@@ -31,6 +33,12 @@ class CkeConfig extends Model
     public array $toolbar = ['heading', '|', 'bold', 'italic', 'link'];
 
     /**
+     * @var string|null JSON code that defines additional CKEditor config properties as an object
+     * @since 3.1.0
+     */
+    public ?string $json = null;
+
+    /**
      * @var string|null JavaScript code that returns additional CKEditor config properties as an object
      */
     public ?string $js = null;
@@ -42,10 +50,20 @@ class CkeConfig extends Model
 
     public function __construct($config = [])
     {
-        if (isset($config['js'])) {
-            $config['js'] = trim($config['js']);
-            if ($config['js'] === '' || preg_match('/^return\s*\{\s*\}$/', $config['js'])) {
-                unset($config['js']);
+        // Only use `json` or `js`, not both
+        if (!empty($config['json'])) {
+            unset($config['js']);
+            $config['json'] = trim($config['json']);
+            if ($config['json'] === '' || preg_match('/^\{\s*\}$/', $config['json'])) {
+                unset($config['json']);
+            }
+        } else {
+            unset($config['json']);
+            if (isset($config['js'])) {
+                $config['js'] = trim($config['js']);
+                if ($config['js'] === '' || preg_match('/^return\s*\{\s*\}$/', $config['js'])) {
+                    unset($config['js']);
+                }
             }
         }
 
@@ -57,6 +75,17 @@ class CkeConfig extends Model
         }
 
         parent::__construct($config);
+    }
+
+    public function attributeLabels(): array
+    {
+        return [
+            'name' => Craft::t('app', 'Name'),
+            'toolbar' => Craft::t('ckeditor', 'Toolbar'),
+            'json' => Craft::t('ckeditor', 'Config Options'),
+            'js' => Craft::t('ckeditor', 'Config Options'),
+            'css' => Craft::t('ckeditor', 'Custom Styles'),
+        ];
     }
 
     protected function defineRules(): array
@@ -72,6 +101,13 @@ class CkeConfig extends Model
                     ));
                 if ($duplicateName) {
                     $validator->addError($this, $attribute, Craft::t('yii', '{attribute} "{value}" has already been taken.'));
+                }
+            }],
+            ['json', function(string $attribute, ?arrray $params, Validator $validator) {
+                try {
+                    Json::decode($this->json);
+                } catch (InvalidArgumentException) {
+                    $validator->addError($this, $attribute, Craft::t('ckeditor', '{attribute} isn’t valid JSON.'));
                 }
             }],
         ];

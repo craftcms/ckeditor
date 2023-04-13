@@ -60,22 +60,77 @@
   {% endblock %}
 {% endembed %}
 
-{{ codeEditor.textareaField(
-  {
-    label: 'Config Options'|t('ckeditor'),
-    instructions: 'Define custom [config options]({link}) which should be merged with the default config.'|t('ckeditor', {
-      link: 'https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html',
-    }),
-    id: 'js',
-    name: 'js',
-    value: ckeConfig.js ?? "return {\n  \n}",
-  },
-  'ckeditor:EditorConfig',
-  baseMonacoOptions|merge({
-    language: 'javascript',
+{% embed '_includes/forms/field.twig' with {
+  label: 'Config Options'|t('ckeditor'),
+  instructions: 'Define custom [config options]({link}) which should be merged with the default config.'|t('ckeditor', {
+    link: 'https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html',
   }),
-  baseCodeEditorOptions,
-) }}
+  id: 'config-options',
+  errors: ckeConfig.getErrors('json')|merge(ckeConfig.getErrors('js')),
+  ckeConfig: ckeConfig,
+} %}
+  {% block input %}
+    {% import 'codeeditor/codeEditor.twig' as codeEditor %}
+    {% set lang = ckeConfig.js ? 'js' : 'json' %}
+    {% set isJson = lang == 'json' %}
+    {% set isJs = lang == 'js' %}
+
+    <div id="config-options">
+      <section class="btngroup btngroup--exclusive small" aria-label="{{ 'Config option code language options' }}">
+        {{ tag('button', {
+          type: 'button',
+          class: ['btn', 'small', isJson ? 'active']|filter,
+          aria: {pressed: isJson ? 'true'}|filter,
+          data: {language: 'json'},
+          text: 'JSON',
+        }) }}
+        {{ tag('button', {
+          type: 'button',
+          class: ['btn', 'small', isJs ? 'active' : null]|filter,
+          aria: {pressed: isJs ? 'true'}|filter,
+          data: {language: 'js'},
+          text: 'JavaScript',
+        }) }}
+      </section>
+    </div>
+
+    {% tag 'div' with {
+      id: 'config-options-json-container',
+      class: not isJson ? 'hidden' : null
+    } %}
+      {{ codeEditor.textarea(
+        {
+          id: 'config-options-json',
+          name: 'json',
+          value: isJson ? (ckeConfig.json ?? "{\n  \n}"),
+        },
+        'ckeditor:EditorConfigJson',
+        baseMonacoOptions|merge({
+          language: 'json',
+        }),
+        baseCodeEditorOptions|push(ckeConfig.hasErrors('json') ? 'has-errors'),
+      ) }}
+    {% endtag %}
+
+    {% tag 'div' with {
+      id: 'config-options-js-container',
+      class: not isJs ? 'hidden' : null
+    } %}
+      {{ codeEditor.textarea(
+        {
+          id: 'config-options-js',
+          name: 'js',
+          value: isJs ? (ckeConfig.js ?? "return {\n  \n}"),
+        },
+        'ckeditor:EditorConfigJs',
+        baseMonacoOptions|merge({
+          language: 'javascript',
+        }),
+        baseCodeEditorOptions,
+      ) }}
+      {% endtag %}
+  {% endblock %}
+{% endembed %}
 
 {{ codeEditor.textareaField(
   {

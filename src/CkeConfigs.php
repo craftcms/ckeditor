@@ -48,18 +48,19 @@ class CkeConfigs extends Component
     /**
      * @throws InvalidArgumentException if $config doesn’t validate
      */
-    public function save(CkeConfig $config, bool $runValidation = true): bool
+    public function save(CkeConfig $ckeConfig, bool $runValidation = true): bool
     {
-        if ($runValidation && !$config->validate()) {
+        if ($runValidation && !$ckeConfig->validate()) {
             return false;
         }
 
-        Craft::$app->getProjectConfig()->set($this->_pcPath($config->uid), [
-            'name' => $config->name,
-            'toolbar' => $config->toolbar,
-            'js' => $config->js,
-            'css' => $config->css,
-        ]);
+        Craft::$app->getProjectConfig()->set($this->_pcPath($ckeConfig->uid), array_filter([
+            'name' => $ckeConfig->name,
+            'toolbar' => $ckeConfig->toolbar,
+            'json' => $ckeConfig->json,
+            'js' => $ckeConfig->js,
+            'css' => $ckeConfig->css,
+        ]));
 
         return true;
     }
