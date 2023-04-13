@@ -11,6 +11,7 @@ use yii\validators\Validator;
  * CKEditor Config model
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0.0
  */
 class CkeConfig extends Model
 {

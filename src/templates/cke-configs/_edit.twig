@@ -29,7 +29,7 @@
   label: 'Toolbar'|t('ckeditor'),
   instructions: 'Drag toolbar items into the editor.'|t('ckeditor'),
   id: 'toolbar',
-  fieldClass: 'last',
+  errors: ckeConfig.getErrors('toolbar'),
   ckeConfig: ckeConfig,
 } %}
   {% block input %}
