@@ -103,7 +103,7 @@ class CkeConfig extends Model
                     $validator->addError($this, $attribute, Craft::t('yii', '{attribute} "{value}" has already been taken.'));
                 }
             }],
-            ['json', function(string $attribute, ?arrray $params, Validator $validator) {
+            ['json', function(string $attribute, ?array $params, Validator $validator) {
                 try {
                     Json::decode($this->json);
                 } catch (InvalidArgumentException) {
