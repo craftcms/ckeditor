@@ -75,11 +75,13 @@ class CkeConfigsController extends Controller
             ->prepareScreen(function() {
                 $this->view->registerAssetBundle(CkeConfigAsset::class);
                 $this->view->registerJsWithVars(
-                    fn($id) => <<<JS
-new Ckeditor.ToolbarBuilder($id);
+                    fn($toolbarBuilderId, $configOptionsId) => <<<JS
+new Ckeditor.ToolbarBuilder($toolbarBuilderId);
+new Ckeditor.ConfigOptions($configOptionsId);
 JS,
                     [
                         $this->view->namespaceInputId('toolbar-builder'),
+                        $this->view->namespaceInputId('config-options'),
                     ],
                 );
             });
@@ -93,6 +95,7 @@ JS,
             'uid' => $this->request->getBodyParam('uid') ?? StringHelper::UUID(),
             'name' => $this->request->getBodyParam('name'),
             'toolbar' => $this->request->getBodyParam('toolbar'),
+            'json' => $this->request->getBodyParam('json'),
             'js' => $this->request->getBodyParam('js'),
             'css' => $this->request->getBodyParam('css'),
         ]);
