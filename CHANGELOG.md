@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- “Config Options” settings can now be entered as JSON or JavaScript. When JSON is selected, JavaScript values will automatically be reformatted as JSON on paste. ([#66](https://github.com/craftcms/ckeditor/pull/66)) 
+
 ## 3.0.0 - 2023-04-12
 
 > **Warning**
