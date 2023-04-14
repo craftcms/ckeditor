@@ -3,7 +3,6 @@
 namespace craft\ckeditor;
 
 use Craft;
-use craft\helpers\Json;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 

@@ -103,7 +103,7 @@ class CkeConfig extends Model
     {
         if (!isset($this->_json)) {
             if (isset($this->options)) {
-                $json = Json::encode($this->options, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT);
+                $json = Json::encode($this->options, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
                 $this->_json = str_replace('    ', '  ', $json);
             }
         }
