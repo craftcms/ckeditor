@@ -29,7 +29,7 @@
     "php": "^8.0.2",
     "craftcms/cms": "^4.4.7",
     "craftcms/html-field": "^2.0.0-alpha.2",
-    "nystudio107/craft-code-editor": "^1.0"
+    "nystudio107/craft-code-editor": "^1.0.8"
   },
   "require-dev": {
     "craftcms/ecs": "dev-main",

@@ -45,11 +45,54 @@ import {WordCount} from '@ckeditor/ckeditor5-word-count';
 import CraftLinkUI from './plugins/linkui';
 import CraftImageInsertUI from './plugins/imageinsertui';
 
-ClassicEditor.builtinPlugins = [];
-
 export default {
   Plugin,
   ClassicEditor,
+  plugins: [
+    Alignment,
+    AutoImage,
+    AutoLink,
+    Autoformat,
+    BlockQuote,
+    Bold,
+    Code,
+    CodeBlock,
+    Essentials,
+    FindAndReplace,
+    GeneralHtmlSupport,
+    Heading,
+    HorizontalLine,
+    HtmlComment,
+    HtmlEmbed,
+    Image,
+    ImageCaption,
+    ImageStyle,
+    ImageToolbar,
+    Indent,
+    Italic,
+    LinkEditing,
+    LinkImage,
+    List,
+    MediaEmbed,
+    MediaEmbedToolbar,
+    PageBreak,
+    Paragraph,
+    PasteFromOffice,
+    SelectAll,
+    SourceEditing,
+    Strikethrough,
+    Style,
+    Subscript,
+    Superscript,
+    Table,
+    TableCaption,
+    TableToolbar,
+    TodoList,
+    Underline,
+    WordCount,
+    CraftImageInsertUI,
+    CraftLinkUI,
+  ],
   create: async function (element, config) {
     if (typeof element === 'string') {
       element = document.querySelector(`#${element}`);
@@ -58,51 +101,7 @@ export default {
       element,
       Object.assign(
         {
-          plugins: [
-            Alignment,
-            AutoImage,
-            AutoLink,
-            Autoformat,
-            BlockQuote,
-            Bold,
-            Code,
-            CodeBlock,
-            Essentials,
-            FindAndReplace,
-            GeneralHtmlSupport,
-            Heading,
-            HorizontalLine,
-            HtmlComment,
-            HtmlEmbed,
-            Image,
-            ImageCaption,
-            ImageStyle,
-            ImageToolbar,
-            Indent,
-            Italic,
-            LinkEditing,
-            LinkImage,
-            List,
-            MediaEmbed,
-            MediaEmbedToolbar,
-            PageBreak,
-            Paragraph,
-            PasteFromOffice,
-            SelectAll,
-            SourceEditing,
-            Strikethrough,
-            Style,
-            Subscript,
-            Superscript,
-            Table,
-            TableCaption,
-            TableToolbar,
-            TodoList,
-            Underline,
-            WordCount,
-            CraftImageInsertUI,
-            CraftLinkUI,
-          ],
+          plugins: this.plugins,
         },
         config
       )
@@ -114,5 +113,8 @@ export default {
     });
 
     return editor;
+  },
+  get pluginNames() {
+    return this.plugins.map((p) => p.pluginName);
   },
 };

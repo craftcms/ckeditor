@@ -4,6 +4,7 @@ namespace craft\ckeditor\controllers;
 
 use Craft;
 use craft\ckeditor\CkeConfig;
+use craft\ckeditor\helpers\CkeditorConfigSchema;
 use craft\ckeditor\Plugin;
 use craft\ckeditor\web\assets\ckeconfig\CkeConfigAsset;
 use craft\helpers\StringHelper;
@@ -71,11 +72,15 @@ class CkeConfigsController extends Controller
             ->title($title)
             ->contentTemplate('ckeditor/cke-configs/_edit.twig', [
                 'ckeConfig' => $ckeConfig,
+                'jsonSchema' => CkeditorConfigSchema::create(),
             ])
             ->prepareScreen(function() {
                 $this->view->registerAssetBundle(CkeConfigAsset::class);
                 $this->view->registerJsWithVars(
-                    fn($toolbarBuilderId, $configOptionsId) => <<<JS
+                    fn(
+                        $toolbarBuilderId,
+                        $configOptionsId,
+                    ) => <<<JS
 new Ckeditor.ToolbarBuilder($toolbarBuilderId);
 new Ckeditor.ConfigOptions($configOptionsId);
 JS,

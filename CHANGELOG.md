@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- “Config Options” settings can now be entered as JSON or JavaScript. When JSON is selected, JavaScript values will automatically be reformatted as JSON on paste. ([#66](https://github.com/craftcms/ckeditor/pull/66)) 
+- “Config Options” settings can now be entered as JSON, with autocompletion and automatic JavaScript-to-JSON reformatting on paste. ([#66](https://github.com/craftcms/ckeditor/pull/66), [#67](https://github.com/craftcms/ckeditor/pull/67)) 
 
 ## 3.0.0 - 2023-04-12
 
