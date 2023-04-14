@@ -189,9 +189,9 @@ class Field extends HtmlField
             'elementSiteId' => $element?->siteId,
         ]);
 
-        if ($ckeConfig->json) {
-            $configOptionsJs = $ckeConfig->json;
-        } elseif ($ckeConfig->js) {
+        if (isset($ckeConfig->options)) {
+            $configOptionsJs = Json::encode($ckeConfig->options);
+        } elseif (isset($ckeConfig->js)) {
             $configOptionsJs = <<<JS
 (() => {
   $ckeConfig->js

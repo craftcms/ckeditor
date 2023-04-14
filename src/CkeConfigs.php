@@ -3,6 +3,7 @@
 namespace craft\ckeditor;
 
 use Craft;
+use craft\helpers\Json;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 
@@ -57,7 +58,7 @@ class CkeConfigs extends Component
         Craft::$app->getProjectConfig()->set($this->_pcPath($ckeConfig->uid), array_filter([
             'name' => $ckeConfig->name,
             'toolbar' => $ckeConfig->toolbar,
-            'json' => $ckeConfig->json,
+            'options' => $ckeConfig->options,
             'js' => $ckeConfig->js,
             'css' => $ckeConfig->css,
         ]));

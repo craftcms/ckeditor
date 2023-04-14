@@ -12,6 +12,7 @@ use yii\validators\Validator;
 /**
  * CKEditor Config model
  *
+ * @property string|null $json
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -33,15 +34,23 @@ class CkeConfig extends Model
     public array $toolbar = ['heading', '|', 'bold', 'italic', 'link'];
 
     /**
-     * @var string|null JSON code that defines additional CKEditor config properties as an object
+     * @var array|null Additional CKEditor config options
      * @since 3.1.0
      */
-    public ?string $json = null;
+    public ?array $options = null;
 
     /**
      * @var string|null JavaScript code that returns additional CKEditor config properties as an object
      */
     public ?string $js = null;
+
+    /**
+     * @var string|null JSON code that defines additional CKEditor config properties as an object
+     * @see getJson()
+     * @see setJson()
+     * @since 3.1.0
+     */
+    public ?string $_json = null;
 
     /**
      * @var string|null CSS styles that should be registered for the field.
@@ -50,19 +59,21 @@ class CkeConfig extends Model
 
     public function __construct($config = [])
     {
-        // Only use `json` or `js`, not both
-        if (!empty($config['json'])) {
-            unset($config['js']);
-            $config['json'] = trim($config['json']);
-            if ($config['json'] === '' || preg_match('/^\{\s*\}$/', $config['json'])) {
+        if (!array_key_exists('options', $config)) {
+            // Only use `json` or `js`, not both
+            if (!empty($config['json'])) {
+                unset($config['js']);
+                $config['json'] = trim($config['json']);
+                if ($config['json'] === '' || preg_match('/^\{\s*\}$/', $config['json'])) {
+                    unset($config['json']);
+                }
+            } else {
                 unset($config['json']);
-            }
-        } else {
-            unset($config['json']);
-            if (isset($config['js'])) {
-                $config['js'] = trim($config['js']);
-                if ($config['js'] === '' || preg_match('/^return\s*\{\s*\}$/', $config['js'])) {
-                    unset($config['js']);
+                if (isset($config['js'])) {
+                    $config['js'] = trim($config['js']);
+                    if ($config['js'] === '' || preg_match('/^return\s*\{\s*\}$/', $config['js'])) {
+                        unset($config['js']);
+                    }
                 }
             }
         }
@@ -88,6 +99,28 @@ class CkeConfig extends Model
         ];
     }
 
+    public function getJson(): ?string
+    {
+        if (!isset($this->_json)) {
+            if (isset($this->options)) {
+                $json = Json::encode($this->options, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT);
+                $this->_json = str_replace('    ', '  ', $json);
+            }
+        }
+        return $this->_json;
+    }
+
+    public function setJson(?string $json): void
+    {
+        $this->_json = $json;
+
+        try {
+            $this->options = Json::decode($json);
+        } catch (InvalidArgumentException) {
+            $this->options = null;
+        }
+    }
+
     protected function defineRules(): array
     {
         return [
@@ -103,13 +136,18 @@ class CkeConfig extends Model
                     $validator->addError($this, $attribute, Craft::t('yii', '{attribute} "{value}" has already been taken.'));
                 }
             }],
-            ['json', function(string $attribute, ?array $params, Validator $validator) {
-                try {
-                    Json::decode($this->json);
-                } catch (InvalidArgumentException) {
-                    $validator->addError($this, $attribute, Craft::t('ckeditor', '{attribute} isn’t valid JSON.'));
-                }
-            }],
+            [
+                'json',
+                function(string $attribute, ?array $params, Validator $validator) {
+                    try {
+                        $this->options = Json::decode($this->_json);
+                    } catch (InvalidArgumentException) {
+                        $validator->addError($this, $attribute, Craft::t('ckeditor', '{attribute} isn’t valid JSON.'));
+                        return;
+                    }
+                },
+                'when' => fn() => isset($this->_json),
+            ],
         ];
     }
 }
