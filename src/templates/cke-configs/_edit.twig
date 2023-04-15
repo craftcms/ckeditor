@@ -60,6 +60,22 @@
   {% endblock %}
 {% endembed %}
 
+{{ forms.checkboxSelectField({
+  label: 'Heading Levels'|t('ckeditor'),
+  instructions: 'Choose which heading levels sholud be available to fields.'|t('ckeditor'),
+  id: 'heading-levels',
+  name: 'headingLevels',
+  options: [
+    {label: 'Heading {level}'|t('ckeditor', {level: 1}), value: '1'},
+    {label: 'Heading {level}'|t('ckeditor', {level: 2}), value: '2'},
+    {label: 'Heading {level}'|t('ckeditor', {level: 3}), value: '3'},
+    {label: 'Heading {level}'|t('ckeditor', {level: 4}), value: '4'},
+    {label: 'Heading {level}'|t('ckeditor', {level: 5}), value: '5'},
+    {label: 'Heading {level}'|t('ckeditor', {level: 6}), value: '6'},
+  ],
+  values: ckeConfig.headingLevels,
+}) }}
+
 {% embed '_includes/forms/field.twig' with {
   label: 'Config Options'|t('ckeditor'),
   instructions: 'Define custom [config options]({link}) which should be merged with the default config.'|t('ckeditor', {

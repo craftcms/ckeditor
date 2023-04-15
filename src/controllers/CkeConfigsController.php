@@ -96,10 +96,16 @@ JS,
     {
         $this->requirePostRequest();
 
+        $headingLevels = $this->request->getBodyParam('headingLevels') ?: false;
+        if ($headingLevels) {
+            $headingLevels = array_map(fn(string $level) => (int)$level, $headingLevels);
+        }
+
         $ckeConfig = new CkeConfig([
             'uid' => $this->request->getBodyParam('uid') ?? StringHelper::UUID(),
             'name' => $this->request->getBodyParam('name'),
             'toolbar' => $this->request->getBodyParam('toolbar'),
+            'headingLevels' => $headingLevels,
             'json' => $this->request->getBodyParam('json'),
             'js' => $this->request->getBodyParam('js'),
             'css' => $this->request->getBodyParam('css'),

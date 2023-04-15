@@ -179,6 +179,21 @@ class Field extends HtmlField
         $idJs = Json::encode($view->namespaceInputId($id));
         $configJs = Json::encode([
             'toolbar' => $ckeConfig->toolbar,
+            'heading' => [
+                'options' => [
+                    [
+                        'model' => 'paragraph',
+                        'title' => 'Paragraph',
+                        'class' => 'ck-heading_paragraph',
+                    ],
+                    ...array_map(fn(int $level) => [
+                        'model' => "heading$level",
+                        'view' => "h$level",
+                        'title' => "Heading $level",
+                        'class' => "ck-heading_heading$level",
+                    ], $ckeConfig->headingLevels ?: []),
+                ],
+            ],
             'language' => [
                 'ui' => Craft::$app->language,
                 'content' => $element?->getSite()->language ?? Craft::$app->language,

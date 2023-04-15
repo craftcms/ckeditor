@@ -57,10 +57,11 @@ class CkeConfigs extends Component
         Craft::$app->getProjectConfig()->set($this->_pcPath($ckeConfig->uid), array_filter([
             'name' => $ckeConfig->name,
             'toolbar' => $ckeConfig->toolbar,
+            'headingLevels' => $ckeConfig->headingLevels ?: false,
             'options' => $ckeConfig->options,
             'js' => $ckeConfig->js,
             'css' => $ckeConfig->css,
-        ]));
+        ], fn($item) => $item !== null));
 
         return true;
     }

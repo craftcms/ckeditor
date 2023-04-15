@@ -34,6 +34,12 @@ class CkeConfig extends Model
     public array $toolbar = ['heading', '|', 'bold', 'italic', 'link'];
 
     /**
+     * @var int[]|false The available heading levels
+     * @since 3.1.0
+     */
+    public array|false $headingLevels = [1, 2, 3, 4, 5, 6];
+
+    /**
      * @var array|null Additional CKEditor config options
      * @since 3.1.0
      */
