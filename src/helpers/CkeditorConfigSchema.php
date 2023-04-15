@@ -307,17 +307,7 @@ final class CkeditorConfigSchema
                         ],
                     ],
                     'default' => [
-                        'decorators' => [
-                            'openInNewTab' => [
-                                'mode' => 'manual',
-                                'label' => 'Open in a new tab',
-                                'defaultValue' => true,
-                                'attributes' => [
-                                    'target' => '_blank',
-                                    'rel' => 'noopener noreferrer',
-                                ],
-                            ],
-                        ],
+                        'addTargetToExternalLinks' => true,
                     ],
                     'nested' => [
                         'LinkDecoratorManualDefinition' => [
