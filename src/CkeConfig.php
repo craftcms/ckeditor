@@ -99,6 +99,9 @@ class CkeConfig extends Model
         ];
     }
 
+    /**
+     * @since 3.1.0
+     */
     public function getJson(): ?string
     {
         if (!isset($this->_json)) {
@@ -110,6 +113,9 @@ class CkeConfig extends Model
         return $this->_json;
     }
 
+    /**
+     * @since 3.1.0
+     */
     public function setJson(?string $json): void
     {
         $this->_json = $json;
