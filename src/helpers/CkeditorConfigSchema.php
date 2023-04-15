@@ -22,11 +22,23 @@ final class CkeditorConfigSchema
                 'htmlEmbed' => ['interface' => 'HtmlEmbedConfig'],
                 'htmlSupport' => ['interface' => 'GeneralHtmlSupportConfig'],
                 'image' => ['interface' => 'ImageConfig'],
-                'language' => ['type' => 'string | LanguageConfig'],
+                'language' => [
+                    'oneOf' => [
+                        ['type' => 'string'],
+                        ['interface' => 'LanguageConfig'],
+                    ],
+                    'default' => [
+                        'ui' => 'en',
+                        'content' => 'en',
+                    ],
+                ],
                 'licenseKey' => ['type' => 'string'],
                 'link' => ['interface' => 'LinkConfig'],
                 'list' => ['interface' => 'ListConfig'],
-                'placeholder' => ['type' => 'string | Record<string, string>'],
+                'placeholder' => [
+                    'type' => 'string',
+                    'default' => 'Type some text…',
+                ],
                 'plugins' => [
                     'interface' => 'PluginList',
                     'default' => '__PLUGIN_LIST__',
@@ -287,6 +299,31 @@ final class CkeditorConfigSchema
                                 'title' => ['type' => 'string'],
                             ],
                             'required' => ['defaultItem', 'items', 'name'],
+                        ],
+                    ],
+                ],
+                'LanguageConfig' => [
+                    'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-LanguageConfig.html',
+                    'properties' => [
+                        'content' => ['type' => 'string'],
+                        'textPartLanguage' => [
+                            'type' => 'array',
+                            'items' => ['interface' => 'TextPartLanguageOption'],
+                        ],
+                        'ui' => ['type' => 'string'],
+                    ],
+                    'nested' => [
+                        'TextPartLanguageOption' => [
+                            'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_language_textpartlanguageconfig-TextPartLanguageOption.html',
+                            'properties' => [
+                                'languageCode' => ['type' => 'string'],
+                                'textDirection' => ['interface' => 'LanguageDirection'],
+                                'title' => ['type' => 'string'],
+                            ],
+                        ],
+                        'LanguageDirection' => [
+                            'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_utils_language-LanguageDirection.html',
+                            'enum' => ['ltr', 'rtl'],
                         ],
                     ],
                 ],
