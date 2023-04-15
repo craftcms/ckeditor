@@ -190,6 +190,11 @@ class Field extends HtmlField
         ]);
 
         if (isset($ckeConfig->options)) {
+            // translate the placeholder text
+            if (isset($ckeConfig->options['placeholder']) && is_string($ckeConfig->options['placeholder'])) {
+                $ckeConfig->options['placeholder'] = Craft::t('site', $ckeConfig->options['placeholder']);
+            }
+
             $configOptionsJs = Json::encode($ckeConfig->options);
         } elseif (isset($ckeConfig->js)) {
             $configOptionsJs = <<<JS
