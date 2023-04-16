@@ -120,7 +120,6 @@ final class CkeditorConfigSchema
                 'removePlugins' => ['interface' => 'PluginList'],
                 'style' => ['interface' => 'StyleConfig'],
                 'table' => ['interface' => 'TableConfig'],
-                'toolbar' => ['interface' => 'ToolbarConfig'],
                 'wordCount' => ['interface' => 'WordCountConfig'],
             ],
         ],
