@@ -108,6 +108,80 @@ class CkeConfig extends Model
     /**
      * @since 3.1.0
      */
+    public function hasButton(string $button): bool
+    {
+        return in_array($button, $this->toolbar, true);
+    }
+
+    /**
+     * @since 3.1.0
+     */
+    public function getButtonPos(string $button): int|false
+    {
+        return array_search($button, $this->toolbar);
+    }
+
+    /**
+     * @since 3.1.0
+     */
+    public function addButton(string $button): void
+    {
+        if ($button === '|' || !$this->hasButton($button)) {
+            $this->toolbar[] = $button;
+        }
+    }
+
+    /**
+     * @since 3.1.0
+     */
+    public function addButtonAt(string $button, int $pos): void
+    {
+        if ($button === '|' || !$this->hasButton($button)) {
+            array_splice($this->toolbar, $pos, 0, [$button]);
+        }
+    }
+
+    /**
+     * @since 3.1.0
+     */
+    public function addButtonBefore(string $button, string $after): void
+    {
+        $afterPos = $this->getButtonPos($after);
+        if ($afterPos !== false) {
+            $this->addButtonAt($button, $afterPos);
+        } else {
+            $this->addButton($button);
+        }
+    }
+
+    /**
+     * @since 3.1.0
+     */
+    public function addButtonAfter(string $button, string $after): void
+    {
+        $afterPos = $this->getButtonPos($after);
+        if ($afterPos !== false) {
+            $this->addButtonAt($button, $afterPos + 1);
+        } else {
+            $this->addButton($button);
+        }
+    }
+
+    /**
+     * @since 3.1.0
+     */
+    public function removeButton(string $button): void
+    {
+        $pos = $this->getButtonPos($button);
+        if ($pos !== false) {
+            array_splice($this->toolbar, $pos, 1);
+            $this->toolbar = array_values($this->toolbar);
+        }
+    }
+
+    /**
+     * @since 3.1.0
+     */
     public function getJson(): ?string
     {
         if (!isset($this->_json)) {

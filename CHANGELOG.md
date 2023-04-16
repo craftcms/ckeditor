@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added the “Heading Levels” CKEditor config setting.
+- Added the `ckeditor/convert` command, for converting Redactor fields/configs to CKEditor. ([#68](https://github.com/craftcms/ckeditor/pull/68))
 - “Config Options” settings can now be entered as JSON, with autocompletion and automatic JavaScript-to-JSON reformatting on paste. ([#66](https://github.com/craftcms/ckeditor/pull/66), [#67](https://github.com/craftcms/ckeditor/pull/67))
 - The `placeholder` config option now gets translated, when the config options are defined as JSON.
 - Fixed a bug where editor toolbars would overlap the control panel header when scrolling.
