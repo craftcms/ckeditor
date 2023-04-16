@@ -34,6 +34,10 @@
   --ck-spacing-unit: 0.69em !important;
 }
 
+.ck.ck-sticky-panel .ck-sticky-panel__content_sticky .ck.ck-toolbar {
+  border-top-width: 0;
+}
+
 .ck.ck-button:active,
 .ck.ck-button:focus,
 a.ck.ck-button:active,

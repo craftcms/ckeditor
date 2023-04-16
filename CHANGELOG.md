@@ -5,6 +5,7 @@
 - Added the “Heading Levels” CKEditor config setting.
 - “Config Options” settings can now be entered as JSON, with autocompletion and automatic JavaScript-to-JSON reformatting on paste. ([#66](https://github.com/craftcms/ckeditor/pull/66), [#67](https://github.com/craftcms/ckeditor/pull/67))
 - The `placeholder` config option now gets translated, when the config options are defined as JSON.
+- Fixed a bug where editor toolbars would overlap the control panel header when scrolling.
 
 ## 3.0.0 - 2023-04-12
 

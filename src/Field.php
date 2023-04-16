@@ -178,6 +178,9 @@ class Field extends HtmlField
         $id = Html::id($this->handle);
         $idJs = Json::encode($view->namespaceInputId($id));
         $configJs = Json::encode([
+            'ui' => [
+                'viewportOffset' => ['top' => 50],
+            ],
             'toolbar' => $ckeConfig->toolbar,
             'heading' => [
                 'options' => [
