@@ -113,10 +113,6 @@ final class CkeditorConfigSchema
                     'type' => 'string',
                     'default' => 'Type some text…',
                 ],
-                'plugins' => [
-                    'interface' => 'PluginList',
-                    'default' => '__PLUGIN_LIST__',
-                ],
                 'removePlugins' => ['interface' => 'PluginList'],
                 'style' => ['interface' => 'StyleConfig'],
                 'table' => ['interface' => 'TableConfig'],
