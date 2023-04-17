@@ -7,6 +7,7 @@
 
 namespace craft\ckeditor\web\assets\ckeditor;
 
+use Craft;
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 
@@ -42,4 +43,44 @@ class CkeditorAsset extends AssetBundle
     public $css = [
         'css/ckeditor.css',
     ];
+
+    public function init(): void
+    {
+        parent::init();
+        $this->includeTranslation();
+    }
+
+    private function includeTranslation(): void
+    {
+        $language = match (Craft::$app->language) {
+            'en', 'en-US' => false,
+            'nn' => 'no',
+            default => strtolower(Craft::$app->language),
+        };
+
+        if ($language === false) {
+            return;
+        }
+
+        if ($this->includeTranslationForLanguage($language)) {
+            return;
+        }
+
+        // maybe without the territory?
+        $dashPos = strpos($language, '-');
+        if ($dashPos !== false) {
+            $this->includeTranslationForLanguage(substr($language, 0, $dashPos));
+        }
+    }
+
+    private function includeTranslationForLanguage($language): bool
+    {
+        $subpath = "translations/$language.js";
+        $path = __DIR__ . "/dist/$subpath";
+        if (!file_exists($path)) {
+            return false;
+        }
+        $this->js[] = $subpath;
+        return true;
+    }
 }
