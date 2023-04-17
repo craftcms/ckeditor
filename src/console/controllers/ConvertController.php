@@ -168,7 +168,7 @@ class ConvertController extends Controller
         });
 
         if (empty($fields)) {
-            $this->stdout("No Redactor fields found.\n");
+            $this->stdout("   No Redactor fields found.\n", Console::FG_YELLOW);
             return ExitCode::OK;
         }
 
@@ -228,7 +228,7 @@ class ConvertController extends Controller
             $this->stdout(" ✓ Field converted\n", Console::FG_GREEN);
         }
 
-        $this->stdout("\nFinished converting Redactor fields.\n", Console::FG_GREEN, Console::BOLD);
+        $this->stdout("\n ✓ Finished converting Redactor fields.\n", Console::FG_GREEN, Console::BOLD);
 
         return ExitCode::OK;
     }
@@ -257,12 +257,18 @@ class ConvertController extends Controller
 
     private function outputFields(array $fields, string $typeName): void
     {
+        $this->stdout('   ');
         $totalRedactorFields = count($fields);
-        $message = $totalRedactorFields === 1 ? "One $typeName field found:" : "$totalRedactorFields $typeName fields found:";
+        $this->stdout($this->markdownToAnsi(sprintf(
+            '**%s**',
+            $totalRedactorFields === 1
+                ? "One $typeName field found:"
+                : "$totalRedactorFields $typeName fields found:"
+        )));
+        $this->stdout(PHP_EOL);
         foreach ($fields as $path => $field) {
-            $message .= sprintf("\n - %s", $this->pathAndHandleMarkdown($path, $field));
+            $this->stdout(sprintf(" - %s\n", $this->markdownToAnsi($this->pathAndHandleMarkdown($path, $field))));
         }
-        $this->stdout($this->markdownToAnsi($message) . PHP_EOL);
     }
 
     private function pathAndHandleMarkdown(string $path, array $config): string
