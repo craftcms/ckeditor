@@ -31,7 +31,7 @@ import {HorizontalLine} from '@ckeditor/ckeditor5-horizontal-line';
 import {HtmlEmbed} from '@ckeditor/ckeditor5-html-embed';
 import {Indent} from '@ckeditor/ckeditor5-indent';
 import {LinkEditing, AutoLink, LinkImage} from '@ckeditor/ckeditor5-link';
-import {List, TodoList} from '@ckeditor/ckeditor5-list';
+import {List, ListProperties, TodoList} from '@ckeditor/ckeditor5-list';
 import {MediaEmbed, MediaEmbedToolbar} from '@ckeditor/ckeditor5-media-embed';
 import {PageBreak} from '@ckeditor/ckeditor5-page-break';
 import {Paragraph} from '@ckeditor/ckeditor5-paragraph';
@@ -73,6 +73,7 @@ export default {
     LinkEditing,
     LinkImage,
     List,
+    ListProperties,
     MediaEmbed,
     MediaEmbedToolbar,
     PageBreak,
@@ -125,7 +126,7 @@ export default {
     },
     {plugins: ['Italic'], buttons: ['italic']},
     {
-      plugins: ['List'],
+      plugins: ['List', 'ListProperties'],
       buttons: ['bulletedList', 'numberedList'],
     },
     {

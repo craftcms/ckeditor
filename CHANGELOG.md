@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Ordered/unordered list buttons now include [additional options](https://ckeditor.com/docs/ckeditor5/latest/features/lists/lists.html#list-properties).
+
 ## 3.1.0 - 2023-04-17
 
 - Added the “Heading Levels” CKEditor config setting.
