@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 3.1.0 - 2023-04-17
 
 - Added the “Heading Levels” CKEditor config setting.
 - Added the `ckeditor/convert` command, for converting Redactor fields/configs to CKEditor. ([#68](https://github.com/craftcms/ckeditor/pull/68))
