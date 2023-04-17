@@ -93,18 +93,81 @@ export default {
     CraftImageInsertUI,
     CraftLinkUI,
   ],
+  pluginButtonMap: [
+    {plugins: ['Alignment'], buttons: ['alignment']},
+    {
+      plugins: [
+        'AutoImage',
+        'CraftImageInsertUI',
+        'Image',
+        'ImageCaption',
+        'ImageStyle',
+        'ImageToolbar',
+        'LinkImage',
+      ],
+      buttons: ['insertImage'],
+    },
+    {
+      plugins: ['AutoLink', 'CraftLinkUI', 'LinkEditing', 'LinkImage'],
+      buttons: ['link'],
+    },
+    {plugins: ['BlockQuote'], buttons: ['blockQuote']},
+    {plugins: ['Bold'], buttons: ['bold']},
+    {plugins: ['Code'], buttons: ['code']},
+    {plugins: ['CodeBlock'], buttons: ['codeBlock']},
+    {plugins: ['FindAndReplace'], buttons: ['findAndReplace']},
+    {plugins: ['Heading'], buttons: ['heading']},
+    {plugins: ['HorizontalLine'], buttons: ['horizontalLine']},
+    {plugins: ['HtmlEmbed'], buttons: ['htmlEmbed']},
+    {
+      plugins: ['Indent'],
+      buttons: ['outdent', 'indent'],
+    },
+    {plugins: ['Italic'], buttons: ['italic']},
+    {
+      plugins: ['List'],
+      buttons: ['bulletedList', 'numberedList'],
+    },
+    {
+      plugins: ['MediaEmbed', 'MediaEmbedToolbar'],
+      buttons: ['mediaEmbed'],
+    },
+    {plugins: ['PageBreak'], buttons: ['pageBreak']},
+    {plugins: ['SourceEditing'], buttons: ['sourceEditing']},
+    {plugins: ['Strikethrough'], buttons: ['strikethrough']},
+    {plugins: ['Style'], buttons: ['style']},
+    {plugins: ['Subscript'], buttons: ['subscript']},
+    {plugins: ['Superscript'], buttons: ['superscript']},
+    {
+      plugins: ['Table', 'TableCaption', 'TableToolbar'],
+      buttons: ['insertTable'],
+    },
+    {plugins: ['TodoList'], buttons: ['todoList']},
+    {plugins: ['Underline'], buttons: ['underline']},
+  ],
   create: async function (element, config) {
+    let plugins = this.plugins;
+
+    if (config.toolbar) {
+      // Remove any plugins that aren't included in the toolbar
+      const removePlugins = this.pluginButtonMap
+        .filter(
+          ({buttons}) =>
+            !config.toolbar.some((button) => buttons.includes(button))
+        )
+        .map(({plugins}) => plugins)
+        .flat();
+
+      plugins = plugins.filter((p) => !removePlugins.includes(p.pluginName));
+    }
+
     if (typeof element === 'string') {
       element = document.querySelector(`#${element}`);
     }
+
     const editor = await this.ClassicEditor.create(
       element,
-      Object.assign(
-        {
-          plugins: this.plugins,
-        },
-        config
-      )
+      Object.assign({plugins}, config)
     );
 
     // Keep the source element updated with changes

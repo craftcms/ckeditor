@@ -208,6 +208,12 @@ class Field extends HtmlField
                 'ui' => Craft::$app->language,
                 'content' => $element?->getSite()->language ?? Craft::$app->language,
             ],
+            'image' => [
+                'toolbar' => [
+                    'toggleImageCaption',
+                    'imageTextAlternative',
+                ],
+            ],
             'linkOptions' => $this->_linkOptions($element),
             'transforms' => $this->_transforms(),
             'defaultTransform' => $defaultTransform?->handle,

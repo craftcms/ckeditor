@@ -67,19 +67,6 @@ export default class CraftLinkUI extends LinkUI {
     }
 
     return itemDefinitions;
-
-    const editor = this.editor;
-    const t = editor.t;
-    const languageDefs = editor.config.get('codeBlock.languages');
-    for (const def of languageDefs) {
-      if (def.label === 'Plain text') {
-        def.label = t('Plain text');
-      }
-      if (def.class === undefined) {
-        def.class = `language-${def.language}`;
-      }
-    }
-    return languageDefs;
   }
 
   _showElementSelectorModal(linkOption) {
