@@ -1,8 +1,6 @@
 /* globals module, require, __dirname */
 const {getConfig} = require('@craftcms/webpack');
-const path = require('path');
 const {styles} = require('@ckeditor/ckeditor5-dev-utils');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const {
   CKEditorTranslationsPlugin,
 } = require('@ckeditor/ckeditor5-dev-translations');
