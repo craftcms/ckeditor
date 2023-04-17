@@ -11,6 +11,7 @@
 - Added `craft\ckeditor\events\ModifyConfigEvent`.
 - Added `craft\ckeditor\Field::EVENT_MODIFY_CONFIG`. ([#70](https://github.com/craftcms/ckeditor/discussions/70))
 - Fixed a bug where editor toolbars would overlap the control panel header when scrolling.
+- Fixed a bug where the editor UI wasn’t getting translated.
 
 ## 3.0.0 - 2023-04-12
 
