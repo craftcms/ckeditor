@@ -5,6 +5,7 @@ namespace craft\ckeditor;
 use Craft;
 use craft\base\ElementInterface;
 use craft\ckeditor\events\DefineLinkOptionsEvent;
+use craft\ckeditor\events\ModifyConfigEvent;
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
 use craft\elements\Asset;
 use craft\elements\Category;
@@ -57,6 +58,12 @@ class Field extends HtmlField
      * @since 3.0.0
      */
     public const EVENT_DEFINE_LINK_OPTIONS = 'defineLinkOptions';
+
+    /**
+     * @event ModifyConfigEvent The event that is triggered when registering the link options for the field.
+     * @since 3.1.0
+     */
+    public const EVENT_MODIFY_CONFIG = 'modifyConfig';
 
     /**
      * @inheritdoc
@@ -177,7 +184,7 @@ class Field extends HtmlField
 
         $id = Html::id($this->handle);
         $idJs = Json::encode($view->namespaceInputId($id));
-        $configJs = Json::encode([
+        $baseConfig = [
             'ui' => [
                 'viewportOffset' => ['top' => 50],
             ],
@@ -205,7 +212,14 @@ class Field extends HtmlField
             'transforms' => $this->_transforms(),
             'defaultTransform' => $defaultTransform?->handle,
             'elementSiteId' => $element?->siteId,
+        ];
+
+        // Give plugins/modules a chance to modify the config
+        $event = new ModifyConfigEvent([
+            'baseConfig' => $baseConfig,
+            'ckeConfig' => $ckeConfig,
         ]);
+        $this->trigger(self::EVENT_MODIFY_CONFIG, $event);
 
         if (isset($ckeConfig->options)) {
             // translate the placeholder text
@@ -224,8 +238,10 @@ JS;
             $configOptionsJs = '{}';
         }
 
+        $baseConfigJs = Json::encode($event->baseConfig);
+
         $view->registerJs(<<<JS
-Ckeditor.create($idJs, Object.assign($configJs, $configOptionsJs));
+Ckeditor.create($idJs, Object.assign($baseConfigJs, $configOptionsJs));
 JS,
             View::POS_END,
         );
