@@ -22,6 +22,7 @@ import {ClassicEditor} from '@ckeditor/ckeditor5-editor-classic';
 import {CodeBlock} from '@ckeditor/ckeditor5-code-block';
 import {Essentials} from '@ckeditor/ckeditor5-essentials';
 import {FindAndReplace} from '@ckeditor/ckeditor5-find-and-replace';
+import {Font} from '@ckeditor/ckeditor5-font';
 import {
   GeneralHtmlSupport,
   HtmlComment,
@@ -59,6 +60,7 @@ export default {
     CodeBlock,
     Essentials,
     FindAndReplace,
+    Font,
     GeneralHtmlSupport,
     Heading,
     HorizontalLine,
@@ -116,6 +118,10 @@ export default {
     {plugins: ['Bold'], buttons: ['bold']},
     {plugins: ['Code'], buttons: ['code']},
     {plugins: ['CodeBlock'], buttons: ['codeBlock']},
+    {
+      plugins: ['Font'],
+      buttons: ['fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor'],
+    },
     {plugins: ['FindAndReplace'], buttons: ['findAndReplace']},
     {plugins: ['Heading'], buttons: ['heading']},
     {plugins: ['HorizontalLine'], buttons: ['horizontalLine']},

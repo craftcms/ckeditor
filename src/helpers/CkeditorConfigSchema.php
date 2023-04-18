@@ -92,6 +92,10 @@ final class CkeditorConfigSchema
             'properties' => [
                 'alignment' => ['interface' => 'AlignmentConfig'],
                 'codeBlock' => ['interface' => 'CodeBlockConfig'],
+                'fontBackgroundColor' => ['interface' => 'FontColorConfig'],
+                'fontColor' => ['interface' => 'FontColorConfig'],
+                'fontFamily' => ['interface' => 'FontFamilyConfig'],
+                'fontSize' => ['interface' => 'FontSizeConfig'],
                 'heading' => ['interface' => 'HeadingConfig'],
                 'htmlEmbed' => ['interface' => 'HtmlEmbedConfig'],
                 'htmlSupport' => ['interface' => 'GeneralHtmlSupportConfig'],
@@ -136,6 +140,82 @@ final class CkeditorConfigSchema
                 'styles' => ['type' => 'object'],
             ],
             'required' => ['name'],
+        ],
+        'FontColorConfig' => [
+            'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_font_fontconfig-FontColorConfig.html#member-columns',
+            'properties' => [
+                'colors' => [
+                    'type' => 'array',
+                    'items' => ['interface' => 'ColorOption'],
+                ],
+                'columns' => ['type' => 'integer'],
+                'documentColors' => ['type' => 'integer'],
+            ],
+        ],
+        'FontFamilyConfig' => [
+            'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_font_fontconfig-FontFamilyConfig.html',
+            'properties' => [
+                'options' => [
+                    'type' => 'array',
+                    'items' => [
+                        'anyOf' => [
+                            ['type' => 'string'],
+                            ['interface' => 'FontFamilyOption'],
+                        ],
+                    ],
+                ],
+                'supportAllValues' => ['type' => 'boolean'],
+            ],
+        ],
+        'FontFamilyOption' => [
+            'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_font_fontconfig-FontFamilyOption.html',
+            'properties' => [
+                'model' => ['type' => 'string'],
+                'title' => ['type' => 'string'],
+                'upcastAlso' => [
+                    'type' => 'array',
+                    'items' => ['interface' => 'MatcherPattern'],
+                ],
+                'view' => ['interface' => 'ElementDefinition'],
+            ],
+            'required' => ['title'],
+        ],
+        'FontSizeConfig' => [
+            'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_font_fontconfig-FontSizeConfig.html',
+            'properties' => [
+                'options' => [
+                    'type' => 'array',
+                    'items' => [
+                        'anyOf' => [
+                            ['type' => 'string'],
+                            ['type' => 'integer'],
+                            ['interface' => 'FontSizeOption'],
+                        ],
+                    ],
+                ],
+                'supportAllValues' => ['type' => 'boolean'],
+            ],
+            'default' => [
+                'options' => [
+                    'tiny',
+                    'small',
+                    'big',
+                    'huge',
+                ],
+            ],
+        ],
+        'FontSizeOption' => [
+            'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_font_fontconfig-FontSizeOption.html',
+            'properties' => [
+                'model' => ['type' => 'string'],
+                'title' => ['type' => 'string'],
+                'upcastAlso' => [
+                    'type' => 'array',
+                    'items' => ['interface' => 'MatcherPattern'],
+                ],
+                'view' => ['interface' => 'ElementDefinition'],
+            ],
+            'required' => ['title'],
         ],
         'GeneralHtmlSupportConfig' => [
             'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_html-support_generalhtmlsupportconfig-GeneralHtmlSupportConfig.html',

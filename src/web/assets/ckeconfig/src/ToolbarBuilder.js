@@ -38,6 +38,7 @@ export default Garnish.Base.extend({
 
       const items = [
         'heading',
+        'style',
         'alignment',
         'bold',
         'italic',
@@ -47,6 +48,10 @@ export default Garnish.Base.extend({
         'superscript',
         'code',
         'link',
+        'fontSize',
+        'fontFamily',
+        'fontColor',
+        'fontBackgroundColor',
         'insertImage',
         'mediaEmbed',
         'htmlEmbed',
@@ -59,7 +64,6 @@ export default Garnish.Base.extend({
         ['outdent', 'indent'],
         'horizontalLine',
         'pageBreak',
-        'style',
         'selectAll',
         'findAndReplace',
         ['undo', 'redo'],

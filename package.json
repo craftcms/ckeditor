@@ -36,8 +36,9 @@
   },
   "devDependencies": {
     "@ckeditor/ckeditor5-dev-utils": "^36.0.1",
-    "@craftcms/webpack": "^1.1.2",
+    "@ckeditor/ckeditor5-font": "^37.0.1",
     "@craftcms/sass": "^1.1.0",
+    "@craftcms/webpack": "^1.1.2",
     "css-loader": "^6.7.3",
     "husky": "^7.0.4",
     "lint-staged": "^12.4.0",
