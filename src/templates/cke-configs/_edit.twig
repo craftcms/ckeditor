@@ -149,7 +149,7 @@
 {% js %}
 (() => {
   // Register the config options JSON schema
-  const jsonSchemaUri = {{ "https://craft-code-editor.com/#{'config-options-json'|namespaceInputId}"|json_encode|raw }};
+  const jsonSchemaUri = {{ jsonSchemaUri|json_encode|raw }};
   const schema = JSON.parse(
     JSON.stringify({{ jsonSchema|json_encode|raw }})
       .replace(
