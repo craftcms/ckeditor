@@ -78,3 +78,11 @@ a.ck.ck-button:focus {
   .ck-button {
   border-top-left-radius: var(--ck-border-radius) !important;
 }
+
+.ck.ck-content[dir='ltr'] ul {
+  padding-left: 40px;
+}
+
+.ck.ck-content[dir='rtl'] ul {
+  padding-right: 40px;
+}
