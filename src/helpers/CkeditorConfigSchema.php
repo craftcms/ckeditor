@@ -40,7 +40,7 @@ final class CkeditorConfigSchema
         ],
         'ClassList' => [
             'title' => 'Class name or list of class names',
-            'oneOf' => [
+            'anyOf' => [
                 ['type' => 'string'],
                 [
                     'type' => 'array',
@@ -97,7 +97,7 @@ final class CkeditorConfigSchema
                 'htmlSupport' => ['interface' => 'GeneralHtmlSupportConfig'],
                 'image' => ['interface' => 'ImageConfig'],
                 'language' => [
-                    'oneOf' => [
+                    'anyOf' => [
                         ['type' => 'string'],
                         ['interface' => 'LanguageConfig'],
                     ],
@@ -121,7 +121,7 @@ final class CkeditorConfigSchema
         ],
         'ElementDefinition' => [
             'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_engine_view_elementdefinition-ElementDefinition.html',
-            'oneOf' => [
+            'anyOf' => [
                 ['type' => 'string'],
                 ['interface' => 'ElementObjectDefinition'],
             ],
@@ -350,7 +350,7 @@ final class CkeditorConfigSchema
                 'reversed' => ['type' => 'boolean'],
                 'startIndex' => ['type' => 'boolean'],
                 'styles' => [
-                    'oneOf' => [
+                    'anyOf' => [
                         ['type' => 'boolean'],
                         ['interface' => 'ListPropertiesStyleConfig'],
                     ],
@@ -374,7 +374,7 @@ final class CkeditorConfigSchema
         ],
         'MatcherPattern' => [
             'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_engine_view_matcher-MatcherPattern.html',
-            'oneOf' => [
+            'anyOf' => [
                 ['type' => 'string'],
                 ['interface' => 'MatcherObjectPattern'],
             ],
@@ -495,7 +495,7 @@ final class CkeditorConfigSchema
             'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-ToolbarConfigItem.html',
             'properties' => [
                 'icon' => [
-                    'oneOf' => [
+                    'anyOf' => [
                         ['type' => 'string'],
                         ['enum' => [false]],
                     ],
