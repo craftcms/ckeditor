@@ -10,6 +10,7 @@ use craft\ckeditor\web\assets\ckeconfig\CkeConfigAsset;
 use craft\helpers\StringHelper;
 use craft\web\assets\admintable\AdminTableAsset;
 use craft\web\Controller;
+use craft\web\CpScreenResponseBehavior;
 use yii\base\InvalidArgumentException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -70,23 +71,29 @@ class CkeConfigsController extends Controller
             ->addCrumb(Craft::t('app', 'Settings'), 'settings')
             ->addCrumb(Craft::t('ckeditor', 'CKEditor Configs'), 'settings/ckeditor')
             ->title($title)
-            ->contentTemplate('ckeditor/cke-configs/_edit.twig', [
-                'ckeConfig' => $ckeConfig,
-                'jsonSchema' => CkeditorConfigSchema::create(),
-            ])
-            ->prepareScreen(function() {
+            ->prepareScreen(function(Response $response) use ($ckeConfig) {
+                $jsonSchemaUri = sprintf('https://craft-code-editor.com/%s', $this->view->namespaceInputId('config-options-json'));
+                /** @var Response|CpScreenResponseBehavior $response */
+                $response->contentTemplate('ckeditor/cke-configs/_edit.twig', [
+                    'ckeConfig' => $ckeConfig,
+                    'jsonSchema' => CkeditorConfigSchema::create(),
+                    'jsonSchemaUri' => $jsonSchemaUri,
+                ]);
+
                 $this->view->registerAssetBundle(CkeConfigAsset::class);
                 $this->view->registerJsWithVars(
                     fn(
                         $toolbarBuilderId,
                         $configOptionsId,
+                        $jsonSchemaUri,
                     ) => <<<JS
-new Ckeditor.ToolbarBuilder($toolbarBuilderId);
-new Ckeditor.ConfigOptions($configOptionsId);
+const configOptions = new Ckeditor.ConfigOptions($configOptionsId, $jsonSchemaUri);
+new Ckeditor.ToolbarBuilder($toolbarBuilderId, configOptions);
 JS,
                     [
                         $this->view->namespaceInputId('toolbar-builder'),
                         $this->view->namespaceInputId('config-options'),
+                        $jsonSchemaUri,
                     ],
                 );
             });

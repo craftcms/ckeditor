@@ -16,7 +16,7 @@ export default Garnish.Base.extend({
   showingInsertion: false,
   closestItem: null,
 
-  init: function (id) {
+  init: function (id, configOptions) {
     this.$sourceContainer = $(`#${id} .ckeditor-tb--source .ck-toolbar__items`);
     this.$targetContainer = $(`#${id} .ckeditor-tb--target .ck-toolbar__items`);
     this.$input = $(`#${id} input`);
@@ -37,9 +37,9 @@ export default Garnish.Base.extend({
       }
 
       const items = [
-        'heading',
-        'style',
-        'alignment',
+        {button: 'heading', configOption: 'heading'},
+        {button: 'style', configOption: 'style'},
+        {button: 'alignment', configOption: 'alignment'},
         'bold',
         'italic',
         'underline',
@@ -48,7 +48,7 @@ export default Garnish.Base.extend({
         'superscript',
         'code',
         'link',
-        'fontSize',
+        {button: 'fontSize', configOption: 'fontSize'},
         'fontFamily',
         'fontColor',
         'fontBackgroundColor',
@@ -72,16 +72,23 @@ export default Garnish.Base.extend({
 
       // Normalize the groups, and flatten any groups that are only partially selected
       for (let i = 0; i < items.length; i++) {
-        if (typeof items[i] === 'string') {
+        if (!$.isArray(items[i])) {
           items[i] = [items[i]];
+        }
+        for (let j = 0; j < items[i].length; j++) {
+          if (typeof items[i][j] === 'string') {
+            items[i][j] = {button: items[i][j]};
+          }
         }
         const group = items[i];
         if (group.length > 1) {
-          const index = this.value.findIndex((name) => group.includes(name));
+          const index = this.value.findIndex((name) =>
+            group.some((item) => item.button === name)
+          );
           if (index !== -1) {
             for (let j = 0; j < group.length; j++) {
-              if (this.value[index + j] !== group[j]) {
-                items.splice(i, 1, ...group.map((name) => [name]));
+              if (this.value[index + j] !== group[j].button) {
+                items.splice(i, 1, ...group.map((item) => [item]));
                 i += group.length - 1;
                 break;
               }
@@ -147,9 +154,15 @@ export default Garnish.Base.extend({
               if (this.draggingSeparator) {
                 $item = this.renderSeparator();
               } else {
-                $item = this.renderComponentGroup(
-                  $draggee.data('componentNames')
-                );
+                const componentNames = $draggee.data('componentNames');
+                $item = this.renderComponentGroup(componentNames);
+                // add any config settings
+                for (const name of componentNames) {
+                  const item = items.flat().find(({button}) => button === name);
+                  if (item && item.configOption) {
+                    configOptions.addSetting(item.configOption);
+                  }
+                }
               }
               $item.data('sourceItem', $draggee[0]);
               $item.css('visibility', 'hidden');
@@ -164,6 +177,15 @@ export default Garnish.Base.extend({
               const $sourceItem = $($draggee.data('sourceItem'));
               $draggee.remove();
               this.drag.$draggee = $draggee = $sourceItem;
+              if (!this.draggingSeparator) {
+                // remove any config settings
+                for (const name of $sourceItem.data('componentNames')) {
+                  const item = items.flat().find(({button}) => button === name);
+                  if (item && item.configOption) {
+                    configOptions.removeSetting(item.configOption);
+                  }
+                }
+              }
             }
             if (!this.draggingSeparator) {
               $draggee.removeClass('hidden');
@@ -201,10 +223,9 @@ export default Garnish.Base.extend({
         const $item = this.renderComponentGroup(group).appendTo(
           this.$sourceContainer
         );
-        sourceItems[group.join(',')] = $item[0];
+        sourceItems[group.map((item) => item.button).join(',')] = $item[0];
 
-        if (this.value.includes(group[0])) {
-          // $item.clone().appendTo(this.$targetContainer);
+        if (this.value.includes(group[0].button)) {
           $item.addClass('hidden');
         }
       }
@@ -222,7 +243,9 @@ export default Garnish.Base.extend({
           $item = this.renderSeparator().appendTo(this.$targetContainer);
           key = '|';
         } else {
-          const group = items.find((group) => group.includes(name));
+          const group = items.find((group) =>
+            group.some((item) => item.button === name)
+          );
           if (!group) {
             // must no longer be a valid item
             continue;
@@ -230,7 +253,7 @@ export default Garnish.Base.extend({
           $item = this.renderComponentGroup(group).appendTo(
             this.$targetContainer
           );
-          key = group.join(',');
+          key = group.map((item) => item.button).join(',');
           i += group.length - 1;
         }
         $item.data('sourceItem', sourceItems[key]);
@@ -248,6 +271,9 @@ export default Garnish.Base.extend({
   },
 
   renderComponentGroup: function (group) {
+    group = group.map((item) =>
+      typeof item === 'string' ? item : item.button
+    );
     const tooltips = [];
     const $item = $('<div class="ckeditor-tb--item"/>');
     for (const name of group) {
