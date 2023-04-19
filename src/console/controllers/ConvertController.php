@@ -179,6 +179,7 @@ class ConvertController extends Controller
         // Map the Redactor configs to CKEditor configs
         $this->ckeConfigs = Plugin::getInstance()->getCkeConfigs();
         $ckeConfigs = $this->ckeConfigs->getAll();
+        $fieldSettingsByConfig = [];
         $configMap = [];
 
         foreach ($fields as $path => $field) {
@@ -195,13 +196,13 @@ class ConvertController extends Controller
                         throw new Exception('`manualConfig` contains invalid JSON.');
                     }
                     $configName = $field['name'] ?? (!empty($field['handle']) ? Inflector::camel2words($field['handle']) : 'Untitled');
-                    $ckeConfig = $this->generateCkeConfig($configName, $redactorConfig, $ckeConfigs);
+                    $ckeConfig = $this->generateCkeConfig($configName, $redactorConfig, $ckeConfigs, $fieldSettingsByConfig);
                     $this->stdout(PHP_EOL);
                 } else {
                     $basename = ($field['settings']['redactorConfig'] ?? null) ?: 'Default.json';
                     if (!isset($configMap[$basename])) {
                         $this->stdout(PHP_EOL . PHP_EOL);
-                        $configMap[$basename] = $this->resolveRedactorConfig($basename, $ckeConfigs);
+                        $configMap[$basename] = $this->resolveRedactorConfig($basename, $ckeConfigs, $fieldSettingsByConfig);
                         $this->stdout(PHP_EOL);
                     }
                     $ckeConfig = $configMap[$basename];
@@ -209,6 +210,10 @@ class ConvertController extends Controller
 
                 $field['type'] = Field::class;
                 $field['settings']['ckeConfig'] = $ckeConfig;
+
+                if (isset($fieldSettingsByConfig[$ckeConfig])) {
+                    $field['settings'] = array_merge($field['settings'], $fieldSettingsByConfig[$ckeConfig]);
+                }
 
                 unset(
                     $field['settings']['cleanupHtml'],
@@ -280,11 +285,15 @@ class ConvertController extends Controller
     /**
      * @param string $basename
      * @param CkeConfig[] $ckeConfigs
+     * @param array[] $fieldSettingsByConfig
      * @return string
      * @throws \Exception
      */
-    private function resolveRedactorConfig(string $basename, array &$ckeConfigs): string
-    {
+    private function resolveRedactorConfig(
+        string $basename,
+        array &$ckeConfigs,
+        array &$fieldSettingsByConfig,
+    ): string {
         $filename = pathinfo($basename, PATHINFO_FILENAME);
         $this->stdout('   ');
         if ($this->confirm($this->markdownToAnsi("Do you already have a CKEditor config that should be used in place of the `$filename` Redactor config?"))) {
@@ -299,17 +308,23 @@ class ConvertController extends Controller
             $redactorConfig = [];
         }
 
-        return $this->generateCkeConfig(Inflector::camel2words($filename), $redactorConfig, $ckeConfigs);
+        return $this->generateCkeConfig(Inflector::camel2words($filename), $redactorConfig, $ckeConfigs, $fieldSettingsByConfig);
     }
 
     /**
+     * @param string $configName
      * @param array $redactorConfig
      * @param CkeConfig[] $ckeConfigs
+     * @param array[] $fieldSettingsByConfig
      * @return string
      * @throws OperationAbortedException
      */
-    private function generateCkeConfig(string $configName, array $redactorConfig, array &$ckeConfigs): string
-    {
+    private function generateCkeConfig(
+        string $configName,
+        array $redactorConfig,
+        array &$ckeConfigs,
+        array &$fieldSettingsByConfig,
+    ): string {
         // Make sure the name is unique
         $baseConfigName = $configName;
         $attempt = 1;
@@ -438,6 +453,9 @@ class ConvertController extends Controller
                 switch ($plugin) {
                     case 'alignment': $addButton('alignment'); break;
                     case 'clips': $addButton('clips'); break;
+                    case 'counter':
+                        $fieldSettingsByConfig[$ckeConfig->uid]['showWordCount'] = true;
+                        break;
                     case 'fontcolor': $addButton('fontcolor'); break;
                     case 'fontfamily': $addButton('fontfamily'); break;
                     case 'fontsize': $addButton('fontsize'); break;

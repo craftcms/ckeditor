@@ -46,7 +46,7 @@ a.ck.ck-button:focus {
 }
 
 .ck.ck-editor__editable_inline {
-  padding: 12px 14px !important;
+  padding: calc(var(--m) - 2px) var(--m) !important;
 }
 
 .ck.ck-editor__editable.ck-focused:not(.ck-editor__nested-editable) {
@@ -85,4 +85,17 @@ a.ck.ck-button:focus {
 
 .ck.ck-content[dir='rtl'] ul {
   padding-right: 40px;
+}
+
+.ck-with-show-word-count .ck.ck-content {
+  border-radius: 0 !important;
+}
+
+.ck-word-count {
+  padding: var(--s) var(--m);
+  border: solid var(--ck-color-base-border);
+  border-width: 0 1px 1px;
+  border-bottom-left-radius: var(--ck-border-radius);
+  border-bottom-right-radius: var(--ck-border-radius);
+  background: var(--ck-color-base-background);
 }

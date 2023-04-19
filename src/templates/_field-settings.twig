@@ -34,6 +34,13 @@
   {% endblock %}
 {% endembed %}
 
+{{ forms.lightswitchField({
+  id: 'show-word-count',
+  name: 'showWordCount',
+  label: 'Show word count'|t('ckeditor'),
+  on: field.showWordCount
+}) }}
+
 <hr>
 
 <a class="fieldtoggle" data-target="assets">{{ 'Assets'|t('app') }}</a>

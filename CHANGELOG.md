@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added the “Show word count” field setting. ([#75](https://github.com/craftcms/ckeditor/issues/75))
 - Added the [Font](https://ckeditor.com/docs/ckeditor5/latest/features/font.html#configuring-the-font-size-feature) CKEditor plugin, which provides “Font Size” “Font Family”, “Font Color”, and “Font Background Color” toolbar buttons.
 - Ordered/unordered list buttons now include [additional options](https://ckeditor.com/docs/ckeditor5/latest/features/lists/lists.html#list-properties).
 - Config options are now automatically updated when “Heading”, “Style”, “Alignment”, and “Font Size” buttons are added/removed in the toolbar. ([#73](https://github.com/craftcms/ckeditor/pull/73))

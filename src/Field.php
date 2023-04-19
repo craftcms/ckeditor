@@ -80,6 +80,12 @@ class Field extends HtmlField
     public ?string $ckeConfig = null;
 
     /**
+     * @var bool Whether the word count should be shown below the field.
+     * @since 3.2.0
+     */
+    public bool $showWordCount = false;
+
+    /**
      * @var string|array|null The volumes that should be available for image selection.
      * @since 1.2.0
      */
@@ -184,6 +190,9 @@ class Field extends HtmlField
 
         $id = Html::id($this->handle);
         $idJs = Json::encode($view->namespaceInputId($id));
+        $wordCountId = "$id-counts";
+        $wordCountIdJs = Json::encode($view->namespaceInputId($wordCountId));
+
         $baseConfig = [
             'ui' => [
                 'viewportOffset' => ['top' => 50],
@@ -245,9 +254,45 @@ JS;
         }
 
         $baseConfigJs = Json::encode($event->baseConfig);
+        $showWordCountJs = Json::encode($this->showWordCount);
 
         $view->registerJs(<<<JS
-Ckeditor.create($idJs, Object.assign($baseConfigJs, $configOptionsJs));
+(($) => {
+  const config = Object.assign($baseConfigJs, $configOptionsJs);
+  const extraRemovePlugins = [];
+  if ($showWordCountJs) {
+    if (typeof config.wordCount === 'undefined') {
+      config.wordCount = {};
+    }
+    const onUpdate = config.wordCount.onUpdate || (() => {});
+    config.wordCount.onUpdate = (stats) => {
+      const statText = [];
+      if (config.wordCount.displayWords || typeof config.wordCount.displayWords === 'undefined') {
+        statText.push(Craft.t('ckeditor', '{num, number} {num, plural, =1{word} other{words}}', {
+          num: stats.words,
+        }));
+      }
+      if (config.wordCount.displayCharacters) { // false by default
+        statText.push(Craft.t('ckeditor', '{num, number} {num, plural, =1{character} other{characters}}', {
+          num: stats.characters,
+        }));
+      }
+      $('#' + $wordCountIdJs).html(Craft.escapeHtml(statText.join(', ')) || '&nbsp;');
+      onUpdate(stats);
+    }
+  } else {
+    extraRemovePlugins.push('WordCount');
+  }
+  if (extraRemovePlugins.length) {
+    if (typeof config.removePlugins === 'undefined') {
+      config.removePlugins = [];
+    }
+    config.removePlugins.push(...extraRemovePlugins);
+    console.log(config);
+  }
+  Ckeditor.create($idJs, config).then((editor) => {
+  });
+})(jQuery)
 JS,
             View::POS_END,
         );
@@ -256,12 +301,23 @@ JS,
             $view->registerCss($ckeConfig->css);
         }
 
-        return Html::tag('div',
-            Html::textarea($this->handle, $this->prepValueForInput($value, $element), [
-                'id' => $id,
-                'class' => 'hidden',
-            ]),
-        );
+        $html = Html::textarea($this->handle, $this->prepValueForInput($value, $element), [
+            'id' => $id,
+            'class' => 'hidden',
+        ]);
+
+        if ($this->showWordCount) {
+            $html .= Html::tag('div', '&nbps;', [
+                'id' => $wordCountId,
+                'class' => ['ck-word-count', 'light', 'smalltext'],
+            ]);
+        }
+
+        return Html::tag('div', $html, [
+            'class' => array_filter([
+                $this->showWordCount ? 'ck-with-show-word-count' : null,
+            ])
+        ]);
     }
 
     /**
