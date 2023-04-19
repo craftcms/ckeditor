@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 3.2.0 - 2023-04-19
 
 - Added the “Show word count” field setting. ([#75](https://github.com/craftcms/ckeditor/issues/75))
 - Added the [Font](https://ckeditor.com/docs/ckeditor5/latest/features/font.html#configuring-the-font-size-feature) CKEditor plugin, which provides “Font Size” “Font Family”, “Font Color”, and “Font Background Color” toolbar buttons.
