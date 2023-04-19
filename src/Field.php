@@ -316,7 +316,7 @@ JS,
         return Html::tag('div', $html, [
             'class' => array_filter([
                 $this->showWordCount ? 'ck-with-show-word-count' : null,
-            ])
+            ]),
         ]);
     }
 
