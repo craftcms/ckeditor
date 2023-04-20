@@ -288,7 +288,6 @@ JS;
       config.removePlugins = [];
     }
     config.removePlugins.push(...extraRemovePlugins);
-    console.log(config);
   }
   Ckeditor.create($idJs, config).then((editor) => {
   });
