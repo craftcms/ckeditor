@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## 3.2.1 - 2023-04-23
+
+- Fixed an error that occurred when a CKEditor field was used in Quick Post widgets.
+
 ## 3.2.0 - 2023-04-19
 
 - Added the “Show word count” field setting. ([#75](https://github.com/craftcms/ckeditor/issues/75))

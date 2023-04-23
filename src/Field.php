@@ -463,6 +463,10 @@ JS,
      */
     private function _categorySources(?ElementInterface $element = null): array
     {
+        if (!$element) {
+            return [];
+        }
+
         return Collection::make(Craft::$app->getCategories()->getAllGroups())
             ->filter(fn(CategoryGroup $group) => $group->getSiteSettings()[$element->siteId]?->hasUrls ?? false)
             ->map(fn(CategoryGroup $group) => "group:$group->uid")
