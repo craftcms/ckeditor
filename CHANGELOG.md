@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed a bug where fields with `<br>` tags would always appear dirty. ([#85](https://github.com/craftcms/ckeditor/issues/85))
+
 ## 3.2.1 - 2023-04-23
 
 - Fixed an error that occurred when a CKEditor field was used in Quick Post widgets.
