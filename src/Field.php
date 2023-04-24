@@ -345,6 +345,19 @@ JS,
     }
 
     /**
+     * @inheritdoc
+     */
+    protected function prepValueForInput($value, ?ElementInterface $element): string
+    {
+        // This is needed because CKEditor5 insists on <br>
+        // and HTMLPurifier prefers to go with <br />
+        // That clash causes this issue: https://github.com/craftcms/cms/issues/13112
+        $value = str_replace(['<br />', '<br/>'], '<br>', $value);
+
+        return parent::prepValueForInput($value, $element);
+    }
+
+    /**
      * Returns the link options available to the field.
      *
      * Each link option is represented by an array with the following keys:

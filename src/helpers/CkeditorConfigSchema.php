@@ -25,7 +25,7 @@ final class CkeditorConfigSchema
                             [
                                 'type' => 'object',
                                 'properties' => [
-                                    'classNaame' => ['type' => 'string'],
+                                    'className' => ['type' => 'string'],
                                     'name' => ['interface' => 'SupportedOption'],
                                 ],
                                 'required' => ['className', 'name'],
