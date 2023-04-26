@@ -220,7 +220,6 @@ class ConvertController extends Controller
                     $field['settings']['configSelectionMode'],
                     $field['settings']['manualConfig'],
                     $field['settings']['redactorConfig'],
-                    $field['settings']['showHtmlButtonForNonAdmins'],
                     $field['settings']['uiMode'],
                 );
 
