@@ -182,9 +182,62 @@ export default {
       editor.updateSourceElement();
     });
 
+    // Track changes in the source mode
+    if (
+      editor.config
+        .get('plugins')
+        .filter((plugin) => plugin.pluginName === 'SourceEditing').length > 0
+    ) {
+      this.trackChangesInSourceMode(editor);
+    }
+
     return editor;
   },
   get pluginNames() {
     return this.plugins.map((p) => p.pluginName);
+  },
+  trackChangesInSourceMode: function (editor) {
+    let sourceEditing = editor.plugins.get('SourceEditing');
+    let editorElement = editor.ui.view.element;
+    let garnish = new Garnish.Base();
+    let timeout = null;
+
+    sourceEditing.on('change:isSourceEditingMode', () => {
+      // if we're in source editing mode
+      if (sourceEditing.isSourceEditingMode) {
+        // get the source editing container
+        let sourceEditingContainer = $(editorElement).find(
+          '.ck-source-editing-area'
+        );
+        // get the initial value
+        let content = sourceEditingContainer.attr('data-value');
+
+        // listen to events, like we do in ElementEditor
+        garnish.addListener(
+          sourceEditingContainer,
+          'keypress,keyup,change,focus,blur,click,mousedown,mouseup',
+          (ev) => {
+            clearTimeout(timeout);
+            // If they are typing, wait half a second before updating the source
+            if (['keypress', 'keyup', 'change'].includes(ev.type)) {
+              timeout = setTimeout(
+                this.sourceModeUpdate(editor, sourceEditingContainer, content),
+                500
+              );
+            } else {
+              this.sourceModeUpdate(editor, sourceEditingContainer, content);
+            }
+          }
+        );
+      }
+    });
+  },
+  sourceModeUpdate: function (editor, sourceEditingContainer, content) {
+    let newContent = sourceEditingContainer.attr('data-value');
+    if (content != newContent) {
+      $(editor.sourceElement).val(newContent);
+    }
+
+    return true;
   },
 };
