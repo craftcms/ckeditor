@@ -104,6 +104,12 @@ class Field extends HtmlField
 
     /**
      * @var bool Whether to show volumes the user doesn’t have permission to view.
+     * @since 3.2.2
+     */
+    public bool $showHtmlButtonForNonAdmins = false;
+
+    /**
+     * @var bool Whether to show volumes the user doesn’t have permission to view.
      * @since 1.2.0
      */
     public bool $showUnpermittedVolumes = false;
@@ -186,6 +192,18 @@ class Field extends HtmlField
             $defaultTransform = Craft::$app->getImageTransforms()->getTransformByUid($this->defaultTransform);
         } else {
             $defaultTransform = null;
+        }
+
+        if (
+            in_array('sourceEditing', $ckeConfig->toolbar) &&
+            !$this->showHtmlButtonForNonAdmins &&
+            !Craft::$app->getUser()->getIdentity()->admin
+        ) {
+            $key = array_search('sourceEditing', $ckeConfig->toolbar);
+            if ($key !== false) {
+                unset($ckeConfig->toolbar[$key]);
+                $ckeConfig->toolbar = array_values($ckeConfig->toolbar);
+            }
         }
 
         $id = Html::id($this->handle);
