@@ -55,15 +55,14 @@ export default class CraftLinkUI extends LinkUI {
     const itemDefinitions = new Collection();
 
     for (const option of linkOptions) {
-      const definition = {
+      itemDefinitions.add({
         type: 'button',
         model: new Model({
           label: option.label,
           linkOption: option,
           withText: true,
         }),
-      };
-      itemDefinitions.add(definition);
+      });
     }
 
     return itemDefinitions;
