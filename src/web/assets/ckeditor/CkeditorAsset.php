@@ -10,6 +10,7 @@ namespace craft\ckeditor\web\assets\ckeditor;
 use Craft;
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
+use craft\web\View;
 
 /**
  * CKEditor custom build asset bundle
@@ -48,6 +49,12 @@ class CkeditorAsset extends AssetBundle
     {
         $this->includeTranslation();
         parent::registerAssetFiles($view);
+
+        if ($view instanceof View) {
+            $view->registerTranslations('ckeditor', [
+                'Insert link',
+            ]);
+        }
     }
 
     private function includeTranslation(): void
