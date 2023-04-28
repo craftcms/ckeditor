@@ -44,10 +44,10 @@ class CkeditorAsset extends AssetBundle
         'css/ckeditor.css',
     ];
 
-    public function init(): void
+    public function registerAssetFiles($view): void
     {
-        parent::init();
         $this->includeTranslation();
+        parent::registerAssetFiles($view);
     }
 
     private function includeTranslation(): void
