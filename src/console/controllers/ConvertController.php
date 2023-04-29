@@ -215,6 +215,8 @@ class ConvertController extends Controller
                     $field['settings'] = array_merge($field['settings'], $fieldSettingsByConfig[$ckeConfig]);
                 }
 
+                $field['settings']['enableSourceEditingForNonAdmins'] = (bool)($field['settings']['showHtmlButtonForNonAdmins'] ?? false);
+
                 unset(
                     $field['settings']['cleanupHtml'],
                     $field['settings']['configSelectionMode'],
