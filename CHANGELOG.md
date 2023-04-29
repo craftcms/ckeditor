@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added the “Show the ‘Source’ button for non-admin users?” field setting. ([#82](https://github.com/craftcms/ckeditor/issues/82))
 - Link dropdowns now include an “Insert link” option. ([#78](https://github.com/craftcms/ckeditor/discussions/78))
 - Fixed a bug where fields with `<br>` tags and non-breaking spaces would get marked as dirty without making any changes. ([#85](https://github.com/craftcms/ckeditor/issues/85), [#90](https://github.com/craftcms/ckeditor/issues/90))
 - Fixed a bug where changes in Source mode weren’t getting saved, unless Source mode was deactivated. ([#84](https://github.com/craftcms/ckeditor/issues/84))
