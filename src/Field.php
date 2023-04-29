@@ -10,11 +10,11 @@ use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\htmlfield\events\ModifyPurifierConfigEvent;
 use craft\htmlfield\HtmlField;
+use craft\htmlfield\HtmlFieldData;
 use craft\models\CategoryGroup;
 use craft\models\ImageTransform;
 use craft\models\Section;
@@ -126,7 +126,13 @@ class Field extends HtmlField
      */
     public function __construct($config = [])
     {
-        ArrayHelper::remove($config, 'initJs');
+        unset(
+            $config['initJs'],
+            $config['removeInlineStyles'],
+            $config['removeEmptyTags'],
+            $config['removeNbsp'],
+        );
+
         parent::__construct($config);
     }
 
@@ -167,6 +173,23 @@ class Field extends HtmlField
                 ],
             ], $transformOptions),
         ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSettings(): array
+    {
+        $settings = parent::getSettings();
+
+        // Cleanup
+        unset(
+            $settings['removeInlineStyles'],
+            $settings['removeEmptyTags'],
+            $settings['removeNbsp'],
+        );
+
+        return $settings;
     }
 
     /**
@@ -367,10 +390,22 @@ JS,
      */
     protected function prepValueForInput($value, ?ElementInterface $element): string
     {
-        // This is needed because CKEditor5 insists on <br>
-        // and HTMLPurifier prefers to go with <br />
-        // That clash causes this issue: https://github.com/craftcms/cms/issues/13112
-        $value = str_replace(['<br />', '<br/>'], '<br>', $value);
+        if ($value instanceof HtmlFieldData) {
+            $value = $value->getRawContent();
+        }
+
+        if ($value !== null) {
+            // Replace NBSP chars with entities, and remove XHTML formatting from  self-closing HTML elements,
+            // so CKEditor doesn’t need to normalize them and cause the input value to change
+            // (https://github.com/craftcms/cms/issues/13112)
+            $pairs = [
+                ' ' => '&nbsp;',
+            ];
+            foreach (array_keys(Html::$voidElements) as $tag) {
+                $pairs["<$tag />"] = "<$tag>";
+            }
+            $value = strtr($value, $pairs);
+        }
 
         return parent::prepValueForInput($value, $element);
     }

@@ -182,9 +182,51 @@ export default {
       editor.updateSourceElement();
     });
 
+    // Track changes in the source mode
+    if (plugins.includes(SourceEditing)) {
+      this.trackChangesInSourceMode(editor, SourceEditing);
+    }
+
     return editor;
   },
   get pluginNames() {
     return this.plugins.map((p) => p.pluginName);
+  },
+  trackChangesInSourceMode: function (editor) {
+    const sourceEditing = editor.plugins.get('SourceEditing');
+    const $editorElement = $(editor.ui.view.element);
+    const $sourceElement = $(editor.sourceElement);
+    const ns = `ckeditor${Math.floor(Math.random() * 1000000000)}`;
+    const events = [
+      'keypress',
+      'keyup',
+      'change',
+      'focus',
+      'blur',
+      'click',
+      'mousedown',
+      'mouseup',
+    ]
+      .map((type) => `${type}.${ns}`)
+      .join(' ');
+
+    sourceEditing.on('change:isSourceEditingMode', () => {
+      const $sourceEditingContainer = $editorElement.find(
+        '.ck-source-editing-area'
+      );
+
+      if (sourceEditing.isSourceEditingMode) {
+        let content = $sourceEditingContainer.attr('data-value');
+        $sourceEditingContainer.on(events, () => {
+          if (
+            content !== (content = $sourceEditingContainer.attr('data-value'))
+          ) {
+            $sourceElement.val(content);
+          }
+        });
+      } else {
+        $sourceEditingContainer.off(`.${ns}`);
+      }
+    });
   },
 };
