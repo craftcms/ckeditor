@@ -41,12 +41,11 @@
   on: field.showWordCount
 }) }}
 
-{{ forms.checkboxField({
-  label: 'Show the “HTML” button for non-admin users'|t('redactor'),
-  instructions: 'Whether the “HTML” button should be visible for non-admin users.'|t('redactor'),
-  id: 'showHtmlButtonForNonAdmins',
-  name: 'showHtmlButtonForNonAdmins',
-  checked: field.showHtmlButtonForNonAdmins,
+{{ forms.lightswitchField({
+  id: 'enable-source-editing-for-non-admins',
+  name: 'enableSourceEditingForNonAdmins',
+  label: 'Show the “Source” button for non-admin users?'|t('redactor'),
+  on: field.enableSourceEditingForNonAdmins,
 }) }}
 
 <hr>

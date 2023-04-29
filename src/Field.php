@@ -10,6 +10,7 @@ use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\htmlfield\events\ModifyPurifierConfigEvent;
@@ -103,10 +104,10 @@ class Field extends HtmlField
     public ?string $defaultTransform = null;
 
     /**
-     * @var bool Whether to show volumes the user doesn’t have permission to view.
-     * @since 3.2.2
+     * @var bool Whether to enable source editing for non-admin users.
+     * @since 3.3.0
      */
-    public bool $showHtmlButtonForNonAdmins = false;
+    public bool $enableSourceEditingForNonAdmins = false;
 
     /**
      * @var bool Whether to show volumes the user doesn’t have permission to view.
@@ -217,17 +218,14 @@ class Field extends HtmlField
             $defaultTransform = null;
         }
 
-        if (
-            in_array('sourceEditing', $ckeConfig->toolbar) &&
-            !$this->showHtmlButtonForNonAdmins &&
-            !Craft::$app->getUser()->getIdentity()->admin
-        ) {
-            $key = array_search('sourceEditing', $ckeConfig->toolbar);
-            if ($key !== false) {
-                unset($ckeConfig->toolbar[$key]);
-                $ckeConfig->toolbar = array_values($ckeConfig->toolbar);
-            }
+        // Toolbar cleanup
+        $toolbar = array_merge($ckeConfig->toolbar);
+
+        if (!$this->enableSourceEditingForNonAdmins && !Craft::$app->getUser()->getIsAdmin()) {
+            ArrayHelper::removeValue($toolbar, 'sourceEditing');
         }
+
+        $toolbar = array_values($toolbar);
 
         $id = Html::id($this->handle);
         $idJs = Json::encode($view->namespaceInputId($id));
@@ -238,7 +236,7 @@ class Field extends HtmlField
             'ui' => [
                 'viewportOffset' => ['top' => 50],
             ],
-            'toolbar' => $ckeConfig->toolbar,
+            'toolbar' => $toolbar,
             'heading' => [
                 'options' => [
                     [
