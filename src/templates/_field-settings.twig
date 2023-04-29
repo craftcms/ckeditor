@@ -49,7 +49,7 @@
     id: 'availableVolumes',
     name: 'availableVolumes',
     label: 'Available Volumes'|t('app'),
-    instructions: 'The volumes that should be available when browsing assets.'|t('app'),
+    instructions: 'The volumes that should be available when selecting assets.'|t('app'),
     options: volumeOptions,
     values: field.availableVolumes,
     showAllOption: volumeOptions|length ? true : false
@@ -59,7 +59,7 @@
     id: 'availableTransforms',
     name: 'availableTransforms',
     label: 'Available Transforms'|t('ckeditor'),
-    instructions: 'The transforms that should be available when browsing assets.'|t('ckeditor'),
+    instructions: 'The transforms that should be available when inserting images.'|t('ckeditor'),
     options: transformOptions,
     values: field.availableTransforms,
     showAllOption: transformOptions|length ? true : false
@@ -69,7 +69,7 @@
     id: 'defaultTransform',
     name: 'defaultTransform',
     label: 'Default Transform'|t('ckeditor'),
-    instructions: 'The default transform that should be applied when browsing assets.'|t('ckeditor'),
+    instructions: 'The default transform that should be applied when inserting an image.'|t('ckeditor'),
     options: defaultTransformOptions,
     value: field.defaultTransform,
   }) }}

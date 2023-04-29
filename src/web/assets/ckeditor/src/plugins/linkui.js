@@ -38,8 +38,12 @@ export default class CraftLinkUI extends LinkUI {
       splitButtonView.isToggleable = true;
       this.listenTo(splitButtonView, 'execute', () => this._showUI(true));
       dropdownView.on('execute', (evt) => {
-        const linkOption = evt.source.linkOption;
-        this._showElementSelectorModal(linkOption);
+        if (evt.source.linkOption) {
+          const linkOption = evt.source.linkOption;
+          this._showElementSelectorModal(linkOption);
+        } else {
+          this._showUI(true);
+        }
       });
       dropdownView.class = 'ck-code-block-dropdown';
       dropdownView.bind('isEnabled').to(linkCommand, 'isEnabled');
@@ -55,16 +59,23 @@ export default class CraftLinkUI extends LinkUI {
     const itemDefinitions = new Collection();
 
     for (const option of linkOptions) {
-      const definition = {
+      itemDefinitions.add({
         type: 'button',
         model: new Model({
           label: option.label,
           linkOption: option,
           withText: true,
         }),
-      };
-      itemDefinitions.add(definition);
+      });
     }
+
+    itemDefinitions.add({
+      type: 'button',
+      model: new Model({
+        label: Craft.t('ckeditor', 'Insert link'),
+        withText: true,
+      }),
+    });
 
     return itemDefinitions;
   }
