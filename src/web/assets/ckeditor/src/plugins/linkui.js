@@ -1,3 +1,4 @@
+import {Plugin} from '@ckeditor/ckeditor5-core';
 import {Collection} from 'ckeditor5/src/utils';
 import {
   Model,
@@ -9,7 +10,11 @@ import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 import {LinkUI} from '@ckeditor/ckeditor5-link';
 import {LINK_KEYSTROKE} from '@ckeditor/ckeditor5-link/src/utils';
 
-export default class CraftLinkUI extends LinkUI {
+export default class CraftLinkUI extends Plugin {
+  static get requires() {
+    return [LinkUI];
+  }
+
   static get pluginName() {
     return 'CraftLinkUI';
   }
@@ -17,6 +22,12 @@ export default class CraftLinkUI extends LinkUI {
   constructor() {
     super(...arguments);
     this.editor.config.define('linkOptions', []);
+  }
+
+  init() {
+    const editor = this.editor;
+    this._linkUI = editor.plugins.get(LinkUI);
+    this._createToolbarLinkButton();
   }
 
   _createToolbarLinkButton() {
@@ -36,13 +47,15 @@ export default class CraftLinkUI extends LinkUI {
       splitButtonView.keystroke = LINK_KEYSTROKE;
       splitButtonView.tooltip = true;
       splitButtonView.isToggleable = true;
-      this.listenTo(splitButtonView, 'execute', () => this._showUI(true));
+      this.listenTo(splitButtonView, 'execute', () =>
+        this._linkUI._showUI(true)
+      );
       dropdownView.on('execute', (evt) => {
         if (evt.source.linkOption) {
           const linkOption = evt.source.linkOption;
           this._showElementSelectorModal(linkOption);
         } else {
-          this._showUI(true);
+          this._linkUI._showUI(true);
         }
       });
       dropdownView.class = 'ck-code-block-dropdown';
@@ -95,14 +108,14 @@ export default class CraftLinkUI extends LinkUI {
           writer.setSelection(range);
         });
       }
-      this._hideFakeVisualSelection();
+      this._linkUI._hideFakeVisualSelection();
     };
 
     // When there's no link under the selection, go straight to the editing UI.
-    if (!this._getSelectedLinkElement()) {
+    if (!this._linkUI._getSelectedLinkElement()) {
       // Show visual selection on a text without a link when the contextual balloon is displayed.
       // See https://github.com/ckeditor/ckeditor5/issues/4721.
-      this._showFakeVisualSelection();
+      this._linkUI._showFakeVisualSelection();
     }
 
     Craft.createElementSelectorModal(linkOption.elementType, {
@@ -135,7 +148,7 @@ export default class CraftLinkUI extends LinkUI {
             });
           }
 
-          this._hideFakeVisualSelection();
+          this._linkUI._hideFakeVisualSelection();
           setTimeout(() => {
             editor.editing.view.focus();
           }, 100);
