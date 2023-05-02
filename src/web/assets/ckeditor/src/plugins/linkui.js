@@ -2,6 +2,7 @@ import {Plugin} from '@ckeditor/ckeditor5-core';
 import {Collection} from 'ckeditor5/src/utils';
 import {
   Model,
+  ContextualBalloon,
   SplitButtonView,
   createDropdown,
   addListToDropdown,
@@ -9,6 +10,7 @@ import {
 import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 import {LinkUI} from '@ckeditor/ckeditor5-link';
 import {LINK_KEYSTROKE} from '@ckeditor/ckeditor5-link/src/utils';
+import {Range} from '@ckeditor/ckeditor5-engine';
 
 export default class CraftLinkUI extends Plugin {
   static get requires() {
@@ -21,13 +23,25 @@ export default class CraftLinkUI extends Plugin {
 
   constructor() {
     super(...arguments);
+    this.siteDropdownView = null;
+    this.siteDropdownItemModels = null;
+    this.localizedRefHandleRE = null;
     this.editor.config.define('linkOptions', []);
   }
 
   init() {
     const editor = this.editor;
     this._linkUI = editor.plugins.get(LinkUI);
+    this._balloon = editor.plugins.get(ContextualBalloon);
     this._createToolbarLinkButton();
+
+    if (Craft.isMultiSite) {
+      this._modifyFormViewTemplate();
+      const refHandlesPattern = Ckeditor.localizedRefHandles.join('|');
+      this.localizedRefHandleRE = new RegExp(
+        `(#(?:${refHandlesPattern}):\\d+)(?:@(\\d+))?`
+      );
+    }
   }
 
   _createToolbarLinkButton() {
@@ -145,12 +159,20 @@ export default class CraftLinkUI extends Plugin {
                 },
                 selection.getFirstPosition()
               );
+              if (range instanceof Range) {
+                try {
+                  const newRange = range.clone();
+                  newRange.end.path[1] += element.label.length;
+                  writer.setSelection(newRange);
+                } catch (e) {}
+              }
             });
           }
 
           this._linkUI._hideFakeVisualSelection();
           setTimeout(() => {
             editor.editing.view.focus();
+            this._linkUI._showUI(true);
           }, 100);
         } else {
           onCancel();
@@ -160,6 +182,134 @@ export default class CraftLinkUI extends Plugin {
         onCancel();
       },
       closeOtherModals: false,
+    });
+  }
+
+  _modifyFormViewTemplate() {
+    // ensure the form view template has been defined
+    if (!this._linkUI.formView) {
+      this._linkUI._createViews();
+    }
+
+    const {formView} = this._linkUI;
+    const {urlInputView} = formView;
+    const {fieldView} = urlInputView;
+
+    // ensure the form view is vertical
+    formView.template.attributes.class.push(
+      'ck-link-form_layout-vertical',
+      'ck-vertical-form'
+    );
+
+    this.siteDropdownView = createDropdown(formView.locale);
+    this.siteDropdownView.buttonView.set({
+      label: '',
+      withText: true,
+      isVisible: false,
+    });
+
+    this.siteDropdownItemModels = Object.fromEntries(
+      Craft.sites.map((site) => [
+        site.id,
+        new Model({
+          label: site.name,
+          siteId: site.id,
+          withText: true,
+        }),
+      ])
+    );
+
+    this.siteDropdownItemModels.current = new Model({
+      label: Craft.t('ckeditor', 'Link to the current site'),
+      siteId: null,
+      withText: true,
+    });
+
+    addListToDropdown(
+      this.siteDropdownView,
+      new Collection([
+        ...Craft.sites.map((site) => ({
+          type: 'button',
+          model: this.siteDropdownItemModels[site.id],
+        })),
+        {
+          type: 'button',
+          model: this.siteDropdownItemModels.current,
+        },
+      ])
+    );
+
+    this.siteDropdownView.on('execute', (evt) => {
+      const match = this._urlInputRefMatch();
+      if (!match) {
+        console.warn(
+          `No reference tag hash present in URL: ${this._urlInputValue()}`
+        );
+        return;
+      }
+      const {siteId} = evt.source;
+      let ref = match[1];
+      if (siteId) {
+        ref += `@${siteId}`;
+      }
+      const newUrl = this._urlInputValue().replace(match[0], ref);
+      fieldView.set('value', newUrl);
+    });
+
+    const {children} = formView;
+    const urlInputIdx = children.getIndex(urlInputView);
+    children.add(this.siteDropdownView, urlInputIdx + 1);
+
+    // would be better if the dropdown could be added after the URL input
+    // but not currently possible since the rest of the inputs get added via LinkFormView::render()
+    formView._focusables.add(this.siteDropdownView);
+    formView.focusTracker.add(this.siteDropdownView.element);
+
+    this.listenTo(fieldView, 'change:value', () => {
+      this._toggleSiteDropdownView();
+    });
+    this.listenTo(fieldView, 'input', () => {
+      this._toggleSiteDropdownView();
+    });
+  }
+
+  _urlInputValue() {
+    return this._linkUI.formView.urlInputView.fieldView.element.value;
+  }
+
+  _urlInputRefMatch() {
+    return this._urlInputValue().match(this.localizedRefHandleRE);
+  }
+
+  _toggleSiteDropdownView() {
+    const match = this._urlInputRefMatch();
+    if (match) {
+      this.siteDropdownView.buttonView.set('isVisible', true);
+      let siteId = match[2] ? parseInt(match[2], 10) : null;
+      if (
+        siteId &&
+        typeof this.siteDropdownItemModels[siteId] === 'undefined'
+      ) {
+        siteId = null;
+      }
+      this._selectSiteDropdownItem(siteId);
+    } else {
+      this.siteDropdownView.buttonView.set('isVisible', false);
+    }
+  }
+
+  _selectSiteDropdownItem(siteId) {
+    const itemModel = this.siteDropdownItemModels[siteId ?? 'current'];
+
+    // update the button label
+    const label = siteId
+      ? Craft.t('ckeditor', 'Site: {name}', {name: itemModel.label})
+      : itemModel.label;
+    this.siteDropdownView.buttonView.set('label', label);
+
+    // update the item states
+    Object.values(this.siteDropdownItemModels).forEach((model) => {
+      model.set('isOn', model === itemModel);
     });
   }
 }
