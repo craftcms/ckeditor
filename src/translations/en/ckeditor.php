@@ -32,6 +32,7 @@ return [
     'No transform' => 'No transform',
     'Purify HTML' => 'Purify HTML',
     'Removes any potentially-malicious code on save, by running the submitted data through {link}.' => 'Removes any potentially-malicious code on save, by running the submitted data through {link}.',
+    'Show the “Source” button for non-admin users?' => 'Show the “Source” button for non-admin users?',
     'Show word count' => 'Show word count',
     'Site: {name}' => 'Site: {name}',
     'The default transform that should be applied when inserting an image.' => 'The default transform that should be applied when inserting an image.',
