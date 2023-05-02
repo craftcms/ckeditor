@@ -7,6 +7,9 @@ const root = path.resolve(__dirname, '..', '..', '..', '..');
 const config = getConfig({
   context: __dirname,
   config: {
+    entry: {
+      ckeditor: './ckeditor.css',
+    },
     plugins: [
       new CopyWebpackPlugin({
         patterns: [
