@@ -233,10 +233,8 @@ class Field extends HtmlField
         $wordCountIdJs = Json::encode($view->namespaceInputId($wordCountId));
 
         $baseConfig = [
-            'ui' => [
-                'viewportOffset' => ['top' => 50],
-            ],
-            'toolbar' => $toolbar,
+            'defaultTransform' => $defaultTransform?->handle,
+            'elementSiteId' => $element?->siteId,
             'heading' => [
                 'options' => [
                     [
@@ -252,20 +250,22 @@ class Field extends HtmlField
                     ], $ckeConfig->headingLevels ?: []),
                 ],
             ],
-            'language' => [
-                'ui' => Craft::$app->language,
-                'content' => $element?->getSite()->language ?? Craft::$app->language,
-            ],
             'image' => [
                 'toolbar' => [
                     'toggleImageCaption',
                     'imageTextAlternative',
                 ],
             ],
+            'language' => [
+                'ui' => Craft::$app->language,
+                'content' => $element?->getSite()->language ?? Craft::$app->language,
+            ],
             'linkOptions' => $this->_linkOptions($element),
+            'toolbar' => $toolbar,
             'transforms' => $this->_transforms(),
-            'defaultTransform' => $defaultTransform?->handle,
-            'elementSiteId' => $element?->siteId,
+            'ui' => [
+                'viewportOffset' => ['top' => 50],
+            ],
         ];
 
         // Give plugins/modules a chance to modify the config
