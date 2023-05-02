@@ -89,6 +89,13 @@ a.ck.ck-button:focus {
   padding-right: 40px;
 }
 
+/* code blocks */
+.ck.ck-editor__editable pre[data-language]::after {
+  top: 0 !important;
+  text-shadow: none;
+  border-radius: 0 0 var(--ck-border-radius) var(--ck-border-radius);
+}
+
 /* vertical panel dropdowns */
 .ck.ck-link-form_layout-vertical .ck.ck-dropdown {
   display: block;
