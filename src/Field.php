@@ -261,6 +261,13 @@ class Field extends HtmlField
                 'content' => $element?->getSite()->language ?? Craft::$app->language,
             ],
             'linkOptions' => $this->_linkOptions($element),
+            'table' => [
+                'contentToolbar' => [
+                    'tableRow',
+                    'tableColumn',
+                    'mergeTableCells',
+                ],
+            ],
             'toolbar' => $toolbar,
             'transforms' => $this->_transforms(),
             'ui' => [

@@ -41,7 +41,12 @@ import {Plugin} from '@ckeditor/ckeditor5-core';
 import {SelectAll} from '@ckeditor/ckeditor5-select-all';
 import {SourceEditing} from '@ckeditor/ckeditor5-source-editing';
 import {Style} from '@ckeditor/ckeditor5-style';
-import {Table, TableCaption, TableToolbar} from '@ckeditor/ckeditor5-table';
+import {
+  Table,
+  TableCaption,
+  TableToolbar,
+  TableUI,
+} from '@ckeditor/ckeditor5-table';
 import {WordCount} from '@ckeditor/ckeditor5-word-count';
 import CraftLinkUI from './plugins/linkui';
 import CraftImageInsertUI from './plugins/imageinsertui';
@@ -90,6 +95,7 @@ export default {
     Table,
     TableCaption,
     TableToolbar,
+    TableUI,
     TodoList,
     Underline,
     WordCount,
@@ -146,7 +152,7 @@ export default {
     {plugins: ['Subscript'], buttons: ['subscript']},
     {plugins: ['Superscript'], buttons: ['superscript']},
     {
-      plugins: ['Table', 'TableCaption', 'TableToolbar'],
+      plugins: ['Table', 'TableCaption', 'TableToolbar', 'TableUI'],
       buttons: ['insertTable'],
     },
     {plugins: ['TodoList'], buttons: ['todoList']},
