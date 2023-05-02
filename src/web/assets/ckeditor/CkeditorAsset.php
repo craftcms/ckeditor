@@ -8,6 +8,7 @@
 namespace craft\ckeditor\web\assets\ckeditor;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\View;
@@ -51,8 +52,11 @@ class CkeditorAsset extends AssetBundle
         parent::registerAssetFiles($view);
 
         if ($view instanceof View) {
+            $this->registerRefHandles($view);
             $view->registerTranslations('ckeditor', [
                 'Insert link',
+                'Link to the current site',
+                'Site: {name}',
             ]);
         }
     }
@@ -89,5 +93,25 @@ class CkeditorAsset extends AssetBundle
         }
         $this->js[] = $subpath;
         return true;
+    }
+
+    private function registerRefHandles(View $view): void
+    {
+        $refHandles = [];
+
+        foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
+            /** @var string|ElementInterface $elementType */
+            if ($elementType::isLocalized() && ($refHandle = $elementType::refHandle()) !== null) {
+                $refHandles[] = $refHandle;
+            }
+        }
+
+        $view->registerJsWithVars(
+            fn($refHandles) => <<<JS
+window.Ckeditor.localizedRefHandles = $refHandles;
+JS,
+            [$refHandles],
+            View::POS_END,
+        );
     }
 }

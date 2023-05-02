@@ -71,7 +71,7 @@ class Field extends HtmlField
      */
     public static function displayName(): string
     {
-        return Craft::t('ckeditor', 'CKEditor');
+        return 'CKEditor';
     }
 
     /**

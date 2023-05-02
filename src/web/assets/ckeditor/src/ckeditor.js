@@ -193,7 +193,7 @@ export default {
     return this.plugins.map((p) => p.pluginName);
   },
   trackChangesInSourceMode: function (editor) {
-    const sourceEditing = editor.plugins.get('SourceEditing');
+    const sourceEditing = editor.plugins.get(SourceEditing);
     const $editorElement = $(editor.ui.view.element);
     const $sourceElement = $(editor.sourceElement);
     const ns = `ckeditor${Math.floor(Math.random() * 1000000000)}`;
