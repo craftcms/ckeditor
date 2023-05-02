@@ -1,0 +1,17 @@
+{
+	"plugins": [
+		{
+			"name": "Craftcms",
+			"className": "Craftcms",
+			"description": "Adds text to the editor.",
+			"path": "src/craftcms.js",
+			"uiComponents": [
+				{
+					"name": "craftcmsButton",
+					"type": "Button",
+					"iconPath": "theme/icons/ckeditor.svg"
+				}
+			]
+		}
+	]
+}
