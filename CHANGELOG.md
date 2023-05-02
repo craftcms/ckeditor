@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 3.3.0 - 2023-05-02
 
 - Added the “Show the ‘Source’ button for non-admin users?” field setting. ([#82](https://github.com/craftcms/ckeditor/issues/82))
 - Link dropdowns now include an “Insert link” option. ([#78](https://github.com/craftcms/ckeditor/discussions/78))
