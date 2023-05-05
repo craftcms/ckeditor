@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Updated CKEditor 5 to 37.1.0.
+
 ## 3.3.0 - 2023-05-02
 
 - Added the “Show the ‘Source’ button for non-admin users?” field setting. ([#82](https://github.com/craftcms/ckeditor/issues/82))
