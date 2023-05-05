@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a JavaScript error that occurred if there were no sections, category groups, or volumes.
 - Updated CKEditor 5 to 37.1.0.
 
 ## 3.3.0 - 2023-05-02

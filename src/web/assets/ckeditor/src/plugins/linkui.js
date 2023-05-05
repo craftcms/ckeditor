@@ -48,7 +48,8 @@ export default class CraftLinkUI extends Plugin {
     const editor = this.editor;
     const linkOptions = editor.config.get('linkOptions');
     if (!linkOptions || !linkOptions.length) {
-      return super._createToolbarLinkButton();
+      this._linkUI._createToolbarLinkButton();
+      return;
     }
     const linkCommand = editor.commands.get('link');
     const t = editor.t;
