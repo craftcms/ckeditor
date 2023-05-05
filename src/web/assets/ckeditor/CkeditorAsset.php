@@ -109,7 +109,7 @@ class CkeditorAsset extends AssetBundle
 
         $view->registerJsWithVars(
             fn($refHandles) => <<<JS
-window.Ckeditor.localizedRefHandles = $refHandles;
+window.CKEditor5.craftcms.localizedRefHandles = $refHandles;
 JS,
             [$refHandles],
             View::POS_END,
