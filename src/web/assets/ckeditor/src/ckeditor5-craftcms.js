@@ -48,185 +48,183 @@ import {WordCount} from '@ckeditor/ckeditor5-word-count';
 import {default as CraftLinkUI} from './plugins/linkui';
 import {default as CraftImageInsertUI} from './plugins/imageinsertui';
 
-export const builder = {
-  ClassicEditor,
-  plugins: [
-    Alignment,
-    AutoImage,
-    AutoLink,
-    Autoformat,
-    BlockQuote,
-    Bold,
-    Code,
-    CodeBlock,
-    Essentials,
-    FindAndReplace,
-    Font,
-    GeneralHtmlSupport,
-    Heading,
-    HorizontalLine,
-    HtmlComment,
-    HtmlEmbed,
-    Image,
-    ImageCaption,
-    ImageStyle,
-    ImageToolbar,
-    Indent,
-    Italic,
-    LinkEditing,
-    LinkImage,
-    List,
-    ListProperties,
-    MediaEmbed,
-    MediaEmbedToolbar,
-    PageBreak,
-    PasteFromOffice,
-    SourceEditing,
-    Strikethrough,
-    Style,
-    Subscript,
-    Superscript,
-    Table,
-    TableCaption,
-    TableToolbar,
-    TableUI,
-    TodoList,
-    Underline,
-    WordCount,
-    CraftImageInsertUI,
-    CraftLinkUI,
-  ],
-  pluginButtonMap: [
-    {plugins: ['Alignment'], buttons: ['alignment']},
-    {
-      plugins: [
-        'AutoImage',
-        'CraftImageInsertUI',
-        'Image',
-        'ImageCaption',
-        'ImageStyle',
-        'ImageToolbar',
-        'LinkImage',
-      ],
-      buttons: ['insertImage'],
-    },
-    {
-      plugins: ['AutoLink', 'CraftLinkUI', 'LinkEditing', 'LinkImage'],
-      buttons: ['link'],
-    },
-    {plugins: ['BlockQuote'], buttons: ['blockQuote']},
-    {plugins: ['Bold'], buttons: ['bold']},
-    {plugins: ['Code'], buttons: ['code']},
-    {plugins: ['CodeBlock'], buttons: ['codeBlock']},
-    {
-      plugins: ['Font'],
-      buttons: ['fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor'],
-    },
-    {plugins: ['FindAndReplace'], buttons: ['findAndReplace']},
-    {plugins: ['Heading'], buttons: ['heading']},
-    {plugins: ['HorizontalLine'], buttons: ['horizontalLine']},
-    {plugins: ['HtmlEmbed'], buttons: ['htmlEmbed']},
-    {
-      plugins: ['Indent'],
-      buttons: ['outdent', 'indent'],
-    },
-    {plugins: ['Italic'], buttons: ['italic']},
-    {
-      plugins: ['List', 'ListProperties'],
-      buttons: ['bulletedList', 'numberedList'],
-    },
-    {
-      plugins: ['MediaEmbed', 'MediaEmbedToolbar'],
-      buttons: ['mediaEmbed'],
-    },
-    {plugins: ['PageBreak'], buttons: ['pageBreak']},
-    {plugins: ['SourceEditing'], buttons: ['sourceEditing']},
-    {plugins: ['Strikethrough'], buttons: ['strikethrough']},
-    {plugins: ['Style'], buttons: ['style']},
-    {plugins: ['Subscript'], buttons: ['subscript']},
-    {plugins: ['Superscript'], buttons: ['superscript']},
-    {
-      plugins: ['Table', 'TableCaption', 'TableToolbar', 'TableUI'],
-      buttons: ['insertTable'],
-    },
-    {plugins: ['TodoList'], buttons: ['todoList']},
-    {plugins: ['Underline'], buttons: ['underline']},
-  ],
-  create: async function (element, config) {
-    let plugins = this.plugins;
+const allPlugins = [
+  Alignment,
+  AutoImage,
+  AutoLink,
+  Autoformat,
+  BlockQuote,
+  Bold,
+  Code,
+  CodeBlock,
+  Essentials,
+  FindAndReplace,
+  Font,
+  GeneralHtmlSupport,
+  Heading,
+  HorizontalLine,
+  HtmlComment,
+  HtmlEmbed,
+  Image,
+  ImageCaption,
+  ImageStyle,
+  ImageToolbar,
+  Indent,
+  Italic,
+  LinkEditing,
+  LinkImage,
+  List,
+  ListProperties,
+  MediaEmbed,
+  MediaEmbedToolbar,
+  PageBreak,
+  PasteFromOffice,
+  SourceEditing,
+  Strikethrough,
+  Style,
+  Subscript,
+  Superscript,
+  Table,
+  TableCaption,
+  TableToolbar,
+  TableUI,
+  TodoList,
+  Underline,
+  WordCount,
+  CraftImageInsertUI,
+  CraftLinkUI,
+];
 
-    if (config.toolbar) {
-      // Remove any plugins that aren't included in the toolbar
-      const removePlugins = this.pluginButtonMap
-        .filter(
-          ({buttons}) =>
-            !config.toolbar.some((button) => buttons.includes(button))
-        )
-        .map(({plugins}) => plugins)
-        .flat();
+const pluginNames = allPlugins.map((p) => p.pluginName);
+const pluginButtonMap = [
+  {plugins: ['Alignment'], buttons: ['alignment']},
+  {
+    plugins: [
+      'AutoImage',
+      'CraftImageInsertUI',
+      'Image',
+      'ImageCaption',
+      'ImageStyle',
+      'ImageToolbar',
+      'LinkImage',
+    ],
+    buttons: ['insertImage'],
+  },
+  {
+    plugins: ['AutoLink', 'CraftLinkUI', 'LinkEditing', 'LinkImage'],
+    buttons: ['link'],
+  },
+  {plugins: ['BlockQuote'], buttons: ['blockQuote']},
+  {plugins: ['Bold'], buttons: ['bold']},
+  {plugins: ['Code'], buttons: ['code']},
+  {plugins: ['CodeBlock'], buttons: ['codeBlock']},
+  {
+    plugins: ['Font'],
+    buttons: ['fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor'],
+  },
+  {plugins: ['FindAndReplace'], buttons: ['findAndReplace']},
+  {plugins: ['Heading'], buttons: ['heading']},
+  {plugins: ['HorizontalLine'], buttons: ['horizontalLine']},
+  {plugins: ['HtmlEmbed'], buttons: ['htmlEmbed']},
+  {
+    plugins: ['Indent'],
+    buttons: ['outdent', 'indent'],
+  },
+  {plugins: ['Italic'], buttons: ['italic']},
+  {
+    plugins: ['List', 'ListProperties'],
+    buttons: ['bulletedList', 'numberedList'],
+  },
+  {
+    plugins: ['MediaEmbed', 'MediaEmbedToolbar'],
+    buttons: ['mediaEmbed'],
+  },
+  {plugins: ['PageBreak'], buttons: ['pageBreak']},
+  {plugins: ['SourceEditing'], buttons: ['sourceEditing']},
+  {plugins: ['Strikethrough'], buttons: ['strikethrough']},
+  {plugins: ['Style'], buttons: ['style']},
+  {plugins: ['Subscript'], buttons: ['subscript']},
+  {plugins: ['Superscript'], buttons: ['superscript']},
+  {
+    plugins: ['Table', 'TableCaption', 'TableToolbar', 'TableUI'],
+    buttons: ['insertTable'],
+  },
+  {plugins: ['TodoList'], buttons: ['todoList']},
+  {plugins: ['Underline'], buttons: ['underline']},
+];
 
-      plugins = plugins.filter((p) => !removePlugins.includes(p.pluginName));
-    }
+const trackChangesInSourceMode = function (editor) {
+  const sourceEditing = editor.plugins.get(SourceEditing);
+  const $editorElement = $(editor.ui.view.element);
+  const $sourceElement = $(editor.sourceElement);
+  const ns = `ckeditor${Math.floor(Math.random() * 1000000000)}`;
+  const events = [
+    'keypress',
+    'keyup',
+    'change',
+    'focus',
+    'blur',
+    'click',
+    'mousedown',
+    'mouseup',
+  ]
+    .map((type) => `${type}.${ns}`)
+    .join(' ');
 
-    if (typeof element === 'string') {
-      element = document.querySelector(`#${element}`);
-    }
-
-    const editor = await this.ClassicEditor.create(
-      element,
-      Object.assign({plugins}, config)
+  sourceEditing.on('change:isSourceEditingMode', () => {
+    const $sourceEditingContainer = $editorElement.find(
+      '.ck-source-editing-area'
     );
 
-    // Keep the source element updated with changes
-    editor.model.document.on('change', () => {
-      editor.updateSourceElement();
-    });
-
-    // Track changes in the source mode
-    if (plugins.includes(SourceEditing)) {
-      this.trackChangesInSourceMode(editor, SourceEditing);
+    if (sourceEditing.isSourceEditingMode) {
+      let content = $sourceEditingContainer.attr('data-value');
+      $sourceEditingContainer.on(events, () => {
+        if (
+          content !== (content = $sourceEditingContainer.attr('data-value'))
+        ) {
+          $sourceElement.val(content);
+        }
+      });
+    } else {
+      $sourceEditingContainer.off(`.${ns}`);
     }
+  });
+};
 
-    return editor;
-  },
-  get pluginNames() {
-    return this.plugins.map((p) => p.pluginName);
-  },
-  trackChangesInSourceMode: function (editor) {
-    const sourceEditing = editor.plugins.get(SourceEditing);
-    const $editorElement = $(editor.ui.view.element);
-    const $sourceElement = $(editor.sourceElement);
-    const ns = `ckeditor${Math.floor(Math.random() * 1000000000)}`;
-    const events = [
-      'keypress',
-      'keyup',
-      'change',
-      'focus',
-      'blur',
-      'click',
-      'mousedown',
-      'mouseup',
-    ]
-      .map((type) => `${type}.${ns}`)
-      .join(' ');
+export const create = async function (element, config) {
+  let plugins = allPlugins;
 
-    sourceEditing.on('change:isSourceEditingMode', () => {
-      const $sourceEditingContainer = $editorElement.find(
-        '.ck-source-editing-area'
-      );
+  if (config.toolbar) {
+    // Remove any plugins that aren't included in the toolbar
+    const removePlugins = pluginButtonMap
+      .filter(
+        ({buttons}) =>
+          !config.toolbar.some((button) => buttons.includes(button))
+      )
+      .map(({plugins}) => plugins)
+      .flat();
 
-      if (sourceEditing.isSourceEditingMode) {
-        let content = $sourceEditingContainer.attr('data-value');
-        $sourceEditingContainer.on(events, () => {
-          if (
-            content !== (content = $sourceEditingContainer.attr('data-value'))
-          ) {
-            $sourceElement.val(content);
-          }
-        });
-      } else {
-        $sourceEditingContainer.off(`.${ns}`);
-      }
-    });
-  },
+    plugins = plugins.filter((p) => !removePlugins.includes(p.pluginName));
+  }
+
+  if (typeof element === 'string') {
+    element = document.querySelector(`#${element}`);
+  }
+
+  const editor = await ClassicEditor.create(
+    element,
+    Object.assign({plugins}, config)
+  );
+
+  // Keep the source element updated with changes
+  editor.model.document.on('change', () => {
+    editor.updateSourceElement();
+  });
+
+  // Track changes in the source mode
+  if (plugins.includes(SourceEditing)) {
+    trackChangesInSourceMode(editor, SourceEditing);
+  }
+
+  return editor;
 };

@@ -328,7 +328,7 @@ JS;
     }
     config.removePlugins.push(...extraRemovePlugins);
   }
-  CKEditor5.craftcms.builder.create($idJs, config).then((editor) => {
+  CKEditor5.craftcms.create($idJs, config).then((editor) => {
   });
 })(jQuery)
 JS,

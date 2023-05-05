@@ -36,14 +36,14 @@ class CkeditorAsset extends AssetBundle
      */
     public $js = [
         'ckeditor5-dll.js',
-        'craftcms.js',
+        'ckeditor5-craftcms.js',
     ];
 
     /**
      * @inheritdoc
      */
     public $css = [
-        'css/ckeditor.css',
+        'css/ckeditor5-craftcms.css',
     ];
 
     public function registerAssetFiles($view): void

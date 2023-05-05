@@ -1,4 +1,4 @@
-/** global: Ckeditor, Garnish */
+/** global: CKEditor5, Garnish */
 import './ckeconfig.css';
 import $ from 'jquery';
 
