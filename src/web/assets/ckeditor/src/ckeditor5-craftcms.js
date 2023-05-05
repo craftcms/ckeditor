@@ -49,6 +49,8 @@ import {default as CraftLinkUI} from './plugins/linkui';
 import {default as CraftImageInsertUI} from './plugins/imageinsertui';
 
 const allPlugins = [
+  CKEditor5.paragraph.Paragraph,
+  CKEditor5.selectAll.SelectAll,
   Alignment,
   AutoImage,
   AutoLink,
