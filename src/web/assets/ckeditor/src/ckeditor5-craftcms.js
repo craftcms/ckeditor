@@ -95,7 +95,6 @@ const allPlugins = [
   CraftLinkUI,
 ];
 
-const pluginNames = allPlugins.map((p) => p.pluginName);
 const pluginButtonMap = [
   {plugins: ['Alignment'], buttons: ['alignment']},
   {
@@ -190,6 +189,8 @@ const trackChangesInSourceMode = function (editor) {
     }
   });
 };
+
+export const pluginNames = allPlugins.map((p) => p.pluginName);
 
 export const create = async function (element, config) {
   let plugins = allPlugins;
