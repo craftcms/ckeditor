@@ -36,7 +36,8 @@ export default class CraftLinkUI extends Plugin {
 
     if (Craft.isMultiSite) {
       this._modifyFormViewTemplate();
-      const refHandlesPattern = Ckeditor.localizedRefHandles.join('|');
+      const refHandlesPattern =
+        CKEditor5.craftcms.localizedRefHandles.join('|');
       this.localizedRefHandleRE = new RegExp(
         `(#(?:${refHandlesPattern}):\\d+)(?:@(\\d+))?`
       );
