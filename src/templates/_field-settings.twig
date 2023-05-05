@@ -44,7 +44,7 @@
 {{ forms.lightswitchField({
   id: 'enable-source-editing-for-non-admins',
   name: 'enableSourceEditingForNonAdmins',
-  label: 'Show the “Source” button for non-admin users?'|t('redactor'),
+  label: 'Show the “Source” button for non-admin users?'|t('ckeditor'),
   on: field.enableSourceEditingForNonAdmins,
 }) }}
 
@@ -104,7 +104,9 @@
 <div id="advanced" class="hidden">
   {{ forms.checkboxField({
     label: "Purify HTML"|t('ckeditor'),
-    instructions: 'Removes any potentially-malicious code on save, by running the submitted data through <a href="http://htmlpurifier.org/" rel="noopener" target="_blank">HTML Purifier</a>.'|t('ckeditor'),
+    instructions: 'Removes any potentially-malicious code on save, by running the submitted data through {link}.'|t('ckeditor', {
+      link: '<a href="http://htmlpurifier.org/" rel="noopener" target="_blank">HTML Purifier</a>',
+    }),
     warning: 'Disable this at your own risk!'|t('ckeditor'),
     id: 'purify-html',
     name: 'purifyHtml',

@@ -11,7 +11,6 @@ import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 import {LinkUI} from '@ckeditor/ckeditor5-link';
 import {LINK_KEYSTROKE} from '@ckeditor/ckeditor5-link/src/utils';
 import {Range} from 'ckeditor5/src/engine';
-
 export default class CraftLinkUI extends Plugin {
   static get requires() {
     return [LinkUI];
@@ -48,7 +47,8 @@ export default class CraftLinkUI extends Plugin {
     const editor = this.editor;
     const linkOptions = editor.config.get('linkOptions');
     if (!linkOptions || !linkOptions.length) {
-      return super._createToolbarLinkButton();
+      this._linkUI._createToolbarLinkButton();
+      return;
     }
     const linkCommand = editor.commands.get('link');
     const t = editor.t;
