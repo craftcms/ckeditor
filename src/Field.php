@@ -477,11 +477,11 @@ JS,
     }
 
     /**
-     * Return CKE config based on uid or default or null
+     * Return CKE config based on uid or default
      *
-     * @return CkeConfig|null
+     * @return CkeConfig
      */
-    private function _getCkeConfig(): ?CkeConfig
+    private function _getCkeConfig(): CkeConfig
     {
         $ckeConfig = null;
         if ($this->ckeConfig) {
