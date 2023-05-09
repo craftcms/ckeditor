@@ -9,7 +9,7 @@ namespace craft\ckeditor\web\assets\ckeditor;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\web\AssetBundle;
+use craft\base\Event;
 use craft\web\assets\cp\CpAsset;
 use craft\web\View;
 
@@ -18,8 +18,15 @@ use craft\web\View;
  *
  * @since 3.0.0
  */
-class CkeditorAsset extends AssetBundle
+class CkeditorAsset extends BaseCkeditorAsset
 {
+    /**
+     * @event Event The event that is triggered when asset bundle is published.
+     * @see registerCkeditorAsset()
+     * @since 3.4.0
+     */
+    public const EVENT_PUBLISH = 'publish';
+
     /**
      * @inheritdoc
      */
@@ -47,9 +54,14 @@ class CkeditorAsset extends AssetBundle
         'css/ckeditor5-craftcms.css',
     ];
 
+    public function publish($am)
+    {
+        parent::publish($am);
+        Event::trigger(static::class, self::EVENT_PUBLISH);
+    }
+
     public function registerAssetFiles($view): void
     {
-        $this->includeTranslation();
         parent::registerAssetFiles($view);
 
         if ($view instanceof View) {
@@ -60,40 +72,6 @@ class CkeditorAsset extends AssetBundle
                 'Site: {name}',
             ]);
         }
-    }
-
-    private function includeTranslation(): void
-    {
-        $language = match (Craft::$app->language) {
-            'en', 'en-US' => false,
-            'nn' => 'no',
-            default => strtolower(Craft::$app->language),
-        };
-
-        if ($language === false) {
-            return;
-        }
-
-        if ($this->includeTranslationForLanguage($language)) {
-            return;
-        }
-
-        // maybe without the territory?
-        $dashPos = strpos($language, '-');
-        if ($dashPos !== false) {
-            $this->includeTranslationForLanguage(substr($language, 0, $dashPos));
-        }
-    }
-
-    private function includeTranslationForLanguage($language): bool
-    {
-        $subpath = "translations/$language.js";
-        $path = __DIR__ . "/dist/$subpath";
-        if (!file_exists($path)) {
-            return false;
-        }
-        $this->js[] = $subpath;
-        return true;
     }
 
     private function registerRefHandles(View $view): void

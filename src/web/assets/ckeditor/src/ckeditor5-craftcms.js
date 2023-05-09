@@ -97,6 +97,55 @@ const allPlugins = [
   CraftLinkUI,
 ];
 
+const normalizeToolbarItem = (group) => {
+  if (!$.isArray(group)) {
+    group = [group];
+  }
+  return group.map((item) => {
+    if (typeof item === 'string') {
+      item = {button: item};
+    }
+    return item;
+  });
+};
+
+const normalizeToolbarItems = (items) =>
+  items.map((group) => normalizeToolbarItem(group));
+
+export const toolbarItems = normalizeToolbarItems([
+  {button: 'heading', configOption: 'heading'},
+  {button: 'style', configOption: 'style'},
+  {button: 'alignment', configOption: 'alignment'},
+  'bold',
+  'italic',
+  'underline',
+  'strikethrough',
+  'subscript',
+  'superscript',
+  'code',
+  'link',
+  {button: 'fontSize', configOption: 'fontSize'},
+  'fontFamily',
+  'fontColor',
+  'fontBackgroundColor',
+  'insertImage',
+  'mediaEmbed',
+  'htmlEmbed',
+  'blockQuote',
+  'insertTable',
+  'codeBlock',
+  'bulletedList',
+  'numberedList',
+  'todoList',
+  ['outdent', 'indent'],
+  'horizontalLine',
+  'pageBreak',
+  'selectAll',
+  'findAndReplace',
+  ['undo', 'redo'],
+  'sourceEditing',
+]);
+
 const pluginButtonMap = [
   {plugins: ['Alignment'], buttons: ['alignment']},
   {
@@ -154,6 +203,53 @@ const pluginButtonMap = [
   {plugins: ['Underline'], buttons: ['underline']},
 ];
 
+const findPlugin = (pluginName) => {
+  for (const [k, v] of Object.entries(CKEditor5)) {
+    if (typeof v === 'object') {
+      for (const [k2, v2] of Object.entries(v)) {
+        if (typeof v2 === 'function' && v2.pluginName === pluginName) {
+          return v2;
+        }
+      }
+    }
+  }
+};
+
+export const registerBundle = (bundle) => {
+  if (bundle.pluginNames) {
+    bundle.pluginNames.forEach((pluginName) => {
+      const plugin = findPlugin(pluginName);
+      if (!plugin) {
+        console.warn(
+          `No plugin named ${pluginName} found in window.CKEditor5.`
+        );
+        return;
+      }
+      allPlugins.push(plugin);
+    });
+  }
+
+  if (bundle.toolbarItems) {
+    bundle.toolbarItems = normalizeToolbarItems(bundle.toolbarItems);
+    toolbarItems.push(...bundle.toolbarItems);
+  }
+
+  if (
+    bundle.pluginNames &&
+    bundle.pluginNames.length &&
+    bundle.toolbarItems &&
+    bundle.toolbarItems.length
+  ) {
+    pluginButtonMap.push({
+      plugins: bundle.pluginNames,
+      buttons: bundle.toolbarItems
+        .flat()
+        .map((item) => item.buttons)
+        .flat(),
+    });
+  }
+};
+
 const trackChangesInSourceMode = function (editor) {
   const sourceEditing = editor.plugins.get(SourceEditing);
   const $editorElement = $(editor.ui.view.element);
@@ -192,7 +288,7 @@ const trackChangesInSourceMode = function (editor) {
   });
 };
 
-export const pluginNames = allPlugins.map((p) => p.pluginName);
+export const pluginNames = () => allPlugins.map((p) => p.pluginName);
 
 export const create = async function (element, config) {
   let plugins = allPlugins;

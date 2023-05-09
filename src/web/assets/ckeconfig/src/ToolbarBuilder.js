@@ -38,50 +38,10 @@ export default Garnish.Base.extend({
           this.components[name] = cf.create(name);
         }
 
-        const items = [
-          {button: 'heading', configOption: 'heading'},
-          {button: 'style', configOption: 'style'},
-          {button: 'alignment', configOption: 'alignment'},
-          'bold',
-          'italic',
-          'underline',
-          'strikethrough',
-          'subscript',
-          'superscript',
-          'code',
-          'link',
-          {button: 'fontSize', configOption: 'fontSize'},
-          'fontFamily',
-          'fontColor',
-          'fontBackgroundColor',
-          'insertImage',
-          'mediaEmbed',
-          'htmlEmbed',
-          'blockQuote',
-          'insertTable',
-          'codeBlock',
-          'bulletedList',
-          'numberedList',
-          'todoList',
-          ['outdent', 'indent'],
-          'horizontalLine',
-          'pageBreak',
-          'selectAll',
-          'findAndReplace',
-          ['undo', 'redo'],
-          'sourceEditing',
-        ];
+        const items = CKEditor5.craftcms.toolbarItems;
 
-        // Normalize the groups, and flatten any groups that are only partially selected
+        // Flatten any groups that are only partially selected
         for (let i = 0; i < items.length; i++) {
-          if (!$.isArray(items[i])) {
-            items[i] = [items[i]];
-          }
-          for (let j = 0; j < items[i].length; j++) {
-            if (typeof items[i][j] === 'string') {
-              items[i][j] = {button: items[i][j]};
-            }
-          }
           const group = items[i];
           if (group.length > 1) {
             const index = this.value.findIndex((name) =>
@@ -230,9 +190,11 @@ export default Garnish.Base.extend({
         const sourceItems = {};
 
         for (let group of items) {
-          const $item = this.renderComponentGroup(group).appendTo(
-            this.$sourceContainer
-          );
+          const $item = this.renderComponentGroup(group);
+          if (!$item) {
+            continue;
+          }
+          $item.appendTo(this.$sourceContainer);
           sourceItems[group.map((item) => item.button).join(',')] = $item[0];
 
           if (this.value.includes(group[0].button)) {
@@ -260,9 +222,11 @@ export default Garnish.Base.extend({
               // must no longer be a valid item
               continue;
             }
-            $item = this.renderComponentGroup(group).appendTo(
-              this.$targetContainer
-            );
+            $item = this.renderComponentGroup(group);
+            if (!$item) {
+              continue;
+            }
+            $item.appendTo(this.$targetContainer);
             key = group.map((item) => item.button).join(',');
             i += group.length - 1;
           }
@@ -284,10 +248,18 @@ export default Garnish.Base.extend({
     group = group.map((item) =>
       typeof item === 'string' ? item : item.button
     );
+    const elements = [];
     const tooltips = [];
-    const $item = $('<div class="ckeditor-tb--item"/>');
+
     for (const name of group) {
-      const $element = this.renderComponent(name).appendTo($item);
+      let $element;
+      try {
+        $element = this.renderComponent(name);
+      } catch (e) {
+        console.warn(e);
+        continue;
+      }
+      elements.push($element);
       const tooltip = (
         $element.is('[data-cke-tooltip-text]')
           ? $element
@@ -299,6 +271,12 @@ export default Garnish.Base.extend({
           : `${name[0].toUpperCase()}${name.slice(1)}`
       );
     }
+
+    if (!elements.length) {
+      return false;
+    }
+
+    const $item = $('<div class="ckeditor-tb--item"/>').append(elements);
     $item.attr('data-cke-tooltip-text', tooltips.join(', '));
     $item.data('componentNames', group);
     this.drag.addItems($item);
@@ -308,7 +286,7 @@ export default Garnish.Base.extend({
   renderComponent: function (name) {
     const component = this.components[name];
     if (!component) {
-      throw `Missing component ${name}`;
+      throw `Missing component: ${name}`;
     }
     if (!component.isRendered) {
       component.render();
