@@ -118,13 +118,13 @@ You can used the `ckeditor/convert` command to convert any existing Redactor fie
 php craft ckeditor/convert
 ```
 
-## Adding Custom CKEditor Plugins
+## Adding CKEditor Plugins
 
 Craft CMS plugins can register additional CKEditor plugins to extend its functionality.
 
 The first step is to create a [DLL-compatible](https://ckeditor.com/docs/ckeditor5/latest/installation/advanced/alternative-setups/dll-builds.html) package which provides the CKEditor plugin(s) you wish to add.
 
-- If you’re including one of CKEditor’s first party plugin packages (`@ckeditor/ckeditor5-<name>`), it will already include a `build` directory with a DLL-compatible package inside it.
+- If you’re including one of CKEditor’s [first-party packages](https://github.com/ckeditor/ckeditor5/tree/master/packages), it will already include a `build` directory with a DLL-compatible package inside it.
 - If you’re creating a custom CKEditor plugin, use [CKEditor’s package generator](https://ckeditor.com/docs/ckeditor5/latest/framework/plugins/package-generator/using-package-generator.html) to scaffold it, and run its [`dll:build` command](https://ckeditor.com/docs/ckeditor5/latest/framework/plugins/package-generator/javascript-package.html#dllbuild) to create a DLL-compatible package.
 
 > :bulb: Check out CKEditor’s [Implementing an inline widget](https://ckeditor.com/docs/ckeditor5/latest/framework/tutorials/implementing-an-inline-widget.html) tutorial for an in-depth look at how to create a custom CKEditor plugin.
@@ -158,7 +158,7 @@ class TokensAsset extends BaseCkeditorPackageAsset
 }
 ```
 
-Finally, you’ll want to ensure that your package’s asset bundle is registered whenever the core CKEditor asset bundle is registered. Add the following code to your plugin’s `init()` method:
+Finally, ensure your asset bundle is registered whenever the core CKEditor asset bundle is. Add the following code to your plugin’s `init()` method:
 
 ```php
 use Craft;
