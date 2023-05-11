@@ -5,7 +5,7 @@
  * @license MIT
  */
 
-namespace craft\ckeditor\web\assets\ckeditor;
+namespace craft\ckeditor\web\assets;
 
 use Craft;
 use craft\web\AssetBundle;

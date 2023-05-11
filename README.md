@@ -138,7 +138,7 @@ For example, here’s an asset bundle which defines a “Tokens” plugin:
 
 namespace mynamespace\web\assets\tokens;
 
-use craft\ckeditor\web\assets\ckeditor\BaseCkeditorPackageAsset;
+use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
 
 class TokensAsset extends BaseCkeditorPackageAsset
 {

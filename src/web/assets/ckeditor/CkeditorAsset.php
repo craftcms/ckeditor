@@ -10,6 +10,7 @@ namespace craft\ckeditor\web\assets\ckeditor;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Event;
+use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
 use craft\web\assets\cp\CpAsset;
 use craft\web\View;
 
