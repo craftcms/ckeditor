@@ -8,21 +8,20 @@
 namespace craft\ckeditor\web\assets\ckeditor;
 
 use Craft;
-use craft\helpers\Json;
 use craft\web\AssetBundle;
 use craft\web\View;
 
 /**
- * Base asset bundle class for CKEditor bundles.
+ * Base asset bundle class for DLL-compatible CKEditor packages.
  *
- * CKEditor bundles can define a list of plugin names and toolbar buttons provided by the asset bundle.
+ * Child classes can define a list of CKEditor plugin names and toolbar buttons provided by the package.
  *
  * If translation files are located in `translations/` relative to the source path, the appropriate translation file
  * will automatically be published alongside the JavaScript files defined by [[js]].
  *
  * @since 3.4.0
  */
-abstract class BaseCkeditorAsset extends AssetBundle
+abstract class BaseCkeditorPackageAsset extends AssetBundle
 {
     /**
      * @var string[] List of CKEditor plugins’ names that should be loaded by default.
@@ -59,7 +58,7 @@ abstract class BaseCkeditorAsset extends AssetBundle
         parent::registerAssetFiles($view);
 
         if ($view instanceof View) {
-            $this->registerCkeditorPlugins($view);
+            $this->registerPackage($view);
         }
     }
 
@@ -97,14 +96,14 @@ abstract class BaseCkeditorAsset extends AssetBundle
         return true;
     }
 
-    private function registerCkeditorPlugins(View $view): void
+    private function registerPackage(View $view): void
     {
         if (!empty($this->pluginNames) || !empty($this->toolbarItems)) {
-            $view->registerJsWithVars(fn($bundle) => "CKEditor5.craftcms.registerBundle($bundle);", [
+            $view->registerJsWithVars(fn($package) => "CKEditor5.craftcms.registerPackage($package);", [
                 [
                     'pluginNames' => $this->pluginNames,
                     'toolbarItems' => $this->toolbarItems,
-                ]
+                ],
             ], View::POS_END);
         }
     }

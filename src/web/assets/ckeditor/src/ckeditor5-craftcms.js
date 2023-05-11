@@ -215,9 +215,9 @@ const findPlugin = (pluginName) => {
   }
 };
 
-export const registerBundle = (bundle) => {
-  if (bundle.pluginNames) {
-    bundle.pluginNames.forEach((pluginName) => {
+export const registerPackage = (pkg) => {
+  if (pkg.pluginNames) {
+    pkg.pluginNames.forEach((pluginName) => {
       const plugin = findPlugin(pluginName);
       if (!plugin) {
         console.warn(
@@ -229,20 +229,20 @@ export const registerBundle = (bundle) => {
     });
   }
 
-  if (bundle.toolbarItems) {
-    bundle.toolbarItems = normalizeToolbarItems(bundle.toolbarItems);
-    toolbarItems.push(...bundle.toolbarItems);
+  if (pkg.toolbarItems) {
+    pkg.toolbarItems = normalizeToolbarItems(pkg.toolbarItems);
+    toolbarItems.push(...pkg.toolbarItems);
   }
 
   if (
-    bundle.pluginNames &&
-    bundle.pluginNames.length &&
-    bundle.toolbarItems &&
-    bundle.toolbarItems.length
+    pkg.pluginNames &&
+    pkg.pluginNames.length &&
+    pkg.toolbarItems &&
+    pkg.toolbarItems.length
   ) {
     pluginButtonMap.push({
-      plugins: bundle.pluginNames,
-      buttons: bundle.toolbarItems
+      plugins: pkg.pluginNames,
+      buttons: pkg.toolbarItems
         .flat()
         .map((item) => item.buttons)
         .flat(),

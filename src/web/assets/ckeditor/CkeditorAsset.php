@@ -18,7 +18,7 @@ use craft\web\View;
  *
  * @since 3.0.0
  */
-class CkeditorAsset extends BaseCkeditorAsset
+class CkeditorAsset extends BaseCkeditorPackageAsset
 {
     /**
      * @event Event The event that is triggered when asset bundle is published.
