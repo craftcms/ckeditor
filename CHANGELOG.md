@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added support for [registering additional CKEditor plugins](https://github.com/craftcms/ckeditor#adding-ckeditor-plugins). ([#97](https://github.com/craftcms/ckeditor/pull/97))
+- CKEditor configs generated from Redactor fields no longer set `link.addTargetToExternalLinks = true` for Redactor fields that had `linkNewTab` enabled. ([#98](https://github.com/craftcms/ckeditor/issues/98))
 - Fixed a JavaScript error that occurred if there were no sections, category groups, or volumes.
 - Added `craft\ckeditor\web\assets\BaseCkeditorPackageAsset`.
 - Added `craft\ckeditor\web\assets\ckeditor\CkeditorAsset::EVENT_PUBLISH`.
