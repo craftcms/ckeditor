@@ -154,7 +154,7 @@
     JSON.stringify({{ jsonSchema|json_encode|raw }})
       .replace(
         new RegExp(Craft.escapeRegex(JSON.stringify('__PLUGIN_LIST__')), 'g'),
-        JSON.stringify(Ckeditor.pluginNames)
+        JSON.stringify(CKEditor5.craftcms.pluginNames())
       )
   );
 

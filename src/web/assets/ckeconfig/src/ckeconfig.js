@@ -1,5 +1,5 @@
 import ToolbarBuilder from './ToolbarBuilder';
 import ConfigOptions from './ConfigOptions';
 
-window.Ckeditor.ToolbarBuilder = ToolbarBuilder;
-window.Ckeditor.ConfigOptions = ConfigOptions;
+window.CKEditor5.craftcms.ToolbarBuilder = ToolbarBuilder;
+window.CKEditor5.craftcms.ConfigOptions = ConfigOptions;
