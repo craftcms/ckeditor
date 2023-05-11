@@ -2,7 +2,10 @@
 
 ## Unreleased
 
+- Added support for registering additional CKEditor plugins. ([#97](https://github.com/craftcms/ckeditor/pull/97))
 - Fixed a JavaScript error that occurred if there were no sections, category groups, or volumes.
+- Added `craft\ckeditor\web\assets\ckeditor\BaseCkeditorPackageAsset`.
+- Added `craft\ckeditor\web\assets\ckeditor\CkeditorAsset::EVENT_PUBLISH`.
 - Updated CKEditor 5 to 37.1.0.
 
 ## 3.3.0 - 2023-05-02

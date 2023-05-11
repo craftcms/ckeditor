@@ -117,3 +117,53 @@ You can used the `ckeditor/convert` command to convert any existing Redactor fie
 ```sh
 php craft ckeditor/convert
 ```
+
+## Adding Custom CKEditor Plugins
+
+Craft CMS plugins can register additional CKEditor plugins to extend its functionality.
+
+The first step is to create a [DLL-compatible](https://ckeditor.com/docs/ckeditor5/latest/installation/advanced/alternative-setups/dll-builds.html) package which provides the CKEditor plugin(s) you wish to add.
+
+- If you’re including one of CKEditor’s first party plugin packages (`@ckeditor/ckeditor5-<name>`), it will already include a `build` directory with a DLL-compatible package inside it.
+- If you’re creating a custom CKEditor plugin, use [CKEditor’s package generator](https://ckeditor.com/docs/ckeditor5/latest/framework/plugins/package-generator/using-package-generator.html) to scaffold it, and run its [`dll:build` command](https://ckeditor.com/docs/ckeditor5/latest/framework/plugins/package-generator/javascript-package.html#dllbuild) to create a DLL-compatible package.
+
+Once the CKEditor package is in place in your Craft plugin, create an [asset bundle](https://craftcms.com/docs/4.x/extend/asset-bundles.html) which extends [`BaseCkeditorPackageAsset`](src/web/assets/ckeditor/BaseCkeditorPackageAsset.php). The asset bundle defines the package’s build directory, filename, a list of CKEditor plugin names provided by the package, and any toolbar items that should be made available via the plugin.
+
+For example, here’s an asset bundle which defines a “Tokens” plugin:
+
+```php
+<?php
+
+namespace mynamespace\web\assets\tokens;
+
+use craft\ckeditor\web\assets\ckeditor\BaseCkeditorPackageAsset;
+
+class TokensAsset extends BaseCkeditorPackageAsset
+{
+    public $sourcePath = __DIR__ . '/build';
+
+    public $js = [
+        'tokens.js',
+    ];
+
+    public array $pluginNames = [
+        'Tokens',
+    ];
+
+    public array $toolbarItems = [
+        'tokens',
+    ];
+}
+```
+
+Finally, you’ll want to ensure that your package’s asset bundle is registered whenever the core CKEditor asset bundle is registered. Add the following code to your plugin’s `init()` method:
+
+```php
+use Craft;
+use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
+use yii\base\Event;
+
+Event::on(CkeditorAsset::class, CkeditorAsset::EVENT_PUBLISH, function() {
+    Craft::$app->view->registerAssetBundle(TokensAsset::class);
+});
+```
