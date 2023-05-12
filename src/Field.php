@@ -428,6 +428,7 @@ JS,
     private function _translateFromRedactor(string $value): string
     {
         $offset = 0;
+        // keep going through the field $value, looking for <figure><img and <figure><iframe
         while (preg_match('/<figure\b[^>]*>.*(<img|<iframe)/i', $value, $openMatch, PREG_OFFSET_CAPTURE, $offset)) {
             $figureEndOffset = $openMatch[0][1] + strlen($openMatch[0][0]);
             if (!preg_match('/<\/figure>/', $value, $closeMatch, PREG_OFFSET_CAPTURE, $figureEndOffset)) {
@@ -436,16 +437,24 @@ JS,
 
             $search = $openMatch[0][0];
             $replace = null;
+            // if we have a <figure> with <img in it, and it doesn't have an image class
             if (str_contains($search, '<img') && !preg_match('/(\s|")image(\s|")/', $openMatch[0][0])) {
+                // add it in and keep all other existing classes
                 $replace = preg_replace('/(?=class)((class=")([^"]*)")/', '$2image $3"', $openMatch[0][0]);
+            // if we have a <figure> with <iframe in it, and it doesn't have a media class
             } elseif (str_contains($search, '<iframe') && !preg_match('/(\s|")media(\s|")/', $openMatch[0][0])) {
+                // add it in and keep all other existing classes
                 $replace = preg_replace('/(?=class)((class=")([^"]*)")/', '$2media $3"', $openMatch[0][0]);
             }
 
+            // if we found a replacement
             if ($replace !== null) {
+                // part of the $value that contains the <figure> we just found
                 $part1 = substr($value, 0, $figureEndOffset);
+                // part of the $value after the <figure> we just found
                 $part2 = substr($value, $figureEndOffset);
 
+                // replace the "redactor" <figure> with the "ckeditor" one
                 $part1 = str_replace($search, $replace, $part1);
                 $value = $part1 . $part2;
             }
