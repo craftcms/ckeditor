@@ -411,6 +411,24 @@ JS,
     }
 
     /**
+     * @inheritdoc
+     */
+    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
+    {
+        if ($value instanceof HtmlFieldData) {
+            $value = $value->getRawContent();
+        }
+
+        if ($value !== null) {
+            // Redactor to CKEditor syntax for <figure>
+            // (https://github.com/craftcms/ckeditor/issues/96)
+            $value = $this->_translateFromRedactor($value);
+        }
+
+        return parent::serializeValue($value, $element);
+    }
+
+    /**
      * "Translate" Redactor's <figure> syntax to what CKEditor understands
      * Redactor syntax for images is: <figure><img...
      * Redactor syntax for videos is: <figure><iframe...
