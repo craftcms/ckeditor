@@ -10,9 +10,11 @@ use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
+use craft\errors\InvalidHtmlTagException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\UrlHelper;
 use craft\htmlfield\events\ModifyPurifierConfigEvent;
 use craft\htmlfield\HtmlField;
 use craft\htmlfield\HtmlFieldData;
@@ -201,7 +203,7 @@ class Field extends HtmlField
         $view = Craft::$app->getView();
         $view->registerAssetBundle(CkeditorAsset::class);
 
-        $ckeConfig = $this->_getCkeConfig();
+        $ckeConfig = $this->_ckeConfig();
 
         if ($this->defaultTransform) {
             $defaultTransform = Craft::$app->getImageTransforms()->getTransformByUid($this->defaultTransform);
@@ -404,7 +406,7 @@ JS,
 
             // Redactor to CKEditor syntax for <figure>
             // (https://github.com/craftcms/ckeditor/issues/96)
-            $value = $this->_translateFromRedactor($value);
+            $value = $this->_normalizeFigures($value);
         }
 
         return parent::prepValueForInput($value, $element);
@@ -422,106 +424,86 @@ JS,
         if ($value !== null) {
             // Redactor to CKEditor syntax for <figure>
             // (https://github.com/craftcms/ckeditor/issues/96)
-            $value = $this->_translateFromRedactor($value);
+            $value = $this->_normalizeFigures($value);
         }
 
         return parent::serializeValue($value, $element);
     }
 
     /**
-     * "Translate" Redactor's <figure> syntax to what CKEditor understands
-     * Redactor syntax for images is: <figure><img...
-     * Redactor syntax for videos is: <figure><iframe...
-     *
-     * For CKEditor to understand that <figure> contains an image, it has to have class="image"
-     * For CKEditor to understand that <figure> contains a video, it has to have class="media"
-     * Additionally, if mediaEmbed -> previewsInData is set to true, video syntax will be:
-     * <figure class="media"><div data-oembed-url="<URL>"><iframe...
-     * without it, it will be
-     * <figure class="media"><oembed...
+     * Normalizes <figure> tags, ensuring they have an `image` or `media` class depending on their contents,
+     * and they contain a <div data-oembed-url> or <oembed> tag, depending on the `mediaEmbed.previewsInData`
+     * CKEditor config option.
      *
      * @param string $value
      * @return string
      */
-    private function _translateFromRedactor(string $value): string
+    private function _normalizeFigures(string $value): string
     {
+        // Ensure <figure> tags have `image` or `media` classes
         $offset = 0;
-        // keep going through the field $value, looking for <figure><img and <figure><iframe
-        while (preg_match('/<figure\b[^>]*>.*(<img|<iframe)/i', $value, $openMatch, PREG_OFFSET_CAPTURE, $offset)) {
-            $figureEndOffset = $openMatch[0][1] + strlen($openMatch[0][0]);
-            if (!preg_match('/<\/figure>/', $value, $closeMatch, PREG_OFFSET_CAPTURE, $figureEndOffset)) {
-                break;
+        while (preg_match('/<figure\b[^>]*>\s*<(img|iframe)\b.*?<\/figure>/is', $value, $match, PREG_OFFSET_CAPTURE, $offset)) {
+            /** @var int $startPos */
+            $startPos = $match[0][1];
+            $endPos = $startPos + strlen($match[0][0]);
+
+            $class = strtolower($match[1][0]) === 'img' ? 'image' : 'media';
+            try {
+                $tag = Html::modifyTagAttributes($match[0][0], [
+                    'class' => [$class],
+                ]);
+            } catch (InvalidHtmlTagException) {
+                $offset = $endPos;
+                continue;
             }
 
-            $search = $openMatch[0][0];
-            $replace = null;
-            // if we have a <figure> with <img in it, and it doesn't have an image class
-            if (str_contains($search, '<img') && !preg_match('/(\s|")image(\s|")/', $openMatch[0][0])) {
-                // add it in and keep all other existing classes
-                $replace = preg_replace('/(?=class)((class=")([^"]*)")/', '$2image $3"', $openMatch[0][0]);
-            // if we have a <figure> with <iframe in it, and it doesn't have a media class
-            } elseif (str_contains($search, '<iframe') && !preg_match('/(\s|")media(\s|")/', $openMatch[0][0])) {
-                // add it in and keep all other existing classes
-                $replace = preg_replace('/(?=class)((class=")([^"]*)")/', '$2media $3"', $openMatch[0][0]);
-            }
-
-            // if we found a replacement
-            if ($replace !== null) {
-                // part of the $value that contains the <figure> we just found
-                $part1 = substr($value, 0, $figureEndOffset);
-                // part of the $value after the <figure> we just found
-                $part2 = substr($value, $figureEndOffset);
-
-                // replace the "redactor" <figure> with the "ckeditor" one
-                $part1 = str_replace($search, $replace, $part1);
-                $value = $part1 . $part2;
-            }
-
-            $offset = $closeMatch[0][1] + strlen($closeMatch[0][0]);
+            $value = substr($value, 0, $startPos) . $tag . substr($value, $endPos);
+            $offset = $startPos + strlen($tag);
         }
 
-        // get cke config so that we know how to handle videos
-        $ckeConfig = $this->_getCkeConfig();
+        $previewsInData = $this->_ckeConfig()->options['mediaEmbed']['previewsInData'] ?? false;
 
-        // if config is not set with previewsInData: true, wrap the iframe if <div data-oembed-url>
-        if (isset($ckeConfig->options['mediaEmbed']['previewsInData']) && $ckeConfig->options['mediaEmbed']['previewsInData'] === true) {
-            // not sure about the hardcoded https in the replacement, but CKEditor insists on having the protocol and Redactor insists on just "//"
-            $value = preg_replace(
-                '/(<figure\b[^>]*>)(<iframe\b[^>]*)(src="([^"]*)")(.*)(<\/iframe>)(<\/figure>)/i',
-                '$1<div data-oembed-url="https:$4">$2$3$5$6</div>$7',
-                $value);
-        } else {
-            // otherwise, change iframe to oembed
-            // not sure about the hardcoded https in the replacement, but CKEditor insists on having the protocol and Redactor insists on just "//"
-            $value = preg_replace(
-                '/(<figure\b[^>]*>)(<iframe\b)([^>]*)(src=")(.*)(<\/iframe>)/i',
-                '$1<oembed$3url="https:$5</oembed>',
-                $value
-            );
-        }
+        $value = preg_replace_callback(
+            '/(<figure\b[^>]*>\s*)(<iframe\b([^>]*)src="([^"]+)"([^>]*)>(.*?)<\/iframe>)/i',
+            function(array $match) use ($previewsInData) {
+                $absUrl = UrlHelper::isProtocolRelativeUrl($match[4]) ? "https:$match[4]" : $match[4];
+                return $previewsInData
+                    ? sprintf(
+                        '%s<div data-oembed-url="%s">%s</div>',
+                        $match[1],
+                        $absUrl,
+                        $match[2],
+                    )
+                    : sprintf(
+                        '%s<oembed%surl="%s"%s>%s</oembed>',
+                        $match[1],
+                        $match[3],
+                        $absUrl,
+                        $match[5],
+                        $match[6],
+                    );
+            },
+            $value,
+        );
 
         return $value;
     }
 
     /**
-     * Return CKE config based on uid or default
+     * Returns the field’s CKEditor config.
      *
      * @return CkeConfig
      */
-    private function _getCkeConfig(): CkeConfig
+    private function _ckeConfig(): CkeConfig
     {
-        $ckeConfig = null;
         if ($this->ckeConfig) {
             try {
-                $ckeConfig = Plugin::getInstance()->getCkeConfigs()->getByUid($this->ckeConfig);
+                return Plugin::getInstance()->getCkeConfigs()->getByUid($this->ckeConfig);
             } catch (InvalidArgumentException) {
             }
         }
-        if (!$ckeConfig) {
-            $ckeConfig = new CkeConfig();
-        }
 
-        return $ckeConfig;
+        return new CkeConfig();
     }
 
     /**
