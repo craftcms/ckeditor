@@ -10,9 +10,11 @@ use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
+use craft\errors\InvalidHtmlTagException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\UrlHelper;
 use craft\htmlfield\events\ModifyPurifierConfigEvent;
 use craft\htmlfield\HtmlField;
 use craft\htmlfield\HtmlFieldData;
@@ -201,16 +203,7 @@ class Field extends HtmlField
         $view = Craft::$app->getView();
         $view->registerAssetBundle(CkeditorAsset::class);
 
-        $ckeConfig = null;
-        if ($this->ckeConfig) {
-            try {
-                $ckeConfig = Plugin::getInstance()->getCkeConfigs()->getByUid($this->ckeConfig);
-            } catch (InvalidArgumentException) {
-            }
-        }
-        if (!$ckeConfig) {
-            $ckeConfig = new CkeConfig();
-        }
+        $ckeConfig = $this->_ckeConfig();
 
         if ($this->defaultTransform) {
             $defaultTransform = Craft::$app->getImageTransforms()->getTransformByUid($this->defaultTransform);
@@ -410,9 +403,107 @@ JS,
                 $pairs["<$tag />"] = "<$tag>";
             }
             $value = strtr($value, $pairs);
+
+            // Redactor to CKEditor syntax for <figure>
+            // (https://github.com/craftcms/ckeditor/issues/96)
+            $value = $this->_normalizeFigures($value);
         }
 
         return parent::prepValueForInput($value, $element);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
+    {
+        if ($value instanceof HtmlFieldData) {
+            $value = $value->getRawContent();
+        }
+
+        if ($value !== null) {
+            // Redactor to CKEditor syntax for <figure>
+            // (https://github.com/craftcms/ckeditor/issues/96)
+            $value = $this->_normalizeFigures($value);
+        }
+
+        return parent::serializeValue($value, $element);
+    }
+
+    /**
+     * Normalizes <figure> tags, ensuring they have an `image` or `media` class depending on their contents,
+     * and they contain a <div data-oembed-url> or <oembed> tag, depending on the `mediaEmbed.previewsInData`
+     * CKEditor config option.
+     *
+     * @param string $value
+     * @return string
+     */
+    private function _normalizeFigures(string $value): string
+    {
+        // Ensure <figure> tags have `image` or `media` classes
+        $offset = 0;
+        while (preg_match('/<figure\b[^>]*>\s*<(img|iframe)\b.*?<\/figure>/is', $value, $match, PREG_OFFSET_CAPTURE, $offset)) {
+            /** @var int $startPos */
+            $startPos = $match[0][1];
+            $endPos = $startPos + strlen($match[0][0]);
+
+            $class = strtolower($match[1][0]) === 'img' ? 'image' : 'media';
+            try {
+                $tag = Html::modifyTagAttributes($match[0][0], [
+                    'class' => [$class],
+                ]);
+            } catch (InvalidHtmlTagException) {
+                $offset = $endPos;
+                continue;
+            }
+
+            $value = substr($value, 0, $startPos) . $tag . substr($value, $endPos);
+            $offset = $startPos + strlen($tag);
+        }
+
+        $previewsInData = $this->_ckeConfig()->options['mediaEmbed']['previewsInData'] ?? false;
+
+        $value = preg_replace_callback(
+            '/(<figure\b[^>]*>\s*)(<iframe\b([^>]*)src="([^"]+)"([^>]*)>(.*?)<\/iframe>)/i',
+            function(array $match) use ($previewsInData) {
+                $absUrl = UrlHelper::isProtocolRelativeUrl($match[4]) ? "https:$match[4]" : $match[4];
+                return $previewsInData
+                    ? sprintf(
+                        '%s<div data-oembed-url="%s">%s</div>',
+                        $match[1],
+                        $absUrl,
+                        $match[2],
+                    )
+                    : sprintf(
+                        '%s<oembed%surl="%s"%s>%s</oembed>',
+                        $match[1],
+                        $match[3],
+                        $absUrl,
+                        $match[5],
+                        $match[6],
+                    );
+            },
+            $value,
+        );
+
+        return $value;
+    }
+
+    /**
+     * Returns the field’s CKEditor config.
+     *
+     * @return CkeConfig
+     */
+    private function _ckeConfig(): CkeConfig
+    {
+        if ($this->ckeConfig) {
+            try {
+                return Plugin::getInstance()->getCkeConfigs()->getByUid($this->ckeConfig);
+            } catch (InvalidArgumentException) {
+            }
+        }
+
+        return new CkeConfig();
     }
 
     /**
