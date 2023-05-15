@@ -1,4 +1,4 @@
-import {Plugin} from '@ckeditor/ckeditor5-core';
+import {Plugin} from 'ckeditor5/src/core';
 import {Collection} from 'ckeditor5/src/utils';
 import {
   Model,
@@ -10,8 +10,7 @@ import {
 import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
 import {LinkUI} from '@ckeditor/ckeditor5-link';
 import {LINK_KEYSTROKE} from '@ckeditor/ckeditor5-link/src/utils';
-import {Range} from '@ckeditor/ckeditor5-engine';
-
+import {Range} from 'ckeditor5/src/engine';
 export default class CraftLinkUI extends Plugin {
   static get requires() {
     return [LinkUI];
@@ -37,7 +36,8 @@ export default class CraftLinkUI extends Plugin {
 
     if (Craft.isMultiSite) {
       this._modifyFormViewTemplate();
-      const refHandlesPattern = Ckeditor.localizedRefHandles.join('|');
+      const refHandlesPattern =
+        CKEditor5.craftcms.localizedRefHandles.join('|');
       this.localizedRefHandleRE = new RegExp(
         `(#(?:${refHandlesPattern}):\\d+)(?:@(\\d+))?`
       );
@@ -48,7 +48,8 @@ export default class CraftLinkUI extends Plugin {
     const editor = this.editor;
     const linkOptions = editor.config.get('linkOptions');
     if (!linkOptions || !linkOptions.length) {
-      return super._createToolbarLinkButton();
+      this._linkUI._createToolbarLinkButton();
+      return;
     }
     const linkCommand = editor.commands.get('link');
     const t = editor.t;

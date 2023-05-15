@@ -785,13 +785,6 @@ class ConvertController extends Controller
                         'content' => $value,
                     ];
                     break;
-                case 'linkNewTab':
-                    if ($value) {
-                        $ckeConfig->options['link'] = [
-                            'addTargetToExternalLinks' => true,
-                        ];
-                    }
-                    break;
                 case 'placeholder':
                     if ($value) {
                         $ckeConfig->options['placeholder'] = $value;
