@@ -47,6 +47,7 @@ import {
 import {WordCount} from '@ckeditor/ckeditor5-word-count';
 import {default as CraftImageInsertUI} from './image/imageinsert/imageinsertui';
 import {default as CraftLinkUI} from './link/linkui';
+import ImageTransform from './image/imagetransform';
 
 const allPlugins = [
   CKEditor5.paragraph.Paragraph,
@@ -94,6 +95,7 @@ const allPlugins = [
   Underline,
   WordCount,
   CraftImageInsertUI,
+  ImageTransform,
   CraftLinkUI,
 ];
 
@@ -156,6 +158,7 @@ const pluginButtonMap = [
       'ImageCaption',
       'ImageStyle',
       'ImageToolbar',
+      'ImageTransform',
       'LinkImage',
     ],
     buttons: ['insertImage'],
@@ -292,17 +295,27 @@ export const pluginNames = () => allPlugins.map((p) => p.pluginName);
 
 export const create = async function (element, config) {
   let plugins = allPlugins;
+  const removePlugins = [];
 
   if (config.toolbar) {
     // Remove any plugins that aren't included in the toolbar
-    const removePlugins = pluginButtonMap
-      .filter(
-        ({buttons}) =>
-          !config.toolbar.some((button) => buttons.includes(button))
-      )
-      .map(({plugins}) => plugins)
-      .flat();
+    removePlugins.push(
+      ...pluginButtonMap
+        .filter(
+          ({buttons}) =>
+            !config.toolbar.some((button) => buttons.includes(button))
+        )
+        .map(({plugins}) => plugins)
+        .flat()
+    );
+  }
 
+  // remove ImageTransform if there aren't any image transforms
+  if (!config.transforms || !config.transforms.length) {
+    removePlugins.push('ImageTransform');
+  }
+
+  if (removePlugins.length) {
     plugins = plugins.filter((p) => !removePlugins.includes(p.pluginName));
   }
 

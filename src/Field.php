@@ -204,6 +204,7 @@ class Field extends HtmlField
         $view->registerAssetBundle(CkeditorAsset::class);
 
         $ckeConfig = $this->_ckeConfig();
+        $transforms = $this->_transforms();
 
         if ($this->defaultTransform) {
             $defaultTransform = Craft::$app->getImageTransforms()->getTransformByUid($this->defaultTransform);
@@ -245,6 +246,7 @@ class Field extends HtmlField
             ],
             'image' => [
                 'toolbar' => [
+                    ...(count($transforms) > 1 ? ['transformImage', '|'] : []),
                     'toggleImageCaption',
                     'imageTextAlternative',
                 ],
@@ -262,7 +264,7 @@ class Field extends HtmlField
                 ],
             ],
             'toolbar' => $toolbar,
-            'transforms' => $this->_transforms(),
+            'transforms' => $transforms,
             'ui' => [
                 'viewportOffset' => ['top' => 50],
             ],

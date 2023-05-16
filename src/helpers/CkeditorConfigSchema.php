@@ -285,21 +285,7 @@ final class CkeditorConfigSchema
             'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_image_imageconfig-ImageConfig.html',
             'properties' => [
                 'insert' => ['interface' => 'ImageInsertConfig'],
-                'resizeOptions' => [
-                    'type' => 'array',
-                    'items' => ['interface' => 'ImageResizeOption'],
-                ],
-                'resizeUnit' => ['enum' => ['px', '%']],
                 'styles' => ['interface' => 'ImageStyleConfig'],
-                'toolbar' => [
-                    'type' => 'array',
-                    'items' => [
-                        'anyOf' => [
-                            ['type' => 'string'],
-                            ['interface' => 'ImageStyleDropdownDefinition'],
-                        ],
-                    ],
-                ],
             ],
         ],
         'ImageInsertConfig' => [
@@ -311,16 +297,6 @@ final class CkeditorConfigSchema
                     'items' => ['type' => 'string'],
                 ],
             ],
-        ],
-        'ImageResizeOption' => [
-            'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_image_imageconfig-ImageResizeOption.html',
-            'properties' => [
-                'icon' => ['type' => 'string'],
-                'label' => ['type' => 'string'],
-                'name' => ['type' => 'string'],
-                'value' => ['type' => ['string', 'null']],
-            ],
-            'required' => ['name'],
         ],
         'ImageStyleConfig' => [
             'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_image_imageconfig-ImageStyleConfig.html',
@@ -335,19 +311,6 @@ final class CkeditorConfigSchema
                     ],
                 ],
             ],
-        ],
-        'ImageStyleDropdownDefinition' => [
-            'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_image_imageconfig-ImageStyleDropdownDefinition.html',
-            'properties' => [
-                'defaultItem' => ['type' => 'string'],
-                'items' => [
-                    'type' => 'array',
-                    'items' => ['type' => 'string'],
-                ],
-                'name' => ['type' => 'string'],
-                'title' => ['type' => 'string'],
-            ],
-            'required' => ['defaultItem', 'items', 'name'],
         ],
         'ImageStyleOptionDefinition' => [
             'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_image_imageconfig-ImageStyleOptionDefinition.html',
