@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 3.4.0 - 2023-05-16
 
 - Added the ability to change an image’s transform. ([#94](https://github.com/craftcms/ckeditor/discussions/94))
 - Added support for [registering additional CKEditor plugins](https://github.com/craftcms/ckeditor#adding-ckeditor-plugins). ([#97](https://github.com/craftcms/ckeditor/pull/97))
