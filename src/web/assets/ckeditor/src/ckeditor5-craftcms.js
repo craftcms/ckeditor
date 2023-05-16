@@ -45,8 +45,8 @@ import {
   TableUI,
 } from '@ckeditor/ckeditor5-table';
 import {WordCount} from '@ckeditor/ckeditor5-word-count';
-import {default as CraftLinkUI} from './plugins/linkui';
-import {default as CraftImageInsertUI} from './plugins/imageinsertui';
+import {default as CraftImageInsertUI} from './image/imageinsert/imageinsertui';
+import {default as CraftLinkUI} from './link/linkui';
 
 const allPlugins = [
   CKEditor5.paragraph.Paragraph,
