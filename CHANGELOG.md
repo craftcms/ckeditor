@@ -7,6 +7,7 @@
 - CKEditor configs generated from Redactor fields no longer set `link.addTargetToExternalLinks = true` for Redactor fields that had `linkNewTab` enabled. ([#98](https://github.com/craftcms/ckeditor/issues/98))
 - Image and media markup defined by Redactor fields now gets updated to be consistent with how CKEditor likes it. ([#96](https://github.com/craftcms/ckeditor/issues/96), [#100](https://github.com/craftcms/ckeditor/pull/100)) 
 - Fixed a JavaScript error that occurred if there were no sections, category groups, or volumes.
+- Fixed a bug where inserted images were missing their ref tag hashes, if no transform was selected and the field was configured with a default transform.
 - Added `craft\ckeditor\web\assets\BaseCkeditorPackageAsset`.
 - Added `craft\ckeditor\web\assets\ckeditor\CkeditorAsset::EVENT_PUBLISH`.
 - Updated CKEditor 5 to 37.1.0.

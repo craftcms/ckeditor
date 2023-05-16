@@ -133,19 +133,16 @@ export default class CraftImageInsertUI extends ImageInsertUI {
   }
 
   _getTransformUrl(assetId, handle, callback) {
-    var data = {
-      assetId: assetId,
-      handle: handle,
-    };
-
-    Craft.sendActionRequest('POST', 'assets/generate-transform', {data})
-      .then((response) => {
-        const url = response.data && response.data.url;
-        if (url) {
-          callback(url);
-        }
+    Craft.sendActionRequest('POST', 'ckeditor/ckeditor/image-url', {
+      data: {
+        assetId: assetId,
+        transform: handle,
+      },
+    })
+      .then(({data}) => {
+        callback(this._buildAssetUrl(assetId, data.url, handle));
       })
-      .catch(({response}) => {
+      .catch(() => {
         alert('There was an error generating the transform URL.');
       });
   }
