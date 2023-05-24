@@ -10,7 +10,6 @@
       (createOption, selectize) => {
         const slideout = new Craft.CpScreenSlideout('ckeditor/cke-configs/edit');
         slideout.on('submit', ev => {
-          debugger;
           createOption({
               text: ev.data.name,
               value: ev.data.uid,
