@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- The `ckeditor/convert` action will now find and convert `craft\fields\MissingField` instances that were meant to be Redactor fields. 
+
 ## 3.4.0 - 2023-05-16
 
 - Added the ability to change an image’s transform. ([#94](https://github.com/craftcms/ckeditor/discussions/94))

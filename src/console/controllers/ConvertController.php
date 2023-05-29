@@ -9,9 +9,11 @@ use craft\ckeditor\Field;
 use craft\ckeditor\Plugin;
 use craft\console\Controller;
 use craft\errors\OperationAbortedException;
+use craft\fields\MissingField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\helpers\Json;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\services\ProjectConfig;
 use yii\base\Exception;
@@ -187,6 +189,10 @@ class ConvertController extends Controller
             $this->stdout($this->markdownToAnsi(sprintf('Converting %s', $this->pathAndHandleMarkdown($path, $field))));
             $this->stdout(' …', Console::FG_GREY);
 
+            if ($field['type'] === MissingField::class) {
+                $field['settings'] = ProjectConfigHelper::unpackAssociativeArray($field['settings']['settings'] ?? []);
+            }
+
             try {
                 if (($field['settings']['configSelectionMode'] ?? null) === 'manual') {
                     $this->stdout(PHP_EOL . PHP_EOL);
@@ -247,7 +253,13 @@ class ConvertController extends Controller
     {
         $configs = [];
 
-        if (isset($config['type']) && $config['type'] === $type) {
+        if (
+            ($config['type'] ?? null) === $type ||
+            (
+                ($config['type'] ?? null) === MissingField::class &&
+                ($config['settings']['expectedType'] ?? null) === $type
+            )
+        ) {
             // found one
             $configs[$path] = $config;
         } else {
