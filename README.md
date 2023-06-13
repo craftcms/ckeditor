@@ -104,6 +104,25 @@ Use this as a starting point, which is the default config that CKEditor fields u
 
 See the [HTML Purifier documentation](http://htmlpurifier.org/live/configdoc/plain.html) for a list of available config options.
 
+For advanced customization, you can modify the `HTMLPurifier_Config` object directly via the `craft\ckeditor\Field::EVENT_MODIFY_PURIFIER_CONFIG` event.
+
+```php
+use craft\htmlfield\events\ModifyPurifierConfigEvent;
+use craft\ckeditor\Field;
+use HTMLPurifier_Config;
+use yii\base\Event;
+
+Event::on(
+    Field::class,
+    Field::EVENT_MODIFY_PURIFIER_CONFIG,
+    function(ModifyPurifierConfigEvent $event) {
+        /** @var HTMLPurifier_Config $config */
+        $config = $event->config;
+        // ...
+    }
+);
+```
+
 ### Embedding Media
 
 CKEditor 5 stores references to embedded media embeds using `oembed` tags. Craft CMS configures HTML Purifier to support these tags, however you will need to ensure that the `URI.SafeIframeRegexp` HTML Purifier setting is set to allow any domains you wish to embed content from. 
