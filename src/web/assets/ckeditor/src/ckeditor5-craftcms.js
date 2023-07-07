@@ -291,6 +291,52 @@ const trackChangesInSourceMode = function (editor) {
   });
 };
 
+const headingShortcuts = function (editor, config) {
+  if (config.heading !== undefined) {
+    var headingOptions = config.heading.options;
+
+    if (headingOptions.find((x) => x.view === 'h1') !== undefined) {
+      editor.keystrokes.set('Ctrl+Alt+1', () =>
+        editor.execute('heading', {value: 'heading1'})
+      );
+    }
+
+    if (headingOptions.find((x) => x.view === 'h2') !== undefined) {
+      editor.keystrokes.set('Ctrl+Alt+2', () =>
+        editor.execute('heading', {value: 'heading2'})
+      );
+    }
+
+    if (headingOptions.find((x) => x.view === 'h3') !== undefined) {
+      editor.keystrokes.set('Ctrl+Alt+3', () =>
+        editor.execute('heading', {value: 'heading3'})
+      );
+    }
+
+    if (headingOptions.find((x) => x.view === 'h4') !== undefined) {
+      editor.keystrokes.set('Ctrl+Alt+4', () =>
+        editor.execute('heading', {value: 'heading4'})
+      );
+    }
+
+    if (headingOptions.find((x) => x.view === 'h5') !== undefined) {
+      editor.keystrokes.set('Ctrl+Alt+5', () =>
+        editor.execute('heading', {value: 'heading5'})
+      );
+    }
+
+    if (headingOptions.find((x) => x.view === 'h6') !== undefined) {
+      editor.keystrokes.set('Ctrl+Alt+6', () =>
+        editor.execute('heading', {value: 'heading6'})
+      );
+    }
+
+    if (headingOptions.find((x) => x.model === 'paragraph') !== undefined) {
+      editor.keystrokes.set('Ctrl+Alt+p', 'paragraph');
+    }
+  }
+};
+
 export const pluginNames = () => allPlugins.map((p) => p.pluginName);
 
 export const create = async function (element, config) {
@@ -336,6 +382,11 @@ export const create = async function (element, config) {
   // Track changes in the source mode
   if (plugins.includes(SourceEditing)) {
     trackChangesInSourceMode(editor, SourceEditing);
+  }
+
+  // shortcuts for headings & paragraph
+  if (plugins.includes(Heading)) {
+    headingShortcuts(editor, config);
   }
 
   return editor;
