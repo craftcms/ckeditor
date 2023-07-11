@@ -68,6 +68,14 @@ class CkeConfigsController extends Controller
 
         return $this->asCpScreen()
             ->action('ckeditor/cke-configs/save')
+            ->altActions([
+                [
+                    'label' => Craft::t('app', 'Save and continue editing'),
+                    'action' => 'ckeditor/cke-configs/save',
+                    'params' => ['continueEditing' => true],
+                    'shortcut' => true,
+                ],
+            ])
             ->addCrumb(Craft::t('app', 'Settings'), 'settings')
             ->addCrumb(Craft::t('ckeditor', 'CKEditor Configs'), 'settings/ckeditor')
             ->title($title)
@@ -126,11 +134,16 @@ JS,
             );
         }
 
+        $redirectUrl = 'settings/ckeditor';
+        if ($this->request->getBodyParam('continueEditing')) {
+            $redirectUrl .= '/' . $ckeConfig->uid;
+        }
+
         return $this->asModelSuccess(
             $ckeConfig,
             Craft::t('ckeditor', 'CKEditor config saved.'),
             'ckeConfig',
-            redirect: 'settings/ckeditor',
+            redirect: $redirectUrl,
         );
     }
 
