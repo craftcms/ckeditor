@@ -43,6 +43,8 @@ import {
   TableCaption,
   TableToolbar,
   TableUI,
+  TableProperties,
+  TableCellProperties,
 } from '@ckeditor/ckeditor5-table';
 import {WordCount} from '@ckeditor/ckeditor5-word-count';
 import {default as CraftImageInsertUI} from './image/imageinsert/imageinsertui';
@@ -91,6 +93,8 @@ const allPlugins = [
   TableCaption,
   TableToolbar,
   TableUI,
+  TableProperties,
+  TableCellProperties,
   TodoList,
   Underline,
   WordCount,
@@ -199,7 +203,14 @@ const pluginButtonMap = [
   {plugins: ['Subscript'], buttons: ['subscript']},
   {plugins: ['Superscript'], buttons: ['superscript']},
   {
-    plugins: ['Table', 'TableCaption', 'TableToolbar', 'TableUI'],
+    plugins: [
+      'Table',
+      'TableCaption',
+      'TableToolbar',
+      'TableUI',
+      'TableProperties',
+      'TableCellProperties',
+    ],
     buttons: ['insertTable'],
   },
   {plugins: ['TodoList'], buttons: ['todoList']},
