@@ -26,9 +26,15 @@ export default Garnish.Base.extend({
     const editorElement = document.createElement('DIV');
     editorContainer.appendChild(editorElement);
 
+    // we're including both List and DocumentList in our DLL, but they can't co-exist;
+    // we're switching one off based on user's preferences, but those preferences are defined in the CKE config
+    // which uses this toolbar builder; so, to allow users to select all possible options,
+    // we're removing DocumentList plugins from here; that way user can still drag and drop ordered,
+    // unordered and to-do lists to the toolbar
     CKEditor5.craftcms
       .create(editorElement, {
         linkOptions: [{elementType: 'craft\\elements\\Asset'}],
+        removePlugins: ['DocumentList', 'DocumentListProperties'],
       })
       .then((editor) => {
         const cf = editor.ui.componentFactory;

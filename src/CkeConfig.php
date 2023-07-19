@@ -39,6 +39,14 @@ class CkeConfig extends Model
      */
     public array|false $headingLevels = [1, 2, 3, 4, 5, 6];
 
+
+    /**
+     * @var bool Whether to use DocumentList and DocumentListProperties instead of
+     * List and ListProperties
+     * @since 3.1.1
+     */
+    public bool $useDocumentList = false;
+
     /**
      * @var array|null Additional CKEditor config options
      * @since 3.1.0

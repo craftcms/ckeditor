@@ -298,6 +298,7 @@ JS;
 
         $baseConfigJs = Json::encode($event->baseConfig);
         $showWordCountJs = Json::encode($this->showWordCount);
+        $useDocumentListsJs = Json::encode($ckeConfig->useDocumentList);
 
         $view->registerJs(<<<JS
 (($) => {
@@ -325,6 +326,14 @@ JS;
     }
   } else {
     extraRemovePlugins.push('WordCount');
+  }
+  if ($useDocumentListsJs) {
+    extraRemovePlugins.push('List');
+    extraRemovePlugins.push('ListProperties');
+    extraRemovePlugins.push('TodoList');
+  } else {
+    extraRemovePlugins.push('DocumentList');
+    extraRemovePlugins.push('DocumentListProperties');
   }
   if (extraRemovePlugins.length) {
     if (typeof config.removePlugins === 'undefined') {

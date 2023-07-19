@@ -74,6 +74,21 @@
   values: ckeConfig.headingLevels,
 }) }}
 
+{{ forms.lightswitchField({
+  label: 'List Type'|t('ckeditor'),
+  id: 'use-document-list',
+  name: 'useDocumentList',
+  onLabel: 'Document List'|t('ckeditor'),
+  offLabel: 'Basic List'|t('ckeditor'),
+  instructions: 'By default, Craft’s CKEditor uses basic [List plugin]({listPluginUrl}). You can switch to using [DocumentList plugin]({documentListPluginUrl}) which supports styling of list elements as well as other, advanced features, but it doesn’t support [Todo Lists]({todoListPluginUrl}).'|t('ckeditor', {
+    listPluginUrl: 'https://ckeditor.com/docs/ckeditor5/latest/features/lists/lists.html',
+    documentListPluginUrl: 'https://ckeditor.com/docs/ckeditor5/latest/features/lists/document-lists.html',
+    todoListPluginUrl: 'https://ckeditor.com/docs/ckeditor5/latest/features/lists/todo-lists.html',
+  }),
+  value: 1,
+  on: ckeConfig.useDocumentList
+}) }}
+
 {% embed '_includes/forms/field.twig' with {
   label: 'Config Options'|t('ckeditor'),
   instructions: 'Define custom [config options]({link}) which should be merged with the default config.'|t('ckeditor', {
