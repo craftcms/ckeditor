@@ -377,6 +377,9 @@ JS,
     {
         $purifierConfig = parent::purifierConfig();
 
+        // adjust the purifier config based on the plugins used in the field
+        $purifierConfig = $this->_adjustPurifierConfig($purifierConfig);
+
         // Give plugins a chance to modify the HTML Purifier config, or add new ones
         $event = new ModifyPurifierConfigEvent([
             'config' => $purifierConfig,
@@ -689,5 +692,38 @@ JS,
             'handle' => $transform->handle,
             'name' => $transform->name,
         ])->values()->all();
+    }
+
+    /**
+     * Adjust HTML Purifier based on items added to the toolbar
+     *
+     * @param HTMLPurifier_Config $purifierConfig
+     * @return HTMLPurifier_Config
+     * @throws \HTMLPurifier_Exception
+     */
+    private function _adjustPurifierConfig(HTMLPurifier_Config $purifierConfig): HTMLPurifier_Config
+    {
+        $ckeConfig = $this->_ckeConfig();
+
+        // CKEditor's todoList has a specific markup that we now need to allow in the purifier
+        // <ul class="todo-list">
+        //    <li>
+        //        <label class="todo-list__label">
+        //            <input type="checkbox" disabled="disabled" checked="checked">
+        //            <span class="todo-list__label__description">asdas</span>
+        //        </label>
+        //    </li>
+        // </ul>
+        if (in_array('todoList', $ckeConfig->toolbar)) {
+            if ($def = $purifierConfig->getDefinition('HTML', true)) {
+                $def->addElement('input', 'Inline', 'Inline', '', [
+                    'type' => 'Enum#checkbox',
+                    'disabled' => 'Enum#disabled',
+                    'checked' => 'Enum#checked',
+                ]);
+            }
+        }
+
+        return $purifierConfig;
     }
 }
