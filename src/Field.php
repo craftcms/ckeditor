@@ -716,6 +716,7 @@ JS,
         // </ul>
         if (in_array('todoList', $ckeConfig->toolbar)) {
             if ($def = $purifierConfig->getDefinition('HTML', true)) {
+                /** @var \HTMLPurifier_HTMLDefinition $def */
                 $def->addElement('input', 'Inline', 'Inline', '', [
                     'type' => 'Enum#checkbox',
                     'disabled' => 'Enum#disabled',
