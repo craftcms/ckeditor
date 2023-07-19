@@ -32,7 +32,13 @@ import {HorizontalLine} from '@ckeditor/ckeditor5-horizontal-line';
 import {HtmlEmbed} from '@ckeditor/ckeditor5-html-embed';
 import {Indent} from '@ckeditor/ckeditor5-indent';
 import {LinkEditing, AutoLink, LinkImage} from '@ckeditor/ckeditor5-link';
-import {DocumentList, DocumentListProperties, List, ListProperties, TodoList} from '@ckeditor/ckeditor5-list';
+import {
+  DocumentList,
+  DocumentListProperties,
+  List,
+  ListProperties,
+  TodoList,
+} from '@ckeditor/ckeditor5-list';
 import {MediaEmbed, MediaEmbedToolbar} from '@ckeditor/ckeditor5-media-embed';
 import {PageBreak} from '@ckeditor/ckeditor5-page-break';
 import {PasteFromOffice} from '@ckeditor/ckeditor5-paste-from-office';
