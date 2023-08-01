@@ -254,7 +254,10 @@ class Field extends HtmlField
                 ],
             ],
             'language' => [
-                'ui' => Craft::$app->language,
+                'ui' => match (Craft::$app->language) {
+                    'nn' => 'no',
+                    default => strtolower(Craft::$app->language),
+                },
                 'content' => $element?->getSite()->language ?? Craft::$app->language,
             ],
             'linkOptions' => $this->_linkOptions($element),
