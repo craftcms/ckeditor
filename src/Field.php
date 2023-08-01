@@ -358,7 +358,7 @@ JS,
             ]);
         }
 
-        $this->_registerExtraTranslations($baseConfig, $ckeConfig, $view);
+        $this->_registerTranslations($baseConfig, $ckeConfig, $view);
 
         return Html::tag('div', $html, [
             'class' => array_filter([
@@ -696,11 +696,24 @@ JS,
         ])->values()->all();
     }
 
-    private function _registerExtraTranslations(array $baseConfig, CkeConfig $ckeConfig, View $view): void
+    /**
+     * Register native CKEditor translation files based on config.
+     * For example, if the app language is "en" you should still be able to use "pl" for the CKEditor UI
+     * if you specify that in the CKE config;
+     * It also allows you to have the cke field language dependent on the config,
+     * and not always on the app and site languages
+     *
+     * @param array $baseConfig
+     * @param CkeConfig $ckeConfig
+     * @param View $view
+     * @return void
+     * @throws \yii\base\InvalidConfigException
+     */
+    private function _registerTranslations(array $baseConfig, CkeConfig $ckeConfig, View $view): void
     {
         $languages = [];
 
-        // if ckeConfig las language info, it should overwrite the baseConfig
+        // if ckeConfig has language info, it should overwrite the baseConfig
         if (isset($ckeConfig->options, $ckeConfig->options['language'])) {
             // if it's a string like: "language": "pl", then the language should be used for both ui and content
             if (is_string($ckeConfig->options['language'])) {

@@ -62,6 +62,12 @@ abstract class BaseCkeditorPackageAsset extends AssetBundle
         }
     }
 
+    /**
+     * Include native CKEditor translation files based on the CKE config
+     *
+     * @param array $languages
+     * @return void
+     */
     public function includeFieldTranslations(array $languages): void
     {
         foreach ($languages as $language) {
