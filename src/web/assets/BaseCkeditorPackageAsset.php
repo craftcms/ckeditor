@@ -62,6 +62,14 @@ abstract class BaseCkeditorPackageAsset extends AssetBundle
         }
     }
 
+    public function includeFieldTranslations(array $languages): void
+    {
+        foreach ($languages as $language) {
+            $this->includeTranslationForLanguage($language);
+        }
+    }
+
+
     private function includeTranslation(): void
     {
         $language = match (Craft::$app->language) {

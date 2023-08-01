@@ -358,6 +358,8 @@ JS,
             ]);
         }
 
+        $this->_registerExtraTranslations($baseConfig, $ckeConfig, $view);
+
         return Html::tag('div', $html, [
             'class' => array_filter([
                 $this->showWordCount ? 'ck-with-show-word-count' : null,
@@ -692,5 +694,32 @@ JS,
             'handle' => $transform->handle,
             'name' => $transform->name,
         ])->values()->all();
+    }
+
+    private function _registerExtraTranslations(array $baseConfig, CkeConfig $ckeConfig, View $view): void
+    {
+        $languages = [];
+
+        // if ckeConfig las language info, it should overwrite the baseConfig
+        if (isset($ckeConfig->options, $ckeConfig->options['language'])) {
+            // if it's a string like: "language": "pl", then the language should be used for both ui and content
+            if (is_string($ckeConfig->options['language'])) {
+                $languages[] = $ckeConfig->options['language'];
+            } else {
+                // if it's an array, then we want to use $ckeConfig if it exists and fall back on $baseConfig if it doesn't
+                $languages[] = $ckeConfig->options['language']['ui'] ?? $baseConfig['language']['ui'];
+                $languages[] = $ckeConfig->options['language']['content'] ?? $baseConfig['language']['content'];
+            }
+        } else {
+            $languages[] = $baseConfig['language']['ui'];
+            $languages[] = $baseConfig['language']['content'];
+        }
+
+        $languages = array_unique($languages);
+
+        $am = $view->getAssetManager();
+        $bundle = $am->getBundle(CkeditorAsset::class);
+
+        $bundle->includeFieldTranslations($languages);
     }
 }
