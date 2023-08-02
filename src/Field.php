@@ -6,6 +6,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\ckeditor\events\DefineLinkOptionsEvent;
 use craft\ckeditor\events\ModifyConfigEvent;
+use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
 use craft\elements\Asset;
 use craft\elements\Category;
@@ -731,6 +732,7 @@ JS,
         $languages = array_unique($languages);
 
         $am = $view->getAssetManager();
+        /** @var BaseCkeditorPackageAsset $bundle */
         $bundle = $am->getBundle(CkeditorAsset::class);
 
         $bundle->includeFieldTranslations($languages);
