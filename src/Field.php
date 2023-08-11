@@ -364,10 +364,14 @@ JS;
       }
       const container = $('#' + $wordCountIdJs);
       container.html(Craft.escapeHtml(statText.join(', ')) || '&nbsp;');
-      if ($wordLimitJs && stats.words > $wordLimitJs) {
-        container.addClass('error');
-      } else {
-        container.removeClass('error');
+      if ($wordLimitJs) {
+        if (stats.words > $wordLimitJs) {
+          container.addClass('error');
+        } else if (stats.words >= Math.floor($wordLimitJs * .9)) {
+          container.addClass('warning');
+        } else {
+          container.removeClass('error warning');
+        }
       }
       onUpdate(stats);
     }
