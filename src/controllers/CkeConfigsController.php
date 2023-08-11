@@ -71,6 +71,12 @@ class CkeConfigsController extends Controller
             ->addCrumb(Craft::t('app', 'Settings'), 'settings')
             ->addCrumb(Craft::t('ckeditor', 'CKEditor Configs'), 'settings/ckeditor')
             ->title($title)
+            ->redirectUrl('settings/ckeditor')
+            ->addAltAction(Craft::t('app', 'Save and continue editing'), [
+                'redirect' => 'settings/ckeditor/{uid}',
+                'shortcut' => true,
+                'retainScroll' => true,
+            ])
             ->prepareScreen(function(Response $response) use ($ckeConfig) {
                 $jsonSchemaUri = sprintf('https://craft-code-editor.com/%s', $this->view->namespaceInputId('config-options-json'));
                 /** @var Response|CpScreenResponseBehavior $response */
@@ -130,7 +136,6 @@ JS,
             $ckeConfig,
             Craft::t('ckeditor', 'CKEditor config saved.'),
             'ckeConfig',
-            redirect: 'settings/ckeditor',
         );
     }
 

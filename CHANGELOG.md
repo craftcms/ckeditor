@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added the “Word Limit” field setting. ([#107](https://github.com/craftcms/ckeditor/issues/107))
+- CKEditor config edit pages now have a “Save and continue editing” alternative submit action, and the <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>S</kbd> keyboard shortcut now redirects back to the edit page. ([#108](https://github.com/craftcms/ckeditor/discussions/108)) 
 - The `ckeditor/convert` action will now find and convert `craft\fields\MissingField` instances that were meant to be Redactor fields.
 - CKEditor fields with the “Insert table” button now include the `TableProperties` and `TableCellProperties` plugins. ([#103](https://github.com/craftcms/ckeditor/issues/103)) 
 - Fixed a bug where could get marked as dirty when focussed, without making any changes. ([#90](https://github.com/craftcms/ckeditor/issues/90))
