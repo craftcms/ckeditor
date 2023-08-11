@@ -86,6 +86,12 @@ class Field extends HtmlField
     public ?string $ckeConfig = null;
 
     /**
+     * @var int|null The total number of words allowed.
+     * @since 3.5.0
+     */
+    public ?int $wordLimit = null;
+
+    /**
      * @var bool Whether the word count should be shown below the field.
      * @since 3.2.0
      */
@@ -140,6 +146,59 @@ class Field extends HtmlField
         );
 
         parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+
+        if ($this->wordLimit === 0) {
+            $this->wordLimit = null;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function defineRules(): array
+    {
+        return array_merge(parent::defineRules(), [
+            ['wordLimit', 'number', 'min' => 1],
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getElementValidationRules(): array
+    {
+        $rules = [];
+
+        if ($this->wordLimit) {
+            $rules[] = [
+                function(ElementInterface $element) {
+                    $value = strip_tags((string)$element->getFieldValue($this->handle));
+                    if (
+                        // regex copied from the WordCount plugin, for consistency
+                        preg_match_all('/(?:[\p{L}\p{N}]+\S?)+/', $value, $matches) &&
+                        count($matches[0]) > $this->wordLimit
+                    ) {
+                        $element->addError(
+                            "field:$this->handle",
+                            Craft::t('ckeditor', '{field} should contain at most {max, number} {max, plural, one{word} other{words}}.', [
+                                'field' => Craft::t('site', $this->name),
+                                'max' => $this->wordLimit,
+                            ]),
+                        );
+                    }
+                },
+            ];
+        }
+
+        return $rules;
     }
 
     /**
@@ -273,6 +332,10 @@ class Field extends HtmlField
             'transforms' => $transforms,
             'ui' => [
                 'viewportOffset' => ['top' => 50],
+                'poweredBy' => [
+                    'position' => 'inside',
+                    'label' => '',
+                ],
             ],
         ];
 
@@ -302,6 +365,7 @@ JS;
 
         $baseConfigJs = Json::encode($event->baseConfig);
         $showWordCountJs = Json::encode($this->showWordCount);
+        $wordLimitJs = $this->wordLimit ?: 0;
 
         $view->registerJs(<<<JS
 (($) => {
@@ -324,7 +388,17 @@ JS;
           num: stats.characters,
         }));
       }
-      $('#' + $wordCountIdJs).html(Craft.escapeHtml(statText.join(', ')) || '&nbsp;');
+      const container = $('#' + $wordCountIdJs);
+      container.html(Craft.escapeHtml(statText.join(', ')) || '&nbsp;');
+      if ($wordLimitJs) {
+        if (stats.words > $wordLimitJs) {
+          container.addClass('error');
+        } else if (stats.words >= Math.floor($wordLimitJs * .9)) {
+          container.addClass('warning');
+        } else {
+          container.removeClass('error warning');
+        }
+      }
       onUpdate(stats);
     }
   } else {
@@ -336,8 +410,7 @@ JS;
     }
     config.removePlugins.push(...extraRemovePlugins);
   }
-  CKEditor5.craftcms.create($idJs, config).then((editor) => {
-  });
+  CKEditor5.craftcms.create($idJs, config);
 })(jQuery)
 JS,
             View::POS_END,
@@ -347,7 +420,8 @@ JS,
             $view->registerCss($ckeConfig->css);
         }
 
-        $html = Html::textarea($this->handle, $this->prepValueForInput($value, $element), [
+        $value = $this->prepValueForInput($value, $element);
+        $html = Html::textarea($this->handle, $value, [
             'id' => $id,
             'class' => 'hidden',
         ]);

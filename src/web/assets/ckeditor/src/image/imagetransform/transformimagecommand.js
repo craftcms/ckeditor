@@ -21,7 +21,7 @@ export default class TransformImageCommand extends Command {
     const editor = this.editor;
     const imageUtils = editor.plugins.get('ImageUtils');
     return imageUtils.getClosestSelectedImageElement(
-      editor.model.document.selection
+      editor.model.document.selection,
     );
   }
 
@@ -32,7 +32,7 @@ export default class TransformImageCommand extends Command {
 
     const src = element.getAttribute('src');
     const match = src.match(
-      /#asset:(\d+)(?::transform:([a-zA-Z][a-zA-Z0-9_]*))?/
+      /#asset:(\d+)(?::transform:([a-zA-Z][a-zA-Z0-9_]*))?/,
     );
     if (!match) {
       return null;

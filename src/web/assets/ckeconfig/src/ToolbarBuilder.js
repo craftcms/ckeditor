@@ -45,7 +45,7 @@ export default Garnish.Base.extend({
           const group = items[i];
           if (group.length > 1) {
             const index = this.value.findIndex((name) =>
-              group.some((item) => item.button === name)
+              group.some((item) => item.button === name),
             );
             if (index !== -1) {
               for (let j = 0; j < group.length; j++) {
@@ -63,10 +63,10 @@ export default Garnish.Base.extend({
           dropTargets: this.$targetContainer,
           helper: ($item) => {
             const $outerContainer = $(
-              '<div class="offset-drag-helper ck ck-reset_all ck-editor ck-rounded-corners"/>'
+              '<div class="offset-drag-helper ck ck-reset_all ck-editor ck-rounded-corners"/>',
             );
             const $innerContainer = $('<div class="ck ck-toolbar"/>').appendTo(
-              $outerContainer
+              $outerContainer,
             );
             $item.appendTo($innerContainer);
             return $outerContainer;
@@ -77,10 +77,10 @@ export default Garnish.Base.extend({
             const $draggee = this.drag.$draggee;
             this.draggingSourceItem = $.contains(
               this.$sourceContainer[0],
-              $draggee[0]
+              $draggee[0],
             );
             this.draggingSeparator = $draggee.hasClass(
-              'ckeditor-tb--separator'
+              'ckeditor-tb--separator',
             );
             this.$insertion = $('<div class="ckeditor-tb--insertion"/>').css({
               width: $draggee.outerWidth(),
@@ -203,7 +203,7 @@ export default Garnish.Base.extend({
         }
 
         sourceItems['|'] = this.renderSeparator().appendTo(
-          this.$sourceContainer
+          this.$sourceContainer,
         )[0];
 
         this.$items = $();
@@ -216,7 +216,7 @@ export default Garnish.Base.extend({
             key = '|';
           } else {
             const group = items.find((group) =>
-              group.some((item) => item.button === name)
+              group.some((item) => item.button === name),
             );
             if (!group) {
               // must no longer be a valid item
@@ -238,7 +238,7 @@ export default Garnish.Base.extend({
 
   renderSeparator: function () {
     const $separator = $(
-      '<div class="ckeditor-tb--item ckeditor-tb--separator" data-cke-tooltip-text="Separator"><span class="ck ck-toolbar__separator"/></div>'
+      '<div class="ckeditor-tb--item ckeditor-tb--separator" data-cke-tooltip-text="Separator"><span class="ck ck-toolbar__separator"/></div>',
     );
     this.drag.addItems($separator);
     return $separator;
@@ -246,7 +246,7 @@ export default Garnish.Base.extend({
 
   renderComponentGroup: function (group) {
     group = group.map((item) =>
-      typeof item === 'string' ? item : item.button
+      typeof item === 'string' ? item : item.button,
     );
     const elements = [];
     const tooltips = [];
@@ -268,7 +268,7 @@ export default Garnish.Base.extend({
       tooltips.push(
         tooltip
           ? tooltip.replace(/ \(.*\)$/, '')
-          : `${name[0].toUpperCase()}${name.slice(1)}`
+          : `${name[0].toUpperCase()}${name.slice(1)}`,
       );
     }
 
@@ -301,7 +301,7 @@ export default Garnish.Base.extend({
       !Garnish.hitTest(
         this.drag.mouseX,
         this.drag.mouseY,
-        this.$targetContainer
+        this.$targetContainer,
       )
     ) {
       return false;
@@ -322,7 +322,7 @@ export default Garnish.Base.extend({
         midpoint.left,
         midpoint.top,
         this.drag.mouseX,
-        this.drag.mouseY
+        this.drag.mouseY,
       );
     });
 

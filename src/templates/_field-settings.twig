@@ -33,6 +33,18 @@
   {% endblock %}
 {% endembed %}
 
+{{ forms.textField({
+  id: 'word-limit',
+  name: 'wordLimit',
+  label: 'Word Limit'|t('ckeditor'),
+  value: field.wordLimit,
+  type: 'number',
+  min: 0,
+  step: 1,
+  size: 5,
+  errors: field.getErrors('wordLimit'),
+}) }}
+
 {{ forms.lightswitchField({
   id: 'show-word-count',
   name: 'showWordCount',

@@ -39,7 +39,7 @@ export default class CraftLinkUI extends Plugin {
       const refHandlesPattern =
         CKEditor5.craftcms.localizedRefHandles.join('|');
       this.localizedRefHandleRE = new RegExp(
-        `(#(?:${refHandlesPattern}):\\d+)(?:@(\\d+))?`
+        `(#(?:${refHandlesPattern}):\\d+)(?:@(\\d+))?`,
       );
     }
   }
@@ -63,7 +63,7 @@ export default class CraftLinkUI extends Plugin {
       splitButtonView.tooltip = true;
       splitButtonView.isToggleable = true;
       this.listenTo(splitButtonView, 'execute', () =>
-        this._linkUI._showUI(true)
+        this._linkUI._showUI(true),
       );
       dropdownView.on('execute', (evt) => {
         if (evt.source.linkOption) {
@@ -77,7 +77,7 @@ export default class CraftLinkUI extends Plugin {
       dropdownView.bind('isEnabled').to(linkCommand, 'isEnabled');
       splitButtonView.bind('isOn').to(linkCommand, 'value', (value) => !!value);
       addListToDropdown(dropdownView, () =>
-        this._getLinkListItemDefinitions(linkOptions)
+        this._getLinkListItemDefinitions(linkOptions),
       );
       return dropdownView;
     });
@@ -158,7 +158,7 @@ export default class CraftLinkUI extends Plugin {
                 {
                   linkHref: url,
                 },
-                selection.getFirstPosition()
+                selection.getFirstPosition(),
               );
               if (range instanceof Range) {
                 try {
@@ -199,7 +199,7 @@ export default class CraftLinkUI extends Plugin {
     // ensure the form view is vertical
     formView.template.attributes.class.push(
       'ck-link-form_layout-vertical',
-      'ck-vertical-form'
+      'ck-vertical-form',
     );
 
     this.siteDropdownView = createDropdown(formView.locale);
@@ -217,7 +217,7 @@ export default class CraftLinkUI extends Plugin {
           siteId: site.id,
           withText: true,
         }),
-      ])
+      ]),
     );
 
     this.siteDropdownItemModels.current = new Model({
@@ -237,14 +237,14 @@ export default class CraftLinkUI extends Plugin {
           type: 'button',
           model: this.siteDropdownItemModels.current,
         },
-      ])
+      ]),
     );
 
     this.siteDropdownView.on('execute', (evt) => {
       const match = this._urlInputRefMatch();
       if (!match) {
         console.warn(
-          `No reference tag hash present in URL: ${this._urlInputValue()}`
+          `No reference tag hash present in URL: ${this._urlInputValue()}`,
         );
         return;
       }
