@@ -339,6 +339,10 @@ export const create = async function (element, config) {
     Object.assign({plugins}, config),
   );
 
+  // Update the source element before the initial form value has been recorded,
+  // in case the value needs to be normalized
+  editor.updateSourceElement();
+
   // Keep the source element updated with changes
   editor.model.document.on('change', () => {
     editor.updateSourceElement();
