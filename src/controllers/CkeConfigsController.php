@@ -66,7 +66,7 @@ class CkeConfigsController extends Controller
             $title = Craft::t('ckeditor', 'Create a new CKEditor config');
         }
 
-        return $this->asCpScreen()
+        $response = $this->asCpScreen()
             ->action('ckeditor/cke-configs/save')
             ->addCrumb(Craft::t('app', 'Settings'), 'settings')
             ->addCrumb(Craft::t('ckeditor', 'CKEditor Configs'), 'settings/ckeditor')
@@ -103,6 +103,18 @@ JS,
                     ],
                 );
             });
+
+        if ($ckeConfig->uid) {
+            $response->addAltAction(Craft::t('ckeditor', 'Save as a new config'), [
+                'action' => 'ckeditor/cke-configs/save',
+                'params' => ['uid' => ''],
+                'redirect' => 'settings/ckeditor/{uid}',
+                'shortcut' => true,
+                'shift' => true,
+            ]);
+        }
+
+        return $response;
     }
 
     public function actionSave(): ?Response
@@ -115,7 +127,7 @@ JS,
         }
 
         $ckeConfig = new CkeConfig([
-            'uid' => $this->request->getBodyParam('uid') ?? StringHelper::UUID(),
+            'uid' => $this->request->getBodyParam('uid') ?: StringHelper::UUID(),
             'name' => $this->request->getBodyParam('name'),
             'toolbar' => $this->request->getBodyParam('toolbar'),
             'headingLevels' => $headingLevels,
