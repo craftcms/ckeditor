@@ -150,6 +150,28 @@ class Field extends HtmlField
     /**
      * @inheritdoc
      */
+    public function init(): void
+    {
+        parent::init();
+
+        if ($this->wordLimit === 0) {
+            $this->wordLimit = null;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function defineRules(): array
+    {
+        return array_merge(parent::defineRules(), [
+            ['wordLimit', 'number', 'min' => 1],
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getElementValidationRules(): array
     {
         $rules = [];
