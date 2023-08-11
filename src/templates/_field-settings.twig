@@ -33,13 +33,6 @@
   {% endblock %}
 {% endembed %}
 
-{{ forms.lightswitchField({
-  id: 'show-word-count',
-  name: 'showWordCount',
-  label: 'Show word count'|t('ckeditor'),
-  on: field.showWordCount
-}) }}
-
 {{ forms.textField({
   id: 'word-limit',
   name: 'wordLimit',
@@ -47,6 +40,13 @@
   value: field.wordLimit,
   type: 'number',
   size: 5,
+}) }}
+
+{{ forms.lightswitchField({
+  id: 'show-word-count',
+  name: 'showWordCount',
+  label: 'Show word count'|t('ckeditor'),
+  on: field.showWordCount
 }) }}
 
 {{ forms.lightswitchField({

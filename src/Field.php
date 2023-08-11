@@ -85,16 +85,16 @@ class Field extends HtmlField
     public ?string $ckeConfig = null;
 
     /**
-     * @var bool Whether the word count should be shown below the field.
-     * @since 3.2.0
-     */
-    public bool $showWordCount = false;
-
-    /**
      * @var int|null The total number of words allowed.
      * @since 3.5.0
      */
     public ?int $wordLimit = null;
+
+    /**
+     * @var bool Whether the word count should be shown below the field.
+     * @since 3.2.0
+     */
+    public bool $showWordCount = false;
 
     /**
      * @var string|array|null The volumes that should be available for image selection.
