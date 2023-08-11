@@ -380,8 +380,7 @@ JS;
     }
     config.removePlugins.push(...extraRemovePlugins);
   }
-  CKEditor5.craftcms.create($idJs, config).then((editor) => {
-  });
+  CKEditor5.craftcms.create($idJs, config);
 })(jQuery)
 JS,
             View::POS_END,
@@ -391,7 +390,8 @@ JS,
             $view->registerCss($ckeConfig->css);
         }
 
-        $html = Html::textarea($this->handle, $this->prepValueForInput($value, $element), [
+        $value = $this->prepValueForInput($value, $element);
+        $html = Html::textarea($this->handle, $value, [
             'id' => $id,
             'class' => 'hidden',
         ]);
