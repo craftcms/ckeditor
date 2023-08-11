@@ -40,6 +40,15 @@
   on: field.showWordCount
 }) }}
 
+{{ forms.textField({
+  id: 'word-limit',
+  name: 'wordLimit',
+  label: 'Word Limit'|t('ckeditor'),
+  value: field.wordLimit,
+  type: 'number',
+  size: 5,
+}) }}
+
 {{ forms.lightswitchField({
   id: 'enable-source-editing-for-non-admins',
   name: 'enableSourceEditingForNonAdmins',

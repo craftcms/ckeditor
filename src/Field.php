@@ -91,6 +91,12 @@ class Field extends HtmlField
     public bool $showWordCount = false;
 
     /**
+     * @var int|null The total number of words allowed.
+     * @since 3.5.0
+     */
+    public ?int $wordLimit = null;
+
+    /**
      * @var string|array|null The volumes that should be available for image selection.
      * @since 1.2.0
      */
@@ -139,6 +145,37 @@ class Field extends HtmlField
         );
 
         parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getElementValidationRules(): array
+    {
+        $rules = [];
+
+        if ($this->wordLimit) {
+            $rules[] = [
+                function(ElementInterface $element) {
+                    $value = strip_tags((string)$element->getFieldValue($this->handle));
+                    if (
+                        // regex copied from the WordCount plugin, for consistency
+                        preg_match_all('/(?:[\p{L}\p{N}]+\S?)+/', $value, $matches) &&
+                        count($matches[0]) > $this->wordLimit
+                    ) {
+                        $element->addError(
+                            "field:$this->handle",
+                            Craft::t('ckeditor', '{field} should contain at most {max, number} {max, plural, one{word} other{words}}.', [
+                                'field' => Craft::t('site', $this->name),
+                                'max' => $this->wordLimit,
+                            ]),
+                        );
+                    }
+                }
+            ];
+        }
+
+        return $rules;
     }
 
     /**
@@ -302,6 +339,7 @@ JS;
 
         $baseConfigJs = Json::encode($event->baseConfig);
         $showWordCountJs = Json::encode($this->showWordCount);
+        $wordLimitJs = $this->wordLimit ?: 0;
 
         $view->registerJs(<<<JS
 (($) => {
@@ -324,7 +362,13 @@ JS;
           num: stats.characters,
         }));
       }
-      $('#' + $wordCountIdJs).html(Craft.escapeHtml(statText.join(', ')) || '&nbsp;');
+      const container = $('#' + $wordCountIdJs);
+      container.html(Craft.escapeHtml(statText.join(', ')) || '&nbsp;');
+      if ($wordLimitJs && stats.words > $wordLimitJs) {
+        container.addClass('error');
+      } else {
+        container.removeClass('error');
+      }
       onUpdate(stats);
     }
   } else {
