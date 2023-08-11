@@ -41,6 +41,8 @@ import {Style} from '@ckeditor/ckeditor5-style';
 import {
   Table,
   TableCaption,
+  TableCellProperties,
+  TableProperties,
   TableToolbar,
   TableUI,
 } from '@ckeditor/ckeditor5-table';
@@ -89,6 +91,8 @@ const allPlugins = [
   Superscript,
   Table,
   TableCaption,
+  TableCellProperties,
+  TableProperties,
   TableToolbar,
   TableUI,
   TodoList,
@@ -199,7 +203,14 @@ const pluginButtonMap = [
   {plugins: ['Subscript'], buttons: ['subscript']},
   {plugins: ['Superscript'], buttons: ['superscript']},
   {
-    plugins: ['Table', 'TableCaption', 'TableToolbar', 'TableUI'],
+    plugins: [
+      'Table',
+      'TableCaption',
+      'TableCellProperties',
+      'TableProperties',
+      'TableToolbar',
+      'TableUI',
+    ],
     buttons: ['insertTable'],
   },
   {plugins: ['TodoList'], buttons: ['todoList']},
