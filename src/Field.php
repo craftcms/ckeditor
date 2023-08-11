@@ -171,7 +171,7 @@ class Field extends HtmlField
                             ]),
                         );
                     }
-                }
+                },
             ];
         }
 
