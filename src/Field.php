@@ -6,6 +6,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\ckeditor\events\DefineLinkOptionsEvent;
 use craft\ckeditor\events\ModifyConfigEvent;
+use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
 use craft\elements\Asset;
 use craft\elements\Category;
@@ -313,7 +314,7 @@ class Field extends HtmlField
                 ],
             ],
             'language' => [
-                'ui' => Craft::$app->language,
+                'ui' => BaseCkeditorPackageAsset::uiLanguage(),
                 'content' => $element?->getSite()->language ?? Craft::$app->language,
             ],
             'linkOptions' => $this->_linkOptions($element),
