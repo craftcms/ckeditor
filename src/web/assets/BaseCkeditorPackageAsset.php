@@ -24,6 +24,20 @@ use craft\web\View;
 abstract class BaseCkeditorPackageAsset extends AssetBundle
 {
     /**
+     * Returns the CKEditor UI language that should be used based on the app language.
+     *
+     * @return string
+     * @since 3.5.0
+     */
+    public static function uiLanguage(): string
+    {
+        return match (Craft::$app->language) {
+            'nb', 'nn' => 'no', // https://github.com/craftcms/ckeditor/issues/113
+            default => strtolower(Craft::$app->language),
+        };
+    }
+
+    /**
      * @var string[] List of CKEditor plugins’ names that should be loaded by default.
      *
      * Plugins should be defined in the global `window.CKEditor5` object.
@@ -62,31 +76,14 @@ abstract class BaseCkeditorPackageAsset extends AssetBundle
         }
     }
 
-    /**
-     * Include native CKEditor translation files based on the CKE config
-     *
-     * @param array $languages
-     * @return void
-     */
-    public function includeFieldTranslations(array $languages): void
-    {
-        foreach ($languages as $language) {
-            $this->includeTranslationForLanguage($language);
-        }
-    }
-
-
     private function includeTranslation(): void
     {
-        $language = match (Craft::$app->language) {
-            'en', 'en-US' => false,
-            'nn' => 'no',
-            default => strtolower(Craft::$app->language),
-        };
-
-        if ($language === false) {
+        if (in_array(Craft::$app->language, ['en', 'en-US'])) {
+            // that's what the source files use
             return;
         }
+
+        $language = static::uiLanguage();
 
         if ($this->includeTranslationForLanguage($language)) {
             return;

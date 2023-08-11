@@ -314,10 +314,7 @@ class Field extends HtmlField
                 ],
             ],
             'language' => [
-                'ui' => match (Craft::$app->language) {
-                    'nn' => 'no',
-                    default => strtolower(Craft::$app->language),
-                },
+                'ui' => BaseCkeditorPackageAsset::uiLanguage(),
                 'content' => $element?->getSite()->language ?? Craft::$app->language,
             ],
             'linkOptions' => $this->_linkOptions($element),
@@ -432,8 +429,6 @@ JS,
                 'class' => ['ck-word-count', 'light', 'smalltext'],
             ]);
         }
-
-        $this->_registerTranslations($baseConfig, $ckeConfig, $view);
 
         return Html::tag('div', $html, [
             'class' => array_filter([
@@ -769,46 +764,5 @@ JS,
             'handle' => $transform->handle,
             'name' => $transform->name,
         ])->values()->all();
-    }
-
-    /**
-     * Register native CKEditor translation files based on config.
-     * For example, if the app language is "en" you should still be able to use "pl" for the CKEditor UI
-     * if you specify that in the CKE config;
-     * It also allows you to have the cke field language dependent on the config,
-     * and not always on the app and site languages
-     *
-     * @param array $baseConfig
-     * @param CkeConfig $ckeConfig
-     * @param View $view
-     * @return void
-     * @throws \yii\base\InvalidConfigException
-     */
-    private function _registerTranslations(array $baseConfig, CkeConfig $ckeConfig, View $view): void
-    {
-        $languages = [];
-
-        // if ckeConfig has language info, it should overwrite the baseConfig
-        if (isset($ckeConfig->options, $ckeConfig->options['language'])) {
-            // if it's a string like: "language": "pl", then the language should be used for both ui and content
-            if (is_string($ckeConfig->options['language'])) {
-                $languages[] = $ckeConfig->options['language'];
-            } else {
-                // if it's an array, then we want to use $ckeConfig if it exists and fall back on $baseConfig if it doesn't
-                $languages[] = $ckeConfig->options['language']['ui'] ?? $baseConfig['language']['ui'];
-                $languages[] = $ckeConfig->options['language']['content'] ?? $baseConfig['language']['content'];
-            }
-        } else {
-            $languages[] = $baseConfig['language']['ui'];
-            $languages[] = $baseConfig['language']['content'];
-        }
-
-        $languages = array_unique($languages);
-
-        $am = $view->getAssetManager();
-        /** @var BaseCkeditorPackageAsset $bundle */
-        $bundle = $am->getBundle(CkeditorAsset::class);
-
-        $bundle->includeFieldTranslations($languages);
     }
 }
