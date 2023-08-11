@@ -11,7 +11,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     // Make sure there are linked volumes
     if (!this._linkOption) {
       console.warn(
-        'Omitting the "image" CKEditor toolbar button, because there aren’t any permitted volumes.'
+        'Omitting the "image" CKEditor toolbar button, because there aren’t any permitted volumes.',
       );
       return;
     }
@@ -28,7 +28,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
   get _linkOption() {
     const linkOptions = this.editor.config.get('linkOptions');
     return linkOptions.find(
-      (option) => option.elementType === 'craft\\elements\\Asset'
+      (option) => option.elementType === 'craft\\elements\\Asset',
     );
   }
 
@@ -106,13 +106,13 @@ export default class CraftImageInsertUI extends ImageInsertUI {
                 const url = this._buildAssetUrl(
                   asset.id,
                   asset.url,
-                  hasTransform ? transform : defaultTransform
+                  hasTransform ? transform : defaultTransform,
                 );
                 urls.push(url);
                 // editor.execute('insertImage', {source: url});
                 resolve();
               }
-            })
+            }),
         );
       }
     });
@@ -149,7 +149,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
 
   _getAssetUrlComponents(url) {
     const matches = url.match(
-      /(.*)#asset:(\d+):(url|transform):?([a-zA-Z][a-zA-Z0-9_]*)?/
+      /(.*)#asset:(\d+):(url|transform):?([a-zA-Z][a-zA-Z0-9_]*)?/,
     );
     return matches
       ? {

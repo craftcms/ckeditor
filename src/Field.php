@@ -269,6 +269,10 @@ class Field extends HtmlField
             'transforms' => $transforms,
             'ui' => [
                 'viewportOffset' => ['top' => 50],
+                'poweredBy' => [
+                    'position' => 'inside',
+                    'label' => '',
+                ],
             ],
         ];
 

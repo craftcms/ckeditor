@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-- The `ckeditor/convert` action will now find and convert `craft\fields\MissingField` instances that were meant to be Redactor fields. 
+- The `ckeditor/convert` action will now find and convert `craft\fields\MissingField` instances that were meant to be Redactor fields.
+- Updated CKEditor 5 to 39.0.1.
 
 ## 3.4.0 - 2023-05-16
 
