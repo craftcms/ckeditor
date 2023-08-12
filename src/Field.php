@@ -452,6 +452,27 @@ JS,
     {
         $purifierConfig = parent::purifierConfig();
 
+        // Make sure the basics are covered based on the CKE config
+        $ckeConfig = $this->_ckeConfig();
+        // These will come back as indexed (key => true) arrays
+        $allowedTargets = $purifierConfig->get('Attr.AllowedFrameTargets');
+        $allowedRels = $purifierConfig->get('Attr.AllowedRel');
+        if (isset($ckeConfig->options['link']['addTargetToExternalLinks'])) {
+            $allowedTargets['_blank'] = true;
+        }
+        foreach ($ckeConfig->options['link']['decorators'] ?? [] as $decorator) {
+            if (isset($decorator['attributes']['target'])) {
+                $allowedTargets[$decorator['attributes']['target']] = true;
+            }
+            if (isset($decorator['attributes']['rel'])) {
+                foreach (explode(' ', $decorator['attributes']['rel']) as $rel) {
+                    $allowedRels[$rel] = true;
+                }
+            }
+        }
+        $purifierConfig->set('Attr.AllowedFrameTargets', array_keys($allowedTargets));
+        $purifierConfig->set('Attr.AllowedRel', array_keys($allowedRels));
+
         // Give plugins a chance to modify the HTML Purifier config, or add new ones
         $event = new ModifyPurifierConfigEvent([
             'config' => $purifierConfig,

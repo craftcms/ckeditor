@@ -7,7 +7,8 @@
 - CKEditor config edit pages now have a “Save as a new config” alternative submit action. ([#110](https://github.com/craftcms/ckeditor/discussions/110)) 
 - The `ckeditor/convert` action will now find and convert `craft\fields\MissingField` instances that were meant to be Redactor fields.
 - CKEditor fields with the “Insert table” button now include the `TableProperties` and `TableCellProperties` plugins. ([#103](https://github.com/craftcms/ckeditor/issues/103), [#115](https://github.com/craftcms/ckeditor/discussions/115))
-- Norwegian Bokmål and Nynorsk both now load the main Norwegian (no) UI translations. ([#113](https://github.com/craftcms/ckeditor/issues/113)) 
+- Norwegian Bokmål and Nynorsk both now load the main Norwegian (no) UI translations. ([#113](https://github.com/craftcms/ckeditor/issues/113))
+- The `Attr.AllowedFrameTargets` and `Attr.AllowedRel` HTML Purifier config settings are now automatically set based on the CKEditor `link` configuration. ([#79](https://github.com/craftcms/ckeditor/issues/79))
 - Fixed a bug where could get marked as dirty when focussed, without making any changes. ([#90](https://github.com/craftcms/ckeditor/issues/90))
 - Fixed a bug where the Norwegian Nynorsk UI translations weren’t working. ([#113](https://github.com/craftcms/ckeditor/issues/113))
 - Updated CKEditor 5 to 39.0.1.
