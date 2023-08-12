@@ -466,26 +466,8 @@ JS,
     {
         $purifierConfig = parent::purifierConfig();
 
-        // Make sure the basics are covered based on the CKE config
-        $ckeConfig = $this->_ckeConfig();
-        // These will come back as indexed (key => true) arrays
-        $allowedTargets = $purifierConfig->get('Attr.AllowedFrameTargets');
-        $allowedRels = $purifierConfig->get('Attr.AllowedRel');
-        if (isset($ckeConfig->options['link']['addTargetToExternalLinks'])) {
-            $allowedTargets['_blank'] = true;
-        }
-        foreach ($ckeConfig->options['link']['decorators'] ?? [] as $decorator) {
-            if (isset($decorator['attributes']['target'])) {
-                $allowedTargets[$decorator['attributes']['target']] = true;
-            }
-            if (isset($decorator['attributes']['rel'])) {
-                foreach (explode(' ', $decorator['attributes']['rel']) as $rel) {
-                    $allowedRels[$rel] = true;
-                }
-            }
-        }
-        $purifierConfig->set('Attr.AllowedFrameTargets', array_keys($allowedTargets));
-        $purifierConfig->set('Attr.AllowedRel', array_keys($allowedRels));
+        // adjust the purifier config based on the CKEditor config
+        $purifierConfig = $this->_adjustPurifierConfig($purifierConfig);
 
         // Give plugins a chance to modify the HTML Purifier config, or add new ones
         $event = new ModifyPurifierConfigEvent([
@@ -799,5 +781,48 @@ JS,
             'handle' => $transform->handle,
             'name' => $transform->name,
         ])->values()->all();
+    }
+
+    /**
+     * Adjust HTML Purifier based on items added to the toolbar
+     *
+     * @param HTMLPurifier_Config $purifierConfig
+     * @return HTMLPurifier_Config
+     * @throws \HTMLPurifier_Exception
+     */
+    private function _adjustPurifierConfig(HTMLPurifier_Config $purifierConfig): HTMLPurifier_Config
+    {
+        $ckeConfig = $this->_ckeConfig();
+
+        // These will come back as indexed (key => true) arrays
+        $allowedTargets = $purifierConfig->get('Attr.AllowedFrameTargets');
+        $allowedRels = $purifierConfig->get('Attr.AllowedRel');
+        if (isset($ckeConfig->options['link']['addTargetToExternalLinks'])) {
+            $allowedTargets['_blank'] = true;
+        }
+        foreach ($ckeConfig->options['link']['decorators'] ?? [] as $decorator) {
+            if (isset($decorator['attributes']['target'])) {
+                $allowedTargets[$decorator['attributes']['target']] = true;
+            }
+            if (isset($decorator['attributes']['rel'])) {
+                foreach (explode(' ', $decorator['attributes']['rel']) as $rel) {
+                    $allowedRels[$rel] = true;
+                }
+            }
+        }
+        $purifierConfig->set('Attr.AllowedFrameTargets', array_keys($allowedTargets));
+        $purifierConfig->set('Attr.AllowedRel', array_keys($allowedRels));
+
+        if (in_array('todoList', $ckeConfig->toolbar)) {
+            // Add input[type=checkbox][disabled][checked] to the definition
+            $def = $purifierConfig->getDefinition('HTML', true);
+            $def?->addElement('input', 'Inline', 'Inline', '', [
+                'type' => 'Enum#checkbox',
+                'disabled' => 'Enum#disabled',
+                'checked' => 'Enum#checked',
+            ]);
+        }
+
+        return $purifierConfig;
     }
 }
