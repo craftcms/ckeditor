@@ -1,12 +1,12 @@
 {% extends '_layouts/cp.twig' %}
-{% set title = 'CKEditor Configs'|t('app') %}
+{% set title = 'CKEditor Configs'|t('ckeditor') %}
 
 {% set crumbs = [
   { label: 'Settings'|t('app'), url: url('settings') }
 ] %}
 
 {% block actionButton %}
-  <a href="{{ url('settings/ckeditor/new') }}" class="btn submit add icon">{{ 'New config'|t('app') }}</a>
+  <a href="{{ url('settings/ckeditor/new') }}" class="btn submit add icon">{{ 'New config'|t('ckeditor') }}</a>
 {% endblock %}
 
 

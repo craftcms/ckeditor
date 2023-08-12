@@ -32,7 +32,13 @@ import {HorizontalLine} from '@ckeditor/ckeditor5-horizontal-line';
 import {HtmlEmbed} from '@ckeditor/ckeditor5-html-embed';
 import {Indent} from '@ckeditor/ckeditor5-indent';
 import {LinkEditing, AutoLink, LinkImage} from '@ckeditor/ckeditor5-link';
-import {List, ListProperties, TodoList} from '@ckeditor/ckeditor5-list';
+import {
+  DocumentList,
+  DocumentListProperties,
+  List,
+  ListProperties,
+  TodoList,
+} from '@ckeditor/ckeditor5-list';
 import {MediaEmbed, MediaEmbedToolbar} from '@ckeditor/ckeditor5-media-embed';
 import {PageBreak} from '@ckeditor/ckeditor5-page-break';
 import {PasteFromOffice} from '@ckeditor/ckeditor5-paste-from-office';
@@ -41,6 +47,8 @@ import {Style} from '@ckeditor/ckeditor5-style';
 import {
   Table,
   TableCaption,
+  TableCellProperties,
+  TableProperties,
   TableToolbar,
   TableUI,
 } from '@ckeditor/ckeditor5-table';
@@ -60,6 +68,8 @@ const allPlugins = [
   Bold,
   Code,
   CodeBlock,
+  DocumentList,
+  DocumentListProperties,
   Essentials,
   FindAndReplace,
   Font,
@@ -89,6 +99,8 @@ const allPlugins = [
   Superscript,
   Table,
   TableCaption,
+  TableCellProperties,
+  TableProperties,
   TableToolbar,
   TableUI,
   TodoList,
@@ -172,6 +184,10 @@ const pluginButtonMap = [
   {plugins: ['Code'], buttons: ['code']},
   {plugins: ['CodeBlock'], buttons: ['codeBlock']},
   {
+    plugins: ['DocumentList', 'DocumentListProperties'],
+    buttons: ['bulletedList', 'numberedList'],
+  },
+  {
     plugins: ['Font'],
     buttons: ['fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor'],
   },
@@ -199,7 +215,14 @@ const pluginButtonMap = [
   {plugins: ['Subscript'], buttons: ['subscript']},
   {plugins: ['Superscript'], buttons: ['superscript']},
   {
-    plugins: ['Table', 'TableCaption', 'TableToolbar', 'TableUI'],
+    plugins: [
+      'Table',
+      'TableCaption',
+      'TableCellProperties',
+      'TableProperties',
+      'TableToolbar',
+      'TableUI',
+    ],
     buttons: ['insertTable'],
   },
   {plugins: ['TodoList'], buttons: ['todoList']},
@@ -224,7 +247,7 @@ export const registerPackage = (pkg) => {
       const plugin = findPlugin(pluginName);
       if (!plugin) {
         console.warn(
-          `No plugin named ${pluginName} found in window.CKEditor5.`
+          `No plugin named ${pluginName} found in window.CKEditor5.`,
         );
         return;
       }
@@ -273,7 +296,7 @@ const trackChangesInSourceMode = function (editor) {
 
   sourceEditing.on('change:isSourceEditingMode', () => {
     const $sourceEditingContainer = $editorElement.find(
-      '.ck-source-editing-area'
+      '.ck-source-editing-area',
     );
 
     if (sourceEditing.isSourceEditingMode) {
@@ -297,37 +320,37 @@ const headingShortcuts = function (editor, config) {
 
     if (headingOptions.find((x) => x.view === 'h1') !== undefined) {
       editor.keystrokes.set('Ctrl+Alt+1', () =>
-        editor.execute('heading', {value: 'heading1'})
+        editor.execute('heading', {value: 'heading1'}),
       );
     }
 
     if (headingOptions.find((x) => x.view === 'h2') !== undefined) {
       editor.keystrokes.set('Ctrl+Alt+2', () =>
-        editor.execute('heading', {value: 'heading2'})
+        editor.execute('heading', {value: 'heading2'}),
       );
     }
 
     if (headingOptions.find((x) => x.view === 'h3') !== undefined) {
       editor.keystrokes.set('Ctrl+Alt+3', () =>
-        editor.execute('heading', {value: 'heading3'})
+        editor.execute('heading', {value: 'heading3'}),
       );
     }
 
     if (headingOptions.find((x) => x.view === 'h4') !== undefined) {
       editor.keystrokes.set('Ctrl+Alt+4', () =>
-        editor.execute('heading', {value: 'heading4'})
+        editor.execute('heading', {value: 'heading4'}),
       );
     }
 
     if (headingOptions.find((x) => x.view === 'h5') !== undefined) {
       editor.keystrokes.set('Ctrl+Alt+5', () =>
-        editor.execute('heading', {value: 'heading5'})
+        editor.execute('heading', {value: 'heading5'}),
       );
     }
 
     if (headingOptions.find((x) => x.view === 'h6') !== undefined) {
       editor.keystrokes.set('Ctrl+Alt+6', () =>
-        editor.execute('heading', {value: 'heading6'})
+        editor.execute('heading', {value: 'heading6'}),
       );
     }
 
@@ -349,10 +372,10 @@ export const create = async function (element, config) {
       ...pluginButtonMap
         .filter(
           ({buttons}) =>
-            !config.toolbar.some((button) => buttons.includes(button))
+            !config.toolbar.items.some((button) => buttons.includes(button)),
         )
         .map(({plugins}) => plugins)
-        .flat()
+        .flat(),
     );
   }
 
@@ -371,8 +394,12 @@ export const create = async function (element, config) {
 
   const editor = await ClassicEditor.create(
     element,
-    Object.assign({plugins}, config)
+    Object.assign({plugins}, config),
   );
+
+  // Update the source element before the initial form value has been recorded,
+  // in case the value needs to be normalized
+  editor.updateSourceElement();
 
   // Keep the source element updated with changes
   editor.model.document.on('change', () => {

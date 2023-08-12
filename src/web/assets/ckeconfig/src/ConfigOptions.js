@@ -153,7 +153,7 @@ export default Garnish.Base.extend({
     try {
       schema =
         window.monaco.languages.json.jsonDefaults.diagnosticsOptions.schemas.find(
-          (s) => s.uri === this.jsonSchemaUri
+          (s) => s.uri === this.jsonSchemaUri,
         ).schema;
     } catch (e) {
       console.warn('Couldn’t get config options JSON schema.', e);
@@ -166,7 +166,7 @@ export default Garnish.Base.extend({
       !schema.$defs.EditorConfig.properties
     ) {
       console.warn(
-        'Config options JSON schema is missing $defs.EditorConfig.properties'
+        'Config options JSON schema is missing $defs.EditorConfig.properties',
       );
       return;
     }

@@ -33,6 +33,18 @@
   {% endblock %}
 {% endembed %}
 
+{{ forms.textField({
+  id: 'word-limit',
+  name: 'wordLimit',
+  label: 'Word Limit'|t('ckeditor'),
+  value: field.wordLimit,
+  type: 'number',
+  min: 0,
+  step: 1,
+  size: 5,
+  errors: field.getErrors('wordLimit'),
+}) }}
+
 {{ forms.lightswitchField({
   id: 'show-word-count',
   name: 'showWordCount',
@@ -54,8 +66,8 @@
   {{ forms.checkboxSelectField({
     id: 'availableVolumes',
     name: 'availableVolumes',
-    label: 'Available Volumes'|t('app'),
-    instructions: 'The volumes that should be available when selecting assets.'|t('app'),
+    label: 'Available Volumes'|t('ckeditor'),
+    instructions: 'The volumes that should be available when selecting assets.'|t('ckeditor'),
     options: volumeOptions,
     values: field.availableVolumes,
     showAllOption: volumeOptions|length ? true : false
@@ -81,16 +93,16 @@
   }) }}
 
   {{ forms.checkboxField({
-    label: 'Show unpermitted volumes'|t('app'),
-    instructions: 'Whether to show volumes that the user doesn’t have permission to view.'|t('app'),
+    label: 'Show unpermitted volumes'|t('ckeditor'),
+    instructions: 'Whether to show volumes that the user doesn’t have permission to view.'|t('ckeditor'),
     id: 'showUnpermittedVolumes',
     name: 'showUnpermittedVolumes',
     checked: field.showUnpermittedVolumes,
   }) }}
 
   {{ forms.checkboxField({
-    label: 'Show unpermitted files'|t('app'),
-    instructions: 'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'|t('app'),
+    label: 'Show unpermitted files'|t('ckeditor'),
+    instructions: 'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'|t('ckeditor'),
     id: 'showUnpermittedFiles',
     name: 'showUnpermittedFiles',
     checked: field.showUnpermittedFiles,
