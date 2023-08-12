@@ -18,13 +18,15 @@ export default Garnish.Base.extend({
   $listPluginRadio_List: null,
   $listPluginRadio_DocumentList: null,
 
-  init: function (id, configOptions) {
+  init: function (id, containerId, configOptions, namespace) {
     this.$sourceContainer = $(`#${id} .ckeditor-tb--source .ck-toolbar__items`);
     this.$targetContainer = $(`#${id} .ckeditor-tb--target .ck-toolbar__items`);
     this.$input = $(`#${id} input`);
     this.value = JSON.parse(this.$input.val());
-    this.$listPluginRadio_List = $('#list-plugin--list');
-    this.$listPluginRadio_DocumentList = $('#list-plugin--document-list');
+    this.$listPluginRadio_List = $(`#${containerId} [id$=list-plugin--list]`);
+    this.$listPluginRadio_DocumentList = $(
+      `#${containerId} [id$=list-plugin--document-list]`,
+    );
 
     const editorContainer = document.createElement('DIV');
     const editorElement = document.createElement('DIV');

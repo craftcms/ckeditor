@@ -77,7 +77,7 @@ class CkeConfigsController extends Controller
                 'shortcut' => true,
                 'retainScroll' => true,
             ])
-            ->prepareScreen(function(Response $response) use ($ckeConfig) {
+            ->prepareScreen(function(Response $response, $containerId) use ($ckeConfig) {
                 $jsonSchemaUri = sprintf('https://craft-code-editor.com/%s', $this->view->namespaceInputId('config-options-json'));
                 /** @var Response|CpScreenResponseBehavior $response */
                 $response->contentTemplate('ckeditor/cke-configs/_edit.twig', [
@@ -91,14 +91,16 @@ class CkeConfigsController extends Controller
                     fn(
                         $toolbarBuilderId,
                         $configOptionsId,
+                        $containerId,
                         $jsonSchemaUri,
                     ) => <<<JS
 const configOptions = new CKEditor5.craftcms.ConfigOptions($configOptionsId, $jsonSchemaUri);
-new CKEditor5.craftcms.ToolbarBuilder($toolbarBuilderId, configOptions);
+new CKEditor5.craftcms.ToolbarBuilder($toolbarBuilderId, $containerId, configOptions);
 JS,
                     [
                         $this->view->namespaceInputId('toolbar-builder'),
                         $this->view->namespaceInputId('config-options'),
+                        $containerId,
                         $jsonSchemaUri,
                     ],
                 );
