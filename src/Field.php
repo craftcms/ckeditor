@@ -325,7 +325,6 @@ class Field extends HtmlField
                     'mergeTableCells',
                 ],
             ],
-            'toolbar' => $toolbar,
             'transforms' => $transforms,
             'ui' => [
                 'viewportOffset' => ['top' => 50],
@@ -361,12 +360,17 @@ JS;
         }
 
         $baseConfigJs = Json::encode($event->baseConfig);
+        $toolbarJs = Json::encode($toolbar);
         $showWordCountJs = Json::encode($this->showWordCount);
         $wordLimitJs = $this->wordLimit ?: 0;
 
         $view->registerJs(<<<JS
 (($) => {
   const config = Object.assign($baseConfigJs, $configOptionsJs);
+  if (!jQuery.isPlainObject(config.toolbar)) {
+    config.toolbar = {};
+  }
+  config.toolbar.items = $toolbarJs;
   const extraRemovePlugins = [];
   if ($showWordCountJs) {
     if (typeof config.wordCount === 'undefined') {

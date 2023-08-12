@@ -314,7 +314,7 @@ export const create = async function (element, config) {
       ...pluginButtonMap
         .filter(
           ({buttons}) =>
-            !config.toolbar.some((button) => buttons.includes(button)),
+            !config.toolbar.items.some((button) => buttons.includes(button)),
         )
         .map(({plugins}) => plugins)
         .flat(),
