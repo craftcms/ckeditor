@@ -813,24 +813,14 @@ JS,
         $purifierConfig->set('Attr.AllowedFrameTargets', array_keys($allowedTargets));
         $purifierConfig->set('Attr.AllowedRel', array_keys($allowedRels));
 
-        // CKEditor's todoList has a specific markup that we now need to allow in the purifier
-        // <ul class="todo-list">
-        //    <li>
-        //        <label class="todo-list__label">
-        //            <input type="checkbox" disabled="disabled" checked="checked">
-        //            <span class="todo-list__label__description">asdas</span>
-        //        </label>
-        //    </li>
-        // </ul>
         if (in_array('todoList', $ckeConfig->toolbar)) {
-            if ($def = $purifierConfig->getDefinition('HTML', true)) {
-                /** @var \HTMLPurifier_HTMLDefinition $def */
-                $def->addElement('input', 'Inline', 'Inline', '', [
-                    'type' => 'Enum#checkbox',
-                    'disabled' => 'Enum#disabled',
-                    'checked' => 'Enum#checked',
-                ]);
-            }
+            // Add input[type=checkbox][disabled][checked] to the definition
+            $def = $purifierConfig->getDefinition('HTML', true);
+            $def?->addElement('input', 'Inline', 'Inline', '', [
+                'type' => 'Enum#checkbox',
+                'disabled' => 'Enum#disabled',
+                'checked' => 'Enum#checked',
+            ]);
         }
 
         return $purifierConfig;
