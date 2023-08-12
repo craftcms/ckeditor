@@ -47,6 +47,8 @@ import {Style} from '@ckeditor/ckeditor5-style';
 import {
   Table,
   TableCaption,
+  TableCellProperties,
+  TableProperties,
   TableToolbar,
   TableUI,
 } from '@ckeditor/ckeditor5-table';
@@ -97,6 +99,8 @@ const allPlugins = [
   Superscript,
   Table,
   TableCaption,
+  TableCellProperties,
+  TableProperties,
   TableToolbar,
   TableUI,
   TodoList,
@@ -211,7 +215,14 @@ const pluginButtonMap = [
   {plugins: ['Subscript'], buttons: ['subscript']},
   {plugins: ['Superscript'], buttons: ['superscript']},
   {
-    plugins: ['Table', 'TableCaption', 'TableToolbar', 'TableUI'],
+    plugins: [
+      'Table',
+      'TableCaption',
+      'TableCellProperties',
+      'TableProperties',
+      'TableToolbar',
+      'TableUI',
+    ],
     buttons: ['insertTable'],
   },
   {plugins: ['TodoList'], buttons: ['todoList']},
@@ -236,7 +247,7 @@ export const registerPackage = (pkg) => {
       const plugin = findPlugin(pluginName);
       if (!plugin) {
         console.warn(
-          `No plugin named ${pluginName} found in window.CKEditor5.`
+          `No plugin named ${pluginName} found in window.CKEditor5.`,
         );
         return;
       }
@@ -285,7 +296,7 @@ const trackChangesInSourceMode = function (editor) {
 
   sourceEditing.on('change:isSourceEditingMode', () => {
     const $sourceEditingContainer = $editorElement.find(
-      '.ck-source-editing-area'
+      '.ck-source-editing-area',
     );
 
     if (sourceEditing.isSourceEditingMode) {
@@ -315,10 +326,10 @@ export const create = async function (element, config) {
       ...pluginButtonMap
         .filter(
           ({buttons}) =>
-            !config.toolbar.some((button) => buttons.includes(button))
+            !config.toolbar.items.some((button) => buttons.includes(button)),
         )
         .map(({plugins}) => plugins)
-        .flat()
+        .flat(),
     );
   }
 
@@ -337,8 +348,12 @@ export const create = async function (element, config) {
 
   const editor = await ClassicEditor.create(
     element,
-    Object.assign({plugins}, config)
+    Object.assign({plugins}, config),
   );
+
+  // Update the source element before the initial form value has been recorded,
+  // in case the value needs to be normalized
+  editor.updateSourceElement();
 
   // Keep the source element updated with changes
   editor.model.document.on('change', () => {

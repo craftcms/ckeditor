@@ -6,6 +6,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\ckeditor\events\DefineLinkOptionsEvent;
 use craft\ckeditor\events\ModifyConfigEvent;
+use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
 use craft\elements\Asset;
 use craft\elements\Category;
@@ -85,6 +86,12 @@ class Field extends HtmlField
     public ?string $ckeConfig = null;
 
     /**
+     * @var int|null The total number of words allowed.
+     * @since 3.5.0
+     */
+    public ?int $wordLimit = null;
+
+    /**
      * @var bool Whether the word count should be shown below the field.
      * @since 3.2.0
      */
@@ -139,6 +146,59 @@ class Field extends HtmlField
         );
 
         parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+
+        if ($this->wordLimit === 0) {
+            $this->wordLimit = null;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function defineRules(): array
+    {
+        return array_merge(parent::defineRules(), [
+            ['wordLimit', 'number', 'min' => 1],
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getElementValidationRules(): array
+    {
+        $rules = [];
+
+        if ($this->wordLimit) {
+            $rules[] = [
+                function(ElementInterface $element) {
+                    $value = strip_tags((string)$element->getFieldValue($this->handle));
+                    if (
+                        // regex copied from the WordCount plugin, for consistency
+                        preg_match_all('/(?:[\p{L}\p{N}]+\S?)+/', $value, $matches) &&
+                        count($matches[0]) > $this->wordLimit
+                    ) {
+                        $element->addError(
+                            "field:$this->handle",
+                            Craft::t('ckeditor', '{field} should contain at most {max, number} {max, plural, one{word} other{words}}.', [
+                                'field' => Craft::t('site', $this->name),
+                                'max' => $this->wordLimit,
+                            ]),
+                        );
+                    }
+                },
+            ];
+        }
+
+        return $rules;
     }
 
     /**
@@ -254,7 +314,7 @@ class Field extends HtmlField
                 ],
             ],
             'language' => [
-                'ui' => Craft::$app->language,
+                'ui' => BaseCkeditorPackageAsset::uiLanguage(),
                 'content' => $element?->getSite()->language ?? Craft::$app->language,
             ],
             'linkOptions' => $this->_linkOptions($element),
@@ -265,10 +325,13 @@ class Field extends HtmlField
                     'mergeTableCells',
                 ],
             ],
-            'toolbar' => $toolbar,
             'transforms' => $transforms,
             'ui' => [
                 'viewportOffset' => ['top' => 50],
+                'poweredBy' => [
+                    'position' => 'inside',
+                    'label' => '',
+                ],
             ],
         ];
 
@@ -297,12 +360,18 @@ JS;
         }
 
         $baseConfigJs = Json::encode($event->baseConfig);
-        $showWordCountJs = Json::encode($this->showWordCount);
+        $toolbarJs = Json::encode($toolbar);
         $useDocumentListsJs = Json::encode($ckeConfig->useDocumentList);
+        $showWordCountJs = Json::encode($this->showWordCount);
+        $wordLimitJs = $this->wordLimit ?: 0;
 
         $view->registerJs(<<<JS
 (($) => {
   const config = Object.assign($baseConfigJs, $configOptionsJs);
+  if (!jQuery.isPlainObject(config.toolbar)) {
+    config.toolbar = {};
+  }
+  config.toolbar.items = $toolbarJs;
   const extraRemovePlugins = [];
   if ($showWordCountJs) {
     if (typeof config.wordCount === 'undefined') {
@@ -321,7 +390,17 @@ JS;
           num: stats.characters,
         }));
       }
-      $('#' + $wordCountIdJs).html(Craft.escapeHtml(statText.join(', ')) || '&nbsp;');
+      const container = $('#' + $wordCountIdJs);
+      container.html(Craft.escapeHtml(statText.join(', ')) || '&nbsp;');
+      if ($wordLimitJs) {
+        if (stats.words > $wordLimitJs) {
+          container.addClass('error');
+        } else if (stats.words >= Math.floor($wordLimitJs * .9)) {
+          container.addClass('warning');
+        } else {
+          container.removeClass('error warning');
+        }
+      }
       onUpdate(stats);
     }
   } else {
@@ -341,8 +420,7 @@ JS;
     }
     config.removePlugins.push(...extraRemovePlugins);
   }
-  CKEditor5.craftcms.create($idJs, config).then((editor) => {
-  });
+  CKEditor5.craftcms.create($idJs, config);
 })(jQuery)
 JS,
             View::POS_END,
@@ -352,7 +430,8 @@ JS,
             $view->registerCss($ckeConfig->css);
         }
 
-        $html = Html::textarea($this->handle, $this->prepValueForInput($value, $element), [
+        $value = $this->prepValueForInput($value, $element);
+        $html = Html::textarea($this->handle, $value, [
             'id' => $id,
             'class' => 'hidden',
         ]);
@@ -385,6 +464,27 @@ JS,
     protected function purifierConfig(): HTMLPurifier_Config
     {
         $purifierConfig = parent::purifierConfig();
+
+        // Make sure the basics are covered based on the CKE config
+        $ckeConfig = $this->_ckeConfig();
+        // These will come back as indexed (key => true) arrays
+        $allowedTargets = $purifierConfig->get('Attr.AllowedFrameTargets');
+        $allowedRels = $purifierConfig->get('Attr.AllowedRel');
+        if (isset($ckeConfig->options['link']['addTargetToExternalLinks'])) {
+            $allowedTargets['_blank'] = true;
+        }
+        foreach ($ckeConfig->options['link']['decorators'] ?? [] as $decorator) {
+            if (isset($decorator['attributes']['target'])) {
+                $allowedTargets[$decorator['attributes']['target']] = true;
+            }
+            if (isset($decorator['attributes']['rel'])) {
+                foreach (explode(' ', $decorator['attributes']['rel']) as $rel) {
+                    $allowedRels[$rel] = true;
+                }
+            }
+        }
+        $purifierConfig->set('Attr.AllowedFrameTargets', array_keys($allowedTargets));
+        $purifierConfig->set('Attr.AllowedRel', array_keys($allowedRels));
 
         // Give plugins a chance to modify the HTML Purifier config, or add new ones
         $event = new ModifyPurifierConfigEvent([

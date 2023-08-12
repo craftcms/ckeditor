@@ -66,7 +66,7 @@ export default class ImageTransformUI extends Plugin {
           return this._getOptionLabelValue(originalSizeOption);
         }
         const transform = transforms.find(
-          (t) => t.handle === commandValue.transform
+          (t) => t.handle === commandValue.transform,
         );
         if (transform) {
           return transform.name;
@@ -79,7 +79,7 @@ export default class ImageTransformUI extends Plugin {
         () => this._getTransformDropdownListItemDefinitions(options, command),
         {
           ariaLabel: t('Image resize list'),
-        }
+        },
       );
       // Execute command when an item from the dropdown is selected.
       this.listenTo(dropdownView, 'execute', (evt) => {

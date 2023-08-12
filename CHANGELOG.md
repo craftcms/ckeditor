@@ -2,7 +2,17 @@
 
 ## Unreleased
 
-- The `ckeditor/convert` action will now find and convert `craft\fields\MissingField` instances that were meant to be Redactor fields. 
+- Added the “Word Limit” field setting. ([#107](https://github.com/craftcms/ckeditor/issues/107))
+- CKEditor config edit pages now have a “Save and continue editing” alternative submit action, and the <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>S</kbd> keyboard shortcut now redirects back to the edit page. ([#108](https://github.com/craftcms/ckeditor/discussions/108))
+- CKEditor config edit pages now have a “Save as a new config” alternative submit action. ([#110](https://github.com/craftcms/ckeditor/discussions/110)) 
+- The `ckeditor/convert` action will now find and convert `craft\fields\MissingField` instances that were meant to be Redactor fields.
+- CKEditor fields with the “Insert table” button now include the `TableProperties` and `TableCellProperties` plugins. ([#103](https://github.com/craftcms/ckeditor/issues/103), [#115](https://github.com/craftcms/ckeditor/discussions/115))
+- Norwegian Bokmål and Nynorsk both now load the main Norwegian (no) UI translations. ([#113](https://github.com/craftcms/ckeditor/issues/113))
+- Added support for setting the [`toolbar.shouldNotGroupWhenFull`](https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-ToolbarConfig.html#member-shouldNotGroupWhenFull) CKEditor config option. ([#124](https://github.com/craftcms/ckeditor/discussions/124))
+- The `Attr.AllowedFrameTargets` and `Attr.AllowedRel` HTML Purifier config settings are now automatically set based on the CKEditor `link` configuration. ([#79](https://github.com/craftcms/ckeditor/issues/79))
+- Fixed a bug where could get marked as dirty when focussed, without making any changes. ([#90](https://github.com/craftcms/ckeditor/issues/90))
+- Fixed a bug where the Norwegian Nynorsk UI translations weren’t working. ([#113](https://github.com/craftcms/ckeditor/issues/113))
+- Updated CKEditor 5 to 39.0.1.
 
 ## 3.4.0 - 2023-05-16
 

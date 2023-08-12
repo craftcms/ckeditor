@@ -18,7 +18,7 @@ const {
 const packageRoot = path.resolve(__dirname, '..', '..', '..', '..');
 const moduleResolutionPaths = getModuleResolutionPaths(packageRoot);
 const ckeditor5manifestPath = require.resolve(
-  'ckeditor5/build/ckeditor5-dll.manifest.json'
+  'ckeditor5/build/ckeditor5-dll.manifest.json',
 );
 
 const config = getConfig({
@@ -83,7 +83,7 @@ config.module.rules = config.module.rules
   .map((rule) =>
     Object.assign(rule, {
       include: path.join(__dirname),
-    })
+    }),
   )
   .concat([
     Object.assign(loaderDefinitions.raw(), {

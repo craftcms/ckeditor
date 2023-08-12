@@ -44,6 +44,8 @@ return [
     'The type of column this field should get in the database.' => 'The type of column this field should get in the database.',
     'Toolbar' => 'Toolbar',
     'View available settings' => 'View available settings',
+    'Word Limit' => 'Word Limit',
     'You can save custom {name} configs as {ext} files in {path}.' => 'You can save custom {name} configs as {ext} files in {path}.',
     '{attribute} isn’t valid JSON.' => '{attribute} isn’t valid JSON.',
+    '{field} should contain at most {max, number} {max, plural, one{word} other{words}}.' => '{field} should contain at most {max, number} {max, plural, one{word} other{words}}.',
 ];
