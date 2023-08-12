@@ -41,11 +41,10 @@ class CkeConfig extends Model
 
 
     /**
-     * @var bool Whether to use DocumentList and DocumentListProperties instead of
-     * List and ListProperties
-     * @since 3.1.1
+     * @var string The list plugin to use (`List` or `DocumentList`).
+     * @since 3.5.0
      */
-    public bool $useDocumentList = false;
+    public string $listPlugin = 'List';
 
     /**
      * @var array|null Additional CKEditor config options

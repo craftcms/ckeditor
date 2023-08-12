@@ -15,20 +15,26 @@ export default Garnish.Base.extend({
   $insertion: null,
   showingInsertion: false,
   closestItem: null,
-  $useDocumentList: null,
+  $listPluginRadio_List: null,
+  $listPluginRadio_DocumentList: null,
 
   init: function (id, configOptions) {
     this.$sourceContainer = $(`#${id} .ckeditor-tb--source .ck-toolbar__items`);
     this.$targetContainer = $(`#${id} .ckeditor-tb--target .ck-toolbar__items`);
     this.$input = $(`#${id} input`);
     this.value = JSON.parse(this.$input.val());
-    this.$useDocumentList = $('#use-document-list');
+    this.$listPluginRadio_List = $('#list-plugin--list');
+    this.$listPluginRadio_DocumentList = $('#list-plugin--document-list');
 
     const editorContainer = document.createElement('DIV');
     const editorElement = document.createElement('DIV');
     editorContainer.appendChild(editorElement);
 
-    this.addListener(this.$useDocumentList, 'change', 'toggleDocumentList');
+    this.addListener(
+      this.$listPluginRadio_List.add(this.$listPluginRadio_DocumentList),
+      'change',
+      'toggleDocumentList',
+    );
 
     // we're including both List and DocumentList in our DLL, but they can't co-exist;
     // we're switching one off based on user's preferences,
@@ -245,12 +251,12 @@ export default Garnish.Base.extend({
           this.$items = this.$items.add($item);
         }
 
-        this.$useDocumentList.trigger('change');
+        this.$listPluginRadio_List.trigger('change');
       });
   },
 
   toggleDocumentList: function (evt) {
-    let useDocumentList = $(evt.currentTarget).hasClass('on');
+    let useDocumentList = this.$listPluginRadio_DocumentList.prop('checked');
 
     if (useDocumentList) {
       // get index of the button to remove

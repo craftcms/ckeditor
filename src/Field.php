@@ -361,7 +361,7 @@ JS;
 
         $baseConfigJs = Json::encode($event->baseConfig);
         $toolbarJs = Json::encode($toolbar);
-        $useDocumentListsJs = Json::encode($ckeConfig->useDocumentList);
+        $listPluginJs = Json::encode($ckeConfig->listPlugin);
         $showWordCountJs = Json::encode($this->showWordCount);
         $wordLimitJs = $this->wordLimit ?: 0;
 
@@ -406,13 +406,14 @@ JS;
   } else {
     extraRemovePlugins.push('WordCount');
   }
-  if ($useDocumentListsJs) {
-    extraRemovePlugins.push('List');
-    extraRemovePlugins.push('ListProperties');
-    extraRemovePlugins.push('TodoList');
-  } else {
-    extraRemovePlugins.push('DocumentList');
-    extraRemovePlugins.push('DocumentListProperties');
+  switch ($listPluginJs) {
+    case 'List':
+      extraRemovePlugins.push('DocumentList', 'DocumentListProperties');
+      extraRemovePlugins.push();
+      break;
+    case 'DocumentList':
+      extraRemovePlugins.push('List', 'ListProperties', 'TodoList');
+      break;
   }
   if (extraRemovePlugins.length) {
     if (typeof config.removePlugins === 'undefined') {
