@@ -536,7 +536,7 @@ final class CkeditorConfigSchema
             ],
         ],
         'ToolbarConfig' => [
-            'description' =>'https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-ToolbarConfig.html',
+            'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-ToolbarConfig.html',
             'properties' => [
                 'shouldNotGroupWhenFull' => ['type' => 'boolean'],
             ],
