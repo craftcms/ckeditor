@@ -63,7 +63,8 @@
 .ckeditor-tb--item.draghelper {
   border: none !important;
   background-color: var(--white) !important;
-  box-shadow: 0 0 0 1px hsla(210, 24%, 16%, 0.15),
+  box-shadow:
+    0 0 0 1px hsla(210, 24%, 16%, 0.15),
     0 2px 6px -2px hsla(210, 24%, 16%, 0.1) !important;
 }
 
@@ -111,7 +112,8 @@ body:not(.dragging) .ckeditor-tb--item:hover {
 }
 
 .ckeditor-tb--target .ck.ck-toolbar {
-  box-shadow: 0 2px 2px -1px hsl(var(--gray-900-hsl), 0.1),
+  box-shadow:
+    0 2px 2px -1px hsl(var(--gray-900-hsl), 0.1),
     0 4px 14px -4px hsl(var(--gray-900-hsl), 0.1);
   position: relative;
 }

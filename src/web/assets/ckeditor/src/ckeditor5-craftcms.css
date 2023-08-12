@@ -33,6 +33,9 @@
   --ck-drop-shadow: 0 0 0 1px hsl(210, 24%, 16%, 0.1),
     0 5px 20px hsl(210, 24%, 16%, 0.25) !important;
   --ck-spacing-unit: 0.69em !important;
+  --ck-powered-by-line-height: 8px;
+  --ck-powered-by-padding-vertical: 0;
+  --ck-powered-by-padding-horizontal: 0;
 }
 
 .ck.ck-sticky-panel .ck-sticky-panel__content_sticky .ck.ck-toolbar {
@@ -47,7 +50,11 @@ a.ck.ck-button:focus {
 }
 
 .ck.ck-editor__editable_inline {
-  padding: calc(var(--m) - 2px) var(--m) !important;
+  padding: calc(var(--m) - 2px) var(--m)
+    calc(
+      var(--m) + var(--ck-powered-by-line-height) +
+        var(--ck-powered-by-padding-vertical)
+    ) !important;
 }
 
 .ck.ck-editor__editable.ck-focused:not(.ck-editor__nested-editable) {

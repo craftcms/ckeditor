@@ -120,6 +120,7 @@ final class CkeditorConfigSchema
                 'removePlugins' => ['interface' => 'PluginList'],
                 'style' => ['interface' => 'StyleConfig'],
                 'table' => ['interface' => 'TableConfig'],
+                'toolbar' => ['interface' => 'ToolbarConfig'],
                 'wordCount' => ['interface' => 'WordCountConfig'],
             ],
         ],
@@ -532,6 +533,15 @@ final class CkeditorConfigSchema
                 'languageCode' => ['type' => 'string'],
                 'textDirection' => ['interface' => 'LanguageDirection'],
                 'title' => ['type' => 'string'],
+            ],
+        ],
+        'ToolbarConfig' => [
+            'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-ToolbarConfig.html',
+            'properties' => [
+                'shouldNotGroupWhenFull' => ['type' => 'boolean'],
+            ],
+            'default' => [
+                'shouldNotGroupWhenFull' => true,
             ],
         ],
         'ToolbarConfigItem' => [
