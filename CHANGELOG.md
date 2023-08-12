@@ -11,6 +11,7 @@
 - Norwegian Bokmål and Nynorsk both now load the main Norwegian (no) UI translations. ([#113](https://github.com/craftcms/ckeditor/issues/113))
 - Added support for setting the [`toolbar.shouldNotGroupWhenFull`](https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-ToolbarConfig.html#member-shouldNotGroupWhenFull) CKEditor config option. ([#124](https://github.com/craftcms/ckeditor/discussions/124))
 - The `Attr.AllowedFrameTargets` and `Attr.AllowedRel` HTML Purifier config settings are now automatically set based on the CKEditor `link` configuration. ([#79](https://github.com/craftcms/ckeditor/issues/79))
+- `input[type=checkbox]` is now automatically added to the HTML Purifier definition, for editors that include the To-do List button. ([#121](https://github.com/craftcms/ckeditor/pull/121))
 - Fixed a bug where could get marked as dirty when focussed, without making any changes. ([#90](https://github.com/craftcms/ckeditor/issues/90))
 - Fixed a bug where the Norwegian Nynorsk UI translations weren’t working. ([#113](https://github.com/craftcms/ckeditor/issues/113))
 - Updated CKEditor 5 to 39.0.1.
