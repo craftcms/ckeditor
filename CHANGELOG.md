@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- CKEditor now requires Craft 4.5.0-beta.2 or later.
 - Added the “Word Limit” field setting. ([#107](https://github.com/craftcms/ckeditor/issues/107))
 - Added the “List Plugin” CKEditor config setting. ([#112](https://github.com/craftcms/ckeditor/issues/112), [#122](https://github.com/craftcms/ckeditor/pull/122))
 - Added keyboard shortcuts for switching the heading type for a given block. ([#106](https://github.com/craftcms/ckeditor/issues/106), [#116](https://github.com/craftcms/ckeditor/pull/116))
@@ -13,6 +14,8 @@
 - Added support for setting the [`toolbar.shouldNotGroupWhenFull`](https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-ToolbarConfig.html#member-shouldNotGroupWhenFull) CKEditor config option. ([#124](https://github.com/craftcms/ckeditor/discussions/124))
 - The `Attr.AllowedFrameTargets` and `Attr.AllowedRel` HTML Purifier config settings are now automatically set based on the CKEditor `link` configuration. ([#79](https://github.com/craftcms/ckeditor/issues/79))
 - `input[type=checkbox]` is now automatically added to the HTML Purifier definition, for editors that include the To-do List button. ([#121](https://github.com/craftcms/ckeditor/pull/121))
+- Added `craft\ckeditor\Plugin::registerCkeditorPackage()`.
+- Deprecated `craft\ckeditor\web\assets\ckeditor\CkeditorAsset::EVENT_PUBLISH`.
 - Fixed a bug where could get marked as dirty when focussed, without making any changes. ([#90](https://github.com/craftcms/ckeditor/issues/90))
 - Fixed a bug where the Norwegian Nynorsk UI translations weren’t working. ([#113](https://github.com/craftcms/ckeditor/issues/113))
 - Updated CKEditor 5 to 39.0.1.

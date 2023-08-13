@@ -8,7 +8,7 @@ This plugin adds a “CKEditor” field type to Craft CMS, which provides a deep
 
 ## Requirements
 
-This plugin requires Craft CMS 4.4.7 or later.
+This plugin requires Craft CMS 4.5.0-beta.2 or later.
 
 ## Installation
 
@@ -180,11 +180,5 @@ class TokensAsset extends BaseCkeditorPackageAsset
 Finally, ensure your asset bundle is registered whenever the core CKEditor asset bundle is. Add the following code to your plugin’s `init()` method:
 
 ```php
-use Craft;
-use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
-use yii\base\Event;
-
-Event::on(CkeditorAsset::class, CkeditorAsset::EVENT_PUBLISH, function() {
-    Craft::$app->view->registerAssetBundle(TokensAsset::class);
-});
+\craft\ckeditor\Plugin::registerCkeditorPackage(TokensAsset::class);
 ```

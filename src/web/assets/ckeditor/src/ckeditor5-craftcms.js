@@ -270,7 +270,7 @@ export const registerPackage = (pkg) => {
       plugins: pkg.pluginNames,
       buttons: pkg.toolbarItems
         .flat()
-        .map((item) => item.buttons)
+        .map((item) => item.button)
         .flat(),
     });
   }

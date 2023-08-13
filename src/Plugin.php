@@ -3,10 +3,14 @@
 namespace craft\ckeditor;
 
 use Craft;
+use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
+use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
+use craft\events\AssetBundleEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\services\Fields;
 use craft\web\UrlManager;
+use craft\web\View;
 use yii\base\Event;
 
 /**
@@ -27,6 +31,20 @@ class Plugin extends \craft\base\Plugin
         ];
     }
 
+    /**
+     * Registers an asset bundle for a CKEditor package.
+     *
+     * @param string $name The asset bundle class name. The asset bundle should extend
+     * [[\craft\ckeditor\web\assets\BaseCkeditorPackageAsset]].
+     * @since 3.5.0
+     */
+    public static function registerCkeditorPackage(string $name): void
+    {
+        self::$ckeditorPackages[$name] = true;
+    }
+
+    private static array $ckeditorPackages = [];
+
     public string $schemaVersion = '3.0.0.0';
     public bool $hasCpSettings = true;
 
@@ -44,6 +62,19 @@ class Plugin extends \craft\base\Plugin
                 'settings/ckeditor/new' => 'ckeditor/cke-configs/edit',
                 'settings/ckeditor/<uid:{uid}>' => 'ckeditor/cke-configs/edit',
             ];
+        });
+
+        Event::on(View::class, View::EVENT_AFTER_REGISTER_ASSET_BUNDLE, function(AssetBundleEvent $event) {
+            if ($event->bundle instanceof CkeditorAsset) {
+                /** @var View $view */
+                $view = $event->sender;
+                foreach (array_keys(self::$ckeditorPackages) as $name) {
+                    $bundle = $view->registerAssetBundle($name);
+                    if ($bundle instanceof BaseCkeditorPackageAsset) {
+                        $bundle->registerPackage($view);
+                    }
+                }
+            }
         });
     }
 

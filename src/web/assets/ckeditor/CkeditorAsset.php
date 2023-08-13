@@ -25,6 +25,7 @@ class CkeditorAsset extends BaseCkeditorPackageAsset
      * @event Event The event that is triggered when asset bundle is published.
      * @see registerCkeditorAsset()
      * @since 3.4.0
+     * @deprecated in 3.5.0. [[\craft\ckeditor\Plugin::registerCkeditorPackage()]] should be used instead.
      */
     public const EVENT_PUBLISH = 'publish';
 
@@ -54,12 +55,6 @@ class CkeditorAsset extends BaseCkeditorPackageAsset
     public $css = [
         'css/ckeditor5-craftcms.css',
     ];
-
-    public function publish($am)
-    {
-        parent::publish($am);
-        Event::trigger(static::class, self::EVENT_PUBLISH);
-    }
 
     public function registerAssetFiles($view): void
     {

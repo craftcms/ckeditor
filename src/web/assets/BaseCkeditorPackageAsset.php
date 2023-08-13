@@ -66,13 +66,30 @@ abstract class BaseCkeditorPackageAsset extends AssetBundle
      */
     public array $toolbarItems = [];
 
-    public function registerAssetFiles($view): void
+    /**
+     * @inheritdoc
+     */
+    public function init()
     {
+        parent::init();
         $this->includeTranslation();
-        parent::registerAssetFiles($view);
+    }
 
-        if ($view instanceof View) {
-            $this->registerPackage($view);
+    /**
+     * Registers the plugins and toolbar items provided by this package with `CKEditor5.craftcms.registerPackage()`.
+     *
+     * @param View $view
+     * @since 3.5.0
+     */
+    public function registerPackage(View $view): void
+    {
+        if (!empty($this->pluginNames) || !empty($this->toolbarItems)) {
+            $view->registerJsWithVars(fn($package) => "CKEditor5.craftcms.registerPackage($package);", [
+                [
+                    'pluginNames' => $this->pluginNames,
+                    'toolbarItems' => $this->toolbarItems,
+                ],
+            ], View::POS_END);
         }
     }
 
@@ -105,17 +122,5 @@ abstract class BaseCkeditorPackageAsset extends AssetBundle
         }
         $this->js[] = $subpath;
         return true;
-    }
-
-    private function registerPackage(View $view): void
-    {
-        if (!empty($this->pluginNames) || !empty($this->toolbarItems)) {
-            $view->registerJsWithVars(fn($package) => "CKEditor5.craftcms.registerPackage($package);", [
-                [
-                    'pluginNames' => $this->pluginNames,
-                    'toolbarItems' => $this->toolbarItems,
-                ],
-            ], View::POS_END);
-        }
     }
 }
