@@ -2,11 +2,8 @@
 
 namespace craft\ckeditor\helpers;
 
-use Craft;
 use craft\ckeditor\Field;
 use craft\helpers\ArrayHelper;
-use craft\i18n\Locale;
-use craft\models\Site;
 use Illuminate\Support\Collection;
 
 /**
