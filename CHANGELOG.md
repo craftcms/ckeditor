@@ -5,6 +5,7 @@
 - CKEditor now requires Craft 4.5.0-beta.2 or later.
 - Added the “Word Limit” field setting. ([#107](https://github.com/craftcms/ckeditor/issues/107))
 - Added the “List Plugin” CKEditor config setting. ([#112](https://github.com/craftcms/ckeditor/issues/112), [#122](https://github.com/craftcms/ckeditor/pull/122))
+- Added the [Text part language](https://ckeditor.com/docs/ckeditor5/latest/features/language.html) feature.
 - Added keyboard shortcuts for switching the heading type for a given block. ([#106](https://github.com/craftcms/ckeditor/issues/106), [#116](https://github.com/craftcms/ckeditor/pull/116))
 - CKEditor config edit pages now have a “Save and continue editing” alternative submit action, and the <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>S</kbd> keyboard shortcut now redirects back to the edit page. ([#108](https://github.com/craftcms/ckeditor/discussions/108))
 - CKEditor config edit pages now have a “Save as a new config” alternative submit action. ([#110](https://github.com/craftcms/ckeditor/discussions/110)) 

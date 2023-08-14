@@ -19,6 +19,7 @@ use craft\helpers\UrlHelper;
 use craft\htmlfield\events\ModifyPurifierConfigEvent;
 use craft\htmlfield\HtmlField;
 use craft\htmlfield\HtmlFieldData;
+use craft\i18n\Locale;
 use craft\models\CategoryGroup;
 use craft\models\ImageTransform;
 use craft\models\Section;
@@ -78,6 +79,24 @@ class Field extends HtmlField
     public static function displayName(): string
     {
         return 'CKEditor';
+    }
+
+    /**
+     * @return array Returns the default `language.textPartLanguage` config option that should be used.
+     * @since 3.5.0
+     * @see https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-LanguageConfig.html#member-textPartLanguage
+     */
+    public static function textPartLanguage(): array
+    {
+        return Collection::make(Craft::$app->getI18n()->getSiteLocales())
+            ->map(fn(Locale $locale) => array_filter([
+                'title' => $locale->getDisplayName(Craft::$app->language),
+                'languageCode' => $locale->id,
+                'textDirection' => $locale->getOrientation() === 'rtl' ? 'rtl' : null,
+            ]))
+            ->sortBy('title')
+            ->values()
+            ->all();
     }
 
     /**
@@ -314,10 +333,6 @@ class Field extends HtmlField
                     'imageTextAlternative',
                 ],
             ],
-            'language' => [
-                'ui' => BaseCkeditorPackageAsset::uiLanguage(),
-                'content' => $element?->getSite()->language ?? Craft::$app->language,
-            ],
             'linkOptions' => $this->_linkOptions($element),
             'table' => [
                 'contentToolbar' => [
@@ -362,6 +377,11 @@ JS;
 
         $baseConfigJs = Json::encode($event->baseConfig);
         $toolbarJs = Json::encode($toolbar);
+        $languageJs = Json::encode([
+            'ui' => BaseCkeditorPackageAsset::uiLanguage(),
+            'content' => $element?->getSite()->language ?? Craft::$app->language,
+            'textPartLanguage' => static::textPartLanguage(),
+        ]);
         $listPluginJs = Json::encode($ckeConfig->listPlugin);
         $showWordCountJs = Json::encode($this->showWordCount);
         $wordLimitJs = $this->wordLimit ?: 0;
@@ -373,6 +393,10 @@ JS;
     config.toolbar = {};
   }
   config.toolbar.items = $toolbarJs;
+  if (!jQuery.isPlainObject(config.language)) {
+    config.language = {};
+  }
+  config.language = Object.assign($languageJs, config.language);
   const extraRemovePlugins = [];
   if ($showWordCountJs) {
     if (typeof config.wordCount === 'undefined') {

@@ -56,6 +56,7 @@ import {WordCount} from '@ckeditor/ckeditor5-word-count';
 import {default as CraftImageInsertUI} from './image/imageinsert/imageinsertui';
 import {default as CraftLinkUI} from './link/linkui';
 import ImageTransform from './image/imagetransform';
+import {TextPartLanguage} from '@ckeditor/ckeditor5-language';
 
 const allPlugins = [
   CKEditor5.paragraph.Paragraph,
@@ -103,6 +104,7 @@ const allPlugins = [
   TableProperties,
   TableToolbar,
   TableUI,
+  TextPartLanguage,
   TodoList,
   Underline,
   WordCount,
@@ -138,6 +140,7 @@ export const toolbarItems = normalizeToolbarItems([
   'superscript',
   'code',
   'link',
+  'textPartLanguage',
   {button: 'fontSize', configOption: 'fontSize'},
   'fontFamily',
   'fontColor',
@@ -225,6 +228,7 @@ const pluginButtonMap = [
     ],
     buttons: ['insertTable'],
   },
+  {plugins: ['TextPartLanguage'], buttons: ['textPartLanguage']},
   {plugins: ['TodoList'], buttons: ['todoList']},
   {plugins: ['Underline'], buttons: ['underline']},
 ];
