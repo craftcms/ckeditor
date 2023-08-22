@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 3.5.0 - 2023-08-22
 
 - CKEditor now requires Craft 4.5.0 or later.
 - Added the “Word Limit” field setting. ([#107](https://github.com/craftcms/ckeditor/issues/107))
