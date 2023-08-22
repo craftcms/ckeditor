@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- CKEditor now requires Craft 4.5.0-beta.2 or later.
+- CKEditor now requires Craft 4.5.0 or later.
 - Added the “Word Limit” field setting. ([#107](https://github.com/craftcms/ckeditor/issues/107))
 - Added the “List Plugin” CKEditor config setting. ([#112](https://github.com/craftcms/ckeditor/issues/112), [#122](https://github.com/craftcms/ckeditor/pull/122))
 - Added the [Text part language](https://ckeditor.com/docs/ckeditor5/latest/features/language.html) feature.
