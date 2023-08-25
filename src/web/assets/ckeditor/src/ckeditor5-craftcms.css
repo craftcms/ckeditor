@@ -34,8 +34,8 @@
     0 5px 20px hsl(210, 24%, 16%, 0.25) !important;
   --ck-spacing-unit: 0.69em !important;
   --ck-powered-by-line-height: 8px;
-  --ck-powered-by-padding-vertical: 0;
-  --ck-powered-by-padding-horizontal: 0;
+  --ck-powered-by-padding-vertical: 0px;
+  --ck-powered-by-padding-horizontal: 0px;
 }
 
 .ck.ck-sticky-panel .ck-sticky-panel__content_sticky .ck.ck-toolbar {

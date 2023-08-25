@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed a bug where CKEditor inputs weren’t getting any padding within slideouts. ([#126](https://github.com/craftcms/ckeditor/issues/126)) 
+
 ## 3.5.0 - 2023-08-22
 
 - CKEditor now requires Craft 4.5.0 or later.
