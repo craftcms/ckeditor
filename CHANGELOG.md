@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 3.5.1 - 2023-08-29
 
 - Fixed a bug where CKEditor inputs weren’t getting any padding within slideouts. ([#126](https://github.com/craftcms/ckeditor/issues/126)) 
 - Fixed a bug where the image transform menu wasn’t visible if only one transform was selected for the field. ([#131](https://github.com/craftcms/ckeditor/issues/131))
