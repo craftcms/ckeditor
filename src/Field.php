@@ -328,7 +328,7 @@ class Field extends HtmlField
             ],
             'image' => [
                 'toolbar' => [
-                    ...(count($transforms) > 1 ? ['transformImage', '|'] : []),
+                    ...(!empty($transforms) ? ['transformImage', '|'] : []),
                     'toggleImageCaption',
                     'imageTextAlternative',
                 ],
