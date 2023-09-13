@@ -2,7 +2,7 @@
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license MIT
+ * @license GPL-3.0-or-later
  */
 
 namespace craft\ckeditor\web\assets;

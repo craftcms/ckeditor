@@ -1,3 +1,9 @@
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license GPL-3.0-or-later
+ */
+
 import './ckeditor5-craftcms.css';
 import {Alignment} from '@ckeditor/ckeditor5-alignment';
 import {

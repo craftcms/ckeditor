@@ -1,3 +1,9 @@
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license GPL-3.0-or-later
+ */
+
 import {icons} from 'ckeditor5/src/core';
 import {ButtonView} from 'ckeditor5/src/ui';
 import {ImageInsertUI} from '@ckeditor/ckeditor5-image';

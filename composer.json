@@ -9,7 +9,7 @@
     "ckeditor",
     "yii2"
   ],
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "authors": [
     {
       "name": "Pixel & Tonic",

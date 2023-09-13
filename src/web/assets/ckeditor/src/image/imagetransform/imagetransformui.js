@@ -1,3 +1,9 @@
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license GPL-3.0-or-later
+ */
+
 import {Plugin, icons} from 'ckeditor5/src/core';
 import {
   DropdownButtonView,
