@@ -849,6 +849,18 @@ JS,
             ]);
         }
 
+        if (in_array('numberedList', $ckeConfig->toolbar)) {
+            /** @var HTMLPurifier_HTMLDefinition|null $def */
+            $def = $purifierConfig->getDefinition('HTML', true);
+            $def?->addAttribute('ol', 'style', 'Text');
+        }
+
+        if (in_array('bulletedList', $ckeConfig->toolbar)) {
+            /** @var HTMLPurifier_HTMLDefinition|null $def */
+            $def = $purifierConfig->getDefinition('HTML', true);
+            $def?->addAttribute('ul', 'style', 'Text');
+        }
+
         return $purifierConfig;
     }
 }

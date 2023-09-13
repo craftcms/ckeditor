@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- HTML Purifier is now configured to allow `style` attributes on `<ol>` and `<ul>` tags, when bulleted/numbered lists are allowed. ([#136](https://github.com/craftcms/ckeditor/issues/136))
+
 ## 3.5.1 - 2023-08-29
 
 - Fixed a bug where CKEditor inputs weren’t getting any padding within slideouts. ([#126](https://github.com/craftcms/ckeditor/issues/126)) 
