@@ -4,6 +4,7 @@
 
 - CKEditor is now released under the GPL-3.0 license.
 - HTML Purifier is now configured to allow `style` attributes on `<ol>` and `<ul>` tags, when bulleted/numbered lists are allowed. ([#136](https://github.com/craftcms/ckeditor/issues/136))
+- Updated CKEditor 5 to 39.0.2.
 
 ## 3.5.1 - 2023-08-29
 
