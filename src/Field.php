@@ -316,6 +316,7 @@ class Field extends HtmlField
         $baseConfig = [
             'defaultTransform' => $defaultTransform?->handle,
             'elementSiteId' => $element?->siteId,
+            'entryOptions' => $this->_entryOptions($element),
             'heading' => [
                 'options' => [
                     [
@@ -705,16 +706,45 @@ JS,
     }
 
     /**
-     * Returns the available section sources.
+     * Returns the entry options available to the field.
+     *
+     * Each entry option is represented by an array with the following keys:
+     * - `elementType` (required) – the element type class to use for the modal query
+     * - `sources` (optional) – the sources that the user should be able to select elements from
+     * - `criteria` (optional) – any specific element criteria parameters that should limit which elements the user can select
      *
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      * @return array
      */
-    private function _sectionSources(?ElementInterface $element = null): array
+    private function _entryOptions(?ElementInterface $element = null): array
+    {
+        $entryOptions = [];
+
+        // TODO: add a setting to the field to select which sections or entry types are allowed here
+        $sectionSources = $this->_sectionSources($element, true);
+
+        if (!empty($sectionSources)) {
+            $entryOptions[] = [
+                'elementType' => Entry::class,
+                'sources' => $sectionSources,
+                //'criteria' => ['uri' => ':notempty:'],
+            ];
+        }
+
+        return $entryOptions;
+    }
+
+    /**
+     * Returns the available section sources.
+     *
+     * @param ElementInterface|null $element The element the field is associated with, if there is one
+     * @param bool $showSingles Whether to include Singles in the available sources
+     * @return array
+     */
+    private function _sectionSources(?ElementInterface $element = null, bool $showSingles = false): array
     {
         $sources = [];
-        $sections = Craft::$app->getSections()->getAllSections();
-        $showSingles = false;
+        $sections = Craft::$app->getEntries()->getAllSections();
 
         // Get all sites
         $sites = Craft::$app->getSites()->getAllSites();
