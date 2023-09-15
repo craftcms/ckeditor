@@ -9,7 +9,7 @@ export default class CraftEntriesCommand extends Command {
       // Create a <craftEntries> element with the "entryId" and "siteId" attributes
       const craftEntries = writer.createElement('craftEntries', {
         ...Object.fromEntries(selection.getAttributes()),
-        label: options.label,
+        cardHtml: options.cardHtml,
         entryId: options.entryId,
         siteId: options.siteId,
       });

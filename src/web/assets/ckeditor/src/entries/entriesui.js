@@ -69,18 +69,12 @@ export default class CraftEntriesUI extends Plugin {
       multiSelect: true,
       autoFocusSearchBox: false,
       onSelect: (items) => {
-        console.log(items);
-        // TODO: do we really need to re-grab all that data from the DB? maybe that's just needed on downcasting but not here?
-        // this._processEntriesForCards(items).then(() => {
-        //   editor.editing.view.focus();
-        // });
-
         items.forEach((entry) => {
           if (entry.length !== 0) {
             editor.commands.execute('insertEntry', {
               entryId: entry.id,
               siteId: entry.siteId,
-              label: entry.$element[0].innerHTML,
+              cardHtml: entry.$element[0].outerHTML,
             });
           }
         });
@@ -94,46 +88,4 @@ export default class CraftEntriesUI extends Plugin {
       closeOtherModals: false,
     });
   }
-
-  // _processEntriesForCards(items) {
-  //   return new Promise((resolve) => {
-  //     if (!items.length) {
-  //       resolve();
-  //       return [];
-  //     }
-  //
-  //     const editor = this.editor;
-  //     let pairs = [];
-  //
-  //     items.forEach((item) => {
-  //       pairs.push({
-  //         'entryId': item.id,
-  //         'siteId': item.siteId,
-  //       });
-  //     });
-  //
-  //     Craft.sendActionRequest('POST', 'ckeditor/ckeditor/entry-cards', {
-  //       data: {
-  //         pairs: pairs,
-  //       },
-  //     })
-  //     .then(({data}) => {
-  //       data.forEach((entry) => {
-  //         if (entry.length !== 0) {
-  //           editor.commands.execute('insertEntry', {
-  //             entryId: entry.id,
-  //             siteId: entry.siteId,
-  //             label: entry.title,
-  //             // cpEditUrl: '',
-  //           });
-  //         }
-  //       });
-  //     })
-  //     .catch((e) => {
-  //       // TODO: how do we want to handle this?
-  //       console.log(e);
-  //       alert('There was an error getting entries for the cards.');
-  //     });
-  //   });
-  // }
 }

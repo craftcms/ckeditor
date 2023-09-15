@@ -18,6 +18,7 @@ use craft\elements\Category;
 use craft\elements\Entry;
 use craft\errors\InvalidHtmlTagException;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -534,6 +535,8 @@ JS,
             // Redactor to CKEditor syntax for <figure>
             // (https://github.com/craftcms/ckeditor/issues/96)
             $value = $this->_normalizeFigures($value);
+
+            $value = $this->_prepChipsForInput($value);
         }
 
         return parent::prepValueForInput($value, $element);
@@ -557,6 +560,54 @@ JS,
         return parent::serializeValue($value, $element);
     }
 
+    /**
+     * Fill entry card CKE markup (<div class="cke-entry-card" data-entryid="96" data-siteid="1"></div>)
+     * with actual chip HTML of the entry it's linking to
+     *
+     * @param string $value
+     * @return string
+     */
+    private function _prepChipsForInput(string $value): string
+    {
+        $offset = 0;
+        while (preg_match('/<div\sclass="[^"]*cke-entry-card[^>|"]*"\sdata-entryid="(\d+)"\sdata-siteid="(\d+)"[^>]*>/is', $value, $match, PREG_OFFSET_CAPTURE, $offset)) {
+            $entryId = $match[1][0];
+            $siteId = $match[2][0];
+
+            /** @var int $startPos */
+            $startPos = $match[0][1];
+            $endPos = $startPos + strlen($match[0][0]);
+
+            $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId, [
+                'status' => null,
+                'revisions' => false,
+            ]);
+
+            if (!$entry) {
+                // if for any reason we can't get this entry - mock up one that shows it's missing
+                $entry = new Entry();
+                $entry->enabledForSite = false;
+                $entry->title = Craft::t('app', sprintf('Missing entry (id: %s, siteId: %s)', $entryId, $siteId));
+                //$entry->sectionId = 1;
+            }
+
+            $cardHtml = Cp::elementChipHtml($entry);
+
+            try {
+                $tag = Html::modifyTagAttributes($match[0][0], [
+                    'data-cardHtml' => $cardHtml,
+                ]);
+            } catch (InvalidHtmlTagException) {
+                $offset = $endPos;
+                continue;
+            }
+
+            $value = substr($value, 0, $startPos) . $tag . substr($value, $endPos);
+            $offset = $startPos + strlen($tag);
+        }
+
+        return $value;
+    }
     /**
      * Normalizes <figure> tags, ensuring they have an `image` or `media` class depending on their contents,
      * and they contain a <div data-oembed-url> or <oembed> tag, depending on the `mediaEmbed.previewsInData`
