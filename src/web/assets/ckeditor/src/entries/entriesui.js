@@ -51,7 +51,6 @@ export default class CraftEntriesUI extends Plugin {
     const entryOptions = this.editor.config.get('entryOptions')[0];
 
     const onCancel = () => {
-      console.log('called ui onCancel');
       editor.editing.view.focus();
       if (!isCollapsed && range) {
         // Restore the previous range
