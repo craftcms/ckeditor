@@ -96,14 +96,11 @@ export default class CraftEntriesEditing extends Plugin {
         this.editor.config.get('elementSiteId') ??
         null;
 
-      return viewWriter.createContainerElement(
-        'div',
-        {
-          class: 'cke-entry-card',
-          'data-entryId': entryId,
-          'data-siteId': siteId,
-        },
-      );
+      return viewWriter.createContainerElement('div', {
+        class: 'cke-entry-card',
+        'data-entryId': entryId,
+        'data-siteId': siteId,
+      });
     };
 
     // Populate card container with card HTML
@@ -120,10 +117,7 @@ export default class CraftEntriesEditing extends Plugin {
         },
       );
 
-      viewWriter.insert(
-        viewWriter.createPositionAt(cardContainer, 0),
-        card,
-      );
+      viewWriter.insert(viewWriter.createPositionAt(cardContainer, 0), card);
     };
   }
 
@@ -136,11 +130,11 @@ export default class CraftEntriesEditing extends Plugin {
 
     return new Promise((resolve) => {
       Craft.sendActionRequest('POST', 'ckeditor/ckeditor/entry-card-html', {
-          data: {
-            entryId: entryId,
-            siteId: siteId,
-          },
-        })
+        data: {
+          entryId: entryId,
+          siteId: siteId,
+        },
+      })
         .then(({data}) => {
           resolve(data);
         })
