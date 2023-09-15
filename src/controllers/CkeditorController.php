@@ -8,6 +8,7 @@
 namespace craft\ckeditor\controllers;
 
 use Craft;
+use craft\ckeditor\Field;
 use craft\elements\Asset;
 use craft\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -50,64 +51,19 @@ class CkeditorController extends Controller
         ]);
     }
 
-//    public function actionEntryCards(): Response
-//    {
-//        $pairs = $this->request->getRequiredBodyParam('pairs');
-//        $entries = [];
-//
-//        foreach ($pairs as $pair) {
-//            $entry = Craft::$app->getEntries()->getEntryById($pair['entryId'], $pair['siteId'], [
-//                // TODO: include drafts, soft-deleted, and in general any status
-//                'status' => null,
-//                'revisions' => false,
-//            ]);
-//
-//            if (!$entry) {
-//                // if for any reason we can't get this entry - fail silently
-//                $entries[] = [];
-//                Craft::warning("Couldn’t get entry (id: {$pair['entryId']}, siteId: {$pair['siteId']}) for CKEditor");
-//            } else {
-//                $entries[] = [
-//                    'id' => $entry->id,
-//                    'siteId' => $entry->siteId,
-//                    'title' => $entry->title,
-//                    'status' => $entry->getStatus(),
-//                    'cpEditUrl' => $entry->getCpEditUrl(),
-//                ];
-//            }
-//        }
-//
-//        return $this->asJson($entries);
-//    }
-
+    /**
+     * Return card html for entry based on entryId and siteId params.
+     *
+     * @return Response
+     * @throws \yii\web\BadRequestHttpException
+     */
     public function actionEntryCardHtml(): Response
     {
         $entryId = $this->request->getRequiredBodyParam('entryId');
         $siteId = $this->request->getBodyParam('siteId');
 
-        $entryCard = [];
+        $cardHtml = (new Field())->getChipHtml($entryId, $siteId);
 
-        $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId, [
-            // TODO: include drafts, soft-deleted, and in general any status
-            'status' => null,
-            'revisions' => false,
-        ]);
-
-        if (!$entry) {
-            // if for any reason we can't get this entry - fail silently
-            Craft::warning("Couldn’t get entry (id: $entryId, siteId: $siteId) for CKEditor");
-        } else {
-            $entryCard = [
-                'id' => $entry->id,
-                'siteId' => $entry->siteId,
-                'title' => $entry->title,
-                'status' => $entry->getStatus(),
-                'cpEditUrl' => $entry->getCpEditUrl(),
-                'cardHtml' => $entry->getCardBodyHtml(),
-            ];
-        }
-
-
-        return $this->asJson($entryCard);
+        return $this->asJson($cardHtml);
     }
 }

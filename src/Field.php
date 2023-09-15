@@ -561,6 +561,46 @@ JS,
     }
 
     /**
+     * Return HTML for the entry chip or a placeholder one if entry can't be found
+     *
+     * @param int $entryId
+     * @param int|null $siteId
+     * @return string
+     */
+    public function getChipHtml(int $entryId, ?int $siteId): string
+    {
+        $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId, [
+            'status' => null,
+            'revisions' => false,
+        ]);
+
+        if (!$entry) {
+            // if for any reason we can't get this entry - mock up one that shows it's missing
+            $entry = new Entry();
+            $entry->enabledForSite = false;
+            $entry->title = Craft::t('app', sprintf('Missing entry (id: %s, siteId: %s)', $entryId, $siteId));
+            // even though it's a fake element, we need to give it a type;
+            // so let's just get the first one there is
+            $entry->typeId = Craft::$app->getEntries()->getAllEntryTypes()[0]->id;
+            $chipConfig = [
+                'autoReload' => false,
+                'showDraftName' => false,
+                'showStatus' => false,
+                'showThumb' => false,
+            ];
+        } else {
+            $chipConfig = [
+                'autoReload' => true,
+                'showDraftName' => true,
+                'showStatus' => true,
+                'showThumb' => true,
+            ];
+        }
+
+        return Cp::elementChipHtml($entry, $chipConfig);
+    }
+
+    /**
      * Fill entry card CKE markup (<div class="cke-entry-card" data-entryid="96" data-siteid="1"></div>)
      * with actual chip HTML of the entry it's linking to
      *
@@ -578,20 +618,7 @@ JS,
             $startPos = $match[0][1];
             $endPos = $startPos + strlen($match[0][0]);
 
-            $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId, [
-                'status' => null,
-                'revisions' => false,
-            ]);
-
-            if (!$entry) {
-                // if for any reason we can't get this entry - mock up one that shows it's missing
-                $entry = new Entry();
-                $entry->enabledForSite = false;
-                $entry->title = Craft::t('app', sprintf('Missing entry (id: %s, siteId: %s)', $entryId, $siteId));
-                //$entry->sectionId = 1;
-            }
-
-            $cardHtml = Cp::elementChipHtml($entry);
+            $cardHtml = $this->getChipHtml($entryId, $siteId);
 
             try {
                 $tag = Html::modifyTagAttributes($match[0][0], [
@@ -608,6 +635,7 @@ JS,
 
         return $value;
     }
+
     /**
      * Normalizes <figure> tags, ensuring they have an `image` or `media` class depending on their contents,
      * and they contain a <div data-oembed-url> or <oembed> tag, depending on the `mediaEmbed.previewsInData`

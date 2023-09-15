@@ -73,7 +73,7 @@ export default class CraftEntriesEditing extends Plugin {
       model: 'craftEntries',
       view: (modelItem, {writer: viewWriter}) => {
         const cardContainer = createCardContainerView(modelItem, viewWriter);
-        addCardHtml(modelItem, viewWriter, cardContainer)
+        addCardHtmlToContainer(modelItem, viewWriter, cardContainer);
 
         // Enable widget handling on an entry element inside the editing view.
         return toWidget(cardContainer, viewWriter);
@@ -107,8 +107,10 @@ export default class CraftEntriesEditing extends Plugin {
     };
 
     // Populate card container with card HTML
-    const addCardHtml = (modelItem, viewWriter, cardContainer) => {
-      const cardHtml = modelItem.getAttribute('cardHtml') ?? '<b>Placeholder card</b>'; //this._getCardHtml(entryId, siteId);
+    const addCardHtmlToContainer = (modelItem, viewWriter, cardContainer) => {
+      // TODO: if there's no cardHtml attribute for any reason - get the markup from Craft
+      // this can happen e.g. if you make changes in the source mode and then come back to the editing mode
+      let cardHtml = modelItem.getAttribute('cardHtml');
 
       const card = viewWriter.createRawElement(
         'div',
@@ -123,5 +125,29 @@ export default class CraftEntriesEditing extends Plugin {
         card,
       );
     };
+  }
+
+  _getCardHtml(modelItem) {
+    const entryId = modelItem.getAttribute('entryId') ?? null;
+    const siteId =
+      modelItem.getAttribute('siteId') ??
+      this.editor.config.get('elementSiteId') ??
+      null;
+
+    return new Promise((resolve) => {
+      Craft.sendActionRequest('POST', 'ckeditor/ckeditor/entry-card-html', {
+          data: {
+            entryId: entryId,
+            siteId: siteId,
+          },
+        })
+        .then(({data}) => {
+          resolve(data);
+        })
+        .catch(() => {
+          // TODO: add a placeholder markup?
+          resolve('<b>what now?</b>');
+        });
+    });
   }
 }
