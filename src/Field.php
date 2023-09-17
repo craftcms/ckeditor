@@ -713,7 +713,7 @@ JS,
     private function _sectionSources(?ElementInterface $element = null): array
     {
         $sources = [];
-        $sections = Craft::$app->getSections()->getAllSections();
+        $sections = Craft::$app->getEntries()->getAllSections();
         $showSingles = false;
 
         // Get all sites
