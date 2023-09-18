@@ -62,7 +62,7 @@ class CkeditorController extends Controller
         $entryId = $this->request->getRequiredBodyParam('entryId');
         $siteId = $this->request->getBodyParam('siteId');
 
-        $cardHtml = (new Field())->getChipHtml($entryId, $siteId);
+        $cardHtml = (new Field())->getCardHtml($entryId, $siteId);
 
         return $this->asJson($cardHtml);
     }

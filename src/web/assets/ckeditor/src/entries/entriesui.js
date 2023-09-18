@@ -1,6 +1,13 @@
 import {icons, Plugin} from 'ckeditor5/src/core';
-import {ButtonView} from 'ckeditor5/src/ui';
+import {
+  addListToDropdown,
+  ButtonView,
+  createDropdown,
+  DropdownButtonView,
+  Model,
+} from 'ckeditor5/src/ui';
 import {Range} from 'ckeditor5/src/engine';
+import {Collection} from 'ckeditor5/src/utils';
 
 export default class CraftEntriesUI extends Plugin {
   static get pluginName() {
@@ -8,83 +15,99 @@ export default class CraftEntriesUI extends Plugin {
   }
 
   init() {
-    const editor = this.editor;
-    const t = editor.t;
-
-    const componentFactory = this.editor.ui.componentFactory;
-    const componentCreator = (locale) => {
+    this.editor.ui.componentFactory.add('insertEntryBtn', (locale) => {
       return this._createToolbarEntriesButton(locale);
-    };
-    componentFactory.add('insertEntryBtn', componentCreator);
+    });
   }
 
   _createToolbarEntriesButton(locale) {
     const editor = this.editor;
-    const entryOptions = editor.config.get('entryOptions');
+    const entryTypeOptions = editor.config.get('entryTypeOptions');
+    const insertEntryCommand = editor.commands.get('insertEntry');
 
-    if (!entryOptions || !entryOptions.length) {
+    if (!entryTypeOptions || !entryTypeOptions.length) {
       return;
     }
 
-    const t = editor.t;
-    const button = new ButtonView(locale);
-    button.isEnabled = true;
-    button.label = t('Insert entry');
-    //button.icon = ; // TODO: do we have an icon we'd like to use?
-    button.tooltip = true;
-    button.withText = true;
+    const dropdownView = createDropdown(locale, DropdownButtonView);
+    const dropdownButton = dropdownView.buttonView;
+    dropdownButton.set({
+      isEnabled: true,
+      label: Craft.t('ckeditor', 'Insert entry'),
+      //icon: , // TODO: do we have an icon we'd like to use?
+      tooltip: true,
+      withText: true,
+      //commandValue: null,
+    });
 
-    const insertEntryCommand = editor.commands.get('insertEntry');
-    button.bind('isEnabled').to(insertEntryCommand);
+    dropdownView.bind('isEnabled').to(insertEntryCommand);
+    addListToDropdown(
+      dropdownView,
+      () => this._getDropdownListItems(entryTypeOptions, insertEntryCommand),
+      {
+        ariaLabel: Craft.t('ckeditor', 'Entry types list'),
+      },
+    );
+    // Execute command when an item from the dropdown is selected.
+    this.listenTo(dropdownView, 'execute', (evt) => {
+      this._showCreateEntrySlideout(evt.source.commandValue);
+    });
 
-    this.listenTo(button, 'execute', () => this._showEntrySelectorModal());
-
-    return button;
+    return dropdownView;
   }
 
-  _showEntrySelectorModal() {
-    const editor = this.editor;
-    const model = editor.model;
-    const selection = model.document.selection;
-    const isCollapsed = selection.isCollapsed;
-    const range = selection.getFirstRange();
-    const entryOptions = this.editor.config.get('entryOptions')[0];
-
-    const onCancel = () => {
-      editor.editing.view.focus();
-      if (!isCollapsed && range) {
-        // Restore the previous range
-        model.change((writer) => {
-          writer.setSelection(range);
-        });
-      }
-    };
-
-    Craft.createElementSelectorModal(entryOptions.elementType, {
-      storageKey: `ckeditor:${this.pluginName}:${entryOptions.elementType}`,
-      sources: entryOptions.sources,
-      criteria: Object.assign({}, entryOptions.criteria),
-      defaultSiteId: editor.config.get('elementSiteId'),
-      multiSelect: true,
-      autoFocusSearchBox: false,
-      onSelect: (items) => {
-        items.forEach((entry) => {
-          if (entry.length !== 0) {
-            editor.commands.execute('insertEntry', {
-              entryId: entry.id,
-              siteId: entry.siteId,
-              cardHtml: entry.$element[0].outerHTML,
-            });
-          }
-        });
-      },
-      onCancel: () => {
-        onCancel();
-      },
-      onHide: () => {
-        editor.editing.view.focus();
-      },
-      closeOtherModals: false,
+  _getDropdownListItems(options, command) {
+    const itemDefinitions = new Collection();
+    options.map((option) => {
+      const definition = {
+        type: 'button',
+        model: new Model({
+          commandName: 'insertEntry',
+          commandValue: option.value,
+          label: option.label || option.value,
+          withText: true,
+          icon: null,
+        }),
+      };
+      itemDefinitions.add(definition);
     });
+    return itemDefinitions;
+  }
+
+  _showCreateEntrySlideout(entryTypeId) {
+    const editor = this.editor;
+    // const model = editor.model;
+    // const selection = model.document.selection;
+    // const isCollapsed = selection.isCollapsed;
+    // const range = selection.getFirstRange();
+    const entryTypeOptions = editor.config.get('entryTypeOptions')[0];
+    const nestedElementAttributes = editor.config.get(
+      'nestedElementAttributes',
+    );
+
+    Craft.sendActionRequest('POST', 'elements/create', {
+      data: Object.assign(nestedElementAttributes, {
+        typeId: entryTypeId,
+      }),
+    })
+      .then(({data}) => {
+        const slideout = Craft.createElementEditor(this.elementType, {
+          siteId: data.element.siteId,
+          elementId: data.element.id,
+          draftId: data.element.draftId,
+          params: {
+            fresh: 1,
+          },
+        });
+        slideout.on('submit', (ev) => {
+          editor.commands.execute('insertEntry', {
+            entryId: ev.data.id,
+            siteId: ev.data.siteId,
+          });
+        });
+      })
+      .catch(({response}) => {
+        Craft.cp.displayError((response.data && response.data.error) || null);
+      });
   }
 }

@@ -53,7 +53,7 @@ export default Garnish.Base.extend({
     CKEditor5.craftcms
       .create(editorElement, {
         linkOptions: [{elementType: 'craft\\elements\\Asset'}],
-        entryOptions: [{elementType: 'craft\\elements\\Entry'}],
+        entryTypeOptions: [{label: 'fake', value: 'fake'}],
         removePlugins: ['DocumentList', 'DocumentListProperties'],
       })
       .then((editor) => {

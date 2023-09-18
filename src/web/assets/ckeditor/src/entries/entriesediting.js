@@ -105,43 +105,55 @@ export default class CraftEntriesEditing extends Plugin {
 
     // Populate card container with card HTML
     const addCardHtmlToContainer = (modelItem, viewWriter, cardContainer) => {
-      // TODO: if there's no cardHtml attribute for any reason - get the markup from Craft
-      // this can happen e.g. if you make changes in the source mode and then come back to the editing mode
-      let cardHtml = modelItem.getAttribute('cardHtml');
+      this._getCardHtml(modelItem).then((data) => {
+        const card = viewWriter.createRawElement(
+          'div',
+          null,
+          function (domElement) {
+            domElement.innerHTML = data;
+          },
+        );
 
-      const card = viewWriter.createRawElement(
-        'div',
-        null,
-        function (domElement) {
-          domElement.innerHTML = cardHtml;
-        },
-      );
+        viewWriter.insert(viewWriter.createPositionAt(cardContainer, 0), card);
 
-      viewWriter.insert(viewWriter.createPositionAt(cardContainer, 0), card);
+        this.editor.editing.view.focus();
+      });
     };
   }
 
   _getCardHtml(modelItem) {
-    const entryId = modelItem.getAttribute('entryId') ?? null;
-    const siteId =
-      modelItem.getAttribute('siteId') ??
-      this.editor.config.get('elementSiteId') ??
-      null;
+    let cardHtml = modelItem.getAttribute('cardHtml');
 
-    return new Promise((resolve) => {
-      Craft.sendActionRequest('POST', 'ckeditor/ckeditor/entry-card-html', {
-        data: {
-          entryId: entryId,
-          siteId: siteId,
+    // if there's no cardHtml attribute for any reason - get the markup from Craft
+    // this can happen e.g. if you make changes in the source mode and then come back to the editing mode
+    if (cardHtml == undefined) {
+      const entryId = modelItem.getAttribute('entryId') ?? null;
+      const siteId =
+        modelItem.getAttribute('siteId') ??
+        this.editor.config.get('elementSiteId') ??
+        null;
+
+      return Craft.sendActionRequest(
+        'POST',
+        'ckeditor/ckeditor/entry-card-html',
+        {
+          data: {
+            entryId: entryId,
+            siteId: siteId,
+          },
         },
-      })
+      )
         .then(({data}) => {
-          resolve(data);
+          return data;
         })
         .catch(() => {
           // TODO: add a placeholder markup?
-          resolve('<b>what now?</b>');
+          return '<b>what now?</b>';
         });
-    });
+    } else {
+      return new Promise((resolve, reject) => {
+        resolve(cardHtml);
+      });
+    }
   }
 }

@@ -15,7 +15,9 @@ export default class CraftEntriesCommand extends Command {
       });
 
       // ... and insert it into the document. Put the selection on the inserted element.
-      editor.model.insertObject(craftEntries, null, null, {setSelection: 'after'});
+      editor.model.insertObject(craftEntries, null, null, {
+        setSelection: 'after',
+      });
     });
   }
 
