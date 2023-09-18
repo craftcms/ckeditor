@@ -8,8 +8,13 @@ import {
 } from 'ckeditor5/src/ui';
 import {Range} from 'ckeditor5/src/engine';
 import {Collection} from 'ckeditor5/src/utils';
+import {isWidget, WidgetToolbarRepository} from 'ckeditor5/src/widget';
 
 export default class CraftEntriesUI extends Plugin {
+  static get requires() {
+    return [WidgetToolbarRepository];
+  }
+
   static get pluginName() {
     return 'CraftEntriesUI';
   }
@@ -18,8 +23,45 @@ export default class CraftEntriesUI extends Plugin {
     this.editor.ui.componentFactory.add('insertEntryBtn', (locale) => {
       return this._createToolbarEntriesButton(locale);
     });
+
+    this.editor.ui.componentFactory.add('editEntryBtn', (locale) => {
+      return this._createEditEntryBtn(locale);
+    });
   }
 
+  afterInit() {
+    // this is needed for the contextual balloon to show for each added entry widget
+    const widgetToolbarRepository = this.editor.plugins.get(WidgetToolbarRepository);
+    widgetToolbarRepository.register('entriesBalloon', {
+      ariaLabel: Craft.t('ckeditor', 'Entry toolbar'),
+      // Toolbar Buttons
+      items: ['editEntryBtn'],
+      // If a related element is returned the toolbar is attached
+      getRelatedElement: (selection) => {
+        const viewElement = selection.getSelectedElement();
+
+        // If the viewElement is a widget and
+        // the viewElement has a class `cke-entry-card`
+        // return it.
+        //
+        if (viewElement && isWidget(viewElement) && viewElement.hasClass('cke-entry-card')) {
+          // console.log(viewElement);
+          // console.log( Array.from( this.editor.ui.componentFactory.names() ) );
+          // console.log(this.editor.ui.componentFactory.has('editEntryBtn'));
+          return viewElement;
+        }
+
+        return null;
+      },
+    });
+  }
+
+  /**
+   * Creates a toolbar button that allows for an entry to be inserted into the editor
+   *
+   * @param locale
+   * @private
+   */
   _createToolbarEntriesButton(locale) {
     const editor = this.editor;
     const entryTypeOptions = editor.config.get('entryTypeOptions');
@@ -29,10 +71,8 @@ export default class CraftEntriesUI extends Plugin {
       return;
     }
 
-    const dropdownView = createDropdown(locale, DropdownButtonView);
-    const dropdownButton = dropdownView.buttonView;
-    dropdownButton.set({
-      isEnabled: true,
+    const dropdownView = createDropdown(locale);
+    dropdownView.buttonView.set({
       label: Craft.t('ckeditor', 'Insert entry'),
       //icon: , // TODO: do we have an icon we'd like to use?
       tooltip: true,
@@ -43,7 +83,7 @@ export default class CraftEntriesUI extends Plugin {
     dropdownView.bind('isEnabled').to(insertEntryCommand);
     addListToDropdown(
       dropdownView,
-      () => this._getDropdownListItems(entryTypeOptions, insertEntryCommand),
+      () => this._getDropdownItemsDefinitions(entryTypeOptions, insertEntryCommand),
       {
         ariaLabel: Craft.t('ckeditor', 'Entry types list'),
       },
@@ -56,24 +96,78 @@ export default class CraftEntriesUI extends Plugin {
     return dropdownView;
   }
 
-  _getDropdownListItems(options, command) {
+  /**
+   * Creates a list of entry type options that go into the insert entry button
+   *
+   * @param options
+   * @param command
+   * @returns {Collection<Record<string, any>>}
+   * @private
+   */
+  _getDropdownItemsDefinitions(options, command) {
     const itemDefinitions = new Collection();
     options.map((option) => {
       const definition = {
         type: 'button',
         model: new Model({
-          commandName: 'insertEntry',
-          commandValue: option.value,
+          commandValue: option.value, //entry type id
           label: option.label || option.value,
           withText: true,
-          icon: null,
         }),
       };
       itemDefinitions.add(definition);
     });
+
     return itemDefinitions;
   }
 
+  /**
+   * Creates an edit entry button that shows in the contextual balloon for each craft entry widget
+   * @param locale
+   * @returns {ButtonView}
+   * @private
+   */
+  _createEditEntryBtn(locale) {
+    // const command = this.editor.commands.get('insertEntry');
+    const button = new ButtonView(locale);
+    button.set({
+      isEnabled: true,
+      label: Craft.t('ckeditor', 'Edit entry'),
+      tooltip: true,
+      withText: true,
+    });
+
+    this.listenTo(button, 'execute', (evt) => {
+      const selection = this.editor.model.document.selection;
+      const viewElement = selection.getSelectedElement();
+      const entryId = viewElement.getAttribute('entryId');
+      const siteId = viewElement.getAttribute('siteId');
+      this._showEditEntrySlideout(entryId, siteId);
+    });
+
+    return button;
+  }
+
+  /**
+   * Opens an element editor for existing entry
+   *
+   * @param entryId
+   * @param siteId
+   * @private
+   */
+  _showEditEntrySlideout(entryId, siteId) {
+    Craft.createElementEditor(this.elementType, {
+      siteId: siteId,
+      elementId: entryId,
+    });
+  }
+
+  /**
+   * Creates new entry and opens the element editor for it
+   *
+   * @param entryTypeId
+   * @private
+   */
   _showCreateEntrySlideout(entryTypeId) {
     const editor = this.editor;
     // const model = editor.model;

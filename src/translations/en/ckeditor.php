@@ -21,6 +21,8 @@ return [
     'Disable this at your own risk!' => 'Disable this at your own risk!',
     'Drag toolbar items into the editor.' => 'Drag toolbar items into the editor.',
     'Edit CKEditor Config' => 'Edit CKEditor Config',
+    'Edit entry' => 'Edit entry',
+    'Entry toolbar' => 'Entry toolbar',
     'Entry types list' => 'Entry types list',
     'HTML Purifier Config' => 'HTML Purifier Config',
     'Heading Levels' => 'Heading Levels',
