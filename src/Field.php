@@ -558,7 +558,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface
             'entryTypeOptions' => $this->_getEntryTypeOptions(),
             'nestedElementAttributes' => array_filter([
                 'elementType' => Entry::class,
-                'ownerId' => $element->getCanonicalId(),
+                'ownerId' => $element?->getCanonicalId(),
                 'fieldId' => $this->id,
                 'siteId' => Entry::isLocalized() ? $element?->siteId : null,
             ]),
