@@ -808,12 +808,11 @@ JS,
      * Return HTML for the entry card or a placeholder one if entry can't be found
      *
      * @param int $entryId
-     * @param int|null $siteId
      * @return string
      */
-    public function getCardHtml(int $entryId, ?int $siteId): string
+    public function getCardHtml(int $entryId): string
     {
-        $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId, [
+        $entry = Craft::$app->getEntries()->getEntryById($entryId, criteria: [
             'status' => null,
             'revisions' => false,
         ]);
@@ -823,14 +822,13 @@ JS,
             'showDraftName' => true,
             'showStatus' => true,
             'showThumb' => true,
-            // TODO: make the link open in a slideout
         ];
 
         if (!$entry) {
             // if for any reason we can't get this entry - mock up one that shows it's missing
             $entry = new Entry();
             $entry->enabledForSite = false;
-            $entry->title = Craft::t('app', sprintf('Missing entry (id: %s, siteId: %s)', $entryId, $siteId));
+            $entry->title = Craft::t('app', sprintf('Missing entry (id: %s)', $entryId));
             // even though it's a fake element, we need to give it a type;
             // so let's just get the first one there is
             $entry->typeId = $this->getEntryTypes()[0]->id;

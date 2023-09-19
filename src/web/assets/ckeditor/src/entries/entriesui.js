@@ -45,9 +45,6 @@ export default class CraftEntriesUI extends Plugin {
         // return it.
         //
         if (viewElement && isWidget(viewElement) && viewElement.hasClass('cke-entry-card')) {
-          // console.log(viewElement);
-          // console.log( Array.from( this.editor.ui.componentFactory.names() ) );
-          // console.log(this.editor.ui.componentFactory.has('editEntryBtn'));
           return viewElement;
         }
 
@@ -141,8 +138,7 @@ export default class CraftEntriesUI extends Plugin {
       const selection = this.editor.model.document.selection;
       const viewElement = selection.getSelectedElement();
       const entryId = viewElement.getAttribute('entryId');
-      const siteId = viewElement.getAttribute('siteId');
-      this._showEditEntrySlideout(entryId, siteId);
+      this._showEditEntrySlideout(entryId);
     });
 
     return button;
@@ -152,12 +148,10 @@ export default class CraftEntriesUI extends Plugin {
    * Opens an element editor for existing entry
    *
    * @param entryId
-   * @param siteId
    * @private
    */
-  _showEditEntrySlideout(entryId, siteId) {
+  _showEditEntrySlideout(entryId) {
     Craft.createElementEditor(this.elementType, {
-      siteId: siteId,
       elementId: entryId,
     });
   }
@@ -186,7 +180,6 @@ export default class CraftEntriesUI extends Plugin {
     })
       .then(({data}) => {
         const slideout = Craft.createElementEditor(this.elementType, {
-          siteId: data.element.siteId,
           elementId: data.element.id,
           draftId: data.element.draftId,
           params: {
@@ -196,7 +189,6 @@ export default class CraftEntriesUI extends Plugin {
         slideout.on('submit', (ev) => {
           editor.commands.execute('insertEntry', {
             entryId: ev.data.id,
-            siteId: ev.data.siteId,
           });
         });
       })

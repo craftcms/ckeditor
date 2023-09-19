@@ -6,12 +6,11 @@ export default class CraftEntriesCommand extends Command {
     const selection = editor.model.document.selection;
 
     editor.model.change((writer) => {
-      // Create a <craftEntries> element with the "entryId" and "siteId" attributes
+      // Create a <craftEntries> element with the "entryId" attribute
       const craftEntries = writer.createElement('craftEntries', {
         ...Object.fromEntries(selection.getAttributes()),
         cardHtml: options.cardHtml,
         entryId: options.entryId,
-        siteId: options.siteId,
       });
 
       // ... and insert it into the document. Put the selection on the inserted element.

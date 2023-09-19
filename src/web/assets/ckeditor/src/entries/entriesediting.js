@@ -41,7 +41,7 @@ export default class CraftEntriesEditing extends Plugin {
 
     schema.register('craftEntries', {
       inheritAllFrom: '$blockObject',
-      allowAttributes: ['cardHtml', 'entryId', 'siteId'],
+      allowAttributes: ['cardHtml', 'entryId'],
       allowChildren: false,
     });
   }
@@ -58,12 +58,10 @@ export default class CraftEntriesEditing extends Plugin {
       model: (viewElement, {writer: modelWriter}) => {
         const cardHtml = viewElement.getAttribute('data-cardhtml');
         const entryId = viewElement.getAttribute('data-entryid');
-        const siteId = viewElement.getAttribute('data-siteid');
 
         return modelWriter.createElement('craftEntries', {
           cardHtml: cardHtml,
           entryId: entryId,
-          siteId: siteId,
         });
       },
     });
@@ -91,15 +89,10 @@ export default class CraftEntriesEditing extends Plugin {
     // Create the card container view for both types of downcasting
     const createCardContainerView = (modelItem, viewWriter) => {
       const entryId = modelItem.getAttribute('entryId') ?? null;
-      const siteId =
-        modelItem.getAttribute('siteId') ??
-        this.editor.config.get('elementSiteId') ??
-        null;
 
       return viewWriter.createContainerElement('div', {
         class: 'cke-entry-card',
         'data-entryId': entryId,
-        'data-siteId': siteId,
       });
     };
 
@@ -128,10 +121,6 @@ export default class CraftEntriesEditing extends Plugin {
     // this can happen e.g. if you make changes in the source mode and then come back to the editing mode
     if (cardHtml == undefined) {
       const entryId = modelItem.getAttribute('entryId') ?? null;
-      const siteId =
-        modelItem.getAttribute('siteId') ??
-        this.editor.config.get('elementSiteId') ??
-        null;
 
       return Craft.sendActionRequest(
         'POST',
@@ -139,7 +128,6 @@ export default class CraftEntriesEditing extends Plugin {
         {
           data: {
             entryId: entryId,
-            siteId: siteId,
           },
         },
       )
