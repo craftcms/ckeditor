@@ -11,14 +11,23 @@ import {Collection} from 'ckeditor5/src/utils';
 import {isWidget, WidgetToolbarRepository} from 'ckeditor5/src/widget';
 
 export default class CraftEntriesUI extends Plugin {
+  /**
+   * @inheritDoc
+   */
   static get requires() {
     return [WidgetToolbarRepository];
   }
 
+  /**
+   * @inheritDoc
+   */
   static get pluginName() {
     return 'CraftEntriesUI';
   }
 
+  /**
+   * @inheritDoc
+   */
   init() {
     this.editor.ui.componentFactory.add('insertEntryBtn', (locale) => {
       return this._createToolbarEntriesButton(locale);
@@ -29,6 +38,9 @@ export default class CraftEntriesUI extends Plugin {
     });
   }
 
+  /**
+   * @inheritDoc
+   */
   afterInit() {
     // this is needed for the contextual balloon to show for each added entry widget
     const widgetToolbarRepository = this.editor.plugins.get(WidgetToolbarRepository);

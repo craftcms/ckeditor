@@ -7,14 +7,24 @@ import {
 import CraftEntriesCommand from './entriescommand';
 
 export default class CraftEntriesEditing extends Plugin {
+
+  /**
+   * @inheritDoc
+   */
   static get requires() {
     return [Widget];
   }
 
+  /**
+   * @inheritDoc
+   */
   static get pluginName() {
     return 'CraftEntriesEditing';
   }
 
+  /**
+   * @inheritDoc
+   */
   init() {
     // define the model
     this._defineSchema();
@@ -36,30 +46,40 @@ export default class CraftEntriesEditing extends Plugin {
     );
   }
 
+  /**
+   * Defines model schema for our widget.
+   * @private
+   */
   _defineSchema() {
     const schema = this.editor.model.schema;
 
-    schema.register('craftEntries', {
+    schema.register('craftEntryModel', {
       inheritAllFrom: '$blockObject',
       allowAttributes: ['cardHtml', 'entryId'],
       allowChildren: false,
     });
   }
 
+  /**
+   * Defines conversion methods for model and both editing and data views.
+   * @private
+   */
   _defineConverters() {
     const conversion = this.editor.conversion;
 
     // converts view to model
     conversion.for('upcast').elementToElement({
       view: {
-        name: 'div',
+        name: 'craftentry', // has to be lower case
         classes: ['cke-entry-card'],
       },
       model: (viewElement, {writer: modelWriter}) => {
+        console.log('upcast');
+        console.log(viewElement);
         const cardHtml = viewElement.getAttribute('data-cardhtml');
         const entryId = viewElement.getAttribute('data-entryid');
 
-        return modelWriter.createElement('craftEntries', {
+        return modelWriter.createElement('craftEntryModel', {
           cardHtml: cardHtml,
           entryId: entryId,
         });
@@ -68,7 +88,7 @@ export default class CraftEntriesEditing extends Plugin {
 
     // for converting model into editing view (html) that we see in editor UI
     conversion.for('editingDowncast').elementToElement({
-      model: 'craftEntries',
+      model: 'craftEntryModel',
       view: (modelItem, {writer: viewWriter}) => {
         const cardContainer = createCardContainerView(modelItem, viewWriter);
         addCardHtmlToContainer(modelItem, viewWriter, cardContainer);
@@ -80,7 +100,7 @@ export default class CraftEntriesEditing extends Plugin {
 
     // for converting model data into HTML data that gets saved in the DB,
     conversion.for('dataDowncast').elementToElement({
-      model: 'craftEntries',
+      model: 'craftEntryModel',
       view: (modelItem, {writer: viewWriter}) => {
         return createCardContainerView(modelItem, viewWriter);
       },
@@ -90,7 +110,7 @@ export default class CraftEntriesEditing extends Plugin {
     const createCardContainerView = (modelItem, viewWriter) => {
       const entryId = modelItem.getAttribute('entryId') ?? null;
 
-      return viewWriter.createContainerElement('div', {
+      return viewWriter.createContainerElement('craftentry', {
         class: 'cke-entry-card',
         'data-entryId': entryId,
       });
@@ -114,6 +134,13 @@ export default class CraftEntriesEditing extends Plugin {
     };
   }
 
+  /**
+   * Get card html either from the attribute or via ajax request. In both cases, return via a promise.
+   *
+   * @param modelItem
+   * @returns {Promise<unknown>|Promise<T | string>}
+   * @private
+   */
   _getCardHtml(modelItem) {
     let cardHtml = modelItem.getAttribute('cardHtml');
 

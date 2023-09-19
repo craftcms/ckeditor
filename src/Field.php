@@ -853,15 +853,14 @@ JS,
     private function _prepCardsForInput(string $value): string
     {
         $offset = 0;
-        while (preg_match('/<div\sclass="[^"]*cke-entry-card[^>|"]*"\sdata-entryid="(\d+)"\sdata-siteid="(\d+)"[^>]*>/is', $value, $match, PREG_OFFSET_CAPTURE, $offset)) {
+        while (preg_match('/<craftentry\sclass="[^"]*cke-entry-card[^>|"]*"\sdata-entryid="(\d+)"[^>]*>/is', $value, $match, PREG_OFFSET_CAPTURE, $offset)) {
             $entryId = $match[1][0];
-            $siteId = $match[2][0];
 
             /** @var int $startPos */
             $startPos = $match[0][1];
             $endPos = $startPos + strlen($match[0][0]);
 
-            $cardHtml = $this->getCardHtml($entryId, $siteId);
+            $cardHtml = $this->getCardHtml($entryId);
 
             try {
                 $tag = Html::modifyTagAttributes($match[0][0], [

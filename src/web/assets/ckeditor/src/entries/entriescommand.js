@@ -7,7 +7,7 @@ export default class CraftEntriesCommand extends Command {
 
     editor.model.change((writer) => {
       // Create a <craftEntries> element with the "entryId" attribute
-      const craftEntries = writer.createElement('craftEntries', {
+      const craftEntries = writer.createElement('craftEntry', {
         ...Object.fromEntries(selection.getAttributes()),
         cardHtml: options.cardHtml,
         entryId: options.entryId,
