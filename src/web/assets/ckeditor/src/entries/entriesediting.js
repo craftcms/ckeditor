@@ -137,11 +137,11 @@ export default class CraftEntriesEditing extends Plugin {
    * @private
    */
   _getCardHtml(modelItem) {
-    let cardHtml = modelItem.getAttribute('cardHtml');
+    let cardHtml = modelItem.getAttribute('cardHtml') ?? null;
 
     // if there's no cardHtml attribute for any reason - get the markup from Craft
     // this can happen e.g. if you make changes in the source mode and then come back to the editing mode
-    if (cardHtml == undefined) {
+    if (cardHtml == undefined || cardHtml == null) {
       const entryId = modelItem.getAttribute('entryId') ?? null;
 
       return Craft.sendActionRequest(
