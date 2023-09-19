@@ -853,7 +853,7 @@ JS,
     private function _prepCardsForInput(string $value): string
     {
         $offset = 0;
-        while (preg_match('/<craftentry\sclass="[^"]*cke-entry-card[^>|"]*"\sdata-entryid="(\d+)"[^>]*>/is', $value, $match, PREG_OFFSET_CAPTURE, $offset)) {
+        while (preg_match('/<craftentry\sdata-entryid="(\d+)"[^>]*>/is', $value, $match, PREG_OFFSET_CAPTURE, $offset)) {
             $entryId = $match[1][0];
 
             /** @var int $startPos */
@@ -1215,6 +1215,14 @@ JS,
             /** @var HTMLPurifier_HTMLDefinition|null $def */
             $def = $purifierConfig->getDefinition('HTML', true);
             $def?->addAttribute('ul', 'style', 'Text');
+        }
+
+        if (in_array('insertEntryBtn', $ckeConfig->toolbar)) {
+            $def = $purifierConfig->getDefinition('HTML', true);
+            $def?->addElement('craftentry', 'Inline', 'Inline', '', [
+                //'class' => 'Text',
+                'data-entryid' => 'Number',
+            ]);
         }
 
         return $purifierConfig;

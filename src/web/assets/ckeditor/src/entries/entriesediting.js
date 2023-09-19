@@ -67,15 +67,12 @@ export default class CraftEntriesEditing extends Plugin {
   _defineConverters() {
     const conversion = this.editor.conversion;
 
-    // converts view to model
+    // converts data view to a model
     conversion.for('upcast').elementToElement({
       view: {
         name: 'craftentry', // has to be lower case
-        classes: ['cke-entry-card'],
       },
       model: (viewElement, {writer: modelWriter}) => {
-        console.log('upcast');
-        console.log(viewElement);
         const cardHtml = viewElement.getAttribute('data-cardhtml');
         const entryId = viewElement.getAttribute('data-entryid');
 
@@ -90,7 +87,11 @@ export default class CraftEntriesEditing extends Plugin {
     conversion.for('editingDowncast').elementToElement({
       model: 'craftEntryModel',
       view: (modelItem, {writer: viewWriter}) => {
-        const cardContainer = createCardContainerView(modelItem, viewWriter);
+        const entryId = modelItem.getAttribute('entryId') ?? null;
+        const cardContainer = viewWriter.createContainerElement('div', {
+          class: 'cke-entry-card',
+          'data-entryId': entryId,
+        });
         addCardHtmlToContainer(modelItem, viewWriter, cardContainer);
 
         // Enable widget handling on an entry element inside the editing view.
@@ -98,23 +99,17 @@ export default class CraftEntriesEditing extends Plugin {
       },
     });
 
-    // for converting model data into HTML data that gets saved in the DB,
+    // for converting model into data view (html) that gets saved in the DB,
     conversion.for('dataDowncast').elementToElement({
       model: 'craftEntryModel',
       view: (modelItem, {writer: viewWriter}) => {
-        return createCardContainerView(modelItem, viewWriter);
+        const entryId = modelItem.getAttribute('entryId') ?? null;
+
+        return viewWriter.createContainerElement('craftentry', {
+          'data-entryId': entryId,
+        });
       },
     });
-
-    // Create the card container view for both types of downcasting
-    const createCardContainerView = (modelItem, viewWriter) => {
-      const entryId = modelItem.getAttribute('entryId') ?? null;
-
-      return viewWriter.createContainerElement('craftentry', {
-        class: 'cke-entry-card',
-        'data-entryId': entryId,
-      });
-    };
 
     // Populate card container with card HTML
     const addCardHtmlToContainer = (modelItem, viewWriter, cardContainer) => {
