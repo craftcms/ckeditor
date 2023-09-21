@@ -7,7 +7,6 @@ import {
 import CraftEntriesCommand from './entriescommand';
 
 export default class CraftEntriesEditing extends Plugin {
-
   /**
    * @inheritDoc
    */

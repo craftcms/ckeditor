@@ -62,11 +62,14 @@ class CkeditorAsset extends BaseCkeditorPackageAsset
 
         if ($view instanceof View) {
             $this->registerRefHandles($view);
+            $view->registerTranslations('app', [
+                'Edit {type}',
+                'entry',
+                'New {type}',
+            ]);
             $view->registerTranslations('ckeditor', [
-                'Edit entry',
                 'Entry toolbar',
                 'Entry types list',
-                'Insert entry',
                 'Insert link',
                 'Link to the current site',
                 'Site: {name}',

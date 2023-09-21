@@ -29,7 +29,7 @@ export default class CraftEntriesUI extends Plugin {
    * @inheritDoc
    */
   init() {
-    this.editor.ui.componentFactory.add('insertEntryBtn', (locale) => {
+    this.editor.ui.componentFactory.add('createEntry', (locale) => {
       return this._createToolbarEntriesButton(locale);
     });
 
@@ -43,7 +43,9 @@ export default class CraftEntriesUI extends Plugin {
    */
   afterInit() {
     // this is needed for the contextual balloon to show for each added entry widget
-    const widgetToolbarRepository = this.editor.plugins.get(WidgetToolbarRepository);
+    const widgetToolbarRepository = this.editor.plugins.get(
+      WidgetToolbarRepository,
+    );
     widgetToolbarRepository.register('entriesBalloon', {
       ariaLabel: Craft.t('ckeditor', 'Entry toolbar'),
       // Toolbar Buttons
@@ -56,7 +58,11 @@ export default class CraftEntriesUI extends Plugin {
         // the viewElement has a class `cke-entry-card`
         // return it.
         //
-        if (viewElement && isWidget(viewElement) && viewElement.hasClass('cke-entry-card')) {
+        if (
+          viewElement &&
+          isWidget(viewElement) &&
+          viewElement.hasClass('cke-entry-card')
+        ) {
           return viewElement;
         }
 
@@ -82,8 +88,9 @@ export default class CraftEntriesUI extends Plugin {
 
     const dropdownView = createDropdown(locale);
     dropdownView.buttonView.set({
-      label: Craft.t('ckeditor', 'Insert entry'),
-      //icon: , // TODO: do we have an icon we'd like to use?
+      label: Craft.t('app', 'New {type}', {
+        type: Craft.t('app', 'entry'),
+      }),
       tooltip: true,
       withText: true,
       //commandValue: null,
@@ -92,7 +99,8 @@ export default class CraftEntriesUI extends Plugin {
     dropdownView.bind('isEnabled').to(insertEntryCommand);
     addListToDropdown(
       dropdownView,
-      () => this._getDropdownItemsDefinitions(entryTypeOptions, insertEntryCommand),
+      () =>
+        this._getDropdownItemsDefinitions(entryTypeOptions, insertEntryCommand),
       {
         ariaLabel: Craft.t('ckeditor', 'Entry types list'),
       },
@@ -141,7 +149,9 @@ export default class CraftEntriesUI extends Plugin {
     const button = new ButtonView(locale);
     button.set({
       isEnabled: true,
-      label: Craft.t('ckeditor', 'Edit entry'),
+      label: Craft.t('app', 'Edit {type}', {
+        type: Craft.t('app', 'entry'),
+      }),
       tooltip: true,
       withText: true,
     });

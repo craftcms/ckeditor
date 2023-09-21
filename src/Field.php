@@ -1217,7 +1217,7 @@ JS,
             $def?->addAttribute('ul', 'style', 'Text');
         }
 
-        if (in_array('insertEntryBtn', $ckeConfig->toolbar)) {
+        if (in_array('createEntry', $ckeConfig->toolbar)) {
             $def = $purifierConfig->getDefinition('HTML', true);
             $def?->addElement('craftentry', 'Inline', 'Inline', '', [
                 //'class' => 'Text',
