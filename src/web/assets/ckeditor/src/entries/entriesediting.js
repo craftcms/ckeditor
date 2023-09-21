@@ -125,7 +125,9 @@ export default class CraftEntriesEditing extends Plugin {
 
         const editor = this.editor;
         editor.editing.view.focus();
-        Craft.cp.elementThumbLoader.load($(editor.ui.element));
+        setTimeout(() => {
+          Craft.cp.elementThumbLoader.load($(editor.ui.element));
+        }, 100);
       });
     };
   }
