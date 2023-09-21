@@ -123,7 +123,9 @@ export default class CraftEntriesEditing extends Plugin {
 
         viewWriter.insert(viewWriter.createPositionAt(cardContainer, 0), card);
 
-        this.editor.editing.view.focus();
+        const editor = this.editor;
+        editor.editing.view.focus();
+        Craft.cp.elementThumbLoader.load($(editor.ui.element));
       });
     };
   }
