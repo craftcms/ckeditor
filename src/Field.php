@@ -8,6 +8,7 @@
 namespace craft\ckeditor;
 
 use Craft;
+use craft\base\EagerLoadingFieldInterface;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
@@ -16,6 +17,8 @@ use craft\ckeditor\events\DefineLinkOptionsEvent;
 use craft\ckeditor\events\ModifyConfigEvent;
 use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
+use craft\db\Query;
+use craft\db\Table as DbTable;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\db\ElementQuery;
@@ -51,7 +54,7 @@ use yii\base\InvalidConfigException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
-class Field extends HtmlField implements ElementContainerFieldInterface
+class Field extends HtmlField implements ElementContainerFieldInterface, EagerLoadingFieldInterface
 {
     /**
      * @event ModifyPurifierConfigEvent The event that is triggered when creating HTML Purifier config
@@ -263,6 +266,26 @@ class Field extends HtmlField implements ElementContainerFieldInterface
         return $attributes;
     }
 
+    private function entryManager(): NestedElementManager
+    {
+        if (!isset($this->_entryManager)) {
+            $this->_entryManager = new NestedElementManager(
+                Entry::class,
+                fn(ElementInterface $owner) => $this->createEntryQuery($owner),
+                [
+                    'fieldHandle' => $this->handle,
+                    'criteria' => [
+                        'fieldId' => $this->id,
+                    ],
+                ],
+            );
+
+            $this->_entryManager->on(NestedElementManager::EVENT_AFTER_SAVE_ELEMENTS, [$this, 'afterSaveEntries']);
+        }
+
+        return $this->_entryManager;
+    }
+
     /**
      * @inheritdoc
      */
@@ -385,68 +408,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface
         ]);
     }
 
-    private function entryManager(): NestedElementManager
-    {
-        if (!isset($this->_entryManager)) {
-            $this->_entryManager = new NestedElementManager(
-                Entry::class,
-                fn(ElementInterface $owner) => $this->createEntryQuery($owner),
-                [
-                    'fieldHandle' => $this->handle,
-                    'criteria' => [
-                        'fieldId' => $this->id,
-                    ],
-                ],
-            );
-
-            $this->_entryManager->on(NestedElementManager::EVENT_AFTER_SAVE_ELEMENTS, [$this, 'afterSaveEntries']);
-        }
-
-        return $this->_entryManager;
-    }
-
-    private function createEntryQuery(?ElementInterface $owner): EntryQuery
-    {
-        $query = Entry::find();
-
-        // Existing element?
-        if ($owner && $owner->id) {
-            $query->attachBehavior(self::class, new EventBehavior([
-                ElementQuery::EVENT_BEFORE_PREPARE => function(
-                    CancelableEvent $event,
-                    EntryQuery $query,
-                ) use ($owner) {
-                    $query->ownerId = $owner->id;
-
-                    // Clear out id=false if this query was populated previously
-                    if ($query->id === false) {
-                        $query->id = null;
-                    }
-
-                    // If the owner is a revision, allow revision entries to be returned as well
-                    if ($owner->getIsRevision()) {
-                        $query
-                            ->revisions(null)
-                            ->trashed(null);
-                    }
-                },
-            ], true));
-
-            // Set the query up for lazy eager loading
-            $query->eagerLoadSourceElement = $owner;
-            $providerHandle = $owner->getFieldLayout()?->provider?->getHandle();
-            $query->eagerLoadHandle = $providerHandle ? "$providerHandle:$this->handle" : $this->handle;
-        } else {
-            $query->id = false;
-        }
-
-        $query
-            ->fieldId($this->id)
-            ->siteId($owner->siteId ?? null);
-
-        return $query;
-    }
-
     /**
      * Returns the available entry types.
      */
@@ -484,25 +445,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface
     }
 
     /**
-     * Returns entry type options in form of an array with 'label' and 'value' keys for each option.
-     *
-     * @return array
-     */
-    private function _getEntryTypeOptions(): array
-    {
-        $entryTypeOptions = array_map(
-            fn(EntryType $entryType) => [
-                'label' => Craft::t('site', $entryType->name),
-                'value' => $entryType->id,
-            ],
-            $this->getEntryTypes(),
-        );
-        usort($entryTypeOptions, fn(array $a, array $b) => $a['label'] <=> $b['label']);
-
-        return $entryTypeOptions;
-    }
-
-    /**
      * @inheritdoc
      */
     public function getSettings(): array
@@ -519,6 +461,164 @@ class Field extends HtmlField implements ElementContainerFieldInterface
         $settings['entryTypes'] = array_map(fn(EntryType $entryType) => $entryType->uid, $this->_entryTypes);
 
         return $settings;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStaticHtml(mixed $value, ElementInterface $element): string
+    {
+        return Html::tag('div', $this->prepValueForInput($value, $element) ?: '&nbsp;');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
+    {
+        if ($value instanceof HtmlFieldData) {
+            $value = $value->getRawContent();
+        }
+
+        if ($value !== null) {
+            // Redactor to CKEditor syntax for <figure>
+            // (https://github.com/craftcms/ckeditor/issues/96)
+            $value = $this->_normalizeFigures($value);
+        }
+
+        return parent::serializeValue($value, $element);
+    }
+
+    /**
+     * Return HTML for the entry card or a placeholder one if entry can't be found
+     *
+     * @param int $entryId
+     * @return string
+     */
+    public function getCardHtml(int $entryId): string
+    {
+        $entry = Craft::$app->getEntries()->getEntryById($entryId, criteria: [
+            'status' => null,
+            'revisions' => false,
+        ]);
+
+        $cardConfig = [
+            'autoReload' => true,
+            'showDraftName' => true,
+            'showStatus' => true,
+            'showThumb' => true,
+        ];
+
+        if (!$entry) {
+            // if for any reason we can't get this entry - mock up one that shows it's missing
+            $entry = new Entry();
+            $entry->enabledForSite = false;
+            $entry->title = Craft::t('app', sprintf('Missing entry (id: %s)', $entryId));
+            // even though it's a fake element, we need to give it a type;
+            // so let's just get the first one there is
+            $entry->typeId = $this->getEntryTypes()[0]->id;
+            $cardConfig += [
+                'autoReload' => false,
+                'showDraftName' => false,
+                'showStatus' => false,
+                'showThumb' => false,
+            ];
+        }
+
+        return Cp::elementCardHtml($entry, $cardConfig);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEagerLoadingMap(array $sourceElements): array|null|false
+    {
+        // Get the source element IDs
+        $sourceElementIds = [];
+
+        foreach ($sourceElements as $sourceElement) {
+            $sourceElementIds[] = $sourceElement->id;
+        }
+
+        // Return any relation data on these elements, defined with this field
+        $map = (new Query())
+            ->select([
+                'source' => 'elements_owners.ownerId',
+                'target' => 'entries.id',
+            ])
+            ->from(['entries' => DbTable::ENTRIES])
+            ->innerJoin(['elements_owners' => DbTable::ELEMENTS_OWNERS], [
+                'and',
+                '[[elements_owners.elementId]] = [[entries.id]]',
+                ['elements_owners.ownerId' => $sourceElementIds],
+            ])
+            ->where(['entries.fieldId' => $this->id])
+            ->orderBy(['elements_owners.sortOrder' => SORT_ASC])
+            ->all();
+
+        return [
+            'elementType' => Entry::class,
+            'map' => $map,
+            'criteria' => [
+                'fieldId' => $this->id,
+                'allowOwnerDrafts' => true,
+                'allowOwnerRevisions' => true,
+            ],
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementSave(ElementInterface $element, bool $isNew): void
+    {
+        // if the element we're saving is the parent element, so
+        // it's not a draft, and it doesn't have a fieldId
+        if (!$element->getIsDraft() && (!$element->hasProperty('fieldId') || $element->fieldId === null)) {
+            // get all the nested entries that belong to $element with $this->fieldId matching
+            $allNestedEntries = $this->createEntryQuery($element)->all();
+            // get ids of items present in the field; we need to account for revisions and drafts(?) too
+            $value = $element->getFieldValue($this->handle);
+            $test = 1;
+            // and mark them for deletion
+        }
+        parent::afterElementSave($element, $isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementPropagate(ElementInterface $element, bool $isNew): void
+    {
+        // TODO: this causes an error
+//        $this->entryManager()->maintainNestedElements($element, $isNew);
+        parent::afterElementPropagate($element, $isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeElementDelete(ElementInterface $element): bool
+    {
+        if (!parent::beforeElementDelete($element)) {
+            return false;
+        }
+
+        // Delete any entries that primarily belong to this element
+        $this->entryManager()->deleteNestedElements($element, $element->hardDelete);
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementRestore(ElementInterface $element): void
+    {
+        // Also restore any entries for this element
+        $this->entryManager()->restoreNestedElements($element);
+
+        parent::afterElementRestore($element);
     }
 
     /**
@@ -730,14 +830,6 @@ JS,
     /**
      * @inheritdoc
      */
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
-    {
-        return Html::tag('div', $this->prepValueForInput($value, $element) ?: '&nbsp;');
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function purifierConfig(): HTMLPurifier_Config
     {
         $purifierConfig = parent::purifierConfig();
@@ -786,61 +878,65 @@ JS,
         return parent::prepValueForInput($value, $element);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
+    private function createEntryQuery(?ElementInterface $owner): EntryQuery
     {
-        if ($value instanceof HtmlFieldData) {
-            $value = $value->getRawContent();
+        $query = Entry::find();
+
+        // Existing element?
+        if ($owner && $owner->id) {
+            $query->attachBehavior(self::class, new EventBehavior([
+                ElementQuery::EVENT_BEFORE_PREPARE => function(
+                    CancelableEvent $event,
+                    EntryQuery $query,
+                ) use ($owner) {
+                    $query->ownerId = $owner->id;
+
+                    // Clear out id=false if this query was populated previously
+                    if ($query->id === false) {
+                        $query->id = null;
+                    }
+
+                    // If the owner is a revision, allow revision entries to be returned as well
+                    if ($owner->getIsRevision()) {
+                        $query
+                            ->revisions(null)
+                            ->trashed(null);
+                    }
+                },
+            ], true));
+
+            // Set the query up for lazy eager loading
+            $query->eagerLoadSourceElement = $owner;
+            $providerHandle = $owner->getFieldLayout()?->provider?->getHandle();
+            $query->eagerLoadHandle = $providerHandle ? "$providerHandle:$this->handle" : $this->handle;
+        } else {
+            $query->id = false;
         }
 
-        if ($value !== null) {
-            // Redactor to CKEditor syntax for <figure>
-            // (https://github.com/craftcms/ckeditor/issues/96)
-            $value = $this->_normalizeFigures($value);
-        }
+        $query
+            ->fieldId($this->id)
+            ->siteId($owner->siteId ?? null);
 
-        return parent::serializeValue($value, $element);
+        return $query;
     }
 
     /**
-     * Return HTML for the entry card or a placeholder one if entry can't be found
+     * Returns entry type options in form of an array with 'label' and 'value' keys for each option.
      *
-     * @param int $entryId
-     * @return string
+     * @return array
      */
-    public function getCardHtml(int $entryId): string
+    private function _getEntryTypeOptions(): array
     {
-        $entry = Craft::$app->getEntries()->getEntryById($entryId, criteria: [
-            'status' => null,
-            'revisions' => false,
-        ]);
+        $entryTypeOptions = array_map(
+            fn(EntryType $entryType) => [
+                'label' => Craft::t('site', $entryType->name),
+                'value' => $entryType->id,
+            ],
+            $this->getEntryTypes(),
+        );
+        usort($entryTypeOptions, fn(array $a, array $b) => $a['label'] <=> $b['label']);
 
-        $cardConfig = [
-            'autoReload' => true,
-            'showDraftName' => true,
-            'showStatus' => true,
-            'showThumb' => true,
-        ];
-
-        if (!$entry) {
-            // if for any reason we can't get this entry - mock up one that shows it's missing
-            $entry = new Entry();
-            $entry->enabledForSite = false;
-            $entry->title = Craft::t('app', sprintf('Missing entry (id: %s)', $entryId));
-            // even though it's a fake element, we need to give it a type;
-            // so let's just get the first one there is
-            $entry->typeId = $this->getEntryTypes()[0]->id;
-            $cardConfig += [
-                'autoReload' => false,
-                'showDraftName' => false,
-                'showStatus' => false,
-                'showThumb' => false,
-            ];
-        }
-
-        return Cp::elementCardHtml($entry, $cardConfig);
+        return $entryTypeOptions;
     }
 
     /**
@@ -1024,35 +1120,6 @@ JS,
         }
 
         return $linkOptions;
-    }
-
-    /**
-     * Returns the entry options available to the field.
-     *
-     * Each entry option is represented by an array with the following keys:
-     * - `elementType` (required) – the element type class to use for the modal query
-     * - `sources` (optional) – the sources that the user should be able to select elements from
-     * - `criteria` (optional) – any specific element criteria parameters that should limit which elements the user can select
-     *
-     * @param ElementInterface|null $element The element the field is associated with, if there is one
-     * @return array
-     */
-    private function _entryOptions(?ElementInterface $element = null): array
-    {
-        $entryOptions = [];
-
-        // TODO: add a setting to the field to select which sections or entry types are allowed here
-        $sectionSources = $this->_sectionSources($element, true);
-
-        if (!empty($sectionSources)) {
-            $entryOptions[] = [
-                'elementType' => Entry::class,
-                'sources' => $sectionSources,
-                //'criteria' => ['uri' => ':notempty:'],
-            ];
-        }
-
-        return $entryOptions;
     }
 
     /**

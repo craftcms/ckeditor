@@ -43,7 +43,9 @@ export default class CraftEntriesUI extends Plugin {
    */
   afterInit() {
     // this is needed for the contextual balloon to show for each added entry widget
-    const widgetToolbarRepository = this.editor.plugins.get(WidgetToolbarRepository);
+    const widgetToolbarRepository = this.editor.plugins.get(
+      WidgetToolbarRepository,
+    );
     widgetToolbarRepository.register('entriesBalloon', {
       ariaLabel: Craft.t('ckeditor', 'Entry toolbar'),
       // Toolbar Buttons
@@ -56,7 +58,11 @@ export default class CraftEntriesUI extends Plugin {
         // the viewElement has a class `cke-entry-card`
         // return it.
         //
-        if (viewElement && isWidget(viewElement) && viewElement.hasClass('cke-entry-card')) {
+        if (
+          viewElement &&
+          isWidget(viewElement) &&
+          viewElement.hasClass('cke-entry-card')
+        ) {
           return viewElement;
         }
 
@@ -92,7 +98,8 @@ export default class CraftEntriesUI extends Plugin {
     dropdownView.bind('isEnabled').to(insertEntryCommand);
     addListToDropdown(
       dropdownView,
-      () => this._getDropdownItemsDefinitions(entryTypeOptions, insertEntryCommand),
+      () =>
+        this._getDropdownItemsDefinitions(entryTypeOptions, insertEntryCommand),
       {
         ariaLabel: Craft.t('ckeditor', 'Entry types list'),
       },
