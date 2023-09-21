@@ -404,7 +404,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
                     'value' => null,
                 ],
             ], $transformOptions),
-            'entryTypeOptions' => $this->_getEntryTypeOptions(),
         ]);
     }
 
