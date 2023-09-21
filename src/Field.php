@@ -381,7 +381,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface
                     'value' => null,
                 ],
             ], $transformOptions),
-            'entryTypeOptions' => $this->_getEntryTypeOptions(),
         ]);
     }
 
