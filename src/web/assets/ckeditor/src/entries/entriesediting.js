@@ -146,6 +146,7 @@ export default class CraftEntriesEditing extends Plugin {
     // this can happen e.g. if you make changes in the source mode and then come back to the editing mode
     if (cardHtml == undefined || cardHtml == null) {
       const entryId = modelItem.getAttribute('entryId') ?? null;
+      const siteId = Craft.siteId;
 
       return Craft.sendActionRequest(
         'POST',
@@ -153,6 +154,7 @@ export default class CraftEntriesEditing extends Plugin {
         {
           data: {
             entryId: entryId,
+            siteId: siteId,
           },
         },
       )

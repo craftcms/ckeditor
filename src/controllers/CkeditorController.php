@@ -60,8 +60,9 @@ class CkeditorController extends Controller
     public function actionEntryCardHtml(): Response
     {
         $entryId = $this->request->getRequiredBodyParam('entryId');
+        $siteId = $this->request->getBodyParam('siteId');
 
-        $cardHtml = (new Field())->getCardHtml($entryId);
+        $cardHtml = (new Field())->getCardHtml($entryId, $siteId);
 
         return $this->asJson($cardHtml);
     }

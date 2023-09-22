@@ -500,9 +500,9 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
      * @param int $entryId
      * @return string
      */
-    public function getCardHtml(int $entryId): string
+    public function getCardHtml(int $entryId, int $elementSiteId): string
     {
-        $entry = Craft::$app->getEntries()->getEntryById($entryId, criteria: [
+        $entry = Craft::$app->getEntries()->getEntryById($entryId, $elementSiteId, [
             'status' => null,
             'revisions' => false,
         ]);
@@ -876,7 +876,7 @@ JS,
             // (https://github.com/craftcms/ckeditor/issues/96)
             $value = $this->_normalizeFigures($value);
 
-            $value = $this->_prepCardsForInput($value);
+            $value = $this->_prepCardsForInput($value, $element->siteId);
         }
 
         return parent::prepValueForInput($value, $element);
@@ -950,7 +950,7 @@ JS,
      * @param string $value
      * @return string
      */
-    private function _prepCardsForInput(string $value): string
+    private function _prepCardsForInput(string $value, int $elementSiteId): string
     {
         $offset = 0;
         while (preg_match('/<craftentry\sdata-entryid="(\d+)"[^>]*>/is', $value, $match, PREG_OFFSET_CAPTURE, $offset)) {
@@ -960,7 +960,7 @@ JS,
             $startPos = $match[0][1];
             $endPos = $startPos + strlen($match[0][0]);
 
-            $cardHtml = $this->getCardHtml($entryId);
+            $cardHtml = $this->getCardHtml($entryId, $elementSiteId);
 
             try {
                 $tag = Html::modifyTagAttributes($match[0][0], [
