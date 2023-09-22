@@ -29,7 +29,7 @@ export default class CraftEntriesUI extends Plugin {
    * @inheritDoc
    */
   init() {
-    this.editor.ui.componentFactory.add('insertEntryBtn', (locale) => {
+    this.editor.ui.componentFactory.add('createEntry', (locale) => {
       return this._createToolbarEntriesButton(locale);
     });
 
@@ -88,8 +88,9 @@ export default class CraftEntriesUI extends Plugin {
 
     const dropdownView = createDropdown(locale);
     dropdownView.buttonView.set({
-      label: Craft.t('ckeditor', 'Insert entry'),
-      //icon: , // TODO: do we have an icon we'd like to use?
+      label: Craft.t('app', 'New {type}', {
+        type: Craft.t('app', 'entry'),
+      }),
       tooltip: true,
       withText: true,
       //commandValue: null,
@@ -148,7 +149,9 @@ export default class CraftEntriesUI extends Plugin {
     const button = new ButtonView(locale);
     button.set({
       isEnabled: true,
-      label: Craft.t('ckeditor', 'Edit entry'),
+      label: Craft.t('app', 'Edit {type}', {
+        type: Craft.t('app', 'entry'),
+      }),
       tooltip: true,
       withText: true,
     });

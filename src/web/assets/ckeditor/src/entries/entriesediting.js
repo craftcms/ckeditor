@@ -7,7 +7,6 @@ import {
 import CraftEntriesCommand from './entriescommand';
 
 export default class CraftEntriesEditing extends Plugin {
-
   /**
    * @inheritDoc
    */
@@ -124,7 +123,11 @@ export default class CraftEntriesEditing extends Plugin {
 
         viewWriter.insert(viewWriter.createPositionAt(cardContainer, 0), card);
 
-        this.editor.editing.view.focus();
+        const editor = this.editor;
+        editor.editing.view.focus();
+        setTimeout(() => {
+          Craft.cp.elementThumbLoader.load($(editor.ui.element));
+        }, 100);
       });
     };
   }

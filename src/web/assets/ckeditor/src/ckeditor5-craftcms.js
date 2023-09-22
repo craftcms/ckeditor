@@ -169,7 +169,7 @@ export const toolbarItems = normalizeToolbarItems([
   'findAndReplace',
   ['undo', 'redo'],
   'sourceEditing',
-  'insertEntryBtn',
+  'createEntry',
 ]);
 
 const pluginButtonMap = [
@@ -240,7 +240,7 @@ const pluginButtonMap = [
   {plugins: ['TextPartLanguage'], buttons: ['textPartLanguage']},
   {plugins: ['TodoList'], buttons: ['todoList']},
   {plugins: ['Underline'], buttons: ['underline']},
-  {plugins: ['CraftEntries'], buttons: ['insertEntryBtn']},
+  {plugins: ['CraftEntries'], buttons: ['createEntry']},
 ];
 
 const findPlugin = (pluginName) => {
