@@ -13,6 +13,7 @@ use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
+use craft\ckeditor\elements\NestedElementManager;
 use craft\ckeditor\events\DefineLinkOptionsEvent;
 use craft\ckeditor\events\ModifyConfigEvent;
 use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
@@ -24,9 +25,9 @@ use craft\elements\Category;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
-use craft\elements\NestedElementManager;
 use craft\elements\User;
 use craft\errors\InvalidHtmlTagException;
+use craft\events\BulkElementsEvent;
 use craft\events\CancelableEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
@@ -280,11 +281,16 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
                 ],
             );
 
-            $this->_entryManager->on(NestedElementManager::EVENT_AFTER_SAVE_ELEMENTS, [$this, 'afterSaveEntries']);
+//            $this->_entryManager->on(NestedElementManager::EVENT_AFTER_SAVE_ELEMENTS, [$this, 'afterSaveEntries']);
         }
 
         return $this->_entryManager;
     }
+
+//    public function afterSaveEntries(BulkElementsEvent $event): void
+//    {
+//        $test1 = 1;
+//    }
 
     /**
      * @inheritdoc
@@ -569,28 +575,27 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element, bool $isNew): void
-    {
-        // if the element we're saving is the parent element, so
-        // it's not a draft, and it doesn't have a fieldId
-        if (!$element->getIsDraft() && (!$element->hasProperty('fieldId') || $element->fieldId === null)) {
-            // get all the nested entries that belong to $element with $this->fieldId matching
-            $allNestedEntries = $this->createEntryQuery($element)->all();
-            // get ids of items present in the field; we need to account for revisions and drafts(?) too
-            $value = $element->getFieldValue($this->handle);
-            $test = 1;
-            // and mark them for deletion
-        }
-        parent::afterElementSave($element, $isNew);
-    }
+//    public function afterElementSave(ElementInterface $element, bool $isNew): void
+//    {
+//        // if the element we're saving is the parent element, so
+//        // it's not a draft, and it doesn't have a fieldId
+//        if (!$element->getIsDraft() && (!$element->hasProperty('fieldId') || $element->fieldId === null)) {
+//            // get all the nested entries that belong to $element with $this->fieldId matching
+//            $allNestedEntries = $this->createEntryQuery($element)->all();
+//            // get ids of items present in the field; we need to account for revisions and drafts(?) too
+//            $value = $element->getFieldValue($this->handle);
+//            $test = 1;
+//            // and mark them for deletion
+//        }
+//        parent::afterElementSave($element, $isNew);
+//    }
 
     /**
      * @inheritdoc
      */
     public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
-        // TODO: this causes an error
-//        $this->entryManager()->maintainNestedElements($element, $isNew);
+        $this->entryManager()->maintainNestedElements($element, $isNew);
         parent::afterElementPropagate($element, $isNew);
     }
 
