@@ -64,6 +64,7 @@ import {default as CraftLinkUI} from './link/linkui';
 import ImageTransform from './image/imagetransform';
 import {TextPartLanguage} from '@ckeditor/ckeditor5-language';
 import CraftEntries from './entries/entries';
+import CKEditorInspector from '@ckeditor/ckeditor5-inspector';
 
 const allPlugins = [
   CKEditor5.paragraph.Paragraph,
@@ -410,6 +411,7 @@ export const create = async function (element, config) {
     element,
     Object.assign({plugins}, config),
   );
+  CKEditorInspector.attach(editor);
 
   // Update the source element before the initial form value has been recorded,
   // in case the value needs to be normalized

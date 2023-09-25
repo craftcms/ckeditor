@@ -30,18 +30,17 @@ export default class CraftEntriesEditing extends Plugin {
     // define model/view converters
     this._defineConverters();
 
+    const editor = this.editor;
+
     // add the command
-    this.editor.commands.add(
-      'insertEntry',
-      new CraftEntriesCommand(this.editor),
-    );
+    editor.commands.add('insertEntry', new CraftEntriesCommand(editor));
 
     // fix position mapping (model-nodelist-offset-out-of-bounds)
-    this.editor.editing.mapper.on(
+    editor.editing.mapper.on(
       'viewToModelPosition',
-      viewToModelPositionOutsideModelElement(this.editor.model, (viewElement) =>
-        viewElement.hasClass('cke-entry-card'),
-      ),
+      viewToModelPositionOutsideModelElement(editor.model, (viewElement) => {
+        viewElement.hasClass('cke-entry-card');
+      }),
     );
   }
 
@@ -125,9 +124,16 @@ export default class CraftEntriesEditing extends Plugin {
 
         const editor = this.editor;
         editor.editing.view.focus();
+
         setTimeout(() => {
           Craft.cp.elementThumbLoader.load($(editor.ui.element));
         }, 100);
+
+        // refresh ui after drag&drop or sourceMode exit
+        editor.model.change((writer) => {
+          editor.ui.update();
+          $(editor.sourceElement).trigger('keyup'); // also trigger auto-save
+        });
       });
     };
   }
