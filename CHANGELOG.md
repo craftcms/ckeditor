@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed a bug where the CKEditor config-creation slideout could keep reappearing if canceled. ([#138](https://github.com/craftcms/ckeditor/pull/138))
+
 ## 3.6.0 - 2023-09-13
 
 - CKEditor is now released under the GPL-3.0 license.
