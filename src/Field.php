@@ -278,6 +278,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
                     'criteria' => [
                         'fieldId' => $this->id,
                     ],
+                    'valueSetter' => false,
                 ],
             );
 
