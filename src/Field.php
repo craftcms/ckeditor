@@ -285,7 +285,7 @@ class Field extends HtmlField
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $view = Craft::$app->getView();
         $view->registerAssetBundle(CkeditorAsset::class);
@@ -541,7 +541,7 @@ JS,
     /**
      * @inheritdoc
      */
-    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value instanceof HtmlFieldData) {
             $value = $value->getRawContent();
@@ -644,7 +644,7 @@ JS,
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      * @return array
      */
-    private function _linkOptions(?ElementInterface $element = null): array
+    private function _linkOptions(?ElementInterface $element): array
     {
         $linkOptions = [];
 
@@ -710,7 +710,7 @@ JS,
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      * @return array
      */
-    private function _sectionSources(?ElementInterface $element = null): array
+    private function _sectionSources(?ElementInterface $element): array
     {
         $sources = [];
         $sections = Craft::$app->getEntries()->getAllSections();
@@ -749,7 +749,7 @@ JS,
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      * @return array
      */
-    private function _categorySources(?ElementInterface $element = null): array
+    private function _categorySources(?ElementInterface $element): array
     {
         if (!$element) {
             return [];
