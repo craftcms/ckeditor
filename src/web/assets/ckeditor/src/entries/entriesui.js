@@ -9,6 +9,7 @@ import {
 import {Range} from 'ckeditor5/src/engine';
 import {Collection} from 'ckeditor5/src/utils';
 import {isWidget, WidgetToolbarRepository} from 'ckeditor5/src/widget';
+import {DoubleClickObserver} from '../observers/domevent';
 
 export default class CraftEntriesUI extends Plugin {
   /**
@@ -36,6 +37,8 @@ export default class CraftEntriesUI extends Plugin {
     this.editor.ui.componentFactory.add('editEntryBtn', (locale) => {
       return this._createEditEntryBtn(locale);
     });
+
+    this._listenToEvents();
   }
 
   /**
@@ -68,6 +71,30 @@ export default class CraftEntriesUI extends Plugin {
 
         return null;
       },
+    });
+  }
+
+  /**
+   * Hook up event listeners
+   * 
+   * @private
+   */
+  _listenToEvents() {
+    const view = this.editor.editing.view;
+    const viewDocument = view.document;
+
+    view.addObserver( DoubleClickObserver );
+
+    this.editor.listenTo( viewDocument, 'dblclick', ( evt, data ) => {
+      const modelElement = this.editor.editing.mapper.toModelElement(data.target.parent);
+
+      if (modelElement.name === 'craftEntryModel') {
+        const selection = this.editor.model.document.selection;
+        const viewElement = selection.getSelectedElement();
+        const entryId = viewElement.getAttribute('entryId');
+
+        this._showEditEntrySlideout(entryId);
+      }
     });
   }
 
