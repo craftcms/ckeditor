@@ -911,7 +911,7 @@ JS,
             ], true));
 
             // Prepare the query for lazy eager loading
-            $query->prepForEagerLoading($this->handle, $element);
+            $query->prepForEagerLoading($this->handle, $owner);
         } else {
             $query->id = false;
         }
