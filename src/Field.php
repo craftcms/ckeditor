@@ -663,7 +663,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
             'entryTypeOptions' => $this->_getEntryTypeOptions(),
             'nestedElementAttributes' => array_filter([
                 'elementType' => Entry::class,
-                'ownerId' => $element?->getCanonicalId(),
+                'ownerId' => $element->id, //$element?->getCanonicalId(),
                 'fieldId' => $this->id,
                 'siteId' => Entry::isLocalized() ? $element?->siteId : null,
             ]),

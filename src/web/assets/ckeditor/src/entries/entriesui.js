@@ -186,36 +186,41 @@ export default class CraftEntriesUI extends Plugin {
    */
   _showCreateEntrySlideout(entryTypeId) {
     const editor = this.editor;
-    // const model = editor.model;
-    // const selection = model.document.selection;
-    // const isCollapsed = selection.isCollapsed;
-    // const range = selection.getFirstRange();
-    const entryTypeOptions = editor.config.get('entryTypeOptions')[0];
-    const nestedElementAttributes = editor.config.get(
-      'nestedElementAttributes',
-    );
+    const $editorElement = $(editor.ui.view.element);
+    const $form = $(editor.ui.view.element).parents('form');
+    const elementEditor = $form.data('elementEditor')
 
-    Craft.sendActionRequest('POST', 'elements/create', {
-      data: Object.assign(nestedElementAttributes, {
+    elementEditor.ensureIsDraftOrRevision().then(() => {
+      //const entryTypeOptions = editor.config.get('entryTypeOptions')[0];
+      const nestedElementAttributes = editor.config.get(
+        'nestedElementAttributes',
+      );
+
+      let attributes = Object.assign(nestedElementAttributes, {
         typeId: entryTypeId,
-      }),
-    })
-      .then(({data}) => {
-        const slideout = Craft.createElementEditor(this.elementType, {
-          elementId: data.element.id,
-          draftId: data.element.draftId,
-          params: {
-            fresh: 1,
-          },
-        });
-        slideout.on('submit', (ev) => {
-          editor.commands.execute('insertEntry', {
-            entryId: ev.data.id,
-          });
-        });
-      })
-      .catch(({response}) => {
-        Craft.cp.displayError((response.data && response.data.error) || null);
+        ownerId: elementEditor.settings.elementId
       });
+
+      Craft.sendActionRequest('POST', 'elements/create', {
+          data: attributes,
+        })
+        .then(({data}) => {
+          const slideout = Craft.createElementEditor(this.elementType, {
+            elementId: data.element.id,
+            draftId: data.element.draftId,
+            params: {
+              fresh: 1,
+            },
+          });
+          slideout.on('submit', (ev) => {
+            editor.commands.execute('insertEntry', {
+              entryId: ev.data.id,
+            });
+          });
+        })
+        .catch(({response}) => {
+          Craft.cp.displayError((response.data && response.data.error) || null);
+        });
+    });
   }
 }
