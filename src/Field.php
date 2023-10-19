@@ -219,6 +219,14 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
     /**
      * @inheritdoc
      */
+    public static function isMultiInstance(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         return array_merge(parent::defineRules(), [
