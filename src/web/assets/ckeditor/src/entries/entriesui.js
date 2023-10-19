@@ -76,17 +76,19 @@ export default class CraftEntriesUI extends Plugin {
 
   /**
    * Hook up event listeners
-   * 
+   *
    * @private
    */
   _listenToEvents() {
     const view = this.editor.editing.view;
     const viewDocument = view.document;
 
-    view.addObserver( DoubleClickObserver );
+    view.addObserver(DoubleClickObserver);
 
-    this.editor.listenTo( viewDocument, 'dblclick', ( evt, data ) => {
-      const modelElement = this.editor.editing.mapper.toModelElement(data.target.parent);
+    this.editor.listenTo(viewDocument, 'dblclick', (evt, data) => {
+      const modelElement = this.editor.editing.mapper.toModelElement(
+        data.target.parent,
+      );
 
       if (modelElement.name === 'craftEntryModel') {
         const selection = this.editor.model.document.selection;
@@ -215,7 +217,7 @@ export default class CraftEntriesUI extends Plugin {
     const editor = this.editor;
     const $editorElement = $(editor.ui.view.element);
     const $form = $(editor.ui.view.element).parents('form');
-    const elementEditor = $form.data('elementEditor')
+    const elementEditor = $form.data('elementEditor');
 
     elementEditor.ensureIsDraftOrRevision().then(() => {
       //const entryTypeOptions = editor.config.get('entryTypeOptions')[0];
@@ -225,12 +227,12 @@ export default class CraftEntriesUI extends Plugin {
 
       let attributes = Object.assign(nestedElementAttributes, {
         typeId: entryTypeId,
-        ownerId: elementEditor.settings.elementId
+        ownerId: elementEditor.settings.elementId,
       });
 
       Craft.sendActionRequest('POST', 'elements/create', {
-          data: attributes,
-        })
+        data: attributes,
+      })
         .then(({data}) => {
           const slideout = Craft.createElementEditor(this.elementType, {
             elementId: data.element.id,
