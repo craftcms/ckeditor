@@ -7,13 +7,16 @@
 
 namespace craft\ckeditor;
 
+use Closure;
 use Craft;
 use craft\base\EagerLoadingFieldInterface;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
-use craft\ckeditor\elements\NestedElementManager;
+use craft\elements\db\ElementQueryInterface;
+use craft\elements\ElementCollection;
+use craft\elements\NestedElementManager;
 use craft\ckeditor\events\DefineLinkOptionsEvent;
 use craft\ckeditor\events\ModifyConfigEvent;
 use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
@@ -275,6 +278,11 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
         return $attributes;
     }
 
+    /**
+     * Instantiate and return the NestedElementManager
+     *
+     * @return NestedElementManager
+     */
     private function entryManager(): NestedElementManager
     {
         if (!isset($this->_entryManager)) {
@@ -286,7 +294,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
                     'criteria' => [
                         'fieldId' => $this->id,
                     ],
-                    'valueSetter' => false,
+                    'valueSetter' => $this->_entryManagerValueSetter(),
                 ],
             );
 
@@ -294,6 +302,63 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
         }
 
         return $this->_entryManager;
+    }
+
+    /**
+     * Used to set value via NestedElementManager->setValue();
+     *
+     * @return Closure
+     */
+    private function _entryManagerValueSetter(): Closure
+    {
+        return function(NestedElementManager $nestedElementManager, ElementInterface $owner, ElementQueryInterface|ElementCollection $value) {
+            // as $value we have the IDs of the nested entries that are referenced in the owner's cke field
+            // if the owner was duplicated, we need to update the references in the field's html value
+            if ($owner->duplicateOf !== null) {
+                // if we're creating a draft
+                if ($owner->getIsDraft()) {
+                    $value = $owner->getFieldValue($nestedElementManager->fieldHandle);
+                } else {
+                    // get elementIds for the $owner->duplicateOf
+                    $oldElementIds = array_map(fn($element) => $element->id,  $this->createEntryQuery($owner->duplicateOf)->all());
+                    // get elementIds for $owner
+                    $newElementIds = array_map(fn($element) => $element->id, $value->all());
+
+                    // if old and new nested element IDs are the same - just copy the value as is
+                    if ($oldElementIds == $newElementIds) {
+                        $value = $owner->getFieldValue($nestedElementManager->fieldHandle);
+                    } else {
+                        // otherwise, we have to get the field value and replace old element ids with new ones
+                        // get field value
+                        $fieldValue = $owner->getFieldValue($nestedElementManager->fieldHandle);
+
+                        // and in the field value replace elementIds from original (duplicateOf) with elementIds from the new owner
+                        $i = 0;
+                        $value = preg_replace_callback(
+                            '/(<craftentry\sdata-entryid=")(\d+)("[^>]*>)/is',
+                            function(array $match) use ($oldElementIds, $newElementIds, &$i) {
+                                $str = $match[1] . $newElementIds[$i] . $match[3];
+                                $i++;
+                                return $str;
+                            },
+                            $fieldValue,
+                            -1,
+                            $i
+                        );
+                    }
+                }
+            } else {
+                //otherwise, we can just save the same value as we have in the owner
+                $value = $owner->getFieldValue($nestedElementManager->fieldHandle);
+            }
+
+            if (isset($nestedElementManager->attribute)) {
+                $owner->{$nestedElementManager->attribute} = $value;
+            } else {
+                $owner->setFieldValue($nestedElementManager->fieldHandle, $value);
+                Craft::$app->getElements()->saveElement($owner, false, false, false, false, false);
+            }
+        };
     }
 
 //    public function afterSaveEntries(BulkElementsEvent $event): void
