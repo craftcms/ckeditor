@@ -331,9 +331,9 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
     {
         return function(ElementInterface $owner, ElementQueryInterface|ElementCollection $value) {
             // as $value we have the IDs of the nested entries that are referenced in the owner's cke field
-            // if the owner was duplicated, we need to update the references in the field's html value
+            // if the owner was duplicated (e.g. on draft apply), we need to update the references in the field's html value
             if ($owner->duplicateOf !== null) {
-                // if we're creating a draft
+                // if we're creating a draft - just get owner field value
                 if ($owner->getIsDraft()) {
                     $value = $owner->getFieldValue($this->handle);
                 } else {
@@ -351,17 +351,14 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
                         $fieldValue = $owner->getFieldValue($this->handle);
 
                         // and in the field value replace elementIds from original (duplicateOf) with elementIds from the new owner
-                        $i = 0;
                         $value = preg_replace_callback(
                             '/(<craftentry\sdata-entryid=")(\d+)("[^>]*>)/is',
-                            function(array $match) use ($oldElementIds, $newElementIds, &$i) {
-                                $str = $match[1] . $newElementIds[$i] . $match[3];
-                                $i++;
-                                return $str;
+                            function(array $match) use ($oldElementIds, $newElementIds) {
+                                $key = array_search($match[2], $oldElementIds);
+                                return $match[1] . $newElementIds[$key] . $match[3];
                             },
                             $fieldValue,
                             -1,
-                            $i
                         );
                     }
                 }
