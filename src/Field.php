@@ -311,13 +311,13 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
      */
     private function _entryManagerValueSetter(): Closure
     {
-        return function(NestedElementManager $nestedElementManager, ElementInterface $owner, ElementQueryInterface|ElementCollection $value) {
+        return function(ElementInterface $owner, ElementQueryInterface|ElementCollection $value) {
             // as $value we have the IDs of the nested entries that are referenced in the owner's cke field
             // if the owner was duplicated, we need to update the references in the field's html value
             if ($owner->duplicateOf !== null) {
                 // if we're creating a draft
                 if ($owner->getIsDraft()) {
-                    $value = $owner->getFieldValue($nestedElementManager->fieldHandle);
+                    $value = $owner->getFieldValue($this->handle);
                 } else {
                     // get elementIds for the $owner->duplicateOf
                     $oldElementIds = array_map(fn($element) => $element->id,  $this->createEntryQuery($owner->duplicateOf)->all());
@@ -326,11 +326,11 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
 
                     // if old and new nested element IDs are the same - just copy the value as is
                     if ($oldElementIds == $newElementIds) {
-                        $value = $owner->getFieldValue($nestedElementManager->fieldHandle);
+                        $value = $owner->getFieldValue($this->handle);
                     } else {
                         // otherwise, we have to get the field value and replace old element ids with new ones
                         // get field value
-                        $fieldValue = $owner->getFieldValue($nestedElementManager->fieldHandle);
+                        $fieldValue = $owner->getFieldValue($this->handle);
 
                         // and in the field value replace elementIds from original (duplicateOf) with elementIds from the new owner
                         $i = 0;
@@ -349,15 +349,11 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
                 }
             } else {
                 //otherwise, we can just save the same value as we have in the owner
-                $value = $owner->getFieldValue($nestedElementManager->fieldHandle);
+                $value = $owner->getFieldValue($this->handle);
             }
 
-            if (isset($nestedElementManager->attribute)) {
-                $owner->{$nestedElementManager->attribute} = $value;
-            } else {
-                $owner->setFieldValue($nestedElementManager->fieldHandle, $value);
-                Craft::$app->getElements()->saveElement($owner, false, false, false, false, false);
-            }
+            $owner->setFieldValue($this->handle, $value);
+            Craft::$app->getElements()->saveElement($owner, false, false, false, false, false);
         };
     }
 
