@@ -294,6 +294,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
                     'criteria' => [
                         'fieldId' => $this->id,
                     ],
+                    'valueGetter' => $this->_entryManagerValueGetter(),
                     'valueSetter' => $this->_entryManagerValueSetter(),
                 ],
             );
@@ -302,6 +303,23 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
         }
 
         return $this->_entryManager;
+    }
+
+    /**
+     * Used to get value via NestedElementManager->getValue();
+     *
+     * @return Closure
+     */
+    private function _entryManagerValueGetter(): Closure
+    {
+        return function(ElementInterface $owner, bool $fetchAll = false) {
+            $value = $owner->getFieldValue($this->handle);
+            preg_match_all('/<craftentry\sdata-entryid="(\d+)"[^>]*>/is', $value, $matches);
+
+            $query = $this->createEntryQuery($owner);
+            $query->where(['in', 'elements.id', $matches[1]]);
+            return $query;
+        };
     }
 
     /**
