@@ -14,6 +14,7 @@ use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
+use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\elements\NestedElementManager;
@@ -30,7 +31,6 @@ use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\errors\InvalidHtmlTagException;
-use craft\events\BulkElementsEvent;
 use craft\events\CancelableEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
@@ -52,6 +52,7 @@ use HTMLPurifier_HTMLDefinition;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\db\Expression;
 
 /**
  * CKEditor field type
@@ -298,8 +299,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
                     'valueSetter' => $this->_entryManagerValueSetter(),
                 ],
             );
-
-//            $this->_entryManager->on(NestedElementManager::EVENT_AFTER_SAVE_ELEMENTS, [$this, 'afterSaveEntries']);
         }
 
         return $this->_entryManager;
@@ -318,6 +317,9 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
 
             $query = $this->createEntryQuery($owner);
             $query->where(['in', 'elements.id', $matches[1]]);
+            if (!empty($matches[1])) {
+                $query->orderBy(new Expression('FIELD (elements.id, ' . implode(', ', $matches[1]) . ')'));
+            }
             return $query;
         };
     }
@@ -329,53 +331,36 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
      */
     private function _entryManagerValueSetter(): Closure
     {
-        return function(ElementInterface $owner, ElementQueryInterface|ElementCollection $value) {
-            // as $value we have the IDs of the nested entries that are referenced in the owner's cke field
-            // if the owner was duplicated (e.g. on draft apply), we need to update the references in the field's html value
+        return function(ElementInterface $owner, ElementQueryInterface|ElementCollection $entryManagerValue) {
             if ($owner->duplicateOf !== null) {
-                // if we're creating a draft - just get owner field value
-                if ($owner->getIsDraft()) {
-                    $value = $owner->getFieldValue($this->handle);
-                } else {
-                    // get elementIds for the $owner->duplicateOf
-                    $oldElementIds = array_map(fn($element) => $element->id,  $this->createEntryQuery($owner->duplicateOf)->all());
-                    // get elementIds for $owner
-                    $newElementIds = array_map(fn($element) => $element->id, $value->all());
-
-                    // if old and new nested element IDs are the same - just copy the value as is
-                    if ($oldElementIds == $newElementIds) {
-                        $value = $owner->getFieldValue($this->handle);
-                    } else {
-                        // otherwise, we have to get the field value and replace old element ids with new ones
-                        // get field value
-                        $fieldValue = $owner->getFieldValue($this->handle);
-
-                        // and in the field value replace elementIds from original (duplicateOf) with elementIds from the new owner
-                        $value = preg_replace_callback(
-                            '/(<craftentry\sdata-entryid=")(\d+)("[^>]*>)/is',
-                            function(array $match) use ($oldElementIds, $newElementIds) {
-                                $key = array_search($match[2], $oldElementIds);
+                $oldElementIds = array_map(fn($element) => $element->id, $this->createEntryQuery($owner->duplicateOf)->all());
+                $newElementIds = array_map(fn($element) => $element->id, $entryManagerValue->all());
+                $fieldValue = $owner->getFieldValue($this->handle);
+                if ($oldElementIds !== $newElementIds) {
+                    // and in the field value replace elementIds from original (duplicateOf) with elementIds from the new owner
+                    $value = preg_replace_callback(
+                        '/(<craftentry\sdata-entryid=")(\d+)("[^>]*>)/is',
+                        function(array $match) use ($oldElementIds, $newElementIds) {
+                            $key = array_search($match[2], $oldElementIds);
+                            if (isset($newElementIds[$key])) {
                                 return $match[1] . $newElementIds[$key] . $match[3];
-                            },
-                            $fieldValue,
-                            -1,
-                        );
+                            }
+                            return $match[1] . $match[2] . $match[3];
+                        },
+                        $fieldValue,
+                        -1,
+                    );
+
+                    if ($fieldValue->getRawContent() !== $value) {
+                        $owner->setFieldValue($this->handle, $value);
+                        $owner->mergingCanonicalChanges = true;
+
+                        Craft::$app->getElements()->saveElement($owner, false, false, false, false, false);
                     }
                 }
-            } else {
-                //otherwise, we can just save the same value as we have in the owner
-                $value = $owner->getFieldValue($this->handle);
             }
-
-            $owner->setFieldValue($this->handle, $value);
-            Craft::$app->getElements()->saveElement($owner, false, false, false, false, false);
         };
     }
-
-//    public function afterSaveEntries(BulkElementsEvent $event): void
-//    {
-//        $test1 = 1;
-//    }
 
     /**
      * @inheritdoc
@@ -558,7 +543,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
      */
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
-        return Html::tag('div', $this->prepValueForInput($value, $element) ?: '&nbsp;');
+        return Html::tag('div', $this->prepValueForInput($value, $element, true) ?: '&nbsp;');
     }
 
     /**
@@ -589,7 +574,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
     {
         $entry = Craft::$app->getEntries()->getEntryById($entryId, $elementSiteId, [
             'status' => null,
-            'revisions' => false,
+            'revisions' => null,
         ]);
 
         $cardConfig = [
@@ -607,7 +592,10 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
             // even though it's a fake element, we need to give it a type;
             // so let's just get the first one there is
             $entry->typeId = $this->getEntryTypes()[0]->id;
-            $cardConfig += [
+        }
+
+        if (!$entry || $entry->getIsRevision()) {
+            $cardConfig = [
                 'autoReload' => false,
                 'showDraftName' => false,
                 'showStatus' => false,
@@ -656,24 +644,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
             ],
         ];
     }
-
-    /**
-     * @inheritdoc
-     */
-//    public function afterElementSave(ElementInterface $element, bool $isNew): void
-//    {
-//        // if the element we're saving is the parent element, so
-//        // it's not a draft, and it doesn't have a fieldId
-//        if (!$element->getIsDraft() && (!$element->hasProperty('fieldId') || $element->fieldId === null)) {
-//            // get all the nested entries that belong to $element with $this->fieldId matching
-//            $allNestedEntries = $this->createEntryQuery($element)->all();
-//            // get ids of items present in the field; we need to account for revisions and drafts(?) too
-//            $value = $element->getFieldValue($this->handle);
-//            $test = 1;
-//            // and mark them for deletion
-//        }
-//        parent::afterElementSave($element, $isNew);
-//    }
 
     /**
      * @inheritdoc
@@ -939,7 +909,7 @@ JS,
     /**
      * @inheritdoc
      */
-    protected function prepValueForInput($value, ?ElementInterface $element): string
+    protected function prepValueForInput($value, ?ElementInterface $element, bool $static = false): string
     {
         if ($value instanceof HtmlFieldData) {
             $value = $value->getRawContent();
@@ -961,7 +931,11 @@ JS,
             // (https://github.com/craftcms/ckeditor/issues/96)
             $value = $this->_normalizeFigures($value);
 
-            $value = $this->_prepCardsForInput($value, $element->siteId);
+            if ($static) {
+                $value = $this->_prepCardsForStaticInput($value, $element->siteId);
+            } else {
+                $value = $this->_prepCardsForInput($value, $element->siteId);
+            }
         }
 
         return parent::prepValueForInput($value, $element);
@@ -1056,6 +1030,32 @@ JS,
 
             $value = substr($value, 0, $startPos) . $tag . substr($value, $endPos);
             $offset = $startPos + strlen($tag);
+        }
+
+        return $value;
+    }
+
+    /**
+     * Replace the entry card CKE markup (<div class="cke-entry-card" data-entryid="96" data-siteid="1"></div>)
+     * with actual card HTML of the entry it's linking to
+     *
+     * @param string $value
+     * @return string
+     */
+    private function _prepCardsForStaticInput(string $value, int $elementSiteId): string
+    {
+        $offset = 0;
+        while (preg_match('/<craftentry\sdata-entryid="(\d+)"[^>]*>&nbsp;<\/craftentry>/is', $value, $match, PREG_OFFSET_CAPTURE, $offset)) {
+            $entryId = $match[1][0];
+
+            /** @var int $startPos */
+            $startPos = $match[0][1];
+            $endPos = $startPos + strlen($match[0][0]);
+
+            $cardHtml = $this->getCardHtml($entryId, $elementSiteId);
+
+            $value = substr($value, 0, $startPos) . $cardHtml . substr($value, $endPos);
+            $offset = $startPos + strlen($cardHtml);
         }
 
         return $value;
