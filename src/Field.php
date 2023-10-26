@@ -14,7 +14,6 @@ use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
-use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\elements\NestedElementManager;
@@ -23,13 +22,14 @@ use craft\ckeditor\events\ModifyConfigEvent;
 use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
 use craft\db\Query;
-use craft\db\Table as DbTable;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\elements\User;
+use craft\enums\PropagationMethod;
 use craft\errors\InvalidHtmlTagException;
 use craft\events\CancelableEvent;
 use craft\helpers\ArrayHelper;
@@ -277,89 +277,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
         $attributes = parent::settingsAttributes();
         $attributes[] = 'entryTypes';
         return $attributes;
-    }
-
-    /**
-     * Instantiate and return the NestedElementManager
-     *
-     * @return NestedElementManager
-     */
-    private function entryManager(): NestedElementManager
-    {
-        if (!isset($this->_entryManager)) {
-            $this->_entryManager = new NestedElementManager(
-                Entry::class,
-                fn(ElementInterface $owner) => $this->createEntryQuery($owner),
-                [
-                    'fieldHandle' => $this->handle,
-                    'criteria' => [
-                        'fieldId' => $this->id,
-                    ],
-                    'valueGetter' => $this->_entryManagerValueGetter(),
-                    'valueSetter' => $this->_entryManagerValueSetter(),
-                ],
-            );
-        }
-
-        return $this->_entryManager;
-    }
-
-    /**
-     * Used to get value via NestedElementManager->getValue();
-     *
-     * @return Closure
-     */
-    private function _entryManagerValueGetter(): Closure
-    {
-        return function(ElementInterface $owner, bool $fetchAll = false) {
-            $value = $owner->getFieldValue($this->handle);
-            preg_match_all('/<craftentry\sdata-entryid="(\d+)"[^>]*>/is', $value, $matches);
-
-            $query = $this->createEntryQuery($owner);
-            $query->where(['in', 'elements.id', $matches[1]]);
-            if (!empty($matches[1])) {
-                $query->orderBy(new Expression('FIELD (elements.id, ' . implode(', ', $matches[1]) . ')'));
-            }
-            return $query;
-        };
-    }
-
-    /**
-     * Used to set value via NestedElementManager->setValue();
-     *
-     * @return Closure
-     */
-    private function _entryManagerValueSetter(): Closure
-    {
-        return function(ElementInterface $owner, ElementQueryInterface|ElementCollection $entryManagerValue) {
-            if ($owner->duplicateOf !== null) {
-                $oldElementIds = array_map(fn($element) => $element->id, $this->createEntryQuery($owner->duplicateOf)->all());
-                $newElementIds = array_map(fn($element) => $element->id, $entryManagerValue->all());
-                $fieldValue = $owner->getFieldValue($this->handle);
-                if ($oldElementIds !== $newElementIds) {
-                    // and in the field value replace elementIds from original (duplicateOf) with elementIds from the new owner
-                    $value = preg_replace_callback(
-                        '/(<craftentry\sdata-entryid=")(\d+)("[^>]*>)/is',
-                        function(array $match) use ($oldElementIds, $newElementIds) {
-                            $key = array_search($match[2], $oldElementIds);
-                            if (isset($newElementIds[$key])) {
-                                return $match[1] . $newElementIds[$key] . $match[3];
-                            }
-                            return $match[1] . $match[2] . $match[3];
-                        },
-                        $fieldValue,
-                        -1,
-                    );
-
-                    if ($fieldValue->getRawContent() !== $value) {
-                        $owner->setFieldValue($this->handle, $value);
-                        $owner->mergingCanonicalChanges = true;
-
-                        Craft::$app->getElements()->saveElement($owner, false, false, false, false, false);
-                    }
-                }
-            }
-        };
     }
 
     /**
@@ -624,8 +541,8 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
                 'source' => 'elements_owners.ownerId',
                 'target' => 'entries.id',
             ])
-            ->from(['entries' => DbTable::ENTRIES])
-            ->innerJoin(['elements_owners' => DbTable::ELEMENTS_OWNERS], [
+            ->from(['entries' => Table::ENTRIES])
+            ->innerJoin(['elements_owners' => Table::ELEMENTS_OWNERS], [
                 'and',
                 '[[elements_owners.elementId]] = [[entries.id]]',
                 ['elements_owners.ownerId' => $sourceElementIds],
@@ -941,6 +858,114 @@ JS,
         return parent::prepValueForInput($value, $element);
     }
 
+    /**
+     * Instantiate and return the NestedElementManager
+     *
+     * @return NestedElementManager
+     */
+    private function entryManager(): NestedElementManager
+    {
+        if (!isset($this->_entryManager)) {
+            $this->_entryManager = new NestedElementManager(
+                Entry::class,
+                fn(ElementInterface $owner) => $this->createEntryQuery($owner),
+                [
+                    'fieldHandle' => $this->handle,
+                    'propagationMethod' => match($this->translationMethod) {
+                        self::TRANSLATION_METHOD_NONE => PropagationMethod::All,
+                        self::TRANSLATION_METHOD_SITE => PropagationMethod::None,
+                        self::TRANSLATION_METHOD_SITE_GROUP => PropagationMethod::SiteGroup,
+                        self::TRANSLATION_METHOD_LANGUAGE => PropagationMethod::Language,
+                        self::TRANSLATION_METHOD_CUSTOM => PropagationMethod::Custom,
+                    },
+                    'propagationKeyFormat' => $this->translationKeyFormat,
+                    'allowDeletion' => false,
+                    'criteria' => [
+                        'fieldId' => $this->id,
+                    ],
+                    'valueGetter' => $this->_entryManagerValueGetter(),
+                    'valueSetter' => $this->_entryManagerValueSetter(),
+                ],
+            );
+        }
+
+        return $this->_entryManager;
+    }
+
+    /**
+     * Used to get value via NestedElementManager->getValue();
+     *
+     * @return Closure
+     */
+    private function _entryManagerValueGetter(): Closure
+    {
+        return function(ElementInterface $owner, bool $fetchAll = false) {
+            $value = $owner->getFieldValue($this->handle);
+            preg_match_all('/<craftentry\sdata-entryid="(\d+)"[^>]*>/is', $value, $matches);
+
+            $query = $this->createEntryQuery($owner);
+            $query->where(['in', 'elements.id', $matches[1]]);
+            if (!empty($matches[1])) {
+                $query->orderBy(new Expression('FIELD (elements.id, ' . implode(', ', $matches[1]) . ')'));
+            }
+            return $query;
+        };
+    }
+
+    /**
+     * Used to set value via NestedElementManager->setValue();
+     *
+     * @return Closure
+     */
+    private function _entryManagerValueSetter(): Closure
+    {
+        return function(ElementInterface $owner, ElementQueryInterface|ElementCollection $value) {
+            if ($owner->duplicateOf !== null) {
+                $this->_adjustFieldValue($owner, $owner->duplicateOf, $value);
+            }
+        };
+    }
+
+    /**
+     * Adjusts owner element's CKE field value with updated nested element ids.
+     * E.g. on draft apply, propagation to a new site, revision creation etc
+     *
+     * @param $targetOwner
+     * @param $sourceOwner
+     * @param $entryManagerValue
+     * @return void
+     */
+    private function _adjustFieldValue($targetOwner, $sourceOwner, $entryManagerValue): void
+    {
+        $oldElementIds = array_map(fn($element) => $element->id, $this->createEntryQuery($sourceOwner)->all());
+        $newElementIds = array_map(fn($element) => $element->id, $entryManagerValue->all());
+        $fieldValue = $targetOwner->getFieldValue($this->handle);
+        if ($oldElementIds !== $newElementIds) {
+            // and in the field value replace elementIds from original (duplicateOf) with elementIds from the new owner
+            $value = preg_replace_callback(
+                '/(<craftentry\sdata-entryid=")(\d+)("[^>]*>)/is',
+                function(array $match) use ($oldElementIds, $newElementIds) {
+                    $key = array_search($match[2], $oldElementIds);
+                    if (isset($newElementIds[$key])) {
+                        return $match[1] . $newElementIds[$key] . $match[3];
+                    }
+                    return $match[1] . $match[2] . $match[3];
+                },
+                $fieldValue,
+                -1,
+            );
+
+            if ($fieldValue?->getRawContent() !== $value) {
+                $targetOwner->setFieldValue($this->handle, $value);
+                $t1 = $targetOwner->propagating;
+                $t2 = $targetOwner->mergingCanonicalChanges;
+                $targetOwner->mergingCanonicalChanges = true;
+
+                Craft::$app->getElements()->saveElement($targetOwner, false, false, false, false, false);
+            }
+        }
+    }
+
     private function createEntryQuery(?ElementInterface $owner): EntryQuery
     {
         $query = Entry::find();
@@ -1001,7 +1026,7 @@ JS,
     }
 
     /**
-     * Fill entry card CKE markup (<div class="cke-entry-card" data-entryid="96" data-siteid="1"></div>)
+     * Fill entry card CKE markup (<div class="cke-entry-card" data-entryid="96"></div>)
      * with actual card HTML of the entry it's linking to
      *
      * @param string $value
