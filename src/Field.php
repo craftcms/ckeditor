@@ -574,6 +574,28 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
     /**
      * @inheritdoc
      */
+    public function afterElementSave(ElementInterface $element, bool $isNew): void
+    {
+        // This is needed for when we have at least 2 sites, section's entries are propagated to both of them,
+        // but the CKE field is set to be translatable. In that case, on the first save,
+        // the CKE nested elements still need to be propagated to the second site and when that happens,
+        // the propagated element has a different ID than the original one.
+        // We ensure it only runs on that first propagation by comparing source and target site ids.
+
+        if ($element->propagating === true) {
+            $oldValue = $element->getFieldValue($this->handle);
+            preg_match_all('/<craftentry\sdata-entryid="(\d+)"[^>]*>/is', $oldValue, $matches);
+            $oldElementIds = array_map(fn($match) => (int)$match, $matches[1]);
+
+            $newElementIds = array_map(fn($element) => $element->id, $this->createEntryQuery($element)->all());
+
+            $this->_adjustFieldValue($element, $oldElementIds, $newElementIds);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function beforeElementDelete(ElementInterface $element): bool
     {
         if (!parent::beforeElementDelete($element)) {
@@ -921,7 +943,9 @@ JS,
     {
         return function(ElementInterface $owner, ElementQueryInterface|ElementCollection $value) {
             if ($owner->duplicateOf !== null) {
-                $this->_adjustFieldValue($owner, $owner->duplicateOf, $value);
+                $oldElementIds = array_map(fn($element) => $element->id, $this->createEntryQuery($owner->duplicateOf)->all());
+                $newElementIds = array_map(fn($element) => $element->id, $value->all());
+                $this->_adjustFieldValue($owner, $oldElementIds, $newElementIds);
             }
         };
     }
@@ -930,16 +954,14 @@ JS,
      * Adjusts owner element's CKE field value with updated nested element ids.
      * E.g. on draft apply, propagation to a new site, revision creation etc
      *
-     * @param $targetOwner
-     * @param $sourceOwner
-     * @param $entryManagerValue
+     * @param ElementInterface $owner
+     * @param array $oldElementIds
+     * @param array $newElementIds
      * @return void
      */
-    private function _adjustFieldValue($targetOwner, $sourceOwner, $entryManagerValue): void
+    private function _adjustFieldValue(ElementInterface $owner, array $oldElementIds, array $newElementIds): void
     {
-        $oldElementIds = array_map(fn($element) => $element->id, $this->createEntryQuery($sourceOwner)->all());
-        $newElementIds = array_map(fn($element) => $element->id, $entryManagerValue->all());
-        $fieldValue = $targetOwner->getFieldValue($this->handle);
+        $fieldValue = $owner->getFieldValue($this->handle);
         if ($oldElementIds !== $newElementIds) {
             // and in the field value replace elementIds from original (duplicateOf) with elementIds from the new owner
             $value = preg_replace_callback(
@@ -956,12 +978,10 @@ JS,
             );
 
             if ($fieldValue?->getRawContent() !== $value) {
-                $targetOwner->setFieldValue($this->handle, $value);
-                $t1 = $targetOwner->propagating;
-                $t2 = $targetOwner->mergingCanonicalChanges;
-                $targetOwner->mergingCanonicalChanges = true;
+                $owner->setFieldValue($this->handle, $value);
+                $owner->mergingCanonicalChanges = true;
 
-                Craft::$app->getElements()->saveElement($targetOwner, false, false, false, false, false);
+                Craft::$app->getElements()->saveElement($owner, false, false, false, false, false);
             }
         }
     }
