@@ -34,6 +34,7 @@ use craft\errors\InvalidHtmlTagException;
 use craft\events\CancelableEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
+use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -581,16 +582,17 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
         // the CKE nested elements still need to be propagated to the second site and when that happens,
         // the propagated element has a different ID than the original one.
         // We ensure it only runs on that first propagation by comparing source and target site ids.
-
         if ($element->propagating === true) {
             $oldValue = $element->getFieldValue($this->handle);
-            preg_match_all('/<craftentry\sdata-entryid="(\d+)"[^>]*>/is', $oldValue, $matches);
-            $oldElementIds = array_map(fn($match) => (int)$match, $matches[1]);
+            $oldElementIds = $this->_getEntryIdsFromString($oldValue);
 
             $newElementIds = array_map(fn($element) => $element->id, $this->createEntryQuery($element)->all());
 
             $this->_adjustFieldValue($element, $oldElementIds, $newElementIds);
         }
+
+        // once we're potentially done with adjusting, ensure ownership data is correct
+        $this->_ensureOwnership($element);
     }
 
     /**
@@ -915,6 +917,19 @@ JS,
     }
 
     /**
+     * Returns an array of entryIds that are present in the string (field value).
+     *
+     * @param string $string
+     * @return array
+     */
+    private function _getEntryIdsFromString(string $string): array
+    {
+        preg_match_all('/<craftentry\sdata-entryid="(\d+)"[^>]*>/is', $string, $matches);
+
+        return array_map(fn($match) => (int)$match, $matches[1]);
+    }
+
+    /**
      * Used to get value via NestedElementManager->getValue();
      *
      * @return Closure
@@ -923,13 +938,14 @@ JS,
     {
         return function(ElementInterface $owner, bool $fetchAll = false) {
             $value = $owner->getFieldValue($this->handle);
-            preg_match_all('/<craftentry\sdata-entryid="(\d+)"[^>]*>/is', $value, $matches);
+            $entryIds = $this->_getEntryIdsFromString($value);
 
             $query = $this->createEntryQuery($owner);
-            $query->where(['in', 'elements.id', $matches[1]]);
-            if (!empty($matches[1])) {
-                $query->orderBy(new Expression('FIELD (elements.id, ' . implode(', ', $matches[1]) . ')'));
+            $query->where(['in', 'elements.id', $entryIds]);
+            if (!empty($entryIds)) {
+                $query->orderBy(new Expression('FIELD (elements.id, ' . implode(', ', $entryIds) . ')'));
             }
+
             return $query;
         };
     }
@@ -962,15 +978,18 @@ JS,
     private function _adjustFieldValue(ElementInterface $owner, array $oldElementIds, array $newElementIds): void
     {
         $fieldValue = $owner->getFieldValue($this->handle);
-        if ($oldElementIds !== $newElementIds) {
+        if ($oldElementIds !== $newElementIds && !empty($oldElementIds) && !empty($newElementIds)) {
+            $usedIds = [];
             // and in the field value replace elementIds from original (duplicateOf) with elementIds from the new owner
             $value = preg_replace_callback(
                 '/(<craftentry\sdata-entryid=")(\d+)("[^>]*>)/is',
-                function(array $match) use ($oldElementIds, $newElementIds) {
+                function(array $match) use ($oldElementIds, $newElementIds, &$usedIds) {
                     $key = array_search($match[2], $oldElementIds);
                     if (isset($newElementIds[$key])) {
+                        $usedIds[] = $newElementIds[$key];
                         return $match[1] . $newElementIds[$key] . $match[3];
                     }
+                    $usedIds[] = $match[2];
                     return $match[1] . $match[2] . $match[3];
                 },
                 $fieldValue,
@@ -984,6 +1003,57 @@ JS,
                 Craft::$app->getElements()->saveElement($owner, false, false, false, false, false);
             }
         }
+    }
+
+    /**
+     * Ensures that the ownership data in the elements_owners table matches what's in the CKEditor field's value.
+     *
+     * @param ElementInterface $owner
+     * @return void
+     * @throws \craft\errors\InvalidFieldException
+     * @throws \yii\db\Exception
+     */
+    private function _ensureOwnership(ElementInterface $owner): void
+    {
+        $usedIds = $this->_getEntryIdsFromString($owner->getFieldValue($this->handle));
+
+        // get all elementIds for the owner
+        $dbElementIds = (new Query())
+            ->select(['elementId' => 'entries.id'])
+            ->from(['entries' => Table::ENTRIES])
+            ->innerJoin(['elements_owners' => Table::ELEMENTS_OWNERS], '[[elements_owners.elementId]] = [[entries.id]]')
+            ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.elementId]] = [[entries.id]]')
+            ->where([
+                'entries.fieldId' => $this->id,
+                'elements_owners.ownerId' => $owner->id,
+                'elements_sites.siteId' => $owner->siteId,
+            ])
+            ->column();
+
+        // those that exist in the $dbElementIds but not in usedIds - remove ownership
+        $deleteOwnership = array_diff($dbElementIds, $usedIds);
+        if (!empty($deleteOwnership)) {
+            Db::delete(Table::ELEMENTS_OWNERS, [
+                'elementId' => $deleteOwnership,
+                'ownerId' => $owner->id,
+            ]);
+        }
+
+        // those that exist in usedIds but not in $dbElementIds - add ownership
+        $ownershipData = array_diff($usedIds, $dbElementIds);
+        if (!empty($ownershipData) && !$owner->isNewForSite) {
+            foreach ($ownershipData as $key => $value) {
+                $sortOrder = $key + 1;
+                Db::upsert(Table::ELEMENTS_OWNERS, [
+                    'elementId' => $value,
+                    'ownerId' => $owner->id,
+                    'sortOrder' => $sortOrder,
+                ], [
+                    'sortOrder' => $sortOrder,
+                ], updateTimestamp: false);
+            }
+        }
+        // all others - leave alone
     }
 
     private function createEntryQuery(?ElementInterface $owner): EntryQuery
