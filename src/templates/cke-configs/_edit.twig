@@ -74,60 +74,6 @@
   values: ckeConfig.headingLevels,
 }) }}
 
-{% embed '_includes/forms/field' with {
-  label: 'List Plugin'|t('ckeditor'),
-  id: 'list-plugin',
-  name: 'listPlugin',
-  instructions: 'Choose which list plugin CKEditor should be configured with, depending on the needed functionality.'|t('ckeditor'),
-} %}
-  {% block input %}
-    {% import '_includes/forms.twig' as forms %}
-    <table class="editable">
-      <thead>
-      <tr>
-        <th></th>
-        <th>{{ 'Numbered lists'|t('ckeditor') }}</th>
-        <th>{{ 'Bulleted lists'|t('ckeditor') }}</th>
-        <th>{{ 'To-do lists'|t('ckeditor') }}</th>
-        <th>{{ 'Can be styled'|t('ckeditor') }}</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr>
-        <th>
-          {{ forms.radio({
-            label: '<a href="https://ckeditor.com/docs/ckeditor5/latest/features/lists/lists.html"><strong>List</strong></a> <em>(legacy)</em>',
-            id: 'list-plugin--list',
-            name: 'listPlugin',
-            value: 'List',
-            checked: ckeConfig.listPlugin == 'List',
-          }) }}
-        </th>
-        <td style="text-align:center;vertical-align:middle;"><span class="checkbox-icon" role="img" title="{{ 'Supported'|t('ckeditor') }}" aria-label="{{ 'Supported'|t('ckeditor') }}"></span></td>
-        <td style="text-align:center;vertical-align:middle;"><span class="checkbox-icon" role="img" title="{{ 'Supported'|t('ckeditor') }}" aria-label="{{ 'Supported'|t('ckeditor') }}"></span></td>
-        <td style="text-align:center;vertical-align:middle;"><span class="checkbox-icon" role="img" title="{{ 'Supported'|t('ckeditor') }}" aria-label="{{ 'Supported'|t('ckeditor') }}"></span></td>
-        <td></td>
-      </tr>
-      <tr>
-        <th>
-          {{ forms.radio({
-            label: '<a href="https://ckeditor.com/docs/ckeditor5/latest/features/lists/document-lists.html"><strong>DocumentList</strong></a> <em>(new)</em>',
-            id: 'list-plugin--document-list',
-            name: 'listPlugin',
-            value: 'DocumentList',
-            checked: ckeConfig.listPlugin == 'DocumentList',
-          }) }}
-        </th>
-        <td style="text-align:center;vertical-align:middle;"><span class="checkbox-icon" role="img" title="{{ 'Supported'|t('ckeditor') }}" aria-label="{{ 'Supported'|t('ckeditor') }}"></span></td>
-        <td style="text-align:center;vertical-align:middle;"><span class="checkbox-icon" role="img" title="{{ 'Supported'|t('ckeditor') }}" aria-label="{{ 'Supported'|t('ckeditor') }}"></span></td>
-        <td></td>
-        <td style="text-align:center;vertical-align:middle;"><span class="checkbox-icon" role="img" title="{{ 'Supported'|t('ckeditor') }}" aria-label="{{ 'Supported'|t('ckeditor') }}"></span></td>
-      </tr>
-      </tbody>
-    </table>
-  {% endblock %}
-{% endembed %}
-
 {% embed '_includes/forms/field.twig' with {
   label: 'Config Options'|t('ckeditor'),
   instructions: 'Define custom [config options]({link}) which should be merged with the default config.'|t('ckeditor', {
