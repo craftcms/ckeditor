@@ -42,6 +42,7 @@ return [
     'The type of column this field should get in the database.' => 'The type of column this field should get in the database.',
     'Toolbar' => 'Toolbar',
     'View available settings' => 'View available settings',
+    'Which template should be used to render nested entry of this type on the front-end.' => 'Which template should be used to render nested entry of this type on the front-end.',
     'Word Limit' => 'Word Limit',
     'You can save custom {name} configs as {ext} files in {path}.' => 'You can save custom {name} configs as {ext} files in {path}.',
     '{attribute} isn’t valid JSON.' => '{attribute} isn’t valid JSON.',
