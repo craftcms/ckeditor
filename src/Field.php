@@ -628,17 +628,15 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
         // the CKE nested elements still need to be propagated to the second site and when that happens,
         // the propagated element has a different ID than the original one.
         // We ensure it only runs on that first propagation by comparing source and target site ids.
-        if ($element->propagating === true) {
-            $oldValue = $element->getFieldValue($this->handle);
-            $oldElementIds = $this->_getEntryIdsFromString($oldValue);
-
+        if (Craft::$app->getIsMultiSite() && $element->getSection()->propagationMethod !== PropagationMethod::None && $this->getIsTranslatable($element) && $element->propagating === true) {
+            $oldElementIds = $this->_getEntryIdsFromString($element->getFieldValue($this->handle));
             $newElementIds = array_map(fn($element) => $element->id, $this->createEntryQuery($element)->all());
 
-            $this->_adjustFieldValue($element, $oldElementIds, $newElementIds);
+            $this->_adjustFieldValue($element, $oldElementIds, $newElementIds, false);
         }
 
         // once we're potentially done with adjusting, ensure ownership data is correct
-        $this->_ensureOwnership($element);
+        $this->_cleanUpOwnership($element);
     }
 
     /**
@@ -1015,7 +1013,7 @@ JS,
             if ($owner->duplicateOf !== null) {
                 $oldElementIds = array_map(fn($element) => $element->id, $this->createEntryQuery($owner->duplicateOf)->all());
                 $newElementIds = array_map(fn($element) => $element->id, $value->all());
-                $this->_adjustFieldValue($owner, $oldElementIds, $newElementIds);
+                $this->_adjustFieldValue($owner, $oldElementIds, $newElementIds, true);
             }
         };
     }
@@ -1029,7 +1027,7 @@ JS,
      * @param array $newElementIds
      * @return void
      */
-    private function _adjustFieldValue(ElementInterface $owner, array $oldElementIds, array $newElementIds): void
+    private function _adjustFieldValue(ElementInterface $owner, array $oldElementIds, array $newElementIds, bool $propagate): void
     {
         $fieldValue = $owner->getFieldValue($this->handle);
         if ($oldElementIds !== $newElementIds && !empty($oldElementIds) && !empty($newElementIds)) {
@@ -1054,7 +1052,7 @@ JS,
                 $owner->setFieldValue($this->handle, $value);
                 $owner->mergingCanonicalChanges = true;
 
-                Craft::$app->getElements()->saveElement($owner, false, false, false, false, false);
+                Craft::$app->getElements()->saveElement($owner, false, $propagate, false, false, false);
             }
         }
     }
@@ -1067,7 +1065,7 @@ JS,
      * @throws \craft\errors\InvalidFieldException
      * @throws \yii\db\Exception
      */
-    private function _ensureOwnership(ElementInterface $owner): void
+    private function _cleanUpOwnership(ElementInterface $owner): void
     {
         $usedIds = $this->_getEntryIdsFromString($owner->getFieldValue($this->handle));
 
@@ -1093,20 +1091,20 @@ JS,
             ]);
         }
 
-        // those that exist in usedIds but not in $dbElementIds - add ownership
-        $ownershipData = array_diff($usedIds, $dbElementIds);
-        if (!empty($ownershipData) && !$owner->isNewForSite) {
-            foreach ($ownershipData as $key => $value) {
-                $sortOrder = $key + 1;
-                Db::upsert(Table::ELEMENTS_OWNERS, [
-                    'elementId' => $value,
-                    'ownerId' => $owner->id,
-                    'sortOrder' => $sortOrder,
-                ], [
-                    'sortOrder' => $sortOrder,
-                ], updateTimestamp: false);
-            }
-        }
+//        // those that exist in usedIds but not in $dbElementIds - add ownership
+//        $ownershipData = array_diff($usedIds, $dbElementIds);
+//        if (!empty($ownershipData) && !$owner->isNewForSite) {
+//            foreach ($ownershipData as $key => $value) {
+//                $sortOrder = $key + 1;
+//                Db::upsert(Table::ELEMENTS_OWNERS, [
+//                    'elementId' => $value,
+//                    'ownerId' => $owner->id,
+//                    'sortOrder' => $sortOrder,
+//                ], [
+//                    'sortOrder' => $sortOrder,
+//                ], updateTimestamp: false);
+//            }
+//        }
         // all others - leave alone
     }
 
