@@ -64,14 +64,33 @@
 
 <hr>
 
-{{ forms.entryTypeField({
+{% set headlessMode = craft.app.config.general.headlessMode %}
+{% set entryTypes = entryTypeRows ?? [] %}
+
+{{ forms.editableTableField({
   label: 'Entry Types'|t('app'),
   instructions: 'Choose the types of entries that can be included in this field.'|t('app'),
   id: 'entry-types',
   name: 'entryTypes',
-  values: field.getEntryTypes()|map(entryType => entryType.id),
-  multi: true,
-  errors: field.getErrors('entryTypes'),
+  cols: {
+    entryType: {
+      type: 'select',
+      heading: "Entry Type"|t('app'),
+      thin: true,
+      options: options ?? craft.cp.getEntryTypeOptions()
+    },
+    template: not headlessMode ? {
+      type: 'template',
+      heading: "Template"|t('app'),
+      info: "Which template should be used to render nested entry of this type on the front-end."|t('app'),
+      code: true
+    }
+  }|filter,
+  rows: entryTypes,
+  fullWidth: true,
+  allowAdd: true,
+  allowDelete: true,
+  allowReorder: true
 }) }}
 
 <hr>

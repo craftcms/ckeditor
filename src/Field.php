@@ -398,6 +398,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
                     'value' => null,
                 ],
             ], $transformOptions),
+            'entryTypeRows' => $this->_getEntryTypeSimpleArray(),
         ]);
     }
 
@@ -412,14 +413,17 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
     /**
      * Sets the available entry types.
      *
-     * @param array<int|string|EntryType> $entryTypes The entry types, or their IDs or UUIDs
+     * @param array $entryTypesArray Array of the entry types, or their IDs or UUIDs and corresponding templates
      */
-    public function setEntryTypes(array $entryTypes): void
+    public function setEntryTypes(array $entryTypesArray): void
     {
         $entriesService = Craft::$app->getEntries();
 
-        $this->_entryTypes = array_map(function(EntryType|string|int $entryType) use ($entriesService) {
-            if (is_numeric($entryType)) {
+        $this->_entryTypes = array_map(function(array $row) use ($entriesService) {
+            $entryType = $row['entryType'] ?? null;
+            if (empty($entryType)) {
+                return null;
+            } elseif (is_numeric($entryType)) {
                 $entryType = $entriesService->getEntryTypeById($entryType);
                 if (!$entryType) {
                     throw new InvalidArgumentException("Invalid entry type ID: $entryType");
@@ -433,8 +437,8 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
             } elseif (!$entryType instanceof EntryType) {
                 throw new InvalidArgumentException('Invalid entry type');
             }
-            return $entryType;
-        }, $entryTypes);
+            return ['entryType' => $entryType, 'template' => $row['template']];
+        }, array_filter($entryTypesArray));
     }
 
     /**
@@ -451,7 +455,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
             $settings['removeNbsp'],
         );
 
-        $settings['entryTypes'] = array_map(fn(EntryType $entryType) => $entryType->uid, $this->_entryTypes);
+        $settings['entryTypes'] = $this->_getEntryTypeSimpleArray('uid');
 
         return $settings;
     }
@@ -462,6 +466,18 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         return Html::tag('div', $this->prepValueForInput($value, $element, true) ?: '&nbsp;');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    {
+        if (!Craft::$app->getRequest()->getIsCpRequest()) {
+            $value = $this->prepValueForInput($value, $element, asCard: false);
+        }
+
+        return parent::normalizeValue($value, $element);
     }
 
     /**
@@ -503,13 +519,13 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
         ];
 
         if (!$entry) {
-            // if for any reason we can't get this entry - mock up one that shows it's missing
+            // if for any reason we can't get this entry - mock up one that shows it is missing
             $entry = new Entry();
             $entry->enabledForSite = false;
             $entry->title = Craft::t('app', sprintf('Missing entry (id: %s)', $entryId));
             // even though it's a fake element, we need to give it a type;
             // so let's just get the first one there is
-            $entry->typeId = $this->getEntryTypes()[0]->id;
+            $entry->typeId = $this->getEntryTypes()[0]['entryType']->id;
         }
 
         if (!$entry || $entry->getIsRevision()) {
@@ -522,6 +538,36 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
         }
 
         return Cp::elementCardHtml($entry, $cardConfig);
+    }
+
+    /**
+     * Return the rendered HTML to display outside the control panel.
+     *
+     * @param int $entryId
+     * @param int $elementSiteId
+     * @return string|null
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
+     * @throws \yii\base\Exception
+     */
+    public function getDisplayHtml(int $entryId, int $elementSiteId): ?string
+    {
+        $entry = Craft::$app->getEntries()->getEntryById($entryId, $elementSiteId, [
+            'status' => null,
+            'revisions' => null,
+        ]);
+
+        if (!$entry) {
+            return null;
+        }
+
+        $row = array_values(ArrayHelper::where($this->getEntryTypes(), 'entryType.id', $entry->typeId));
+        if (empty($row) || empty($row[0]) || empty($row[0]['template'])) {
+            return null;
+        }
+
+        return Craft::$app->getView()->renderTemplate($row[0]['template'], ['entry' => $entry]);
     }
 
     /**
@@ -850,7 +896,7 @@ JS,
     /**
      * @inheritdoc
      */
-    protected function prepValueForInput($value, ?ElementInterface $element, bool $static = false): string
+    protected function prepValueForInput($value, ?ElementInterface $element, bool $static = false, bool $asCard = true): string
     {
         if ($value instanceof HtmlFieldData) {
             $value = $value->getRawContent();
@@ -875,7 +921,11 @@ JS,
             if ($static) {
                 $value = $this->_prepCardsForStaticInput($value, $element->siteId);
             } else {
-                $value = $this->_prepCardsForInput($value, $element->siteId);
+                if ($asCard) {
+                    $value = $this->_prepCardsForInput($value, $element->siteId);
+                } else {
+                    $value = $this->_prepNestedEntriesForDisplay($value, $element->siteId);
+                }
             }
         }
 
@@ -922,8 +972,12 @@ JS,
      * @param string $string
      * @return array
      */
-    private function _getEntryIdsFromString(string $string): array
+    private function _getEntryIdsFromString(?string $string): array
     {
+        if ($string === null) {
+            return [];
+        }
+
         preg_match_all('/<craftentry\sdata-entryid="(\d+)"[^>]*>/is', $string, $matches);
 
         return array_map(fn($match) => (int)$match, $matches[1]);
@@ -1104,9 +1158,9 @@ JS,
     private function _getEntryTypeOptions(): array
     {
         $entryTypeOptions = array_map(
-            fn(EntryType $entryType) => [
-                'label' => Craft::t('site', $entryType->name),
-                'value' => $entryType->id,
+            fn(array $row) => [
+                'label' => Craft::t('site', $row['entryType']->name),
+                'value' => $row['entryType']->id,
             ],
             $this->getEntryTypes(),
         );
@@ -1116,7 +1170,22 @@ JS,
     }
 
     /**
-     * Fill entry card CKE markup (<div class="cke-entry-card" data-entryid="96"></div>)
+     * Returns a simple (single-dimensional) array containing entry type identifier (id by default)
+     * and the corresponding template specified in field's settings for that entry type.
+     *
+     * @param string $param
+     * @return array
+     */
+    private function _getEntryTypeSimpleArray(string $param = 'id'): array
+    {
+        return array_map(
+            fn(array $row) => ['entryType' => $row['entryType']->{$param}, 'template' => $row['template']],
+            $this->_entryTypes
+        );
+    }
+
+    /**
+     * Fill entry card CKE markup (<craftentry data-entryid="96"></craftentry>)
      * with actual card HTML of the entry it's linking to
      *
      * @param string $value
@@ -1151,7 +1220,7 @@ JS,
     }
 
     /**
-     * Replace the entry card CKE markup (<div class="cke-entry-card" data-entryid="96" data-siteid="1"></div>)
+     * Replace the entry card CKE markup (<craftentry data-entryid="96"></craftentry>)
      * with actual card HTML of the entry it's linking to
      *
      * @param string $value
@@ -1171,6 +1240,37 @@ JS,
 
             $value = substr($value, 0, $startPos) . $cardHtml . substr($value, $endPos);
             $offset = $startPos + strlen($cardHtml);
+        }
+
+        return $value;
+    }
+
+    /**
+     * Replace the entry card CKE markup (<craftentry data-entryid="96"></craftentry>)
+     * with the rendered HTML of the entry it's linking to
+     *
+     * @param string $value
+     * @param int $elementSiteId
+     * @return string
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
+     * @throws \yii\base\Exception
+     */
+    private function _prepNestedEntriesForDisplay(string $value, int $elementSiteId): string
+    {
+        $offset = 0;
+        while (preg_match('/<craftentry\sdata-entryid="(\d+)"[^>]*>(&nbsp;)?<\/craftentry>/is', $value, $match, PREG_OFFSET_CAPTURE, $offset)) {
+            $entryId = $match[1][0];
+
+            /** @var int $startPos */
+            $startPos = $match[0][1];
+            $endPos = $startPos + strlen($match[0][0]);
+
+            $displayHtml = $this->getDisplayHtml($entryId, $elementSiteId);
+
+            $value = substr($value, 0, $startPos) . $displayHtml . substr($value, $endPos);
+            $offset = $startPos + strlen($displayHtml);
         }
 
         return $value;
