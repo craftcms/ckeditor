@@ -1087,9 +1087,6 @@ JS,
         // those that exist in the $dbElementIds but not in $usedIds - remove ownership
         $deleteOwnership = array_diff($dbElementIds, $usedIds);
         if (!empty($deleteOwnership)) {
-            Db::delete(Table::ELEMENTS, [
-                'id' => $deleteOwnership
-            ]);
             Db::delete(Table::ELEMENTS_OWNERS, [
                 'elementId' => $deleteOwnership,
                 'ownerId' => $owner->id,
