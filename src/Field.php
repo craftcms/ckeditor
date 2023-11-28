@@ -14,8 +14,6 @@ use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\ElementCollection;
 use craft\elements\NestedElementManager;
 use craft\ckeditor\events\DefineLinkOptionsEvent;
 use craft\ckeditor\events\ModifyConfigEvent;
@@ -32,6 +30,7 @@ use craft\elements\User;
 use craft\enums\PropagationMethod;
 use craft\errors\InvalidHtmlTagException;
 use craft\events\CancelableEvent;
+use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -628,15 +627,32 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
         // the CKE nested elements still need to be propagated to the second site and when that happens,
         // the propagated element has a different ID than the original one.
         // We ensure it only runs on that first propagation by comparing source and target site ids.
-        if (Craft::$app->getIsMultiSite() && $element->getSection()->propagationMethod !== PropagationMethod::None && $this->getIsTranslatable($element) && $element->propagating === true) {
+        if (
+            Craft::$app->getIsMultiSite() &&
+            $element->getSection()->propagationMethod !== PropagationMethod::None &&
+            $this->getIsTranslatable($element) &&
+            $element->propagating === true
+        ) {
             $oldElementIds = $this->_getEntryIdsFromString($element->getFieldValue($this->handle));
             $newElementIds = array_map(fn($element) => $element->id, $this->createEntryQuery($element)->all());
-
             $this->_adjustFieldValue($element, $oldElementIds, $newElementIds, false);
         }
 
-        // once we're potentially done with adjusting, ensure ownership data is correct
+        // once we're potentially done with adjusting, ensure ownership data is correct, including sortOrder
         $this->_cleanUpOwnership($element);
+    }
+
+    /**
+     * Performs actions after the nested element has been duplicated.
+     *
+     * @param DuplicateNestedElementsEvent $event
+     * @return void
+     */
+    public function afterDuplicateNestedElements(DuplicateNestedElementsEvent $event): void
+    {
+        $oldElementIds = array_map(fn($row) => $row['oldId'], $event->elementIds);
+        $newElementIds = array_map(fn($row) => $row['newId'], $event->elementIds);
+        $this->_adjustFieldValue($event->target, $oldElementIds, $newElementIds, true);
     }
 
     /**
@@ -956,9 +972,10 @@ JS,
                         'fieldId' => $this->id,
                     ],
                     'valueGetter' => $this->_entryManagerValueGetter(),
-                    'valueSetter' => $this->_entryManagerValueSetter(),
+                    'valueSetter' => false,
                 ],
             );
+            $this->_entryManager->on(NestedElementManager::EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS, [$this, 'afterDuplicateNestedElements']);
         }
 
         return $this->_entryManager;
@@ -999,22 +1016,6 @@ JS,
             }
 
             return $query;
-        };
-    }
-
-    /**
-     * Used to set value via NestedElementManager->setValue();
-     *
-     * @return Closure
-     */
-    private function _entryManagerValueSetter(): Closure
-    {
-        return function(ElementInterface $owner, ElementQueryInterface|ElementCollection $value) {
-            if ($owner->duplicateOf !== null) {
-                $oldElementIds = array_map(fn($element) => $element->id, $this->createEntryQuery($owner->duplicateOf)->all());
-                $newElementIds = array_map(fn($element) => $element->id, $value->all());
-                $this->_adjustFieldValue($owner, $oldElementIds, $newElementIds, true);
-            }
         };
     }
 
@@ -1069,8 +1070,7 @@ JS,
     {
         $usedIds = $this->_getEntryIdsFromString($owner->getFieldValue($this->handle));
 
-        // get all elementIds for the owner
-        $dbElementIds = (new Query())
+        $query = (new Query())
             ->select(['elementId' => 'entries.id'])
             ->from(['entries' => Table::ENTRIES])
             ->innerJoin(['elements_owners' => Table::ELEMENTS_OWNERS], '[[elements_owners.elementId]] = [[entries.id]]')
@@ -1079,33 +1079,34 @@ JS,
                 'entries.fieldId' => $this->id,
                 'elements_owners.ownerId' => $owner->id,
                 'elements_sites.siteId' => $owner->siteId,
-            ])
-            ->column();
+            ]);
 
-        // those that exist in the $dbElementIds but not in usedIds - remove ownership
+        // get all elementIds for the owner
+        $dbElementIds = $query->column();
+
+        // those that exist in the $dbElementIds but not in $usedIds - remove ownership
         $deleteOwnership = array_diff($dbElementIds, $usedIds);
         if (!empty($deleteOwnership)) {
+            Db::delete(Table::ELEMENTS, [
+                'id' => $deleteOwnership
+            ]);
             Db::delete(Table::ELEMENTS_OWNERS, [
                 'elementId' => $deleteOwnership,
                 'ownerId' => $owner->id,
             ]);
-        }
 
-//        // those that exist in usedIds but not in $dbElementIds - add ownership
-//        $ownershipData = array_diff($usedIds, $dbElementIds);
-//        if (!empty($ownershipData) && !$owner->isNewForSite) {
-//            foreach ($ownershipData as $key => $value) {
-//                $sortOrder = $key + 1;
-//                Db::upsert(Table::ELEMENTS_OWNERS, [
-//                    'elementId' => $value,
-//                    'ownerId' => $owner->id,
-//                    'sortOrder' => $sortOrder,
-//                ], [
-//                    'sortOrder' => $sortOrder,
-//                ], updateTimestamp: false);
-//            }
-//        }
-        // all others - leave alone
+            // once we're done removing - realign sort order
+            foreach ($query->column() as $key => $value) {
+                $sortOrder = $key + 1;
+                Db::upsert(Table::ELEMENTS_OWNERS, [
+                    'elementId' => $value,
+                    'ownerId' => $owner->id,
+                    'sortOrder' => $sortOrder,
+                ], [
+                    'sortOrder' => $sortOrder,
+                ], updateTimestamp: false);
+            }
+        }
     }
 
     private function createEntryQuery(?ElementInterface $owner): EntryQuery
