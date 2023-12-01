@@ -436,7 +436,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
             } elseif (!$entryType instanceof EntryType) {
                 throw new InvalidArgumentException('Invalid entry type');
             }
-            return ['entryType' => $entryType, 'template' => $row['template']];
+            return ['entryType' => $entryType, 'template' => $row['template'], 'useTemplateInCp' => $row['useTemplateInCp'] ?? 0];
         }, array_filter($entryTypesArray));
     }
 
@@ -500,15 +500,18 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
     /**
      * Return HTML for the entry card or a placeholder one if entry can't be found
      *
-     * @param int $entryId
+     * @param int|ElementInterface $entry
+     * @param int|null $elementSiteId
      * @return string
      */
-    public function getCardHtml(int $entryId, int $elementSiteId): string
+    public function getCardHtml(int|ElementInterface $entry, ?int $elementSiteId): string
     {
-        $entry = Craft::$app->getEntries()->getEntryById($entryId, $elementSiteId, [
-            'status' => null,
-            'revisions' => null,
-        ]);
+        if (is_numeric($entry)) {
+            $entry = Craft::$app->getEntries()->getEntryById($entry, $elementSiteId, [
+                'status' => null,
+                'revisions' => null,
+            ]);
+        }
 
         $cardConfig = [
             'autoReload' => true,
@@ -550,7 +553,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
      * @throws \Twig\Error\SyntaxError
      * @throws \yii\base\Exception
      */
-    public function getDisplayHtml(int $entryId, int $elementSiteId): ?string
+    public function getTemplateHtml(int $entryId, int $elementSiteId): ?string
     {
         $entry = Craft::$app->getEntries()->getEntryById($entryId, $elementSiteId, [
             'status' => null,
@@ -566,7 +569,11 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
             return null;
         }
 
-        return Craft::$app->getView()->renderTemplate($row[0]['template'], ['entry' => $entry]);
+        $view = Craft::$app->getView();
+        if (Craft::$app->request->getIsCpRequest()) {
+            $view->setTemplateMode(View::TEMPLATE_MODE_SITE);
+        }
+        return $view->renderTemplate($row[0]['template'], ['entry' => $entry]);
     }
 
     /**
@@ -931,7 +938,7 @@ JS,
             // Redactor to CKEditor syntax for <figure>
             // (https://github.com/craftcms/ckeditor/issues/96)
             $value = $this->_normalizeFigures($value);
-
+            
             if ($static) {
                 $value = $this->_prepCardsForStaticInput($value, $element->siteId);
             } else {
@@ -1175,7 +1182,11 @@ JS,
     private function _getEntryTypeSimpleArray(string $param = 'id'): array
     {
         return array_map(
-            fn(array $row) => ['entryType' => $row['entryType']->{$param}, 'template' => $row['template']],
+            fn(array $row) => [
+                'entryType' => $row['entryType']->{$param},
+                'template' => $row['template'],
+                'useTemplateInCp' => $row['useTemplateInCp'],
+            ],
             $this->_entryTypes
         );
     }
@@ -1197,7 +1208,17 @@ JS,
             $startPos = $match[0][1];
             $endPos = $startPos + strlen($match[0][0]);
 
-            $cardHtml = $this->getCardHtml($entryId, $elementSiteId);
+            $entry = Craft::$app->getEntries()->getEntryById($entryId, $elementSiteId, [
+                'status' => null,
+                'revisions' => null,
+            ]);
+            $simpleEntryTypes = $this->_getEntryTypeSimpleArray();
+            $currentEntryType = ArrayHelper::firstWhere($simpleEntryTypes, 'entryType', $entry->typeId);
+            if (isset($currentEntryType) && $currentEntryType['useTemplateInCp'] == '1') {
+                $cardHtml = $this->getTemplateHtml($entryId, $elementSiteId);
+            } else {
+                $cardHtml = $this->getCardHtml($entry, $elementSiteId);
+            }
 
             try {
                 $tag = Html::modifyTagAttributes($match[0][0], [
@@ -1263,7 +1284,7 @@ JS,
             $startPos = $match[0][1];
             $endPos = $startPos + strlen($match[0][0]);
 
-            $displayHtml = $this->getDisplayHtml($entryId, $elementSiteId);
+            $displayHtml = $this->getTemplateHtml($entryId, $elementSiteId);
 
             $value = substr($value, 0, $startPos) . $displayHtml . substr($value, $endPos);
             $offset = $startPos + strlen($displayHtml);

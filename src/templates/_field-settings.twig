@@ -84,6 +84,11 @@
       heading: "Template"|t('app'),
       info: "Which template should be used to render nested entry of this type on the front-end."|t('ckeditor'),
       code: true
+    },
+    useTemplateInCp: {
+      type: 'lightswitch',
+      heading: "Use template in CP"|t('app'),
+      info: "Should this template be used to render the nested element in the CKEditor in the Control Panel."|t('app')
     }
   }|filter,
   rows: entryTypes,
