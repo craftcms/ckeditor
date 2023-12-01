@@ -148,6 +148,9 @@ export default class CraftEntriesEditing extends Plugin {
   _getCardHtml(modelItem) {
     let cardHtml = modelItem.getAttribute('cardHtml') ?? null;
 
+    let parents = $(this.editor.sourceElement).parents('.field');
+    const layoutElementUid = $(parents[0]).data('layout-element');
+
     // if there's no cardHtml attribute for any reason - get the markup from Craft
     // this can happen e.g. if you make changes in the source mode and then come back to the editing mode
     if (cardHtml == undefined || cardHtml == null) {
@@ -161,6 +164,7 @@ export default class CraftEntriesEditing extends Plugin {
           data: {
             entryId: entryId,
             siteId: siteId,
+            layoutElementUid: layoutElementUid,
           },
         },
       )
