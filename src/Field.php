@@ -397,7 +397,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
                     'value' => null,
                 ],
             ], $transformOptions),
-            'entryTypeRows' => $this->_getEntryTypeSimpleArray(),
+            'entryTypeRows' => $this->getEntryTypeSimpleArray(),
         ]);
     }
 
@@ -454,7 +454,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
             $settings['removeNbsp'],
         );
 
-        $settings['entryTypes'] = $this->_getEntryTypeSimpleArray('uid');
+        $settings['entryTypes'] = $this->getEntryTypeSimpleArray('uid');
 
         return $settings;
     }
@@ -473,7 +473,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if (!Craft::$app->getRequest()->getIsCpRequest()) {
-            $value = $this->prepValueForInput($value, $element, asCard: false);
+            $value = $this->prepValueForInput($value, $element);
         }
 
         return parent::normalizeValue($value, $element);
@@ -507,10 +507,13 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
     public function getCardHtml(int|ElementInterface $entry, ?int $elementSiteId): string
     {
         if (is_numeric($entry)) {
+            $entryId = $entry;
             $entry = Craft::$app->getEntries()->getEntryById($entry, $elementSiteId, [
                 'status' => null,
                 'revisions' => null,
             ]);
+        } else {
+            $entryId = $entry->id;
         }
 
         $cardConfig = [
@@ -545,20 +548,18 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
     /**
      * Return the rendered HTML to display outside the control panel.
      *
-     * @param int $entryId
-     * @param int $elementSiteId
+     * @param int|ElementInterface $entry
+     * @param int|null $elementSiteId
      * @return string|null
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\RuntimeError
-     * @throws \Twig\Error\SyntaxError
-     * @throws \yii\base\Exception
      */
-    public function getTemplateHtml(int $entryId, int $elementSiteId): ?string
+    public function getTemplateHtml(int|ElementInterface $entry, ?int $elementSiteId): ?string
     {
-        $entry = Craft::$app->getEntries()->getEntryById($entryId, $elementSiteId, [
-            'status' => null,
-            'revisions' => null,
-        ]);
+        if (is_numeric($entry)) {
+            $entry = Craft::$app->getEntries()->getEntryById($entry, $elementSiteId, [
+                'status' => null,
+                'revisions' => null,
+            ]);
+        }
 
         if (!$entry) {
             return null;
@@ -686,6 +687,25 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
         $this->entryManager()->restoreNestedElements($element);
 
         parent::afterElementRestore($element);
+    }
+
+    /**
+     * Returns a simple (single-dimensional) array containing entry type identifier (id by default)
+     * and the corresponding template specified in field's settings for that entry type.
+     *
+     * @param string $param
+     * @return array
+     */
+    public function getEntryTypeSimpleArray(string $param = 'id'): array
+    {
+        return array_map(
+            fn(array $row) => [
+                'entryType' => $row['entryType']->{$param},
+                'template' => $row['template'],
+                'useTemplateInCp' => $row['useTemplateInCp'],
+            ],
+            $this->_entryTypes
+        );
     }
 
     /**
@@ -917,7 +937,7 @@ JS,
     /**
      * @inheritdoc
      */
-    protected function prepValueForInput($value, ?ElementInterface $element, bool $static = false, bool $asCard = true): string
+    protected function prepValueForInput($value, ?ElementInterface $element, bool $static = false): string
     {
         if ($value instanceof HtmlFieldData) {
             $value = $value->getRawContent();
@@ -938,16 +958,8 @@ JS,
             // Redactor to CKEditor syntax for <figure>
             // (https://github.com/craftcms/ckeditor/issues/96)
             $value = $this->_normalizeFigures($value);
-            
-            if ($static) {
-                $value = $this->_prepCardsForStaticInput($value, $element->siteId);
-            } else {
-                if ($asCard) {
-                    $value = $this->_prepCardsForInput($value, $element->siteId);
-                } else {
-                    $value = $this->_prepNestedEntriesForDisplay($value, $element->siteId);
-                }
-            }
+
+            $value = $this->_prepNestedEntriesForDisplay($value, $element->siteId, $static);
         }
 
         return parent::prepValueForInput($value, $element);
@@ -1173,34 +1185,21 @@ JS,
     }
 
     /**
-     * Returns a simple (single-dimensional) array containing entry type identifier (id by default)
-     * and the corresponding template specified in field's settings for that entry type.
-     *
-     * @param string $param
-     * @return array
-     */
-    private function _getEntryTypeSimpleArray(string $param = 'id'): array
-    {
-        return array_map(
-            fn(array $row) => [
-                'entryType' => $row['entryType']->{$param},
-                'template' => $row['template'],
-                'useTemplateInCp' => $row['useTemplateInCp'],
-            ],
-            $this->_entryTypes
-        );
-    }
-
-    /**
-     * Fill entry card CKE markup (<craftentry data-entryid="96"></craftentry>)
-     * with actual card HTML of the entry it's linking to
+     * Fill the CKE markup (<craftentry data-entryid="96"></craftentry>)
+     *  with actual card or template HTML of the entry it's linking to.
+     * If it's not a CP request - always use the rendered HTML
+     * If it's a CP request - use rendered HTML if that's what's assigned to the entry type in the field's setting; otherwise use card HTML.
+     * If it's a static request
      *
      * @param string $value
+     * @param int $elementSiteId
+     * @param bool $static
      * @return string
      */
-    private function _prepCardsForInput(string $value, int $elementSiteId): string
+    private function _prepNestedEntriesForDisplay(string $value, int $elementSiteId, bool $static = false): string
     {
         $offset = 0;
+        $isCpRequest = Craft::$app->getRequest()->getIsCpRequest();
         while (preg_match('/<craftentry\sdata-entryid="(\d+)"[^>]*>/is', $value, $match, PREG_OFFSET_CAPTURE, $offset)) {
             $entryId = $match[1][0];
 
@@ -1212,86 +1211,42 @@ JS,
                 'status' => null,
                 'revisions' => null,
             ]);
-            $simpleEntryTypes = $this->_getEntryTypeSimpleArray();
+            $simpleEntryTypes = $this->getEntryTypeSimpleArray();
             $currentEntryType = ArrayHelper::firstWhere($simpleEntryTypes, 'entryType', $entry->typeId);
-            if (isset($currentEntryType) && $currentEntryType['useTemplateInCp'] == '1') {
-                $cardHtml = $this->getTemplateHtml($entryId, $elementSiteId);
+            if (!$isCpRequest || (isset($currentEntryType) && $currentEntryType['useTemplateInCp'] == '1')) {
+                $innerHtml = $this->getTemplateHtml($entry, $elementSiteId);
             } else {
-                $cardHtml = $this->getCardHtml($entry, $elementSiteId);
+                $innerHtml = $this->getCardHtml($entry, $elementSiteId);
             }
 
-            try {
-                $tag = Html::modifyTagAttributes($match[0][0], [
-                    'data-cardHtml' => $cardHtml,
-                ]);
-            } catch (InvalidHtmlTagException) {
-                $offset = $endPos;
-                continue;
+            if (!$static && $isCpRequest) {
+                try {
+                    $innerHtml = Html::modifyTagAttributes($match[0][0], [
+                        'data-cardHtml' => $innerHtml,
+                    ]);
+                } catch (InvalidHtmlTagException) {
+                    $offset = $endPos;
+                    continue;
+                }
             }
 
-            $value = substr($value, 0, $startPos) . $tag . substr($value, $endPos);
-            $offset = $startPos + strlen($tag);
+            $value = substr($value, 0, $startPos) . $innerHtml . substr($value, $endPos);
+            $offset = $startPos + strlen($innerHtml);
         }
 
         return $value;
     }
 
     /**
+     * Fill entry card CKE markup (<craftentry data-entryid="96"></craftentry>)
+     * with actual card HTML of the entry it's linking to
+
      * Replace the entry card CKE markup (<craftentry data-entryid="96"></craftentry>)
      * with actual card HTML of the entry it's linking to
-     *
-     * @param string $value
-     * @return string
-     */
-    private function _prepCardsForStaticInput(string $value, int $elementSiteId): string
-    {
-        $offset = 0;
-        while (preg_match('/<craftentry\sdata-entryid="(\d+)"[^>]*>&nbsp;<\/craftentry>/is', $value, $match, PREG_OFFSET_CAPTURE, $offset)) {
-            $entryId = $match[1][0];
 
-            /** @var int $startPos */
-            $startPos = $match[0][1];
-            $endPos = $startPos + strlen($match[0][0]);
-
-            $cardHtml = $this->getCardHtml($entryId, $elementSiteId);
-
-            $value = substr($value, 0, $startPos) . $cardHtml . substr($value, $endPos);
-            $offset = $startPos + strlen($cardHtml);
-        }
-
-        return $value;
-    }
-
-    /**
      * Replace the entry card CKE markup (<craftentry data-entryid="96"></craftentry>)
      * with the rendered HTML of the entry it's linking to
-     *
-     * @param string $value
-     * @param int $elementSiteId
-     * @return string
-     * @throws \Twig\Error\LoaderError
-     * @throws \Twig\Error\RuntimeError
-     * @throws \Twig\Error\SyntaxError
-     * @throws \yii\base\Exception
      */
-    private function _prepNestedEntriesForDisplay(string $value, int $elementSiteId): string
-    {
-        $offset = 0;
-        while (preg_match('/<craftentry\sdata-entryid="(\d+)"[^>]*>(&nbsp;)?<\/craftentry>/is', $value, $match, PREG_OFFSET_CAPTURE, $offset)) {
-            $entryId = $match[1][0];
-
-            /** @var int $startPos */
-            $startPos = $match[0][1];
-            $endPos = $startPos + strlen($match[0][0]);
-
-            $displayHtml = $this->getTemplateHtml($entryId, $elementSiteId);
-
-            $value = substr($value, 0, $startPos) . $displayHtml . substr($value, $endPos);
-            $offset = $startPos + strlen($displayHtml);
-        }
-
-        return $value;
-    }
 
     /**
      * Normalizes <figure> tags, ensuring they have an `image` or `media` class depending on their contents,
