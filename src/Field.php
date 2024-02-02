@@ -29,6 +29,7 @@ use craft\models\CategoryGroup;
 use craft\models\ImageTransform;
 use craft\models\Section;
 use craft\models\Volume;
+use craft\services\ElementSources;
 use craft\web\View;
 use HTMLPurifier_Config;
 use HTMLPurifier_HTMLDefinition;
@@ -316,6 +317,9 @@ class Field extends HtmlField
         $baseConfig = [
             'defaultTransform' => $defaultTransform?->handle,
             'elementSiteId' => $element?->siteId,
+            'findAndReplace' => [
+                'uiType' => 'dropdown',
+            ],
             'heading' => [
                 'options' => [
                     [
@@ -387,7 +391,6 @@ JS;
             'content' => $element?->getSite()->language ?? Craft::$app->language,
             'textPartLanguage' => static::textPartLanguage(),
         ]);
-        $listPluginJs = Json::encode($ckeConfig->listPlugin);
         $showWordCountJs = Json::encode($this->showWordCount);
         $wordLimitJs = $this->wordLimit ?: 0;
 
@@ -436,15 +439,6 @@ JS;
   } else {
     extraRemovePlugins.push('WordCount');
   }
-  switch ($listPluginJs) {
-    case 'List':
-      extraRemovePlugins.push('DocumentList', 'DocumentListProperties');
-      extraRemovePlugins.push();
-      break;
-    case 'DocumentList':
-      extraRemovePlugins.push('List', 'ListProperties', 'TodoList');
-      break;
-  }
   if (extraRemovePlugins.length) {
     if (typeof config.removePlugins === 'undefined') {
       config.removePlugins = [];
@@ -486,7 +480,11 @@ JS,
      */
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
-        return Html::tag('div', $this->prepValueForInput($value, $element) ?: '&nbsp;');
+        return Html::tag(
+            'div',
+            $this->prepValueForInput($value, $element) ?: '&nbsp;',
+            ['class' => 'noteditable']
+        );
     }
 
     /**
@@ -668,6 +666,7 @@ JS,
                 'elementType' => Category::class,
                 'refHandle' => Category::refHandle(),
                 'sources' => $categorySources,
+                'criteria' => ['uri' => ':notempty:'],
             ];
         }
 
@@ -732,12 +731,20 @@ JS,
             }
         }
 
+        $sources = array_values(array_unique($sources));
+
         if ($showSingles) {
             array_unshift($sources, 'singles');
         }
 
         if (!empty($sources)) {
             array_unshift($sources, '*');
+        }
+
+        // include custom sources
+        $customSources = $this->_getCustomSources(Entry::class);
+        if (!empty($customSources)) {
+            $sources = array_merge($sources, $customSources);
         }
 
         return $sources;
@@ -755,11 +762,19 @@ JS,
             return [];
         }
 
-        return Collection::make(Craft::$app->getCategories()->getAllGroups())
+        $sources = Collection::make(Craft::$app->getCategories()->getAllGroups())
             ->filter(fn(CategoryGroup $group) => $group->getSiteSettings()[$element->siteId]?->hasUrls ?? false)
             ->map(fn(CategoryGroup $group) => "group:$group->uid")
             ->values()
             ->all();
+
+        // include custom sources
+        $customSources = $this->_getCustomSources(Category::class);
+        if (!empty($customSources)) {
+            $sources = array_merge($sources, $customSources);
+        }
+
+        return $sources;
     }
 
     /**
@@ -784,10 +799,37 @@ JS,
             $volumes = $volumes->filter(fn(Volume $volume) => $userService->checkPermission("viewAssets:$volume->uid"));
         }
 
-        return $volumes
+        $sources = $volumes
             ->map(fn(Volume $volume) => "volume:$volume->uid")
             ->values()
             ->all();
+
+        // include custom sources
+        $customSources = $this->_getCustomSources(Asset::class);
+        if (!empty($customSources)) {
+            $sources = array_merge($sources, $customSources);
+        }
+
+        return $sources;
+    }
+
+    /**
+     * Returns custom element sources keys for given element type.
+     *
+     * @param string $elementType
+     * @return array
+     */
+    private function _getCustomSources(string $elementType): array
+    {
+        $customSources = [];
+        $elementSources = Craft::$app->getElementSources()->getSources($elementType, 'modal');
+        foreach ($elementSources as $elementSource) {
+            if ($elementSource['type'] === ElementSources::TYPE_CUSTOM && isset($elementSource['key'])) {
+                $customSources[] = $elementSource['key'];
+            }
+        }
+
+        return $customSources;
     }
 
     /**

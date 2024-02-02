@@ -41,13 +41,12 @@ import {LinkEditing, AutoLink, LinkImage} from '@ckeditor/ckeditor5-link';
 import {
   DocumentList,
   DocumentListProperties,
-  List,
-  ListProperties,
-  TodoList,
+  TodoDocumentList,
 } from '@ckeditor/ckeditor5-list';
 import {MediaEmbed, MediaEmbedToolbar} from '@ckeditor/ckeditor5-media-embed';
 import {PageBreak} from '@ckeditor/ckeditor5-page-break';
 import {PasteFromOffice} from '@ckeditor/ckeditor5-paste-from-office';
+import {RemoveFormat} from '@ckeditor/ckeditor5-remove-format';
 import {SourceEditing} from '@ckeditor/ckeditor5-source-editing';
 import {Style} from '@ckeditor/ckeditor5-style';
 import {
@@ -93,12 +92,11 @@ const allPlugins = [
   Italic,
   LinkEditing,
   LinkImage,
-  List,
-  ListProperties,
   MediaEmbed,
   MediaEmbedToolbar,
   PageBreak,
   PasteFromOffice,
+  RemoveFormat,
   SourceEditing,
   Strikethrough,
   Style,
@@ -111,7 +109,7 @@ const allPlugins = [
   TableToolbar,
   TableUI,
   TextPartLanguage,
-  TodoList,
+  TodoDocumentList,
   Underline,
   WordCount,
   CraftImageInsertUI,
@@ -163,6 +161,7 @@ export const toolbarItems = normalizeToolbarItems([
   ['outdent', 'indent'],
   'horizontalLine',
   'pageBreak',
+  'removeFormat',
   'selectAll',
   'findAndReplace',
   ['undo', 'redo'],
@@ -210,14 +209,11 @@ const pluginButtonMap = [
   },
   {plugins: ['Italic'], buttons: ['italic']},
   {
-    plugins: ['List', 'ListProperties'],
-    buttons: ['bulletedList', 'numberedList'],
-  },
-  {
     plugins: ['MediaEmbed', 'MediaEmbedToolbar'],
     buttons: ['mediaEmbed'],
   },
   {plugins: ['PageBreak'], buttons: ['pageBreak']},
+  {plugins: ['RemoveFormat'], buttons: ['removeFormat']},
   {plugins: ['SourceEditing'], buttons: ['sourceEditing']},
   {plugins: ['Strikethrough'], buttons: ['strikethrough']},
   {plugins: ['Style'], buttons: ['style']},
@@ -235,7 +231,7 @@ const pluginButtonMap = [
     buttons: ['insertTable'],
   },
   {plugins: ['TextPartLanguage'], buttons: ['textPartLanguage']},
-  {plugins: ['TodoList'], buttons: ['todoList']},
+  {plugins: ['TodoDocumentList'], buttons: ['todoList']},
   {plugins: ['Underline'], buttons: ['underline']},
 ];
 
