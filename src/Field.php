@@ -480,7 +480,11 @@ JS,
      */
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
-        return Html::tag('div', $this->prepValueForInput($value, $element) ?: '&nbsp;');
+        return Html::tag(
+            'div',
+            $this->prepValueForInput($value, $element) ?: '&nbsp;',
+            ['class' => 'noteditable']
+        );
     }
 
     /**
