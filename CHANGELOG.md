@@ -2,7 +2,13 @@
 
 ## Unreleased
 
+- Link element selector modals now include custom sources. ([#139](https://github.com/craftcms/ckeditor/issues/139))
 - Fixed a bug where the CKEditor config-creation slideout could keep reappearing if canceled. ([#138](https://github.com/craftcms/ckeditor/pull/138))
+- Fixed a conflict with `nystudio107/craft-code-editor` 1.0.14 and 1.0.15. ([#150](https://github.com/craftcms/ckeditor/issues/150))
+- Updated CKEditor 5 to 41.0.0. ([#141](https://github.com/craftcms/ckeditor/issues/141), [#148](https://github.com/craftcms/ckeditor/pull/148))
+- Added the `RemoveFormat` CKEditor plugin. ([#143](https://github.com/craftcms/ckeditor/issues/143))
+- Added the `TodoDocumentList` CKEditor plugin. ([#148](https://github.com/craftcms/ckeditor/pull/148))
+- Removed the `List`, `ListProperties`, and `TodoList` CKEditor plugins. ([#148](https://github.com/craftcms/ckeditor/pull/148))
 
 ## 3.6.0 - 2023-09-13
 
