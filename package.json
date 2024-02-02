@@ -32,6 +32,7 @@
     "@ckeditor/ckeditor5-page-break": ">=41.0.0",
     "@ckeditor/ckeditor5-paragraph": ">=41.0.0",
     "@ckeditor/ckeditor5-paste-from-office": ">=41.0.0",
+    "@ckeditor/ckeditor5-remove-format": ">=41.0.0",
     "@ckeditor/ckeditor5-select-all": ">=41.0.0",
     "@ckeditor/ckeditor5-source-editing": ">=41.0.0",
     "@ckeditor/ckeditor5-style": ">=41.0.0",

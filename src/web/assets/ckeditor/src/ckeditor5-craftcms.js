@@ -46,6 +46,7 @@ import {
 import {MediaEmbed, MediaEmbedToolbar} from '@ckeditor/ckeditor5-media-embed';
 import {PageBreak} from '@ckeditor/ckeditor5-page-break';
 import {PasteFromOffice} from '@ckeditor/ckeditor5-paste-from-office';
+import {RemoveFormat} from '@ckeditor/ckeditor5-remove-format';
 import {SourceEditing} from '@ckeditor/ckeditor5-source-editing';
 import {Style} from '@ckeditor/ckeditor5-style';
 import {
@@ -95,6 +96,7 @@ const allPlugins = [
   MediaEmbedToolbar,
   PageBreak,
   PasteFromOffice,
+  RemoveFormat,
   SourceEditing,
   Strikethrough,
   Style,
@@ -159,6 +161,7 @@ export const toolbarItems = normalizeToolbarItems([
   ['outdent', 'indent'],
   'horizontalLine',
   'pageBreak',
+  'removeFormat',
   'selectAll',
   'findAndReplace',
   ['undo', 'redo'],
@@ -210,6 +213,7 @@ const pluginButtonMap = [
     buttons: ['mediaEmbed'],
   },
   {plugins: ['PageBreak'], buttons: ['pageBreak']},
+  {plugins: ['RemoveFormat'], buttons: ['removeFormat']},
   {plugins: ['SourceEditing'], buttons: ['sourceEditing']},
   {plugins: ['Strikethrough'], buttons: ['strikethrough']},
   {plugins: ['Style'], buttons: ['style']},
