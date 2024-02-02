@@ -63,7 +63,6 @@ class CkeConfigs extends Component
             'name' => $ckeConfig->name,
             'toolbar' => $ckeConfig->toolbar,
             'headingLevels' => $ckeConfig->headingLevels ?: false,
-            'listPlugin' => $ckeConfig->listPlugin,
             'options' => $ckeConfig->options,
             'js' => $ckeConfig->js,
             'css' => $ckeConfig->css,

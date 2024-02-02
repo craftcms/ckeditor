@@ -44,13 +44,6 @@ class CkeConfig extends Model
      */
     public array|false $headingLevels = [1, 2, 3, 4, 5, 6];
 
-
-    /**
-     * @var string The list plugin to use (`List` or `DocumentList`).
-     * @since 3.5.0
-     */
-    public string $listPlugin = 'List';
-
     /**
      * @var array|null Additional CKEditor config options
      * @since 3.1.0
@@ -102,6 +95,8 @@ class CkeConfig extends Model
                 unset($config['css']);
             }
         }
+
+        unset($config['listPlugin']);
 
         parent::__construct($config);
     }
