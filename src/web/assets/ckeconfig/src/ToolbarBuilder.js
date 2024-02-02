@@ -21,39 +21,20 @@ export default Garnish.Base.extend({
   $insertion: null,
   showingInsertion: false,
   closestItem: null,
-  $listPluginRadio_List: null,
-  $listPluginRadio_DocumentList: null,
 
   init: function (id, containerId, configOptions, namespace) {
     this.$sourceContainer = $(`#${id} .ckeditor-tb--source .ck-toolbar__items`);
     this.$targetContainer = $(`#${id} .ckeditor-tb--target .ck-toolbar__items`);
     this.$input = $(`#${id} input`);
     this.value = JSON.parse(this.$input.val());
-    this.$listPluginRadio_List = $(`#${containerId} [id$=list-plugin--list]`);
-    this.$listPluginRadio_DocumentList = $(
-      `#${containerId} [id$=list-plugin--document-list]`,
-    );
 
     const editorContainer = document.createElement('DIV');
     const editorElement = document.createElement('DIV');
     editorContainer.appendChild(editorElement);
 
-    this.addListener(
-      this.$listPluginRadio_List.add(this.$listPluginRadio_DocumentList),
-      'change',
-      'toggleDocumentList',
-    );
-
-    // we're including both List and DocumentList in our DLL, but they can't co-exist;
-    // we're switching one off based on user's preferences,
-    // but those preferences are defined in the CKE config which uses this toolbar builder;
-    // so, to allow users to select all possible options,
-    // we're removing DocumentList plugins from here; that way user can still drag and drop ordered,
-    // unordered and to-do lists to the toolbar
     CKEditor5.craftcms
       .create(editorElement, {
         linkOptions: [{elementType: 'craft\\elements\\Asset'}],
-        removePlugins: ['DocumentList', 'DocumentListProperties'],
       })
       .then((editor) => {
         const cf = editor.ui.componentFactory;
@@ -258,56 +239,7 @@ export default Garnish.Base.extend({
           $item.data('sourceItem', sourceItems[key]);
           this.$items = this.$items.add($item);
         }
-
-        this.$listPluginRadio_List.trigger('change');
       });
-  },
-
-  toggleDocumentList: function (evt) {
-    let useDocumentList = this.$listPluginRadio_DocumentList.prop('checked');
-
-    if (useDocumentList) {
-      // get index of the button to remove
-      let buttonIndex = this.value.indexOf('todoList');
-      if (buttonIndex >= 0) {
-        // remove button from the list of values
-        this.value.splice(buttonIndex, 1);
-        this.$input.val(JSON.stringify(this.value));
-
-        // get the dom element to remove
-        let node = this.$targetContainer.children()[buttonIndex];
-        if (node !== undefined) {
-          // remove the button from the target container
-          this.$targetContainer[0].removeChild(node);
-        }
-      } else {
-        // if the todoList btn is not in the targetContainer (because it's not in values)
-        // then we need to hide it in the $sourceContainer
-        this.showHideComponentInSourceByName('todoList', 'hide');
-      }
-    } else {
-      this.showHideComponentInSourceByName('todoList', 'show');
-    }
-  },
-
-  showHideComponentInSourceByName: function (name, action) {
-    if (this.components !== null) {
-      var $element = this.components['todoList'].element;
-      if ($element) {
-        var tooltipVal = $($element).data('ckeTooltipText');
-        for (const [key, button] of Object.entries(
-          this.$sourceContainer.children(),
-        )) {
-          if ($(button).data('ckeTooltipText') === tooltipVal) {
-            if (action == 'show') {
-              $(button).removeAttr('style').removeClass('hidden');
-            } else {
-              $(button).addClass('hidden');
-            }
-          }
-        }
-      }
-    }
   },
 
   renderSeparator: function () {
