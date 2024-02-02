@@ -7,7 +7,7 @@
 import {Plugin} from 'ckeditor5/src/core';
 import {Collection} from 'ckeditor5/src/utils';
 import {
-  Model,
+  ViewModel,
   ContextualBalloon,
   SplitButtonView,
   createDropdown,
@@ -95,7 +95,7 @@ export default class CraftLinkUI extends Plugin {
     for (const option of linkOptions) {
       itemDefinitions.add({
         type: 'button',
-        model: new Model({
+        model: new ViewModel({
           label: option.label,
           linkOption: option,
           withText: true,
@@ -105,7 +105,7 @@ export default class CraftLinkUI extends Plugin {
 
     itemDefinitions.add({
       type: 'button',
-      model: new Model({
+      model: new ViewModel({
         label: Craft.t('ckeditor', 'Insert link'),
         withText: true,
       }),
@@ -218,7 +218,7 @@ export default class CraftLinkUI extends Plugin {
     this.siteDropdownItemModels = Object.fromEntries(
       Craft.sites.map((site) => [
         site.id,
-        new Model({
+        new ViewModel({
           label: site.name,
           siteId: site.id,
           withText: true,
@@ -226,7 +226,7 @@ export default class CraftLinkUI extends Plugin {
       ]),
     );
 
-    this.siteDropdownItemModels.current = new Model({
+    this.siteDropdownItemModels.current = new ViewModel({
       label: Craft.t('ckeditor', 'Link to the current site'),
       siteId: null,
       withText: true,

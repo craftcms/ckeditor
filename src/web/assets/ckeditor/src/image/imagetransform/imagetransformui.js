@@ -7,7 +7,7 @@
 import {Plugin, icons} from 'ckeditor5/src/core';
 import {
   DropdownButtonView,
-  Model,
+  ViewModel,
   createDropdown,
   addListToDropdown,
 } from 'ckeditor5/src/ui';
@@ -121,7 +121,7 @@ export default class ImageTransformUI extends Plugin {
     options.map((option) => {
       const definition = {
         type: 'button',
-        model: new Model({
+        model: new ViewModel({
           commandName: 'transformImage',
           commandValue: option.value,
           label: this._getOptionLabelValue(option),

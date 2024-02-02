@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## 3.7.1 - 2024-02-01
+
+- Fixed a JavaScript error.
+
 ## 3.7.0 - 2024-02-01
 
 - Link element selector modals now include custom sources. ([#139](https://github.com/craftcms/ckeditor/issues/139))
