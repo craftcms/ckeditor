@@ -9,6 +9,7 @@
 - Added the `RemoveFormat` CKEditor plugin. ([#143](https://github.com/craftcms/ckeditor/issues/143))
 - Added the `TodoDocumentList` CKEditor plugin. ([#148](https://github.com/craftcms/ckeditor/pull/148))
 - Removed the `List`, `ListProperties`, and `TodoList` CKEditor plugins. ([#148](https://github.com/craftcms/ckeditor/pull/148))
+- CKEditor fields now get a `not-allowed` cursor when viewing entry revisions. ([#142](https://github.com/craftcms/ckeditor/pull/142)) 
 
 ## 3.6.0 - 2023-09-13
 
