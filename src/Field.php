@@ -317,6 +317,9 @@ class Field extends HtmlField
         $baseConfig = [
             'defaultTransform' => $defaultTransform?->handle,
             'elementSiteId' => $element?->siteId,
+            'findAndReplace' => [
+                'uiType' => 'dropdown',
+            ],
             'heading' => [
                 'options' => [
                     [
