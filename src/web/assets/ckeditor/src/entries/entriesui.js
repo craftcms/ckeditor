@@ -4,7 +4,7 @@ import {
   ButtonView,
   createDropdown,
   DropdownButtonView,
-  Model,
+  ViewModel,
 } from 'ckeditor5/src/ui';
 import {Range} from 'ckeditor5/src/engine';
 import {Collection} from 'ckeditor5/src/utils';
@@ -155,7 +155,7 @@ export default class CraftEntriesUI extends Plugin {
     options.map((option) => {
       const definition = {
         type: 'button',
-        model: new Model({
+        model: new ViewModel({
           commandValue: option.value, //entry type id
           label: option.label || option.value,
           withText: true,
