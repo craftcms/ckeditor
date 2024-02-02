@@ -41,9 +41,7 @@ import {LinkEditing, AutoLink, LinkImage} from '@ckeditor/ckeditor5-link';
 import {
   DocumentList,
   DocumentListProperties,
-  List,
-  ListProperties,
-  TodoList,
+  TodoDocumentList,
 } from '@ckeditor/ckeditor5-list';
 import {MediaEmbed, MediaEmbedToolbar} from '@ckeditor/ckeditor5-media-embed';
 import {PageBreak} from '@ckeditor/ckeditor5-page-break';
@@ -93,8 +91,6 @@ const allPlugins = [
   Italic,
   LinkEditing,
   LinkImage,
-  List,
-  ListProperties,
   MediaEmbed,
   MediaEmbedToolbar,
   PageBreak,
@@ -111,7 +107,7 @@ const allPlugins = [
   TableToolbar,
   TableUI,
   TextPartLanguage,
-  TodoList,
+  TodoDocumentList,
   Underline,
   WordCount,
   CraftImageInsertUI,
@@ -210,10 +206,6 @@ const pluginButtonMap = [
   },
   {plugins: ['Italic'], buttons: ['italic']},
   {
-    plugins: ['List', 'ListProperties'],
-    buttons: ['bulletedList', 'numberedList'],
-  },
-  {
     plugins: ['MediaEmbed', 'MediaEmbedToolbar'],
     buttons: ['mediaEmbed'],
   },
@@ -235,7 +227,7 @@ const pluginButtonMap = [
     buttons: ['insertTable'],
   },
   {plugins: ['TextPartLanguage'], buttons: ['textPartLanguage']},
-  {plugins: ['TodoList'], buttons: ['todoList']},
+  {plugins: ['TodoDocumentList'], buttons: ['todoList']},
   {plugins: ['Underline'], buttons: ['underline']},
 ];
 
