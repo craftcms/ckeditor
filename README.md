@@ -8,7 +8,7 @@ This plugin adds a “CKEditor” field type to Craft CMS, which provides a deep
 
 ## Requirements
 
-This plugin requires Craft CMS 4.5.0 or later.
+This plugin requires Craft CMS 5.0.0 or later.
 
 ## Installation
 

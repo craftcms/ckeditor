@@ -107,6 +107,14 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
     }
 
     /**
+     * @inheritdoc
+     */
+    public static function icon(): string
+    {
+        return '@craft/ckeditor/icon.svg';
+    }
+
+    /**
      * @return array Returns the default `language.textPartLanguage` config option that should be used.
      * @since 3.5.0
      * @see https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-LanguageConfig.html#member-textPartLanguage

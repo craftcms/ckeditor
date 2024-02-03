@@ -8,7 +8,10 @@
 namespace craft\ckeditor;
 
 use Craft;
+use craft\base\Actionable;
+use craft\base\Chippable;
 use craft\base\Model;
+use craft\enums\MenuItemType;
 use craft\helpers\Json;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
@@ -21,8 +24,13 @@ use yii\validators\Validator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class CkeConfig extends Model
+class CkeConfig extends Model implements Chippable, Actionable
 {
+    public static function get(int|string $id): ?static
+    {
+        return Plugin::getInstance()->getCkeConfigs()->getByUid($id);
+    }
+
     /**
      * @var string|null The configuration UUID
      */
@@ -43,13 +51,6 @@ class CkeConfig extends Model
      * @since 3.1.0
      */
     public array|false $headingLevels = [1, 2, 3, 4, 5, 6];
-
-
-    /**
-     * @var string The list plugin to use (`List` or `DocumentList`).
-     * @since 3.5.0
-     */
-    public string $listPlugin = 'List';
 
     /**
      * @var array|null Additional CKEditor config options
@@ -103,7 +104,51 @@ class CkeConfig extends Model
             }
         }
 
+        unset($config['listPlugin']);
+
         parent::__construct($config);
+    }
+
+    public function getId(): ?string
+    {
+        return $this->uid;
+    }
+
+    public function getUiLabel(): string
+    {
+        return $this->name;
+    }
+
+    public function getActionMenuItems(): array
+    {
+        $items = [];
+
+        if (
+            $this->id &&
+            Craft::$app->getUser()->getIsAdmin() &&
+            Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+        ) {
+            $editId = sprintf('action-edit-%s', mt_rand());
+            $items[] = [
+                'id' => $editId,
+                'icon' => 'edit',
+                'label' => Craft::t('app', 'Edit'),
+            ];
+
+            $view = Craft::$app->getView();
+            $view->registerJsWithVars(fn($id, $params) => <<<JS
+$('#' + $id).on('click', () => {
+  new Craft.CpScreenSlideout('ckeditor/cke-configs/edit', {
+    params: $params,
+  });
+});
+JS, [
+                $view->namespaceInputId($editId),
+                ['uid' => $this->uid],
+            ]);
+        }
+
+        return $items;
     }
 
     public function attributeLabels(): array
