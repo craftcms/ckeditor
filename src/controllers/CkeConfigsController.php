@@ -99,8 +99,10 @@ class CkeConfigsController extends Controller
                         $containerId,
                         $jsonSchemaUri,
                     ) => <<<JS
-const configOptions = new CKEditor5.craftcms.ConfigOptions($configOptionsId, $jsonSchemaUri);
-new CKEditor5.craftcms.ToolbarBuilder($toolbarBuilderId, $containerId, configOptions);
+(() => {
+  const configOptions = new CKEditor5.craftcms.ConfigOptions($configOptionsId, $jsonSchemaUri);
+  new CKEditor5.craftcms.ToolbarBuilder($toolbarBuilderId, $containerId, configOptions);
+})();
 JS,
                     [
                         $this->view->namespaceInputId('toolbar-builder'),

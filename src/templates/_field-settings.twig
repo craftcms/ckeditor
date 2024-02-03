@@ -1,40 +1,14 @@
 {% import '_includes/forms.twig' as forms %}
 
-{% embed '_includes/forms/field.twig' with {
+{{ forms.componentSelectField({
   label: 'CKEditor Config'|t('ckeditor'),
   id: 'cke-config',
-  field: field,
-} %}
-  {% block input %}
-    {% set addOptionFn %}
-      (createOption, selectize) => {
-        const slideout = new Craft.CpScreenSlideout('ckeditor/cke-configs/edit');
-        slideout.on('submit', ev => {
-          createOption({
-              text: ev.data.name,
-              value: ev.data.uid,
-          });
-        });
-        slideout.on('close', () => {
-          if (selectize.lastValidValue === '__add__') {
-            selectize.lastValidValue = '';
-          }
-          selectize.focus();
-        });
-      }
-    {% endset %}
-
-    {% include '_includes/forms/selectize' with {
-        name: 'ckeConfig',
-        options: plugin('ckeditor').ckeConfigs.getAll()|map(ckeConfig => {
-          label: ckeConfig.name,
-          value: ckeConfig.uid,
-        }),
-        addOptionLabel: 'Create a new config…'|t('ckeditor'),
-        value: field.ckeConfig,
-    } %}
-  {% endblock %}
-{% endembed %}
+  name: 'ckeConfig',
+  options: plugin('ckeditor').ckeConfigs.getAll(),
+  value: field.ckeConfig ? plugin('ckeditor').ckeConfigs.getByUid(field.ckeConfig) : null,
+  limit: 1,
+  createAction: 'ckeditor/cke-configs/edit',
+}) }}
 
 {{ forms.textField({
   id: 'word-limit',

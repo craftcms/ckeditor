@@ -1,5 +1,10 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased (4.0)
+
+- CKEditor now requires Craft CMS 5.0.0 or later.
+- It’s now possible to edit the selected CKEditor config from field settings.
+
 ## 3.7.1 - 2024-02-01
 
 - Fixed a JavaScript error.
