@@ -51,7 +51,10 @@
       type: 'select',
       heading: "Entry Type"|t('app'),
       thin: true,
-      options: options ?? craft.cp.getEntryTypeOptions()
+      options: options ?? craft.app.entries.getAllEntryTypes()|map(entryType => {
+        label: entryType.name|t('site'),
+        value: entryType.id,
+      })
     },
     template: not headlessMode ? {
       type: 'template',
