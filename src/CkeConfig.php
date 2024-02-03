@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Actionable;
 use craft\base\Chippable;
 use craft\base\Model;
-use craft\enums\MenuItemType;
 use craft\helpers\Json;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
@@ -28,6 +27,7 @@ class CkeConfig extends Model implements Chippable, Actionable
 {
     public static function get(int|string $id): ?static
     {
+        /** @phpstan-ignore-next-line */
         return Plugin::getInstance()->getCkeConfigs()->getByUid($id);
     }
 
@@ -124,7 +124,7 @@ class CkeConfig extends Model implements Chippable, Actionable
         $items = [];
 
         if (
-            $this->id &&
+            $this->uid &&
             Craft::$app->getUser()->getIsAdmin() &&
             Craft::$app->getConfig()->getGeneral()->allowAdminChanges
         ) {
