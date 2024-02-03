@@ -72,6 +72,7 @@ class CkeConfigsController extends Controller
         }
 
         $response = $this->asCpScreen()
+            ->editUrl($ckeConfig->uid ? "settings/ckeditor/$ckeConfig->uid" : null)
             ->action('ckeditor/cke-configs/save')
             ->addCrumb(Craft::t('app', 'Settings'), 'settings')
             ->addCrumb(Craft::t('ckeditor', 'CKEditor Configs'), 'settings/ckeditor')
