@@ -135,6 +135,10 @@ a.ck.ck-button:focus {
   background: var(--ck-color-base-background);
 }
 
+.ck-content .cke-entry-card {
+  margin: 0.9em auto; /* same as images */
+}
+
 /* patch in https://github.com/ckeditor/ckeditor5/pull/15795 */
 .ck.ck-editor__editable_inline > :last-child,
 .ck.ck-editor__editable_inline
