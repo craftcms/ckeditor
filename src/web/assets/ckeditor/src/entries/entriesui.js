@@ -213,43 +213,57 @@ export default class CraftEntriesUI extends Plugin {
    * @param entryTypeId
    * @private
    */
-  _showCreateEntrySlideout(entryTypeId) {
+  async _showCreateEntrySlideout(entryTypeId) {
     const editor = this.editor;
-    const $editorElement = $(editor.ui.view.element);
-    const $form = $(editor.ui.view.element).parents('form');
-    const elementEditor = $form.data('elementEditor');
+    const nestedElementAttributes = editor.config.get(
+      'nestedElementAttributes',
+    );
 
-    elementEditor.ensureIsDraftOrRevision().then(() => {
-      //const entryTypeOptions = editor.config.get('entryTypeOptions')[0];
-      const nestedElementAttributes = editor.config.get(
-        'nestedElementAttributes',
+    const params = Object.assign({}, nestedElementAttributes, {
+      typeId: entryTypeId,
+    });
+
+    const $editorContainer = $(editor.ui.view.element).closest(
+      'form,.lp-editor-container',
+    );
+    const elementEditor = $editorContainer.data('elementEditor');
+
+    if (elementEditor) {
+      await elementEditor.ensureIsDraftOrRevision();
+      // replace the owner ID with the new one, maybe?
+      params.ownerId = elementEditor.getDraftElementId(
+        nestedElementAttributes.ownerId,
       );
+    }
 
-      let attributes = Object.assign(nestedElementAttributes, {
-        typeId: entryTypeId,
-        ownerId: elementEditor.settings.elementId,
+    let data;
+
+    try {
+      const response = await Craft.sendActionRequest(
+        'POST',
+        'elements/create',
+        {
+          data: params,
+        },
+      );
+      data = response.data;
+    } catch (e) {
+      Craft.cp.displayError(e?.response?.data?.error);
+      throw e;
+    }
+
+    const slideout = Craft.createElementEditor(this.elementType, {
+      elementId: data.element.id,
+      draftId: data.element.draftId,
+      params: {
+        fresh: 1,
+      },
+    });
+
+    slideout.on('submit', (ev) => {
+      editor.commands.execute('insertEntry', {
+        entryId: ev.data.id,
       });
-
-      Craft.sendActionRequest('POST', 'elements/create', {
-        data: attributes,
-      })
-        .then(({data}) => {
-          const slideout = Craft.createElementEditor(this.elementType, {
-            elementId: data.element.id,
-            draftId: data.element.draftId,
-            params: {
-              fresh: 1,
-            },
-          });
-          slideout.on('submit', (ev) => {
-            editor.commands.execute('insertEntry', {
-              entryId: ev.data.id,
-            });
-          });
-        })
-        .catch(({response}) => {
-          Craft.cp.displayError((response.data && response.data.error) || null);
-        });
     });
   }
 }

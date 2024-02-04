@@ -644,6 +644,10 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
         // Toolbar cleanup
         $toolbar = array_merge($ckeConfig->toolbar);
 
+        if (!$element?->id) {
+            ArrayHelper::removeValue($toolbar, 'createEntry');
+        }
+
         if (!$this->enableSourceEditingForNonAdmins && !Craft::$app->getUser()->getIsAdmin()) {
             ArrayHelper::removeValue($toolbar, 'sourceEditing');
         }
@@ -655,19 +659,19 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
         $wordCountId = "$id-counts";
         $wordCountIdJs = Json::encode($view->namespaceInputId($wordCountId));
 
-        $baseConfig = [
+        $baseConfig = array_filter([
             'defaultTransform' => $defaultTransform?->handle,
             'elementSiteId' => $element?->siteId,
             'entryTypeOptions' => $this->_getEntryTypeOptions(),
             'findAndReplace' => [
                 'uiType' => 'dropdown',
             ],
-            'nestedElementAttributes' => array_filter([
+            'nestedElementAttributes' => $element?->id ? array_filter([
                 'elementType' => Entry::class,
-                'ownerId' => $element->id, //$element?->getCanonicalId(),
+                'ownerId' => $element->id,
                 'fieldId' => $this->id,
-                'siteId' => Entry::isLocalized() ? $element?->siteId : null,
-            ]),
+                'siteId' => Entry::isLocalized() ? $element->siteId : null,
+            ]) : null,
             'heading' => [
                 'options' => [
                     [
@@ -706,7 +710,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
                     'label' => '',
                 ],
             ],
-        ];
+        ]);
 
         // Give plugins/modules a chance to modify the config
         $event = new ModifyConfigEvent([
@@ -820,6 +824,9 @@ JS,
             'class' => array_filter([
                 $this->showWordCount ? 'ck-with-show-word-count' : null,
             ]),
+            'data' => [
+                'element-id' => $element?->id,
+            ]
         ]);
     }
 
@@ -972,31 +979,32 @@ JS,
      */
     private function _adjustFieldValue(ElementInterface $owner, array $oldEntryIds, array $newEntryIds, bool $propagate): void
     {
-        $fieldValue = $owner->getFieldValue($this->handle);
-        if ($oldEntryIds !== $newEntryIds && !empty($oldEntryIds) && !empty($newEntryIds)) {
-            $usedIds = [];
-            // and in the field value replace elementIds from original (duplicateOf) with elementIds from the new owner
-            $value = preg_replace_callback(
-                '/(<craftentry\sdata-entryid=")(\d+)("[^>]*>)/is',
-                function(array $match) use ($oldEntryIds, $newEntryIds, &$usedIds) {
-                    $key = array_search($match[2], $oldEntryIds);
-                    if (isset($newEntryIds[$key])) {
-                        $usedIds[] = $newEntryIds[$key];
-                        return $match[1] . $newEntryIds[$key] . $match[3];
-                    }
-                    $usedIds[] = $match[2];
-                    return $match[1] . $match[2] . $match[3];
-                },
-                $fieldValue,
-                -1,
-            );
+        /** @var HtmlFieldData|null $oldValue */
+        $oldValue = $owner->getFieldValue($this->handle);
+        $oldValue = $oldValue?->getRawContent();
 
-            if ($fieldValue?->getRawContent() !== $value) {
-                $owner->setFieldValue($this->handle, $value);
-                $owner->mergingCanonicalChanges = true;
+        if (!$oldValue || empty($oldEntryIds) || $oldEntryIds === $newEntryIds) {
+            return;
+        }
 
-                Craft::$app->getElements()->saveElement($owner, false, $propagate, false, false, false);
-            }
+        // and in the field value replace elementIds from original (duplicateOf) with elementIds from the new owner
+        $newValue = preg_replace_callback(
+            '/(<craftentry\sdata-entryid=")(\d+)("[^>]*>)/i',
+            function(array $match) use ($oldEntryIds, $newEntryIds, &$usedIds) {
+                $key = array_search($match[2], $oldEntryIds);
+                if (isset($newEntryIds[$key])) {
+                    return $match[1] . $newEntryIds[$key] . $match[3];
+                }
+                return $match[1] . $match[2] . $match[3];
+            },
+            $oldValue,
+        );
+
+        if ($oldValue !== $newValue) {
+            $owner->setFieldValue($this->handle, $newValue);
+            $owner->mergingCanonicalChanges = true;
+
+            Craft::$app->getElements()->saveElement($owner, false, $propagate, false);
         }
     }
 
