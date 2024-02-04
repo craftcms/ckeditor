@@ -330,12 +330,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/craftcms/cms.git",
-                "reference": "2afeebcfd58715094ca5028d92ffe4268efd6187"
+                "reference": "3203be6603f343cb16b0ea499962dd9aebbeb382"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/cms/zipball/2afeebcfd58715094ca5028d92ffe4268efd6187",
-                "reference": "2afeebcfd58715094ca5028d92ffe4268efd6187",
+                "url": "https://api.github.com/repos/craftcms/cms/zipball/3203be6603f343cb16b0ea499962dd9aebbeb382",
+                "reference": "3203be6603f343cb16b0ea499962dd9aebbeb382",
                 "shasum": ""
             },
             "require": {
@@ -444,7 +444,7 @@
                 "rss": "https://github.com/craftcms/cms/releases.atom",
                 "source": "https://github.com/craftcms/cms"
             },
-            "time": "2024-02-02T19:51:34+00:00"
+            "time": "2024-02-04T17:50:26+00:00"
         },
         {
             "name": "craftcms/html-field",
@@ -6997,16 +6997,16 @@
         },
         {
             "name": "rector/rector",
-            "version": "0.19.5",
+            "version": "0.19.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rectorphp/rector.git",
-                "reference": "89c895d127b9d248d2af007068a824b5348ef81f"
+                "reference": "9464484f39028e930f206cbf2185a5f8a93689cc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rectorphp/rector/zipball/89c895d127b9d248d2af007068a824b5348ef81f",
-                "reference": "89c895d127b9d248d2af007068a824b5348ef81f",
+                "url": "https://api.github.com/repos/rectorphp/rector/zipball/9464484f39028e930f206cbf2185a5f8a93689cc",
+                "reference": "9464484f39028e930f206cbf2185a5f8a93689cc",
                 "shasum": ""
             },
             "require": {
@@ -7041,7 +7041,7 @@
             ],
             "support": {
                 "issues": "https://github.com/rectorphp/rector/issues",
-                "source": "https://github.com/rectorphp/rector/tree/0.19.5"
+                "source": "https://github.com/rectorphp/rector/tree/0.19.6"
             },
             "funding": [
                 {
@@ -7049,7 +7049,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-01-29T23:53:47+00:00"
+            "time": "2024-02-04T12:45:08+00:00"
         },
         {
             "name": "symfony/polyfill-php80",

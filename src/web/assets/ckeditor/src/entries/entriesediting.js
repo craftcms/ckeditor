@@ -116,7 +116,9 @@ export default class CraftEntriesEditing extends Plugin {
           'div',
           null,
           function (domElement) {
-            domElement.innerHTML = data;
+            domElement.innerHTML = data.cardHtml;
+            Craft.appendHeadHtml(data.headHtml);
+            Craft.appendBodyHtml(data.bodyHtml);
           },
         );
 
@@ -177,7 +179,7 @@ export default class CraftEntriesEditing extends Plugin {
         });
     } else {
       return new Promise((resolve, reject) => {
-        resolve(cardHtml);
+        resolve({cardHtml});
       });
     }
   }

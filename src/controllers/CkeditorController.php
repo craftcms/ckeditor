@@ -10,8 +10,10 @@ namespace craft\ckeditor\controllers;
 use Craft;
 use craft\ckeditor\Field;
 use craft\elements\Asset;
+use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
 use craft\web\Controller;
+use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -69,24 +71,22 @@ class CkeditorController extends Controller
             'revisions' => null,
         ]);
 
-        if ($entry) {
-            $owner = $entry->getOwner();
-            $layoutElement = $owner->getFieldLayout()->getElementByUid($layoutElementUid);
-            $field = $layoutElement->getField();
-
-            $simpleEntryTypes = $field->getEntryTypeSimpleArray();
-            $currentEntryType = ArrayHelper::firstWhere($simpleEntryTypes, 'entryType', $entry->typeId);
-            if (isset($currentEntryType) && $currentEntryType['useTemplateInCp'] == '1') {
-                $innerHtml = $field->getTemplateHtml($entry, $siteId);
-            } else {
-                $innerHtml = $field->getCardHtml($entry, $siteId);
-            }
+        if (!$entry) {
+            throw new BadRequestHttpException("Invalid entry ID: $entryId");
         }
 
-        if (!isset($innerHtml)) {
-            $innerHtml = (new Field())->getCardHtml($entry, $siteId);
-        }
+        $owner = $entry->getOwner();
+        /** @var CustomField $layoutElement */
+        $layoutElement = $owner->getFieldLayout()->getElementByUid($layoutElementUid);
+        /** @var Field $field */
+        $field = $layoutElement->getField();
+        $cardHtml = $field->getCardHtml($entry);
+        $view = Craft::$app->getView();
 
-        return $this->asJson($innerHtml);
+        return $this->asJson([
+            'cardHtml' => $cardHtml,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
+        ]);
     }
 }

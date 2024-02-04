@@ -28,12 +28,14 @@ use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\enums\PropagationMethod;
+use craft\errors\InvalidFieldException;
 use craft\errors\InvalidHtmlTagException;
 use craft\events\CancelableEvent;
 use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -49,10 +51,12 @@ use craft\models\Volume;
 use craft\services\ElementSources;
 use craft\web\View;
 use HTMLPurifier_Config;
+use HTMLPurifier_Exception;
 use HTMLPurifier_HTMLDefinition;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\db\Exception;
 use yii\db\Expression;
 
 /**
@@ -406,12 +410,13 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
                     'value' => null,
                 ],
             ], $transformOptions),
-            'entryTypeRows' => $this->getEntryTypeSimpleArray(),
         ]);
     }
 
     /**
      * Returns the available entry types.
+     *
+     * @return EntryType[]
      */
     public function getEntryTypes(): array
     {
@@ -421,32 +426,23 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
     /**
      * Sets the available entry types.
      *
-     * @param array $entryTypesArray Array of the entry types, or their IDs or UUIDs and corresponding templates
+     * @param array<int|string|EntryType> $entryTypes The entry types, or their IDs or UUIDs
      */
-    public function setEntryTypes(array $entryTypesArray): void
+    public function setEntryTypes(array $entryTypes): void
     {
         $entriesService = Craft::$app->getEntries();
 
-        $this->_entryTypes = array_map(function(array $row) use ($entriesService) {
-            $entryType = $row['entryType'] ?? null;
-            if (empty($entryType)) {
-                return null;
-            } elseif (is_numeric($entryType)) {
+        $this->_entryTypes = array_values(array_filter(array_map(function(EntryType|string|int $entryType) use ($entriesService) {
+            if (is_numeric($entryType)) {
                 $entryType = $entriesService->getEntryTypeById($entryType);
-                if (!$entryType) {
-                    throw new InvalidArgumentException("Invalid entry type ID: $entryType");
-                }
             } elseif (is_string($entryType)) {
                 $entryTypeUid = $entryType;
                 $entryType = $entriesService->getEntryTypeByUid($entryTypeUid);
-                if (!$entryType) {
-                    throw new InvalidArgumentException("Invalid entry type UUID: $entryTypeUid");
-                }
             } elseif (!$entryType instanceof EntryType) {
                 throw new InvalidArgumentException('Invalid entry type');
             }
-            return ['entryType' => $entryType, 'template' => $row['template'], 'useTemplateInCp' => $row['useTemplateInCp'] ?? 0];
-        }, array_filter($entryTypesArray));
+            return $entryType;
+        }, $entryTypes)));
     }
 
     /**
@@ -463,7 +459,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
             $settings['removeNbsp'],
         );
 
-        $settings['entryTypes'] = $this->getEntryTypeSimpleArray('uid');
+        $settings['entryTypes'] = array_map(fn(EntryType $entryType) => $entryType->uid, $this->_entryTypes);
 
         return $settings;
     }
@@ -501,81 +497,19 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
     /**
      * Return HTML for the entry card or a placeholder one if entry can't be found
      *
-     * @param int|ElementInterface $entry
-     * @param int|null $elementSiteId
+     * @param ElementInterface $entry
      * @return string
      */
-    public function getCardHtml(int|ElementInterface $entry, ?int $elementSiteId): string
+    public function getCardHtml(ElementInterface $entry): string
     {
-        if (is_numeric($entry)) {
-            $entryId = $entry;
-            $entry = Craft::$app->getEntries()->getEntryById($entry, $elementSiteId, [
-                'status' => null,
-                'revisions' => null,
-            ]);
-        } else {
-            $entryId = $entry->id;
-        }
+        $isRevision = $entry->getIsRevision();
 
-        $cardConfig = [
-            'autoReload' => true,
-            'showDraftName' => true,
-            'showStatus' => true,
-            'showThumb' => true,
-        ];
-
-        if (!$entry) {
-            // if for any reason we can't get this entry - mock up one that shows it is missing
-            $entry = new Entry();
-            $entry->enabledForSite = false;
-            $entry->title = Craft::t('app', sprintf('Missing entry (id: %s)', $entryId));
-            // even though it's a fake element, we need to give it a type;
-            // so let's just get the first one there is
-            $entry->typeId = $this->getEntryTypes()[0]['entryType']->id;
-        }
-
-        if (!$entry || $entry->getIsRevision()) {
-            $cardConfig = [
-                'autoReload' => false,
-                'showDraftName' => false,
-                'showStatus' => false,
-                'showThumb' => false,
-            ];
-        }
-
-        return Cp::elementCardHtml($entry, $cardConfig);
-    }
-
-    /**
-     * Return the rendered HTML to display outside the control panel.
-     *
-     * @param int|ElementInterface $entry
-     * @param int|null $elementSiteId
-     * @return string|null
-     */
-    public function getTemplateHtml(int|ElementInterface $entry, ?int $elementSiteId): ?string
-    {
-        if (is_numeric($entry)) {
-            $entry = Craft::$app->getEntries()->getEntryById($entry, $elementSiteId, [
-                'status' => null,
-                'revisions' => null,
-            ]);
-        }
-
-        if (!$entry) {
-            return null;
-        }
-
-        $row = array_values(ArrayHelper::where($this->getEntryTypes(), 'entryType.id', $entry->typeId));
-        if (empty($row) || empty($row[0]) || empty($row[0]['template'])) {
-            return null;
-        }
-
-        $view = Craft::$app->getView();
-        if (Craft::$app->request->getIsCpRequest()) {
-            $view->setTemplateMode(View::TEMPLATE_MODE_SITE);
-        }
-        return $view->renderTemplate($row[0]['template'], ['entry' => $entry]);
+        return Cp::elementCardHtml($entry, [
+            'autoReload' => !$isRevision,
+            'showDraftName' => !$isRevision,
+            'showStatus' => !$isRevision,
+            'showThumb' => !$isRevision,
+        ]);
     }
 
     /**
@@ -637,14 +571,15 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
         // the propagated element has a different ID than the original one.
         // We ensure it only runs on that first propagation by comparing source and target site ids.
         if (
-            Craft::$app->getIsMultiSite() &&
-            $element->getSection()->propagationMethod !== PropagationMethod::None &&
+            //Craft::$app->getIsMultiSite() &&
+            //$element->getSection()->propagationMethod !== PropagationMethod::None &&
             $this->getIsTranslatable($element) &&
             $element->propagating === true
         ) {
-            $oldElementIds = $this->_getEntryIdsFromString($element->getFieldValue($this->handle));
-            $newElementIds = array_map(fn($element) => $element->id, $this->createEntryQuery($element)->all());
-            $this->_adjustFieldValue($element, $oldElementIds, $newElementIds, false);
+            $oldValue = $element->getFieldValue($this->handle);
+            [$oldEntryIds] = $this->findEntries($oldValue);
+            $newEntryIds = array_map(fn($element) => $element->id, $this->createEntryQuery($element)->all());
+            $this->_adjustFieldValue($element, $oldEntryIds, $newEntryIds, false);
         }
 
         // once we're potentially done with adjusting, ensure ownership data is correct, including sortOrder
@@ -655,13 +590,12 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
      * Performs actions after the nested element has been duplicated.
      *
      * @param DuplicateNestedElementsEvent $event
-     * @return void
      */
     public function afterDuplicateNestedElements(DuplicateNestedElementsEvent $event): void
     {
-        $oldElementIds = array_map(fn($row) => $row['oldId'], $event->elementIds);
-        $newElementIds = array_map(fn($row) => $row['newId'], $event->elementIds);
-        $this->_adjustFieldValue($event->target, $oldElementIds, $newElementIds, true);
+        $oldEntryIds = array_keys($event->newElementIds);
+        $newElementIds = array_values($event->newElementIds);
+        $this->_adjustFieldValue($event->target, $oldEntryIds, $newElementIds, true);
     }
 
     /**
@@ -688,25 +622,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
         $this->entryManager()->restoreNestedElements($element);
 
         parent::afterElementRestore($element);
-    }
-
-    /**
-     * Returns a simple (single-dimensional) array containing entry type identifier (id by default)
-     * and the corresponding template specified in field's settings for that entry type.
-     *
-     * @param string $param
-     * @return array
-     */
-    public function getEntryTypeSimpleArray(string $param = 'id'): array
-    {
-        return array_map(
-            fn(array $row) => [
-                'entryType' => $row['entryType']->{$param},
-                'template' => $row['template'],
-                'useTemplateInCp' => $row['useTemplateInCp'],
-            ],
-            $this->_entryTypes
-        );
     }
 
     /**
@@ -983,7 +898,7 @@ JS,
                 Entry::class,
                 fn(ElementInterface $owner) => $this->createEntryQuery($owner),
                 [
-                    'fieldHandle' => $this->handle,
+                    'field' => $this,
                     'propagationMethod' => match($this->translationMethod) {
                         self::TRANSLATION_METHOD_NONE => PropagationMethod::All,
                         self::TRANSLATION_METHOD_SITE => PropagationMethod::None,
@@ -1000,7 +915,10 @@ JS,
                     'valueSetter' => false,
                 ],
             );
-            $this->_entryManager->on(NestedElementManager::EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS, [$this, 'afterDuplicateNestedElements']);
+            $this->_entryManager->on(
+                NestedElementManager::EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS,
+                [$this, 'afterDuplicateNestedElements'],
+            );
         }
 
         return $this->_entryManager;
@@ -1049,23 +967,22 @@ JS,
      * E.g. on draft apply, propagation to a new site, revision creation etc
      *
      * @param ElementInterface $owner
-     * @param array $oldElementIds
-     * @param array $newElementIds
-     * @return void
+     * @param array $oldEntryIds
+     * @param array $newEntryIds
      */
-    private function _adjustFieldValue(ElementInterface $owner, array $oldElementIds, array $newElementIds, bool $propagate): void
+    private function _adjustFieldValue(ElementInterface $owner, array $oldEntryIds, array $newEntryIds, bool $propagate): void
     {
         $fieldValue = $owner->getFieldValue($this->handle);
-        if ($oldElementIds !== $newElementIds && !empty($oldElementIds) && !empty($newElementIds)) {
+        if ($oldEntryIds !== $newEntryIds && !empty($oldEntryIds) && !empty($newEntryIds)) {
             $usedIds = [];
             // and in the field value replace elementIds from original (duplicateOf) with elementIds from the new owner
             $value = preg_replace_callback(
                 '/(<craftentry\sdata-entryid=")(\d+)("[^>]*>)/is',
-                function(array $match) use ($oldElementIds, $newElementIds, &$usedIds) {
-                    $key = array_search($match[2], $oldElementIds);
-                    if (isset($newElementIds[$key])) {
-                        $usedIds[] = $newElementIds[$key];
-                        return $match[1] . $newElementIds[$key] . $match[3];
+                function(array $match) use ($oldEntryIds, $newEntryIds, &$usedIds) {
+                    $key = array_search($match[2], $oldEntryIds);
+                    if (isset($newEntryIds[$key])) {
+                        $usedIds[] = $newEntryIds[$key];
+                        return $match[1] . $newEntryIds[$key] . $match[3];
                     }
                     $usedIds[] = $match[2];
                     return $match[1] . $match[2] . $match[3];
@@ -1087,9 +1004,8 @@ JS,
      * Ensures that the ownership data in the elements_owners table matches what's in the CKEditor field's value.
      *
      * @param ElementInterface $owner
-     * @return void
-     * @throws \craft\errors\InvalidFieldException
-     * @throws \yii\db\Exception
+     * @throws InvalidFieldException
+     * @throws Exception
      */
     private function _cleanUpOwnership(ElementInterface $owner): void
     {
@@ -1179,9 +1095,9 @@ JS,
     private function _getEntryTypeOptions(): array
     {
         $entryTypeOptions = array_map(
-            fn(array $row) => [
-                'label' => Craft::t('site', $row['entryType']->name),
-                'value' => $row['entryType']->id,
+            fn(EntryType $entryType) => [
+                'label' => Craft::t('site', $entryType->name),
+                'value' => $entryType->id,
             ],
             $this->getEntryTypes(),
         );
@@ -1204,43 +1120,71 @@ JS,
      */
     private function _prepNestedEntriesForDisplay(string $value, int $elementSiteId, bool $static = false): string
     {
-        $offset = 0;
+        [$entryIds, $markers] = $this->findEntries($value, true);
+
+        if (empty($entryIds)) {
+            return $value;
+        }
+
         $isCpRequest = Craft::$app->getRequest()->getIsCpRequest();
-        while (preg_match('/<craftentry\sdata-entryid="(\d+)"[^>]*>/is', $value, $match, PREG_OFFSET_CAPTURE, $offset)) {
-            $entryId = $match[1][0];
+        $entries = Entry::find()->id($entryIds)->siteId($elementSiteId)->status(null)->indexBy('id')->all();
 
-            /** @var int $startPos */
-            $startPos = $match[0][1];
-            $endPos = $startPos + strlen($match[0][0]);
-
-            $entry = Craft::$app->getEntries()->getEntryById($entryId, $elementSiteId, [
-                'status' => null,
-                'revisions' => null,
-            ]);
-            $simpleEntryTypes = $this->getEntryTypeSimpleArray();
-            $currentEntryType = ArrayHelper::firstWhere($simpleEntryTypes, 'entryType', $entry->typeId);
-            if (!$isCpRequest || (isset($currentEntryType) && $currentEntryType['useTemplateInCp'] == '1')) {
-                $innerHtml = $this->getTemplateHtml($entry, $elementSiteId);
-            } else {
-                $innerHtml = $this->getCardHtml($entry, $elementSiteId);
-            }
-
-            if (!$static && $isCpRequest) {
-                try {
-                    $innerHtml = Html::modifyTagAttributes($match[0][0], [
-                        'data-cardHtml' => $innerHtml,
+        foreach ($markers as $i => $marker) {
+            $entryId = $entryIds[$i];
+            /** @var Entry|null $entry */
+            $entry = $entries[$entryId] ?? null;
+            if (!$entry) {
+                $entryHtml = '';
+            } elseif ($isCpRequest) {
+                $entryHtml = $this->getCardHtml($entry);
+                if (!$static) {
+                    $entryHtml = Html::tag('craftentry', options: [
+                        'data' => [
+                            'entryId' => $entryId,
+                            'cardHtml' => $entryHtml,
+                        ],
                     ]);
-                } catch (InvalidHtmlTagException) {
-                    $offset = $endPos;
-                    continue;
                 }
+            } else {
+                $entryHtml = $entry->render();
             }
 
-            $value = substr($value, 0, $startPos) . $innerHtml . substr($value, $endPos);
-            $offset = $startPos + strlen($innerHtml);
+            $value = str_replace($marker, $entryHtml, $value);
         }
 
         return $value;
+    }
+
+    private function findEntries(string &$html, bool $replaceWithMarkers = false): array
+    {
+        $entryIds = [];
+        $markers = [];
+        $offset = 0;
+        $r = '';
+
+        while (($pos = stripos($html, '<craftentry data-entryid="', $offset)) !== false) {
+            $idStartPos = $pos + 26;
+            $closingTagPos = strpos($html, '</craftentry>', $idStartPos);
+            if ($closingTagPos === false) {
+                break;
+            }
+            $endPos = $closingTagPos + 13;
+            if (!preg_match('/^\d+/', substr($html, $idStartPos, $closingTagPos - $idStartPos), $match)) {
+                break;
+            }
+            $entryIds[] = $match[0];
+            if ($replaceWithMarkers) {
+                $markers[] = $marker = sprintf('{marker:%s}', mt_rand());
+                $r .= substr($html, $offset, $pos - $offset) . $marker;
+            }
+            $offset = $endPos;
+        }
+
+        if ($replaceWithMarkers && $offset !== 0) {
+            $html = $r . substr($html, $offset);
+        }
+
+        return [$entryIds, $markers];
     }
 
     /**
@@ -1560,7 +1504,7 @@ JS,
      *
      * @param HTMLPurifier_Config $purifierConfig
      * @return HTMLPurifier_Config
-     * @throws \HTMLPurifier_Exception
+     * @throws HTMLPurifier_Exception
      */
     private function _adjustPurifierConfig(HTMLPurifier_Config $purifierConfig): HTMLPurifier_Config
     {
@@ -1609,6 +1553,7 @@ JS,
         }
 
         if (in_array('createEntry', $ckeConfig->toolbar)) {
+            /** @var HTMLPurifier_HTMLDefinition|null $def */
             $def = $purifierConfig->getDefinition('HTML', true);
             $def?->addElement('craftentry', 'Inline', 'Inline', '', [
                 //'class' => 'Text',
