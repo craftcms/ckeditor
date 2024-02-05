@@ -137,6 +137,7 @@ a.ck.ck-button:focus {
 
 .ck-content .cke-entry-card {
   margin: 0.9em auto; /* same as images */
+  border-radius: var(--large-border-radius);
 }
 
 /* patch in https://github.com/ckeditor/ckeditor5/pull/15795 */
