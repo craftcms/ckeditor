@@ -577,9 +577,11 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
             $element->propagating === true
         ) {
             $oldValue = $element->getFieldValue($this->handle);
-            [$oldEntryIds] = $this->findEntries($oldValue);
-            $newEntryIds = array_map(fn($element) => $element->id, $this->createEntryQuery($element)->all());
-            $this->_adjustFieldValue($element, $oldEntryIds, $newEntryIds, false);
+            if ($oldValue !== null) {
+                [$oldEntryIds] = $this->findEntries($oldValue);
+                $newEntryIds = array_map(fn($element) => $element->id, $this->createEntryQuery($element)->all());
+                $this->_adjustFieldValue($element, $oldEntryIds, $newEntryIds, false);
+            }
         }
 
         // once we're potentially done with adjusting, ensure ownership data is correct, including sortOrder
