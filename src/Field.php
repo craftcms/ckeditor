@@ -811,7 +811,7 @@ JS,
     {
         return Html::tag(
             'div',
-            $this->prepValueForInput($value, $element) ?: '&nbsp;',
+            $this->prepValueForInput($value, $element, true) ?: '&nbsp;',
             ['class' => 'noteditable']
         );
     }
