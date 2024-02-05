@@ -6,6 +6,7 @@
 - Added the ability to embed nested entries within CKEditor fields.
 - Added the “Entry Types” field setting.
 - It’s now possible to edit the selected CKEditor config from field settings.
+- The CKEditor inspector is now shown for admin users, if a `CRAFT_SHOW_CKEDITOR_INSPECTOR` environment variable is set to `true`.
 
 ## 3.7.1 - 2024-02-01
 

@@ -408,7 +408,7 @@ export const create = async function (element, config) {
     Object.assign({plugins}, config),
   );
 
-  if (Craft.isDevMode && Craft.userIsAdmin) {
+  if (Craft.showCkeditorInspector && Craft.userIsAdmin) {
     CKEditorInspector.attach(editor);
   }
 

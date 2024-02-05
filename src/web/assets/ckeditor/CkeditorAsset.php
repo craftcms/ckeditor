@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Event;
 use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
+use craft\helpers\App;
 use craft\web\assets\cp\CpAsset;
 use craft\web\View;
 
@@ -74,6 +75,11 @@ class CkeditorAsset extends BaseCkeditorPackageAsset
                 'Link to the current site',
                 'Site: {name}',
             ]);
+            $view->registerJsWithVars(fn($attach) => <<<JS
+Craft.showCkeditorInspector = $attach;
+JS, [
+                (bool)App::env('CRAFT_SHOW_CKEDITOR_INSPECTOR'),
+], View::POS_END);
         }
     }
 
