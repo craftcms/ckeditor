@@ -229,7 +229,7 @@ export default class CraftEntriesUI extends Plugin {
     const elementEditor = $editorContainer.data('elementEditor');
 
     if (elementEditor) {
-      await elementEditor.ensureIsDraftOrRevision();
+      await elementEditor.markDeltaNameAsModified(editor.sourceElement.name);
       // replace the owner ID with the new one, maybe?
       params.ownerId = elementEditor.getDraftElementId(
         nestedElementAttributes.ownerId,
