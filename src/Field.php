@@ -28,14 +28,11 @@ use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\enums\PropagationMethod;
-use craft\errors\InvalidFieldException;
 use craft\errors\InvalidHtmlTagException;
 use craft\events\CancelableEvent;
 use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
-use craft\helpers\Db;
-use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -56,7 +53,6 @@ use HTMLPurifier_HTMLDefinition;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\db\Exception;
 use yii\db\Expression;
 
 /**
@@ -561,34 +557,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
     }
 
     /**
-     * @inheritdoc
-     */
-    public function afterElementSave(ElementInterface $element, bool $isNew): void
-    {
-        // This is needed for when we have at least 2 sites, section's entries are propagated to both of them,
-        // but the CKE field is set to be translatable. In that case, on the first save,
-        // the CKE nested elements still need to be propagated to the second site and when that happens,
-        // the propagated element has a different ID than the original one.
-        // We ensure it only runs on that first propagation by comparing source and target site ids.
-        if (
-            //Craft::$app->getIsMultiSite() &&
-            //$element->getSection()->propagationMethod !== PropagationMethod::None &&
-            $this->getIsTranslatable($element) &&
-            $element->propagating === true
-        ) {
-            $oldValue = $element->getFieldValue($this->handle);
-            if ($oldValue !== null) {
-                [$oldEntryIds] = $this->findEntries($oldValue);
-                $newEntryIds = array_map(fn($element) => $element->id, $this->createEntryQuery($element)->all());
-                $this->_adjustFieldValue($element, $oldEntryIds, $newEntryIds, false);
-            }
-        }
-
-        // once we're potentially done with adjusting, ensure ownership data is correct, including sortOrder
-        $this->_cleanUpOwnership($element);
-    }
-
-    /**
      * Performs actions after the nested element has been duplicated.
      *
      * @param DuplicateNestedElementsEvent $event
@@ -908,14 +876,6 @@ JS,
                 fn(ElementInterface $owner) => $this->createEntryQuery($owner),
                 [
                     'field' => $this,
-                    'propagationMethod' => match($this->translationMethod) {
-                        self::TRANSLATION_METHOD_NONE => PropagationMethod::All,
-                        self::TRANSLATION_METHOD_SITE => PropagationMethod::None,
-                        self::TRANSLATION_METHOD_SITE_GROUP => PropagationMethod::SiteGroup,
-                        self::TRANSLATION_METHOD_LANGUAGE => PropagationMethod::Language,
-                        self::TRANSLATION_METHOD_CUSTOM => PropagationMethod::Custom,
-                    },
-                    'propagationKeyFormat' => $this->translationKeyFormat,
                     'allowDeletion' => false,
                     'criteria' => [
                         'fieldId' => $this->id,
@@ -1007,53 +967,6 @@ JS,
             $owner->mergingCanonicalChanges = true;
 
             Craft::$app->getElements()->saveElement($owner, false, $propagate, false);
-        }
-    }
-
-    /**
-     * Ensures that the ownership data in the elements_owners table matches what's in the CKEditor field's value.
-     *
-     * @param ElementInterface $owner
-     * @throws InvalidFieldException
-     * @throws Exception
-     */
-    private function _cleanUpOwnership(ElementInterface $owner): void
-    {
-        $usedIds = $this->_getEntryIdsFromString($owner->getFieldValue($this->handle));
-
-        $query = (new Query())
-            ->select(['elementId' => 'entries.id'])
-            ->from(['entries' => Table::ENTRIES])
-            ->innerJoin(['elements_owners' => Table::ELEMENTS_OWNERS], '[[elements_owners.elementId]] = [[entries.id]]')
-            ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.elementId]] = [[entries.id]]')
-            ->where([
-                'entries.fieldId' => $this->id,
-                'elements_owners.ownerId' => $owner->id,
-                'elements_sites.siteId' => $owner->siteId,
-            ]);
-
-        // get all elementIds for the owner
-        $dbElementIds = $query->column();
-
-        // those that exist in the $dbElementIds but not in $usedIds - remove ownership
-        $deleteOwnership = array_diff($dbElementIds, $usedIds);
-        if (!empty($deleteOwnership)) {
-            Db::delete(Table::ELEMENTS_OWNERS, [
-                'elementId' => $deleteOwnership,
-                'ownerId' => $owner->id,
-            ]);
-
-            // once we're done removing - realign sort order
-            foreach ($query->column() as $key => $value) {
-                $sortOrder = $key + 1;
-                Db::upsert(Table::ELEMENTS_OWNERS, [
-                    'elementId' => $value,
-                    'ownerId' => $owner->id,
-                    'sortOrder' => $sortOrder,
-                ], [
-                    'sortOrder' => $sortOrder,
-                ], updateTimestamp: false);
-            }
         }
     }
 
