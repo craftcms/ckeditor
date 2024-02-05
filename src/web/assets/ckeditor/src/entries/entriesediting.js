@@ -155,7 +155,7 @@ export default class CraftEntriesEditing extends Plugin {
 
     // if there's no cardHtml attribute for any reason - get the markup from Craft
     // this can happen e.g. if you make changes in the source mode and then come back to the editing mode
-    if (cardHtml == undefined || cardHtml == null) {
+    if (cardHtml == null) {
       const entryId = modelItem.getAttribute('entryId') ?? null;
       const siteId = Craft.siteId;
 
@@ -173,9 +173,23 @@ export default class CraftEntriesEditing extends Plugin {
         .then(({data}) => {
           return data;
         })
-        .catch(() => {
-          // TODO: add a placeholder markup?
-          return '<b>what now?</b>';
+        .catch(({response}) => {
+          console.error(response.data);
+
+          let cardHtml =
+            '<div class="element card">' +
+            '<div class="card-content">' +
+            '<div class="card-heading">' +
+            '<div class="label error">' +
+            '<span>' +
+            response.data.message +
+            '</span>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '</div>';
+
+          return {cardHtml: cardHtml};
         });
     } else {
       return new Promise((resolve, reject) => {
