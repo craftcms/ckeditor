@@ -3,6 +3,8 @@
 ## Unreleased (4.0)
 
 - CKEditor now requires Craft CMS 5.0.0 or later.
+- Added the ability to embed nested entries within CKEditor fields.
+- Added the “Entry Types” field setting.
 - It’s now possible to edit the selected CKEditor config from field settings.
 
 ## 3.7.1 - 2024-02-01
