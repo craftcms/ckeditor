@@ -888,7 +888,6 @@ JS,
                         self::TRANSLATION_METHOD_CUSTOM => PropagationMethod::Custom,
                     },
                     'propagationKeyFormat' => $this->translationKeyFormat,
-                    'allowDeletion' => false,
                     'criteria' => [
                         'fieldId' => $this->id,
                     ],
