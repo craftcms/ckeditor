@@ -557,6 +557,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
     public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
         $this->entryManager()->maintainNestedElements($element, $isNew);
+        $this->_handleCreatedRevision($element);
         parent::afterElementPropagate($element, $isNew);
     }
 
@@ -861,7 +862,7 @@ JS,
             // (https://github.com/craftcms/ckeditor/issues/96)
             $value = $this->_normalizeFigures($value);
 
-            $value = $this->_prepNestedEntriesForDisplay($value, $element->siteId, $static);
+            $value = $this->_prepNestedEntriesForDisplay($value, $element, $static);
         }
 
         return parent::prepValueForInput($value, $element);
@@ -1022,6 +1023,52 @@ JS,
     }
 
     /**
+     * If a revision had been created, it ensures the markers in the cke field of a revision match the revision entries.
+     *
+     * @param ElementInterface $element
+     * @return void
+     */
+    private function _handleCreatedRevision(ElementInterface $element): void
+    {
+        if ($element->duplicateOf !== null && $element->getIsRevision()) {
+            $revisionOwners = [$element] + $element::find()
+                ->id($element->id ?: false)
+                ->siteId(['not', $element->siteId])
+                ->drafts($element->getIsDraft())
+                ->provisionalDrafts($element->isProvisionalDraft)
+                ->revisions($element->getIsRevision())
+                ->status(null)
+                ->ignorePlaceholders()
+                ->indexBy('siteId')
+                ->all();
+
+            foreach ($revisionOwners as $revisionOwner) {
+                // get elementIds and their canonicalIds for the revision element
+                $elements = (new Query())
+                    ->select(['elementId' => 'entries.id', 'canonicalId' => 'elements.canonicalId'])
+                    ->from(['entries' => Table::ENTRIES])
+                    ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[entries.id]]')
+                    ->innerJoin(['elements_owners' => Table::ELEMENTS_OWNERS], '[[elements_owners.elementId]] = [[entries.id]]')
+                    ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.elementId]] = [[entries.id]]')
+                    ->where([
+                        'entries.fieldId' => $this->id,
+                        'elements_owners.ownerId' => $revisionOwner->id,
+                        'elements_sites.siteId' => $revisionOwner->siteId,
+                    ])->all();
+
+                // get all elementIds for the owner revision
+                $newElementIds = array_map(fn($item) => $item['elementId'], $elements);
+
+                // and get their canonicals
+                $oldElementIds = array_map(fn($item) => $item['canonicalId'], $elements);
+
+                // update canonicals to revision's elementIds
+                $this->_adjustFieldValue($revisionOwner, $oldElementIds, $newElementIds, false);
+            }
+        }
+    }
+
+    /**
      * Returns entry type options in form of an array with 'label' and 'value' keys for each option.
      *
      * @return array
@@ -1049,11 +1096,11 @@ JS,
      * If it's a static request
      *
      * @param string $value
-     * @param int $elementSiteId
+     * @param ElementInterface $element
      * @param bool $static
      * @return string
      */
-    private function _prepNestedEntriesForDisplay(string $value, int $elementSiteId, bool $static = false): string
+    private function _prepNestedEntriesForDisplay(string $value, ElementInterface $element, bool $static = false): string
     {
         [$entryIds, $markers] = $this->findEntries($value, true);
 
@@ -1062,7 +1109,19 @@ JS,
         }
 
         $isCpRequest = Craft::$app->getRequest()->getIsCpRequest();
-        $entries = Entry::find()->id($entryIds)->siteId($elementSiteId)->status(null)->indexBy('id')->all();
+        $query = Entry::find()
+            ->id($entryIds)
+            ->siteId($element->siteId)
+            ->status(null)
+            ->indexBy('id');
+
+        if ($element->getIsRevision()) {
+            $query
+                ->revisions(null)
+                ->trashed(null);
+        }
+
+        $entries = $query->all();
 
         foreach ($markers as $i => $marker) {
             $entryId = $entryIds[$i];
