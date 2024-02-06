@@ -14,7 +14,6 @@ use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
-use craft\elements\NestedElementManager;
 use craft\ckeditor\events\DefineLinkOptionsEvent;
 use craft\ckeditor\events\ModifyConfigEvent;
 use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
@@ -26,16 +25,14 @@ use craft\elements\Category;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
+use craft\elements\NestedElementManager;
 use craft\elements\User;
 use craft\enums\PropagationMethod;
-use craft\errors\InvalidFieldException;
 use craft\errors\InvalidHtmlTagException;
 use craft\events\CancelableEvent;
 use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
-use craft\helpers\Db;
-use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -818,7 +815,7 @@ JS,
             ]),
             'data' => [
                 'element-id' => $element?->id,
-            ]
+            ],
         ]);
     }
 
@@ -900,7 +897,7 @@ JS,
                 fn(ElementInterface $owner) => $this->createEntryQuery($owner),
                 [
                     'field' => $this,
-                    'propagationMethod' => match($this->translationMethod) {
+                    'propagationMethod' => match ($this->translationMethod) {
                         self::TRANSLATION_METHOD_NONE => PropagationMethod::All,
                         self::TRANSLATION_METHOD_SITE => PropagationMethod::None,
                         self::TRANSLATION_METHOD_SITE_GROUP => PropagationMethod::SiteGroup,
@@ -987,7 +984,7 @@ JS,
         // and in the field value replace elementIds from original (duplicateOf) with elementIds from the new owner
         $newValue = preg_replace_callback(
             '/(<craft-entry\sdata-entry-id=")(\d+)("[^>]*>)/i',
-            function(array $match) use ($oldEntryIds, $newEntryIds, &$usedIds) {
+            function(array $match) use ($oldEntryIds, $newEntryIds) {
                 $key = array_search($match[2], $oldEntryIds);
                 if (isset($newEntryIds[$key])) {
                     return $match[1] . $newEntryIds[$key] . $match[3];

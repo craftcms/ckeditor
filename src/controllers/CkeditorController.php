@@ -11,7 +11,6 @@ use Craft;
 use craft\ckeditor\Field;
 use craft\elements\Asset;
 use craft\fieldlayoutelements\CustomField;
-use craft\helpers\ArrayHelper;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
