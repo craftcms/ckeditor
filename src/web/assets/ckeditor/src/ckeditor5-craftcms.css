@@ -135,7 +135,7 @@ a.ck.ck-button:focus {
   background: var(--ck-color-base-background);
 }
 
-.ck-content .cke-entry-card {
+.cke-entry-card {
   margin: 0.9em auto; /* same as images */
   border-radius: var(--large-border-radius);
 }

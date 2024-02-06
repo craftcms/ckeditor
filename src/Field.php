@@ -509,6 +509,9 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
             'showDraftName' => !$isRevision,
             'showStatus' => !$isRevision,
             'showThumb' => !$isRevision,
+            'attributes' => [
+                'class' => array_filter([$isRevision ? 'cke-entry-card' : null]),
+            ],
         ]);
     }
 
@@ -824,6 +827,8 @@ JS,
      */
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
+        Craft::$app->getView()->registerAssetBundle(CkeditorAsset::class);
+
         return Html::tag(
             'div',
             $this->prepValueForInput($value, $element, true) ?: '&nbsp;',
