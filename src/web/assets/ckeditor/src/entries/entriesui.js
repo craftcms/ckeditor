@@ -1,9 +1,8 @@
-import {icons, Plugin} from 'ckeditor5/src/core';
+import {Plugin} from 'ckeditor5/src/core';
 import {
   addListToDropdown,
   ButtonView,
   createDropdown,
-  DropdownButtonView,
   ViewModel,
 } from 'ckeditor5/src/ui';
 import {Range} from 'ckeditor5/src/engine';
@@ -158,6 +157,7 @@ export default class CraftEntriesUI extends Plugin {
         model: new ViewModel({
           commandValue: option.value, //entry type id
           label: option.label || option.value,
+          icon: option.icon,
           withText: true,
         }),
       };
