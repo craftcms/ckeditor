@@ -917,7 +917,7 @@ JS,
             return [];
         }
 
-        preg_match_all('/<craftentry\sdata-entryid="(\d+)"[^>]*>/is', $string, $matches);
+        preg_match_all('/<craft-entry\sdata-entry-id="(\d+)"[^>]*>/is', $string, $matches);
 
         return array_map(fn($match) => (int)$match, $matches[1]);
     }
@@ -963,7 +963,7 @@ JS,
 
         // and in the field value replace elementIds from original (duplicateOf) with elementIds from the new owner
         $newValue = preg_replace_callback(
-            '/(<craftentry\sdata-entryid=")(\d+)("[^>]*>)/i',
+            '/(<craft-entry\sdata-entry-id=")(\d+)("[^>]*>)/i',
             function(array $match) use ($oldEntryIds, $newEntryIds, &$usedIds) {
                 $key = array_search($match[2], $oldEntryIds);
                 if (isset($newEntryIds[$key])) {
@@ -1042,7 +1042,7 @@ JS,
     }
 
     /**
-     * Fill the CKE markup (<craftentry data-entryid="96"></craftentry>)
+     * Fill the CKE markup (<craft-entry data-entry-id="96"></craft-entry>)
      *  with actual card or template HTML of the entry it's linking to.
      * If it's not a CP request - always use the rendered HTML
      * If it's a CP request - use rendered HTML if that's what's assigned to the entry type in the field's setting; otherwise use card HTML.
@@ -1073,10 +1073,10 @@ JS,
             } elseif ($isCpRequest) {
                 $entryHtml = $this->getCardHtml($entry);
                 if (!$static) {
-                    $entryHtml = Html::tag('craftentry', options: [
+                    $entryHtml = Html::tag('craft-entry', options: [
                         'data' => [
-                            'entryId' => $entryId,
-                            'cardHtml' => $entryHtml,
+                            'entry-id' => $entryId,
+                            'card-html' => $entryHtml,
                         ],
                     ]);
                 }
@@ -1097,13 +1097,13 @@ JS,
         $offset = 0;
         $r = '';
 
-        while (($pos = stripos($html, '<craftentry data-entryid="', $offset)) !== false) {
-            $idStartPos = $pos + 26;
-            $closingTagPos = strpos($html, '</craftentry>', $idStartPos);
+        while (($pos = stripos($html, '<craft-entry data-entry-id="', $offset)) !== false) {
+            $idStartPos = $pos + 28;
+            $closingTagPos = strpos($html, '</craft-entry>', $idStartPos);
             if ($closingTagPos === false) {
                 break;
             }
-            $endPos = $closingTagPos + 13;
+            $endPos = $closingTagPos + 14;
             if (!preg_match('/^\d+/', substr($html, $idStartPos, $closingTagPos - $idStartPos), $match)) {
                 break;
             }
@@ -1123,13 +1123,13 @@ JS,
     }
 
     /**
-     * Fill entry card CKE markup (<craftentry data-entryid="96"></craftentry>)
+     * Fill entry card CKE markup (<craft-entry data-entry-id="96"></craft-entry>)
      * with actual card HTML of the entry it's linking to
 
-     * Replace the entry card CKE markup (<craftentry data-entryid="96"></craftentry>)
+     * Replace the entry card CKE markup (<craft-entry data-entry-id="96"></craft-entry>)
      * with actual card HTML of the entry it's linking to
 
-     * Replace the entry card CKE markup (<craftentry data-entryid="96"></craftentry>)
+     * Replace the entry card CKE markup (<craft-entry data-entry-id="96"></craft-entry>)
      * with the rendered HTML of the entry it's linking to
      */
 
@@ -1490,9 +1490,8 @@ JS,
         if (in_array('createEntry', $ckeConfig->toolbar)) {
             /** @var HTMLPurifier_HTMLDefinition|null $def */
             $def = $purifierConfig->getDefinition('HTML', true);
-            $def?->addElement('craftentry', 'Inline', 'Inline', '', [
-                //'class' => 'Text',
-                'data-entryid' => 'Number',
+            $def?->addElement('craft-entry', 'Inline', 'Inline', '', [
+                'data-entry-id' => 'Number',
             ]);
         }
 

@@ -68,11 +68,11 @@ export default class CraftEntriesEditing extends Plugin {
     // converts data view to a model
     conversion.for('upcast').elementToElement({
       view: {
-        name: 'craftentry', // has to be lower case
+        name: 'craft-entry', // has to be lower case
       },
       model: (viewElement, {writer: modelWriter}) => {
-        const cardHtml = viewElement.getAttribute('data-cardhtml');
-        const entryId = viewElement.getAttribute('data-entryid');
+        const cardHtml = viewElement.getAttribute('data-card-html');
+        const entryId = viewElement.getAttribute('data-entry-id');
 
         return modelWriter.createElement('craftEntryModel', {
           cardHtml: cardHtml,
@@ -88,7 +88,7 @@ export default class CraftEntriesEditing extends Plugin {
         const entryId = modelItem.getAttribute('entryId') ?? null;
         const cardContainer = viewWriter.createContainerElement('div', {
           class: 'cke-entry-card',
-          'data-entryId': entryId,
+          'data-entry-id': entryId,
         });
         addCardHtmlToContainer(modelItem, viewWriter, cardContainer);
 
@@ -103,8 +103,8 @@ export default class CraftEntriesEditing extends Plugin {
       view: (modelItem, {writer: viewWriter}) => {
         const entryId = modelItem.getAttribute('entryId') ?? null;
 
-        return viewWriter.createContainerElement('craftentry', {
-          'data-entryId': entryId,
+        return viewWriter.createContainerElement('craft-entry', {
+          'data-entry-id': entryId,
         });
       },
     });
