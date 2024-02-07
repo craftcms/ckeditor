@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## 4.0.0-beta.2 - 2024-02-07
+
+- Fixed a SQL error that occurred when creating a nested entry on PostgreSQL.
+
 ## 4.0.0-beta.1 - 2024-02-06
 
 - CKEditor now requires Craft CMS 5.0.0-beta.1 or later.

@@ -18,6 +18,7 @@ use craft\ckeditor\events\DefineLinkOptionsEvent;
 use craft\ckeditor\events\ModifyConfigEvent;
 use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
+use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -54,7 +55,6 @@ use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
-use yii\db\Expression;
 
 /**
  * CKEditor field type
@@ -956,7 +956,7 @@ JS,
             $query = $this->createEntryQuery($owner);
             $query->where(['in', 'elements.id', $entryIds]);
             if (!empty($entryIds)) {
-                $query->orderBy(new Expression('FIELD (elements.id, ' . implode(', ', $entryIds) . ')'));
+                $query->orderBy(new FixedOrderExpression('elements.id', $entryIds, Craft::$app->getDb()));
             }
 
             return $query;
