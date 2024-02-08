@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed a JavaScript error. ([#161](https://github.com/craftcms/ckeditor/issues/161))
+
 ## 3.7.2 - 2024-02-07
 
 - Added the `IndentBlock` CKEditor plugin, enabling the “Increase indent” and “Decrease indent” buttons to work on headings and paragraphs. ([#156](https://github.com/craftcms/ckeditor/pull/156))

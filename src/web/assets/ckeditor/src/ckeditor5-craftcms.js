@@ -205,7 +205,7 @@ const pluginButtonMap = [
   {plugins: ['HorizontalLine'], buttons: ['horizontalLine']},
   {plugins: ['HtmlEmbed'], buttons: ['htmlEmbed']},
   {
-    plugins: ['Indent'],
+    plugins: ['Indent', 'IndentBlock'],
     buttons: ['outdent', 'indent'],
   },
   {plugins: ['Italic'], buttons: ['italic']},
