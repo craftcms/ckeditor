@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased (v4)
+
+- Added the `IndentBlock` CKEditor plugin, enabling the “Increase indent” and “Decrease indent” buttons to work on headings and paragraphs. ([#156](https://github.com/craftcms/ckeditor/pull/156))
+
 ## 4.0.0-beta.3 - 2024-02-07
 
 - Fixed a bug where it was possible to change nested entries to types that the field wasn’t configured with. ([#157](https://github.com/craftcms/ckeditor/issues/157))
@@ -15,6 +19,14 @@
 - Added the “Entry Types” field setting.
 - It’s now possible to edit the selected CKEditor config from field settings.
 - The CKEditor inspector is now shown for admin users, if a `CRAFT_SHOW_CKEDITOR_INSPECTOR` environment variable is set to `true`.
+
+## 3.7.3 - 2024-02-08
+
+- Fixed a JavaScript error. ([#161](https://github.com/craftcms/ckeditor/issues/161))
+
+## 3.7.2 - 2024-02-07
+
+- Added the `IndentBlock` CKEditor plugin, enabling the “Increase indent” and “Decrease indent” buttons to work on headings and paragraphs. ([#156](https://github.com/craftcms/ckeditor/pull/156))
 
 ## 3.7.1 - 2024-02-01
 

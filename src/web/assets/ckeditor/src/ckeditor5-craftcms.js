@@ -36,7 +36,7 @@ import {
 import {Heading} from '@ckeditor/ckeditor5-heading';
 import {HorizontalLine} from '@ckeditor/ckeditor5-horizontal-line';
 import {HtmlEmbed} from '@ckeditor/ckeditor5-html-embed';
-import {Indent} from '@ckeditor/ckeditor5-indent';
+import {Indent, IndentBlock} from '@ckeditor/ckeditor5-indent';
 import {LinkEditing, AutoLink, LinkImage} from '@ckeditor/ckeditor5-link';
 import {
   DocumentList,
@@ -91,6 +91,7 @@ const allPlugins = [
   ImageStyle,
   ImageToolbar,
   Indent,
+  IndentBlock,
   Italic,
   LinkEditing,
   LinkImage,
@@ -208,7 +209,7 @@ const pluginButtonMap = [
   {plugins: ['HorizontalLine'], buttons: ['horizontalLine']},
   {plugins: ['HtmlEmbed'], buttons: ['htmlEmbed']},
   {
-    plugins: ['Indent'],
+    plugins: ['Indent', 'IndentBlock'],
     buttons: ['outdent', 'indent'],
   },
   {plugins: ['Italic'], buttons: ['italic']},
