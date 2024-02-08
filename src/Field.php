@@ -292,14 +292,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
     /**
      * @inheritdoc
      */
-    public function getFieldLayoutProviders(): array
-    {
-        return Craft::$app->getEntries()->getAllEntryTypes();
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getUriFormatForElement(NestedElementInterface $element): ?string
     {
         return null;
@@ -440,6 +432,14 @@ class Field extends HtmlField implements ElementContainerFieldInterface, EagerLo
             }
             return $entryType;
         }, $entryTypes)));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFieldLayoutProviders(): array
+    {
+        return $this->getEntryTypes();
     }
 
     /**

@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## 4.0.0-beta.3 - 2024-02-07
+
+- Fixed a bug where it was possible to change nested entries to types that the field wasn’t configured with. ([#157](https://github.com/craftcms/ckeditor/issues/157))
+
 ## 4.0.0-beta.2 - 2024-02-07
 
 - Fixed a SQL error that occurred when creating a nested entry on PostgreSQL.
