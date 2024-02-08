@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 3.7.3 - 2024-02-08
 
 - Fixed a JavaScript error. ([#161](https://github.com/craftcms/ckeditor/issues/161))
 
