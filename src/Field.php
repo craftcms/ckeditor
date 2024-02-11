@@ -17,6 +17,7 @@ use craft\ckeditor\events\DefineLinkOptionsEvent;
 use craft\ckeditor\events\ModifyConfigEvent;
 use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
+use craft\controllers\GraphqlController;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\Table;
@@ -465,7 +466,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
-        if (!Craft::$app->getRequest()->getIsCpRequest()) {
+        if (!$this->isCpRequest()) {
             $value = $this->prepValueForInput($value, $element);
         }
 
@@ -1081,7 +1082,7 @@ JS,
             return $value;
         }
 
-        $isCpRequest = Craft::$app->getRequest()->getIsCpRequest();
+        $isCpRequest = $this->isCpRequest();
         $entries = Entry::find()
             ->id($entryIds)
             ->siteId($elementSiteId)
@@ -1116,6 +1117,14 @@ JS,
         }
 
         return $value;
+    }
+
+    private function isCpRequest(): bool
+    {
+        return (
+            Craft::$app->getRequest()->getIsCpRequest() &&
+            !Craft::$app->controller instanceof GraphqlController
+        );
     }
 
     private function findEntries(string &$html, bool $replaceWithMarkers = false): array
