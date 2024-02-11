@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 4.0.0-beta.5 - 2024-02-10
 
 - Fixed a bug where CKEditor field values were displaying as `[]` within element tables and cards, and GraphQL results. ([#163](https://github.com/craftcms/ckeditor/issues/163), [#164](https://github.com/craftcms/ckeditor/issues/164))
 
