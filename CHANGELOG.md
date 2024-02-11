@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed a bug where CKEditor field values were displaying as `[]` within element tables and cards, and GraphQL results. ([#163](https://github.com/craftcms/ckeditor/issues/163), [#164](https://github.com/craftcms/ckeditor/issues/164))
+
 ## 4.0.0-beta.4 - 2024-02-08
 
 - Added the `IndentBlock` CKEditor plugin, enabling the “Increase indent” and “Decrease indent” buttons to work on headings and paragraphs. ([#156](https://github.com/craftcms/ckeditor/pull/156))

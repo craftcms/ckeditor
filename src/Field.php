@@ -9,7 +9,6 @@ namespace craft\ckeditor;
 
 use Closure;
 use Craft;
-use craft\base\EagerLoadingFieldInterface;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
@@ -61,7 +60,7 @@ use yii\db\Exception;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
-class Field extends HtmlField implements ElementContainerFieldInterface, EagerLoadingFieldInterface
+class Field extends HtmlField implements ElementContainerFieldInterface
 {
     /**
      * @event ModifyPurifierConfigEvent The event that is triggered when creating HTML Purifier config
