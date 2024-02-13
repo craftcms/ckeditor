@@ -317,6 +317,8 @@ class Field extends HtmlField
         $baseConfig = [
             'defaultTransform' => $defaultTransform?->handle,
             'elementSiteId' => $element?->siteId,
+            'fieldName' => Craft::t('site', $this->name),
+            'describedBy' => $this->_describedBy($view),
             'findAndReplace' => [
                 'uiType' => 'dropdown',
             ],
@@ -909,5 +911,26 @@ JS,
         }
 
         return $purifierConfig;
+    }
+
+    /**
+     * Namespaces field's $describedBy value to be passed to the field.
+     *
+     * @param View $view
+     * @return string
+     */
+    private function _describedBy(View $view): string
+    {
+        if (!empty($this->describedBy)) {
+            $describedByArray = explode(' ', $this->describedBy);
+            $namespace = trim(preg_replace('/\[|\]/', '-', $view->getNamespace()), '-');
+            foreach ($describedByArray as $key => $item) {
+                $describedByArray[$key] = "$namespace-$item";
+            }
+
+            return implode(' ', $describedByArray);
+        }
+
+        return '';
     }
 }
