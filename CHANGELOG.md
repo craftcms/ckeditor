@@ -1,5 +1,10 @@
 # Release Notes for CKEditor for Craft CMS
 
+## 4.0.0-beta.6 - 2024-02-15
+
+- CKEditor now requires Craft CMS 5.0.0-beta.2 or later.
+- Added support for querying and mutating nested etries within CKEditor fields via GraphQL directly. ([craftcms/cms#14366](https://github.com/craftcms/cms/pull/14366))
+
 ## 4.0.0-beta.5 - 2024-02-10
 
 - Fixed a bug where CKEditor field values were displaying as `[]` within element tables and cards, and GraphQL results. ([#163](https://github.com/craftcms/ckeditor/issues/163), [#164](https://github.com/craftcms/ckeditor/issues/164))

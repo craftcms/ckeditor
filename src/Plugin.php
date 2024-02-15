@@ -61,6 +61,10 @@ class Plugin extends \craft\base\Plugin
             $event->types[] = Field::class;
         });
 
+        Event::on(Fields::class, Fields::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES, function(RegisterComponentTypesEvent $event) {
+            $event->types[] = Field::class;
+        });
+
         Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
             $event->rules += [
                 'settings/ckeditor' => 'ckeditor/cke-configs/index',
