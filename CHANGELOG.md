@@ -3,7 +3,7 @@
 ## 4.0.0-beta.6 - 2024-02-15
 
 - CKEditor now requires Craft CMS 5.0.0-beta.2 or later.
-- Added support for querying and mutating nested etries within CKEditor fields via GraphQL directly. ([craftcms/cms#14366](https://github.com/craftcms/cms/pull/14366))
+- Added support for querying and mutating nested entries within CKEditor fields via GraphQL directly. ([craftcms/cms#14366](https://github.com/craftcms/cms/pull/14366))
 
 ## 4.0.0-beta.5 - 2024-02-10
 
