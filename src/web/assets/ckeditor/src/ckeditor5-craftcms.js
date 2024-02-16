@@ -409,11 +409,14 @@ export const create = async function (element, config) {
     const viewEditableRoot = editor.editing.view.document.getRoot();
 
     // adjust aria-label
-    if (typeof config.fieldName != 'undefined' && config.fieldName.length) {
+    if (
+      typeof config.accessibleFieldName != 'undefined' &&
+      config.accessibleFieldName.length
+    ) {
       let ariaLabel = viewEditableRoot.getAttribute('aria-label');
       writer.setAttribute(
         'aria-label',
-        config.fieldName + ', ' + ariaLabel,
+        config.accessibleFieldName + ', ' + ariaLabel,
         viewEditableRoot,
       );
     }

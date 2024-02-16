@@ -317,7 +317,7 @@ class Field extends HtmlField
         $baseConfig = [
             'defaultTransform' => $defaultTransform?->handle,
             'elementSiteId' => $element?->siteId,
-            'fieldName' => Craft::t('site', $this->name),
+            'accessibleFieldName' => $this->_accessibleFieldName($element),
             'describedBy' => $this->_describedBy($view),
             'findAndReplace' => [
                 'uiType' => 'dropdown',
@@ -911,6 +911,19 @@ JS,
         }
 
         return $purifierConfig;
+    }
+
+    /**
+     * Returns an accessible name for the field (to be plugged into CKEditor's main editing area aria-label).
+     *
+     * @param ElementInterface|null $element
+     * @return string
+     */
+    private function _accessibleFieldName(?ElementInterface $element = null): string
+    {
+        return Craft::t('site', $this->name) .
+        ($element?->getFieldLayout()?->getField($this->handle)?->required ? ' ' . Craft::t('site', 'Required') : '') .
+        ($this->getIsTranslatable($element) ? ' ' . $this->getTranslationDescription($element) : '');
     }
 
     /**
