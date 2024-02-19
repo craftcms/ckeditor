@@ -38,11 +38,7 @@ import {HorizontalLine} from '@ckeditor/ckeditor5-horizontal-line';
 import {HtmlEmbed} from '@ckeditor/ckeditor5-html-embed';
 import {Indent, IndentBlock} from '@ckeditor/ckeditor5-indent';
 import {LinkEditing, AutoLink, LinkImage} from '@ckeditor/ckeditor5-link';
-import {
-  DocumentList,
-  DocumentListProperties,
-  TodoDocumentList,
-} from '@ckeditor/ckeditor5-list';
+import {List, ListProperties, TodoList} from '@ckeditor/ckeditor5-list';
 import {MediaEmbed, MediaEmbedToolbar} from '@ckeditor/ckeditor5-media-embed';
 import {PageBreak} from '@ckeditor/ckeditor5-page-break';
 import {PasteFromOffice} from '@ckeditor/ckeditor5-paste-from-office';
@@ -74,8 +70,8 @@ const allPlugins = [
   Bold,
   Code,
   CodeBlock,
-  DocumentList,
-  DocumentListProperties,
+  List,
+  ListProperties,
   Essentials,
   FindAndReplace,
   Font,
@@ -110,7 +106,7 @@ const allPlugins = [
   TableToolbar,
   TableUI,
   TextPartLanguage,
-  TodoDocumentList,
+  TodoList,
   Underline,
   WordCount,
   CraftImageInsertUI,
@@ -193,7 +189,7 @@ const pluginButtonMap = [
   {plugins: ['Code'], buttons: ['code']},
   {plugins: ['CodeBlock'], buttons: ['codeBlock']},
   {
-    plugins: ['DocumentList', 'DocumentListProperties'],
+    plugins: ['List', 'ListProperties'],
     buttons: ['bulletedList', 'numberedList'],
   },
   {
@@ -232,7 +228,7 @@ const pluginButtonMap = [
     buttons: ['insertTable'],
   },
   {plugins: ['TextPartLanguage'], buttons: ['textPartLanguage']},
-  {plugins: ['TodoDocumentList'], buttons: ['todoList']},
+  {plugins: ['TodoList'], buttons: ['todoList']},
   {plugins: ['Underline'], buttons: ['underline']},
 ];
 
