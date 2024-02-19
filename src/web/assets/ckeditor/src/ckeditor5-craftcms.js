@@ -387,6 +387,12 @@ export const create = async function (element, config) {
     removePlugins.push('ImageTransform');
   }
 
+  // remove MediaEmbedToolbar for now
+  // see: https://github.com/ckeditor/ckeditor5-react/issues/267
+  // and: https://github.com/ckeditor/ckeditor5/issues/9824
+  // for more info
+  removePlugins.push('MediaEmbedToolbar');
+
   if (removePlugins.length) {
     plugins = plugins.filter((p) => !removePlugins.includes(p.pluginName));
   }
