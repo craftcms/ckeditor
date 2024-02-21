@@ -58,11 +58,13 @@ import {default as CraftImageInsertUI} from './image/imageinsert/imageinsertui';
 import {default as CraftLinkUI} from './link/linkui';
 import ImageTransform from './image/imagetransform';
 import {TextPartLanguage} from '@ckeditor/ckeditor5-language';
+import {Anchor} from '@northernco/ckeditor5-anchor-drupal';
 
 const allPlugins = [
   CKEditor5.paragraph.Paragraph,
   CKEditor5.selectAll.SelectAll,
   Alignment,
+  Anchor,
   AutoImage,
   AutoLink,
   Autoformat,
@@ -141,6 +143,7 @@ export const toolbarItems = normalizeToolbarItems([
   'superscript',
   'code',
   'link',
+  'anchor',
   'textPartLanguage',
   {button: 'fontSize', configOption: 'fontSize'},
   'fontFamily',
@@ -167,6 +170,7 @@ export const toolbarItems = normalizeToolbarItems([
 
 const pluginButtonMap = [
   {plugins: ['Alignment'], buttons: ['alignment']},
+  {plugins: ['Anchor'], buttons: ['anchor']},
   {
     plugins: [
       'AutoImage',
@@ -405,6 +409,33 @@ export const create = async function (element, config) {
     element,
     Object.assign({plugins}, config),
   );
+
+  // accessibility: https://github.com/craftcms/ckeditor/issues/74
+  editor.editing.view.change((writer) => {
+    const viewEditableRoot = editor.editing.view.document.getRoot();
+
+    // adjust aria-label
+    if (
+      typeof config.accessibleFieldName != 'undefined' &&
+      config.accessibleFieldName.length
+    ) {
+      let ariaLabel = viewEditableRoot.getAttribute('aria-label');
+      writer.setAttribute(
+        'aria-label',
+        config.accessibleFieldName + ', ' + ariaLabel,
+        viewEditableRoot,
+      );
+    }
+
+    // adjust aria-describedby
+    if (typeof config.describedBy != 'undefined' && config.describedBy.length) {
+      writer.setAttribute(
+        'aria-describedby',
+        config.describedBy,
+        viewEditableRoot,
+      );
+    }
+  });
 
   // Update the source element before the initial form value has been recorded,
   // in case the value needs to be normalized
