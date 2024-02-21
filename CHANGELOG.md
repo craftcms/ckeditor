@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed a bug where resized images weren’t getting updated `width` and `height` attributes. ([#165](https://github.com/craftcms/ckeditor/pull/165))
+
 ## 3.7.3 - 2024-02-08
 
 - Fixed a JavaScript error. ([#161](https://github.com/craftcms/ckeditor/issues/161))

@@ -46,6 +46,8 @@ class CkeditorController extends Controller
 
         return $this->asJson([
             'url' => $asset->getUrl($transform, false),
+            'width' => $asset->getWidth($transform),
+            'height' => $asset->getHeight($transform),
         ]);
     }
 }
