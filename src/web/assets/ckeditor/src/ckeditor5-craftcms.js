@@ -62,11 +62,13 @@ import {default as CraftImageInsertUI} from './image/imageinsert/imageinsertui';
 import {default as CraftLinkUI} from './link/linkui';
 import ImageTransform from './image/imagetransform';
 import {TextPartLanguage} from '@ckeditor/ckeditor5-language';
+import {Anchor} from '@northernco/ckeditor5-anchor-drupal';
 
 const allPlugins = [
   CKEditor5.paragraph.Paragraph,
   CKEditor5.selectAll.SelectAll,
   Alignment,
+  Anchor,
   AutoImage,
   AutoLink,
   Autoformat,
@@ -145,6 +147,7 @@ export const toolbarItems = normalizeToolbarItems([
   'superscript',
   'code',
   'link',
+  'anchor',
   'textPartLanguage',
   {button: 'fontSize', configOption: 'fontSize'},
   'fontFamily',
@@ -171,6 +174,7 @@ export const toolbarItems = normalizeToolbarItems([
 
 const pluginButtonMap = [
   {plugins: ['Alignment'], buttons: ['alignment']},
+  {plugins: ['Anchor'], buttons: ['anchor']},
   {
     plugins: [
       'AutoImage',

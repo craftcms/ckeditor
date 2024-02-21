@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added support for creating anchor links. ([#169](https://github.com/craftcms/ckeditor/discussions/169))
 - Improved accessibility for screen readers. ([#74](https://github.com/craftcms/ckeditor/issues/74), [#166](https://github.com/craftcms/ckeditor/pull/166))
 - Fixed a bug where resized images weren’t getting updated `width` and `height` attributes. ([#165](https://github.com/craftcms/ckeditor/pull/165))
 
