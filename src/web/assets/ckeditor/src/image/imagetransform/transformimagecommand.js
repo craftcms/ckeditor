@@ -97,6 +97,16 @@ export default class TransformImageCommand extends Command {
         model.change((writer) => {
           const src = data.url + hash;
           writer.setAttribute('src', src, element);
+
+          // update image width and height to match the transformed size;
+          // ckeditor insists on keeping those around:
+          // https://ckeditor.com/docs/ckeditor5/latest/features/images/images-overview.html#image-width-and-height-attributes
+          if (data.width) {
+            writer.setAttribute('width', data.width, element);
+          }
+          if (data.height) {
+            writer.setAttribute('height', data.height, element);
+          }
         });
       });
     }

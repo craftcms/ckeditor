@@ -1,5 +1,12 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Added support for creating anchor links. ([#169](https://github.com/craftcms/ckeditor/discussions/169))
+- Improved accessibility for screen readers. ([#74](https://github.com/craftcms/ckeditor/issues/74), [#166](https://github.com/craftcms/ckeditor/pull/166))
+- Fixed a bug where resized images weren’t getting updated `width` and `height` attributes. ([#165](https://github.com/craftcms/ckeditor/pull/165))
+- Fixed JavaScript warnings. ([#168](https://github.com/craftcms/ckeditor/issues/168), [#171](https://github.com/craftcms/ckeditor/pull/171))
+
 ## 4.0.0-beta.6 - 2024-02-15
 
 - CKEditor now requires Craft CMS 5.0.0-beta.2 or later.
@@ -28,6 +35,13 @@
 - Added the “Entry Types” field setting.
 - It’s now possible to edit the selected CKEditor config from field settings.
 - The CKEditor inspector is now shown for admin users, if a `CRAFT_SHOW_CKEDITOR_INSPECTOR` environment variable is set to `true`.
+
+## 3.8.0 - 2024-02-21
+
+- Added support for creating anchor links. ([#169](https://github.com/craftcms/ckeditor/discussions/169))
+- Improved accessibility for screen readers. ([#74](https://github.com/craftcms/ckeditor/issues/74), [#166](https://github.com/craftcms/ckeditor/pull/166))
+- Fixed a bug where resized images weren’t getting updated `width` and `height` attributes. ([#165](https://github.com/craftcms/ckeditor/pull/165))
+- Fixed JavaScript warnings. ([#168](https://github.com/craftcms/ckeditor/issues/168), [#171](https://github.com/craftcms/ckeditor/pull/171))
 
 ## 3.7.3 - 2024-02-08
 

@@ -38,11 +38,7 @@ import {HorizontalLine} from '@ckeditor/ckeditor5-horizontal-line';
 import {HtmlEmbed} from '@ckeditor/ckeditor5-html-embed';
 import {Indent, IndentBlock} from '@ckeditor/ckeditor5-indent';
 import {LinkEditing, AutoLink, LinkImage} from '@ckeditor/ckeditor5-link';
-import {
-  DocumentList,
-  DocumentListProperties,
-  TodoDocumentList,
-} from '@ckeditor/ckeditor5-list';
+import {List, ListProperties, TodoList} from '@ckeditor/ckeditor5-list';
 import {MediaEmbed, MediaEmbedToolbar} from '@ckeditor/ckeditor5-media-embed';
 import {PageBreak} from '@ckeditor/ckeditor5-page-break';
 import {PasteFromOffice} from '@ckeditor/ckeditor5-paste-from-office';
@@ -64,11 +60,13 @@ import ImageTransform from './image/imagetransform';
 import {TextPartLanguage} from '@ckeditor/ckeditor5-language';
 import CraftEntries from './entries/entries';
 import CKEditorInspector from '@ckeditor/ckeditor5-inspector';
+import {Anchor} from '@northernco/ckeditor5-anchor-drupal';
 
 const allPlugins = [
   CKEditor5.paragraph.Paragraph,
   CKEditor5.selectAll.SelectAll,
   Alignment,
+  Anchor,
   AutoImage,
   AutoLink,
   Autoformat,
@@ -76,8 +74,8 @@ const allPlugins = [
   Bold,
   Code,
   CodeBlock,
-  DocumentList,
-  DocumentListProperties,
+  List,
+  ListProperties,
   Essentials,
   FindAndReplace,
   Font,
@@ -112,7 +110,7 @@ const allPlugins = [
   TableToolbar,
   TableUI,
   TextPartLanguage,
-  TodoDocumentList,
+  TodoList,
   Underline,
   WordCount,
   CraftImageInsertUI,
@@ -148,6 +146,7 @@ export const toolbarItems = normalizeToolbarItems([
   'superscript',
   'code',
   'link',
+  'anchor',
   'textPartLanguage',
   {button: 'fontSize', configOption: 'fontSize'},
   'fontFamily',
@@ -175,6 +174,7 @@ export const toolbarItems = normalizeToolbarItems([
 
 const pluginButtonMap = [
   {plugins: ['Alignment'], buttons: ['alignment']},
+  {plugins: ['Anchor'], buttons: ['anchor']},
   {
     plugins: [
       'AutoImage',
@@ -197,7 +197,7 @@ const pluginButtonMap = [
   {plugins: ['Code'], buttons: ['code']},
   {plugins: ['CodeBlock'], buttons: ['codeBlock']},
   {
-    plugins: ['DocumentList', 'DocumentListProperties'],
+    plugins: ['List', 'ListProperties'],
     buttons: ['bulletedList', 'numberedList'],
   },
   {
@@ -236,7 +236,7 @@ const pluginButtonMap = [
     buttons: ['insertTable'],
   },
   {plugins: ['TextPartLanguage'], buttons: ['textPartLanguage']},
-  {plugins: ['TodoDocumentList'], buttons: ['todoList']},
+  {plugins: ['TodoList'], buttons: ['todoList']},
   {plugins: ['Underline'], buttons: ['underline']},
   {plugins: ['CraftEntries'], buttons: ['createEntry']},
 ];
@@ -396,6 +396,12 @@ export const create = async function (element, config) {
     removePlugins.push('ImageTransform');
   }
 
+  // remove MediaEmbedToolbar for now
+  // see: https://github.com/ckeditor/ckeditor5-react/issues/267
+  // and: https://github.com/ckeditor/ckeditor5/issues/9824
+  // for more info
+  removePlugins.push('MediaEmbedToolbar');
+
   if (removePlugins.length) {
     plugins = plugins.filter((p) => !removePlugins.includes(p.pluginName));
   }
@@ -413,12 +419,39 @@ export const create = async function (element, config) {
     CKEditorInspector.attach(editor);
   }
 
+  // accessibility: https://github.com/craftcms/ckeditor/issues/74
+  editor.editing.view.change((writer) => {
+    const viewEditableRoot = editor.editing.view.document.getRoot();
+
+    // adjust aria-label
+    if (
+      typeof config.accessibleFieldName != 'undefined' &&
+      config.accessibleFieldName.length
+    ) {
+      let ariaLabel = viewEditableRoot.getAttribute('aria-label');
+      writer.setAttribute(
+        'aria-label',
+        config.accessibleFieldName + ', ' + ariaLabel,
+        viewEditableRoot,
+      );
+    }
+
+    // adjust aria-describedby
+    if (typeof config.describedBy != 'undefined' && config.describedBy.length) {
+      writer.setAttribute(
+        'aria-describedby',
+        config.describedBy,
+        viewEditableRoot,
+      );
+    }
+  });
+
   // Update the source element before the initial form value has been recorded,
   // in case the value needs to be normalized
   editor.updateSourceElement();
 
   // Keep the source element updated with changes
-  editor.model.document.on('change', () => {
+  editor.model.document.on('change:data', () => {
     editor.updateSourceElement();
   });
 
