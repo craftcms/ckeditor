@@ -442,7 +442,7 @@ export const create = async function (element, config) {
   editor.updateSourceElement();
 
   // Keep the source element updated with changes
-  editor.model.document.on('change', () => {
+  editor.model.document.on('change:data', () => {
     editor.updateSourceElement();
   });
 
