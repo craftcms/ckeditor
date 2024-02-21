@@ -317,6 +317,8 @@ class Field extends HtmlField
         $baseConfig = [
             'defaultTransform' => $defaultTransform?->handle,
             'elementSiteId' => $element?->siteId,
+            'accessibleFieldName' => $this->_accessibleFieldName($element),
+            'describedBy' => $this->_describedBy($view),
             'findAndReplace' => [
                 'uiType' => 'dropdown',
             ],
@@ -909,5 +911,39 @@ JS,
         }
 
         return $purifierConfig;
+    }
+
+    /**
+     * Returns an accessible name for the field (to be plugged into CKEditor's main editing area aria-label).
+     *
+     * @param ElementInterface|null $element
+     * @return string
+     */
+    private function _accessibleFieldName(?ElementInterface $element = null): string
+    {
+        return Craft::t('site', $this->name) .
+        ($element?->getFieldLayout()?->getField($this->handle)?->required ? ' ' . Craft::t('site', 'Required') : '') .
+        ($this->getIsTranslatable($element) ? ' ' . $this->getTranslationDescription($element) : '');
+    }
+
+    /**
+     * Namespaces field's $describedBy value to be passed to the field.
+     *
+     * @param View $view
+     * @return string
+     */
+    private function _describedBy(View $view): string
+    {
+        if (!empty($this->describedBy)) {
+            $describedByArray = explode(' ', $this->describedBy);
+            $namespace = trim(preg_replace('/\[|\]/', '-', $view->getNamespace()), '-');
+            foreach ($describedByArray as $key => $item) {
+                $describedByArray[$key] = "$namespace-$item";
+            }
+
+            return implode(' ', $describedByArray);
+        }
+
+        return '';
     }
 }

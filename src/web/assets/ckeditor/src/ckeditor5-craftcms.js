@@ -404,6 +404,33 @@ export const create = async function (element, config) {
     Object.assign({plugins}, config),
   );
 
+  // accessibility: https://github.com/craftcms/ckeditor/issues/74
+  editor.editing.view.change((writer) => {
+    const viewEditableRoot = editor.editing.view.document.getRoot();
+
+    // adjust aria-label
+    if (
+      typeof config.accessibleFieldName != 'undefined' &&
+      config.accessibleFieldName.length
+    ) {
+      let ariaLabel = viewEditableRoot.getAttribute('aria-label');
+      writer.setAttribute(
+        'aria-label',
+        config.accessibleFieldName + ', ' + ariaLabel,
+        viewEditableRoot,
+      );
+    }
+
+    // adjust aria-describedby
+    if (typeof config.describedBy != 'undefined' && config.describedBy.length) {
+      writer.setAttribute(
+        'aria-describedby',
+        config.describedBy,
+        viewEditableRoot,
+      );
+    }
+  });
+
   // Update the source element before the initial form value has been recorded,
   // in case the value needs to be normalized
   editor.updateSourceElement();
