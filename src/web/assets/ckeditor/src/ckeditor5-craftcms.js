@@ -441,9 +441,16 @@ export const create = async function (element, config) {
   // in case the value needs to be normalized
   editor.updateSourceElement();
 
-  // Keep the source element updated with changes
   editor.model.document.on('change:data', () => {
+    // Keep the source element updated with changes
     editor.updateSourceElement();
+
+    // trigger autosave when buttons are clicked, e.g. list, bold
+    // see https://github.com/craftcms/ckeditor/issues/172 for more info
+    let $form = $(editor.sourceElement.form);
+    if ($form.length) {
+      $form.trigger('keyup');
+    }
   });
 
   // Track changes in the source mode
