@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 4.0.0-beta.7 - 2024-02-21
 
 - Added support for creating anchor links. ([#169](https://github.com/craftcms/ckeditor/discussions/169))
 - Improved accessibility for screen readers. ([#74](https://github.com/craftcms/ckeditor/issues/74), [#166](https://github.com/craftcms/ckeditor/pull/166))
