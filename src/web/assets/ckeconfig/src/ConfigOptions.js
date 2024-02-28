@@ -69,7 +69,6 @@ export default Garnish.Base.extend({
             lastJsValue = null;
             this.jsonEditor.getModel().setValue(json || '{\n  \n}');
             this.jsEditor.getModel().setValue('');
-
             break;
           case 'js':
             this.$jsonContainer.addClass('hidden');
@@ -238,7 +237,6 @@ export default Garnish.Base.extend({
   },
 
   replacer: function (key, value) {
-    // Filtering out properties
     if (typeof value === 'function') {
       return '__HAS__FUNCTION__';
     }
