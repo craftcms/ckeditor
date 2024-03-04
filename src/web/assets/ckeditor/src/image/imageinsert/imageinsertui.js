@@ -15,7 +15,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
 
   init() {
     // Make sure there are linked volumes
-    if (!this._linkOption) {
+    if (!this._imageOption) {
       console.warn(
         'Omitting the "image" CKEditor toolbar button, because there aren’t any permitted volumes.',
       );
@@ -31,9 +31,9 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     componentFactory.add('imageInsert', componentCreator);
   }
 
-  get _linkOption() {
-    const linkOptions = this.editor.config.get('linkOptions');
-    return linkOptions.find(
+  get _imageOption() {
+    const imageOptions = this.editor.config.get('imageOptions');
+    return imageOptions.find(
       (option) => option.elementType === 'craft\\elements\\Asset',
     );
   }
@@ -55,12 +55,12 @@ export default class CraftImageInsertUI extends ImageInsertUI {
   _showImageSelectModal() {
     const editor = this.editor;
     const config = editor.config;
-    const linkOption = this._linkOption;
+    const imageOption = this._imageOption;
 
-    Craft.createElementSelectorModal(linkOption.elementType, {
-      storageKey: `ckeditor:${this.pluginName}:${linkOption.elementType}`,
-      sources: linkOption.sources,
-      criteria: Object.assign({}, linkOption.criteria, {
+    Craft.createElementSelectorModal(imageOption.elementType, {
+      storageKey: `ckeditor:${this.pluginName}:${imageOption.elementType}`,
+      sources: imageOption.sources,
+      criteria: Object.assign({}, imageOption.criteria, {
         kind: 'image',
       }),
       defaultSiteId: config.get('elementSiteId'),

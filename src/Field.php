@@ -344,7 +344,8 @@ class Field extends HtmlField
                     'imageTextAlternative',
                 ],
             ],
-            'linkOptions' => $this->_linkOptions($element),
+            'imageOptions' => $this->_linkOptions($element),
+            'linkOptions' => $this->_linkOptions($element, true),
             'table' => [
                 'contentToolbar' => [
                     'tableRow',
@@ -642,15 +643,16 @@ JS,
      * - `criteria` (optional) – any specific element criteria parameters that should limit which elements the user can select
      *
      * @param ElementInterface|null $element The element the field is associated with, if there is one
+     * @param bool $volumesWithUrlsOnly Whether to only return volumes that have filesystems that have public URLs
      * @return array
      */
-    private function _linkOptions(?ElementInterface $element = null): array
+    private function _linkOptions(?ElementInterface $element = null, bool $volumesWithUrlsOnly = false): array
     {
         $linkOptions = [];
 
         $sectionSources = $this->_sectionSources($element);
         $categorySources = $this->_categorySources($element);
-        $volumeSources = $this->_volumeSources();
+        $volumeSources = $this->_volumeSources($volumesWithUrlsOnly);
 
         if (!empty($sectionSources)) {
             $linkOptions[] = [
@@ -782,9 +784,10 @@ JS,
     /**
      * Returns the available volume sources.
      *
+     * @param bool $withUrlsOnly Whether to only return volumes that have filesystems that have public URLs
      * @return string[]
      */
-    private function _volumeSources(): array
+    private function _volumeSources(bool $withUrlsOnly = false): array
     {
         if (!$this->availableVolumes) {
             return [];
@@ -801,8 +804,10 @@ JS,
             $volumes = $volumes->filter(fn(Volume $volume) => $userService->checkPermission("viewAssets:$volume->uid"));
         }
 
-        // only allow volumes that belong to FS that have public URLs
-        $volumes = $volumes->filter(fn(Volume $volume) => $volume->getFs()->hasUrls);
+        if ($withUrlsOnly) {
+            // only allow volumes that belong to FS that have public URLs
+            $volumes = $volumes->filter(fn(Volume $volume) => $volume->getFs()->hasUrls);
+        }
 
         $sources = $volumes
             ->map(fn(Volume $volume) => "volume:$volume->uid")
