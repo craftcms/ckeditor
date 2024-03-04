@@ -801,6 +801,9 @@ JS,
             $volumes = $volumes->filter(fn(Volume $volume) => $userService->checkPermission("viewAssets:$volume->uid"));
         }
 
+        // only allow volumes that belong to FS that have public URLs
+        $volumes = $volumes->filter(fn(Volume $volume) => $volume->getFs()->hasUrls);
+
         $sources = $volumes
             ->map(fn(Volume $volume) => "volume:$volume->uid")
             ->values()
