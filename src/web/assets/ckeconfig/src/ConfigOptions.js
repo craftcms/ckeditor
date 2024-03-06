@@ -35,21 +35,53 @@ export default Garnish.Base.extend({
 
     this.defaults = {};
 
+    let lastJsValue = null;
+
     new Craft.Listbox($languagePicker, {
       onChange: ($selectedOption) => {
         this.language = $selectedOption.data('language');
         switch (this.language) {
           case 'json':
+            // get the js value
+            lastJsValue = this.jsEditor.getModel().getValue();
+            // check if the js value has any functions in it
+            if (this.jsContainsFunctions(lastJsValue)) {
+              // if it does - show the confirmation dialogue
+              if (
+                !confirm(
+                  Craft.t(
+                    'ckeditor',
+                    'Your JavaScript config contains functions. If you switch to JSON, they will be lost. Would you like to continue?',
+                  ),
+                )
+              ) {
+                // if user cancels - go back to the previous option (js)
+                let listbox = $languagePicker.data('listbox');
+                listbox.$options.not('[data-language="json"]').trigger('click');
+                break;
+              }
+            }
+            // if user confirms that they want to proceed, or we don't have functions in the js value,
+            // go ahead and switch
             this.$jsonContainer.removeClass('hidden');
             this.$jsContainer.addClass('hidden');
-            const json = this.js2json(this.jsEditor.getModel().getValue());
+            const json = this.js2json(lastJsValue);
+            lastJsValue = null;
             this.jsonEditor.getModel().setValue(json || '{\n  \n}');
             this.jsEditor.getModel().setValue('');
             break;
           case 'js':
             this.$jsonContainer.addClass('hidden');
             this.$jsContainer.removeClass('hidden');
-            const js = this.json2js(this.jsonEditor.getModel().getValue());
+            let js;
+            // if we have the last remembered js value, it means we're switching back after cancelled confirmation,
+            // so let's use it
+            if (lastJsValue !== null) {
+              js = lastJsValue;
+              lastJsValue = null;
+            } else {
+              js = this.json2js(this.jsonEditor.getModel().getValue());
+            }
             this.jsEditor.getModel().setValue(js || 'return {\n  \n}');
             this.jsonEditor.getModel().setValue('');
             break;
@@ -204,6 +236,27 @@ export default Garnish.Base.extend({
     this.defaults[setting] = schema.$defs[defName].default;
   },
 
+  replacer: function (key, value) {
+    if (typeof value === 'function') {
+      return '__HAS__FUNCTION__';
+    }
+    return value;
+  },
+
+  jsContainsFunctions: function (js) {
+    let config = this.getValidJsonConfig(js);
+    if (config === false) {
+      return true;
+    }
+
+    let json = JSON.stringify(config, this.replacer, 2);
+    if (json.match(/__HAS__FUNCTION__/)) {
+      return true;
+    }
+
+    return false;
+  },
+
   config2json: function (config) {
     let json = JSON.stringify(config, null, 2);
     if (json === '{}') {
@@ -212,7 +265,7 @@ export default Garnish.Base.extend({
     return json;
   },
 
-  js2json: function (js) {
+  getValidJsonConfig: function (js) {
     const m = (js || '').match(/return\s*(\{[\w\W]*})/);
     if (!m) {
       return false;
@@ -225,6 +278,17 @@ export default Garnish.Base.extend({
       // oh well
       return false;
     }
+
+    return config;
+  },
+
+  js2json: function (js) {
+    let config = this.getValidJsonConfig(js);
+
+    if (config === false) {
+      return false;
+    }
+
     return this.config2json(config);
   },
 
