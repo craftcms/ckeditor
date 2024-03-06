@@ -344,6 +344,8 @@ class Field extends HtmlField
                     'imageTextAlternative',
                 ],
             ],
+            'assetSources' => $this->_assetSources(),
+            'assetSelectionCriteria' => $this->_assetSelectionCriteria(),
             'linkOptions' => $this->_linkOptions($element),
             'table' => [
                 'contentToolbar' => [
@@ -650,7 +652,7 @@ JS,
 
         $sectionSources = $this->_entrySources($element);
         $categorySources = $this->_categorySources($element);
-        $volumeSources = $this->_assetSources();
+        $volumeSources = $this->_assetSources(true);
 
         if (!empty($sectionSources)) {
             $linkOptions[] = [
@@ -673,16 +675,12 @@ JS,
         }
 
         if (!empty($volumeSources)) {
-            $criteria = [];
-            if ($this->showUnpermittedFiles) {
-                $criteria['uploaderId'] = null;
-            }
             $linkOptions[] = [
                 'label' => Craft::t('ckeditor', 'Link to an asset'),
                 'elementType' => Asset::class,
                 'refHandle' => Asset::refHandle(),
                 'sources' => $volumeSources,
-                'criteria' => $criteria,
+                'criteria' => $this->_assetSelectionCriteria(),
             ];
         }
 
@@ -782,9 +780,10 @@ JS,
     /**
      * Returns the available asset sources.
      *
+     * @param bool $withUrlsOnly Whether to only return volumes that have filesystems that have public URLs
      * @return string[]
      */
-    private function _assetSources(): array
+    private function _assetSources(bool $withUrlsOnly = false): array
     {
         if (!$this->availableVolumes) {
             return [];
@@ -801,6 +800,11 @@ JS,
             $volumes = $volumes->filter(fn(Volume $volume) => $userService->checkPermission("viewAssets:$volume->uid"));
         }
 
+        if ($withUrlsOnly) {
+            // only allow volumes that belong to FS that have public URLs
+            $volumes = $volumes->filter(fn(Volume $volume) => $volume->getFs()->hasUrls);
+        }
+
         $sources = $volumes
             ->map(fn(Volume $volume) => "volume:$volume->uid")
             ->values()
@@ -813,6 +817,20 @@ JS,
         }
 
         return $sources;
+    }
+
+    /**
+     * Returns the asset selection criteria.
+     *
+     * @return array
+     */
+    private function _assetSelectionCriteria(): array
+    {
+        $criteria = [];
+        if ($this->showUnpermittedFiles) {
+            $criteria['uploaderId'] = null;
+        }
+        return $criteria;
     }
 
     /**
