@@ -5,6 +5,7 @@
 - CKEditor config edit pages now warn when switching the Config Options setting from JavaScript to JSON if the JavaScript code contains any functions. ([#152](https://github.com/craftcms/ckeditor/issues/152), [#180](https://github.com/craftcms/ckeditor/pull/180))
 - Fixed a bug where the “Link to an asset” option was showing up when there weren’t any available volumes with URLs. ([#179](https://github.com/craftcms/ckeditor/issues/179))
 - Fixed a bug where an error occurred when editing an unsaved element with a CKEditor field. ([#181](https://github.com/craftcms/ckeditor/issues/181))
+- Fixed a bug where “New entry” menus weren’t listing entry types in the field-defined order. ([#185](https://github.com/craftcms/ckeditor/issues/185))
 
 ## 4.0.0-beta.7 - 2024-02-21
 

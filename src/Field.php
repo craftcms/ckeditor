@@ -1061,7 +1061,6 @@ JS,
             ],
             $this->getEntryTypes(),
         );
-        usort($entryTypeOptions, fn(array $a, array $b) => $a['label'] <=> $b['label']);
 
         return $entryTypeOptions;
     }
