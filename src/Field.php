@@ -882,7 +882,7 @@ JS,
             // (https://github.com/craftcms/ckeditor/issues/96)
             $value = $this->_normalizeFigures($value);
 
-            $value = $this->_prepNestedEntriesForDisplay($value, $element->siteId, $static);
+            $value = $this->_prepNestedEntriesForDisplay($value, $element?->siteId, $static);
         }
 
         return parent::prepValueForInput($value, $element);
@@ -1074,11 +1074,11 @@ JS,
      * If it's a static request
      *
      * @param string $value
-     * @param int $elementSiteId
+     * @param int|null $elementSiteId
      * @param bool $static
      * @return string
      */
-    private function _prepNestedEntriesForDisplay(string $value, int $elementSiteId, bool $static = false): string
+    private function _prepNestedEntriesForDisplay(string $value, ?int $elementSiteId, bool $static = false): string
     {
         [$entryIds, $markers] = $this->findEntries($value, true);
 
