@@ -648,9 +648,9 @@ JS,
     {
         $linkOptions = [];
 
-        $sectionSources = $this->_sectionSources($element);
+        $sectionSources = $this->_entrySources($element);
         $categorySources = $this->_categorySources($element);
-        $volumeSources = $this->_volumeSources();
+        $volumeSources = $this->_assetSources();
 
         if (!empty($sectionSources)) {
             $linkOptions[] = [
@@ -706,12 +706,12 @@ JS,
     }
 
     /**
-     * Returns the available section sources.
+     * Returns the available entry sources.
      *
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      * @return array
      */
-    private function _sectionSources(?ElementInterface $element = null): array
+    private function _entrySources(?ElementInterface $element = null): array
     {
         $sources = [];
         $sections = Craft::$app->getSections()->getAllSections();
@@ -780,11 +780,11 @@ JS,
     }
 
     /**
-     * Returns the available volume sources.
+     * Returns the available asset sources.
      *
      * @return string[]
      */
-    private function _volumeSources(): array
+    private function _assetSources(): array
     {
         if (!$this->availableVolumes) {
             return [];
