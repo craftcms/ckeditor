@@ -344,8 +344,9 @@ class Field extends HtmlField
                     'imageTextAlternative',
                 ],
             ],
-            'imageOptions' => $this->_linkOptions($element),
-            'linkOptions' => $this->_linkOptions($element, true),
+            'assetSources' => $this->_assetSources(),
+            'assetSelectionCriteria' => $this->_assetSelectionCriteria(),
+            'linkOptions' => $this->_linkOptions($element),
             'table' => [
                 'contentToolbar' => [
                     'tableRow',
@@ -643,16 +644,15 @@ JS,
      * - `criteria` (optional) – any specific element criteria parameters that should limit which elements the user can select
      *
      * @param ElementInterface|null $element The element the field is associated with, if there is one
-     * @param bool $volumesWithUrlsOnly Whether to only return volumes that have filesystems that have public URLs
      * @return array
      */
-    private function _linkOptions(?ElementInterface $element = null, bool $volumesWithUrlsOnly = false): array
+    private function _linkOptions(?ElementInterface $element = null): array
     {
         $linkOptions = [];
 
-        $sectionSources = $this->_sectionSources($element);
+        $sectionSources = $this->_entrySources($element);
         $categorySources = $this->_categorySources($element);
-        $volumeSources = $this->_volumeSources($volumesWithUrlsOnly);
+        $volumeSources = $this->_assetSources(true);
 
         if (!empty($sectionSources)) {
             $linkOptions[] = [
@@ -675,16 +675,12 @@ JS,
         }
 
         if (!empty($volumeSources)) {
-            $criteria = [];
-            if ($this->showUnpermittedFiles) {
-                $criteria['uploaderId'] = null;
-            }
             $linkOptions[] = [
                 'label' => Craft::t('ckeditor', 'Link to an asset'),
                 'elementType' => Asset::class,
                 'refHandle' => Asset::refHandle(),
                 'sources' => $volumeSources,
-                'criteria' => $criteria,
+                'criteria' => $this->_assetSelectionCriteria(),
             ];
         }
 
@@ -708,12 +704,12 @@ JS,
     }
 
     /**
-     * Returns the available section sources.
+     * Returns the available entry sources.
      *
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      * @return array
      */
-    private function _sectionSources(?ElementInterface $element = null): array
+    private function _entrySources(?ElementInterface $element = null): array
     {
         $sources = [];
         $sections = Craft::$app->getSections()->getAllSections();
@@ -782,12 +778,12 @@ JS,
     }
 
     /**
-     * Returns the available volume sources.
+     * Returns the available asset sources.
      *
      * @param bool $withUrlsOnly Whether to only return volumes that have filesystems that have public URLs
      * @return string[]
      */
-    private function _volumeSources(bool $withUrlsOnly = false): array
+    private function _assetSources(bool $withUrlsOnly = false): array
     {
         if (!$this->availableVolumes) {
             return [];
@@ -821,6 +817,20 @@ JS,
         }
 
         return $sources;
+    }
+
+    /**
+     * Returns the asset selection criteria.
+     *
+     * @return array
+     */
+    private function _assetSelectionCriteria(): array
+    {
+        $criteria = [];
+        if ($this->showUnpermittedFiles) {
+            $criteria['uploaderId'] = null;
+        }
+        return $criteria;
     }
 
     /**
