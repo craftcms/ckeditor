@@ -464,18 +464,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
-    {
-        if (!$this->isCpRequest()) {
-            $value = $this->prepValueForInput($value, $element);
-        }
-
-        return parent::normalizeValue($value, $element);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value instanceof HtmlFieldData) {
