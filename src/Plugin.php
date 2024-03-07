@@ -8,9 +8,12 @@
 namespace craft\ckeditor;
 
 use Craft;
+use craft\base\Element;
 use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
+use craft\elements\NestedElementManager;
 use craft\events\AssetBundleEvent;
+use craft\events\ModelEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\services\Fields;
@@ -85,6 +88,55 @@ class Plugin extends \craft\base\Plugin
                 }
             }
         });
+
+        // keep track of which elements we're already in the middle of working on,
+        // so we don't end up redundantly maintaining nested elements
+        $activeElements = [];
+
+        Event::on(Element::class, Element::EVENT_AFTER_PROPAGATE, function(ModelEvent $event) use (&$activeElements) {
+            /** @var Element $element */
+            $element = $event->sender;
+            if (isset($activeElements[$element->id])) {
+                return;
+            }
+            $activeElements[$element->id] = true;
+            foreach ($this->entryManagers($element) as $entryManager) {
+                $entryManager->maintainNestedElements($element, $event->isNew);
+            }
+            unset($activeElements[$element->id]);
+        });
+
+        Event::on(Element::class, Element::EVENT_BEFORE_DELETE, function(ModelEvent $event) {
+            /** @var Element $element */
+            $element = $event->sender;
+            foreach ($this->entryManagers($element) as $entryManager) {
+                // Delete any entries that primarily belong to this element
+                $entryManager->deleteNestedElements($element, $element->hardDelete);
+            }
+        });
+
+        Event::on(Element::class, Element::EVENT_AFTER_RESTORE, function(Event $event) {
+            /** @var Element $element */
+            $element = $event->sender;
+            foreach ($this->entryManagers($element) as $entryManager) {
+                $entryManager->restoreNestedElements($element);
+            }
+        });
+    }
+
+    /**
+     * @param Element $element
+     * @return NestedElementManager[]
+     */
+    private function entryManagers(Element $element): array
+    {
+        $entryManagers = [];
+        foreach ($element->getFieldLayout()?->getCustomFields() as $field) {
+            if ($field instanceof Field && !isset($entryManagers[$field->id])) {
+                $entryManagers[$field->id] = Field::entryManager($field);
+            }
+        }
+        return array_values($entryManagers);
     }
 
     public function getCkeConfigs(): CkeConfigs
