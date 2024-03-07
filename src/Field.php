@@ -7,10 +7,10 @@
 
 namespace craft\ckeditor;
 
-use Closure;
 use Craft;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
+use craft\base\FieldInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
 use craft\ckeditor\events\DefineLinkOptionsEvent;
@@ -100,6 +100,11 @@ class Field extends HtmlField implements ElementContainerFieldInterface
     public const EVENT_MODIFY_CONFIG = 'modifyConfig';
 
     /**
+     * @var NestedElementManager[]
+     */
+    private static array $entryManagers = [];
+    
+    /**
      * @inheritdoc
      */
     public static function displayName(): string
@@ -131,6 +136,181 @@ class Field extends HtmlField implements ElementContainerFieldInterface
             ->sortBy('title')
             ->values()
             ->all();
+    }
+
+    /**
+     * Returns the nested element manager for a given CKEditor field.
+     *
+     * @param self $field
+     * @return NestedElementManager
+     * @since 4.0.0
+     */
+    public static function entryManager(self $field): NestedElementManager
+    {
+        if (!isset(self::$entryManagers[$field->id])) {
+            self::$entryManagers[$field->id] = $entryManager = new NestedElementManager(
+                Entry::class,
+                fn(ElementInterface $owner) => self::createEntryQuery($owner, $field),
+                [
+                    'field' => $field,
+                    'propagationMethod' => match ($field->translationMethod) {
+                        self::TRANSLATION_METHOD_NONE => PropagationMethod::All,
+                        self::TRANSLATION_METHOD_SITE => PropagationMethod::None,
+                        self::TRANSLATION_METHOD_SITE_GROUP => PropagationMethod::SiteGroup,
+                        self::TRANSLATION_METHOD_LANGUAGE => PropagationMethod::Language,
+                        self::TRANSLATION_METHOD_CUSTOM => PropagationMethod::Custom,
+                    },
+                    'propagationKeyFormat' => $field->translationKeyFormat,
+                    'criteria' => [
+                        'fieldId' => $field->id,
+                    ],
+                    'valueGetter' => function(ElementInterface $owner, bool $fetchAll = false) use ($field) {
+                        $entryIds = array_merge(...array_map(function(self $fieldInstance) use ($owner) {
+                            $value = $owner->getFieldValue($fieldInstance->handle);
+                            preg_match_all('/<craft-entry\s+data-entry-id="(\d+)"[^>]*>/i', $value, $matches);
+                            return array_map(fn($match) => (int)$match, $matches[1]);
+                        }, self::fieldInstances($owner, $field)));
+
+                        $query = self::createEntryQuery($owner, $field);
+                        $query->where(['in', 'elements.id', $entryIds]);
+                        if (!empty($entryIds)) {
+                            $query->orderBy(new FixedOrderExpression('elements.id', $entryIds, Craft::$app->getDb()));
+                        }
+
+                        return $query;
+                    },
+                    'valueSetter' => false,
+                ],
+            );
+            $entryManager->on(
+                NestedElementManager::EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS,
+                function(DuplicateNestedElementsEvent $event) use ($field) {
+                    self::afterDuplicateNestedElements($event, $field);
+                },
+            );
+            $entryManager->on(
+                NestedElementManager::EVENT_AFTER_CREATE_REVISIONS,
+                function(DuplicateNestedElementsEvent $event) use ($field) {
+                    self::afterCreateRevisions($event, $field);
+                },
+            );
+        }
+
+        return self::$entryManagers[$field->id];
+    }
+
+    private static function fieldInstances(ElementInterface $element, self $field): array
+    {
+        $customFields = $element->getFieldLayout()?->getCustomFields() ?? [];
+        return array_values(array_filter($customFields, fn(FieldInterface $f) => $f->id === $field->id));
+    }
+
+    private static function createEntryQuery(?ElementInterface $owner, self $field): EntryQuery
+    {
+        $query = Entry::find();
+
+        // Existing element?
+        if ($owner && $owner->id) {
+            $query->attachBehavior(self::class, new EventBehavior([
+                ElementQuery::EVENT_BEFORE_PREPARE => function(
+                    CancelableEvent $event,
+                    EntryQuery $query,
+                ) use ($owner) {
+                    $query->ownerId = $owner->id;
+
+                    // Clear out id=false if this query was populated previously
+                    if ($query->id === false) {
+                        $query->id = null;
+                    }
+
+                    // If the owner is a revision, allow revision entries to be returned as well
+                    if ($owner->getIsRevision()) {
+                        $query
+                            ->revisions(null)
+                            ->trashed(null);
+                    }
+                },
+            ], true));
+
+            // Prepare the query for lazy eager loading
+            $query->prepForEagerLoading($field->handle, $owner);
+        } else {
+            $query->id = false;
+        }
+
+        $query
+            ->fieldId($field->id)
+            ->siteId($owner->siteId ?? null);
+
+        return $query;
+    }
+
+    private static function afterDuplicateNestedElements(DuplicateNestedElementsEvent $event, self $field): void
+    {
+        $oldEntryIds = array_keys($event->newElementIds);
+        $newElementIds = array_values($event->newElementIds);
+        self::adjustFieldValues($event->target, $field, $oldEntryIds, $newElementIds, true);
+    }
+
+    private static function afterCreateRevisions(DuplicateNestedElementsEvent $event, self $field): void
+    {
+        $revisionOwners = [
+            $event->target,
+            ...$event->target->getLocalized()->status(null)->all(),
+        ];
+
+        $oldElementIds = array_keys($event->newElementIds);
+        $newElementIds = array_values($event->newElementIds);
+
+        foreach ($revisionOwners as $revisionOwner) {
+            self::adjustFieldValues($revisionOwner, $field, $oldElementIds, $newElementIds, false);
+        }
+    }
+
+    private static function adjustFieldValues(
+        ElementInterface $owner,
+        self $field,
+        array $oldEntryIds,
+        array $newEntryIds,
+        bool $propagate,
+    ): void {
+        if (empty($oldEntryIds) || $oldEntryIds === $newEntryIds) {
+            return;
+        }
+
+        $resave = false;
+
+        foreach (self::fieldInstances($owner, $field) as $fieldInstance) {
+            /** @var HtmlFieldData|null $oldValue */
+            $oldValue = $owner->getFieldValue($fieldInstance->handle);
+            $oldValue = $oldValue?->getRawContent();
+
+            if (!$oldValue) {
+                continue;
+            }
+
+            // and in the field value replace elementIds from original (duplicateOf) with elementIds from the new owner
+            $newValue = preg_replace_callback(
+                '/(<craft-entry\sdata-entry-id=")(\d+)("[^>]*>)/i',
+                function(array $match) use ($oldEntryIds, $newEntryIds) {
+                    $key = array_search($match[2], $oldEntryIds);
+                    if (isset($newEntryIds[$key])) {
+                        return $match[1] . $newEntryIds[$key] . $match[3];
+                    }
+                    return $match[1] . $match[2] . $match[3];
+                },
+                $oldValue,
+            );
+
+            if ($oldValue !== $newValue) {
+                $owner->setFieldValue($fieldInstance->handle, $newValue);
+                $resave = true;
+            }
+        }
+
+        if ($resave) {
+            Craft::$app->getElements()->saveElement($owner, false, $propagate, false);
+        }
     }
 
     /**
@@ -195,11 +375,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface
     private array $_entryTypes = [];
 
     /**
-     * @see entryManager()
-     */
-    private NestedElementManager $_entryManager;
-
-    /**
      * @inheritdoc
      */
     public function __construct($config = [])
@@ -228,14 +403,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface
         if ($this->wordLimit === 0) {
             $this->wordLimit = null;
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function isMultiInstance(): bool
-    {
-        return false;
     }
 
     /**
@@ -320,7 +487,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface
             return [Craft::$app->getSites()->getPrimarySite()->id];
         }
 
-        return $this->entryManager()->getSupportedSiteIds($owner);
+        return self::entryManager($this)->getSupportedSiteIds($owner);
     }
 
     /**
@@ -464,18 +631,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
-    {
-        if (!$this->isCpRequest()) {
-            $value = $this->prepValueForInput($value, $element);
-        }
-
-        return parent::normalizeValue($value, $element);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value instanceof HtmlFieldData) {
@@ -549,68 +704,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface
                 'allowOwnerRevisions' => true,
             ],
         ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterElementPropagate(ElementInterface $element, bool $isNew): void
-    {
-        $this->entryManager()->maintainNestedElements($element, $isNew);
-        parent::afterElementPropagate($element, $isNew);
-    }
-
-    /**
-     * Performs actions after the nested element has been duplicated.
-     *
-     * @param DuplicateNestedElementsEvent $event
-     */
-    public function afterDuplicateNestedElements(DuplicateNestedElementsEvent $event): void
-    {
-        $oldEntryIds = array_keys($event->newElementIds);
-        $newElementIds = array_values($event->newElementIds);
-        $this->_adjustFieldValue($event->target, $oldEntryIds, $newElementIds, true);
-    }
-
-    public function afterCreateRevisions(DuplicateNestedElementsEvent $event): void
-    {
-        $revisionOwners = [
-            $event->target,
-            ...$event->target->getLocalized()->status(null)->all(),
-        ];
-
-        $oldElementIds = array_keys($event->newElementIds);
-        $newElementIds = array_values($event->newElementIds);
-
-        foreach ($revisionOwners as $revisionOwner) {
-            $this->_adjustFieldValue($revisionOwner, $oldElementIds, $newElementIds, false);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeElementDelete(ElementInterface $element): bool
-    {
-        if (!parent::beforeElementDelete($element)) {
-            return false;
-        }
-
-        // Delete any entries that primarily belong to this element
-        $this->entryManager()->deleteNestedElements($element, $element->hardDelete);
-
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterElementRestore(ElementInterface $element): void
-    {
-        // Also restore any entries for this element
-        $this->entryManager()->restoreNestedElements($element);
-
-        parent::afterElementRestore($element);
     }
 
     /**
@@ -886,164 +979,6 @@ JS,
         }
 
         return parent::prepValueForInput($value, $element);
-    }
-
-    /**
-     * Instantiate and return the NestedElementManager
-     *
-     * @return NestedElementManager
-     */
-    private function entryManager(): NestedElementManager
-    {
-        if (!isset($this->_entryManager)) {
-            $this->_entryManager = new NestedElementManager(
-                Entry::class,
-                fn(ElementInterface $owner) => $this->createEntryQuery($owner),
-                [
-                    'field' => $this,
-                    'propagationMethod' => match ($this->translationMethod) {
-                        self::TRANSLATION_METHOD_NONE => PropagationMethod::All,
-                        self::TRANSLATION_METHOD_SITE => PropagationMethod::None,
-                        self::TRANSLATION_METHOD_SITE_GROUP => PropagationMethod::SiteGroup,
-                        self::TRANSLATION_METHOD_LANGUAGE => PropagationMethod::Language,
-                        self::TRANSLATION_METHOD_CUSTOM => PropagationMethod::Custom,
-                    },
-                    'propagationKeyFormat' => $this->translationKeyFormat,
-                    'criteria' => [
-                        'fieldId' => $this->id,
-                    ],
-                    'valueGetter' => $this->_entryManagerValueGetter(),
-                    'valueSetter' => false,
-                ],
-            );
-            $this->_entryManager->on(
-                NestedElementManager::EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS,
-                [$this, 'afterDuplicateNestedElements'],
-            );
-            $this->_entryManager->on(
-                NestedElementManager::EVENT_AFTER_CREATE_REVISIONS,
-                [$this, 'afterCreateRevisions'],
-            );
-        }
-
-        return $this->_entryManager;
-    }
-
-    /**
-     * Returns an array of entryIds that are present in the string (field value).
-     *
-     * @param string $string
-     * @return array
-     */
-    private function _getEntryIdsFromString(?string $string): array
-    {
-        if ($string === null) {
-            return [];
-        }
-
-        preg_match_all('/<craft-entry\sdata-entry-id="(\d+)"[^>]*>/is', $string, $matches);
-
-        return array_map(fn($match) => (int)$match, $matches[1]);
-    }
-
-    /**
-     * Used to get value via NestedElementManager->getValue();
-     *
-     * @return Closure
-     */
-    private function _entryManagerValueGetter(): Closure
-    {
-        return function(ElementInterface $owner, bool $fetchAll = false) {
-            $value = $owner->getFieldValue($this->handle);
-            $entryIds = $this->_getEntryIdsFromString($value);
-
-            $query = $this->createEntryQuery($owner);
-            $query->where(['in', 'elements.id', $entryIds]);
-            if (!empty($entryIds)) {
-                $query->orderBy(new FixedOrderExpression('elements.id', $entryIds, Craft::$app->getDb()));
-            }
-
-            return $query;
-        };
-    }
-
-    /**
-     * Adjusts owner element's CKE field value with updated nested element ids.
-     * E.g. on draft apply, propagation to a new site, revision creation etc
-     *
-     * @param ElementInterface $owner
-     * @param array $oldEntryIds
-     * @param array $newEntryIds
-     */
-    private function _adjustFieldValue(ElementInterface $owner, array $oldEntryIds, array $newEntryIds, bool $propagate): void
-    {
-        /** @var HtmlFieldData|null $oldValue */
-        $oldValue = $owner->getFieldValue($this->handle);
-        $oldValue = $oldValue?->getRawContent();
-
-        if (!$oldValue || empty($oldEntryIds) || $oldEntryIds === $newEntryIds) {
-            return;
-        }
-
-        // and in the field value replace elementIds from original (duplicateOf) with elementIds from the new owner
-        $newValue = preg_replace_callback(
-            '/(<craft-entry\sdata-entry-id=")(\d+)("[^>]*>)/i',
-            function(array $match) use ($oldEntryIds, $newEntryIds) {
-                $key = array_search($match[2], $oldEntryIds);
-                if (isset($newEntryIds[$key])) {
-                    return $match[1] . $newEntryIds[$key] . $match[3];
-                }
-                return $match[1] . $match[2] . $match[3];
-            },
-            $oldValue,
-        );
-
-        if ($oldValue !== $newValue) {
-            $owner->setFieldValue($this->handle, $newValue);
-            $owner->mergingCanonicalChanges = true;
-
-            Craft::$app->getElements()->saveElement($owner, false, $propagate, false);
-        }
-    }
-
-    private function createEntryQuery(?ElementInterface $owner): EntryQuery
-    {
-        $query = Entry::find();
-
-        // Existing element?
-        if ($owner && $owner->id) {
-            $query->attachBehavior(self::class, new EventBehavior([
-                ElementQuery::EVENT_BEFORE_PREPARE => function(
-                    CancelableEvent $event,
-                    EntryQuery $query,
-                ) use ($owner) {
-                    $query->ownerId = $owner->id;
-
-                    // Clear out id=false if this query was populated previously
-                    if ($query->id === false) {
-                        $query->id = null;
-                    }
-
-                    // If the owner is a revision, allow revision entries to be returned as well
-                    if ($owner->getIsRevision()) {
-                        $query
-                            ->revisions(null)
-                            ->trashed(null);
-                    }
-                },
-            ], true));
-
-            // Prepare the query for lazy eager loading
-            $query->prepForEagerLoading($this->handle, $owner);
-        } else {
-            $query->id = false;
-        }
-
-        $query
-            ->fieldId($this->id)
-            ->siteId($owner->siteId ?? null);
-
-        return $query;
     }
 
     /**
