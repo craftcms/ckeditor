@@ -273,6 +273,10 @@ class Field extends HtmlField implements ElementContainerFieldInterface
         array $newEntryIds,
         bool $propagate,
     ): void {
+        if (empty($oldEntryIds) || $oldEntryIds === $newEntryIds) {
+            return;
+        }
+
         $resave = false;
 
         foreach (self::fieldInstances($owner, $field) as $fieldInstance) {
@@ -280,7 +284,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface
             $oldValue = $owner->getFieldValue($fieldInstance->handle);
             $oldValue = $oldValue?->getRawContent();
 
-            if (!$oldValue || empty($oldEntryIds) || $oldEntryIds === $newEntryIds) {
+            if (!$oldValue) {
                 continue;
             }
 
