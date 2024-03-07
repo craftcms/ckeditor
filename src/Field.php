@@ -143,6 +143,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface
      *
      * @param self $field
      * @return NestedElementManager
+     * @since 4.0.0
      */
     public static function entryManager(self $field): NestedElementManager
     {
