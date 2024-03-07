@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 4.0.0-beta.8 - 2024-03-07
 
 - CKEditor fields now support multiple instances. ([#188](https://github.com/craftcms/ckeditor/pull/188))
 - CKEditor config edit pages now warn when switching the Config Options setting from JavaScript to JSON if the JavaScript code contains any functions. ([#152](https://github.com/craftcms/ckeditor/issues/152), [#180](https://github.com/craftcms/ckeditor/pull/180))
