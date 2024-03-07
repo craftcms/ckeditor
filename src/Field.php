@@ -281,7 +281,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface
             $oldValue = $oldValue?->getRawContent();
 
             if (!$oldValue || empty($oldEntryIds) || $oldEntryIds === $newEntryIds) {
-                return;
+                continue;
             }
 
             // and in the field value replace elementIds from original (duplicateOf) with elementIds from the new owner
