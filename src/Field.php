@@ -171,8 +171,10 @@ class Field extends HtmlField implements ElementContainerFieldInterface
                             return array_map(fn($match) => (int)$match, $matches[1]);
                         }, self::fieldInstances($owner, $field)));
 
-                        $query = self::createEntryQuery($owner, $field);
-                        $query->where(['in', 'elements.id', $entryIds]);
+                        $query = self::createEntryQuery($owner, $field)
+                            ->where(['in', 'elements.id', $entryIds])
+                            ->trashed(null);
+
                         if (!empty($entryIds)) {
                             $query->orderBy(new FixedOrderExpression('elements.id', $entryIds, Craft::$app->getDb()));
                         }
