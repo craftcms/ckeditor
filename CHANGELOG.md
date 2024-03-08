@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## 4.0.0-beta.9 - 2024-03-08
+
+- Fixed a bug where nested entries weren’t getting rendered in front-end output.
+
 ## 4.0.0-beta.8 - 2024-03-07
 
 - CKEditor fields now support multiple instances. ([#188](https://github.com/craftcms/ckeditor/pull/188))
