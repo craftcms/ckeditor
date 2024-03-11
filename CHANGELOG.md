@@ -4,6 +4,7 @@
 
 - CKEditor now requires Craft CMS 5.0.0-beta.7 or later.
 - Fixed a bug where nested entries were getting soft-deleted when their cards were cut from field values, but not restored when pasted back in.
+- Fixed an error that occurred when an element without a field layout was saved. ([#190](https://github.com/craftcms/ckeditor/issues/190))
 
 ## 4.0.0-beta.9 - 2024-03-08
 
