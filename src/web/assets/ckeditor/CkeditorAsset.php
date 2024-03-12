@@ -69,6 +69,7 @@ class CkeditorAsset extends BaseCkeditorPackageAsset
                 'New {type}',
             ]);
             $view->registerTranslations('ckeditor', [
+                'Entries cannot be copied between CKEditor fields.',
                 'Entry toolbar',
                 'Entry types list',
                 'Insert link',

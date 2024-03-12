@@ -65,6 +65,7 @@ import {Anchor} from '@northernco/ckeditor5-anchor-drupal';
 const allPlugins = [
   CKEditor5.paragraph.Paragraph,
   CKEditor5.selectAll.SelectAll,
+  CKEditor5.clipboard.Clipboard,
   Alignment,
   Anchor,
   AutoImage,
@@ -374,6 +375,8 @@ const headingShortcuts = function (editor, config) {
 
 export const pluginNames = () => allPlugins.map((p) => p.pluginName);
 
+let copyFromEditorId = null;
+
 export const create = async function (element, config) {
   let plugins = allPlugins;
   const removePlugins = [];
@@ -464,6 +467,41 @@ export const create = async function (element, config) {
   if (plugins.includes(Heading)) {
     headingShortcuts(editor, config);
   }
+
+  const documentView = editor.editing.view.document;
+
+  // on cut/copy/drag start - get editor id
+  // https://ckeditor.com/docs/ckeditor5/latest/framework/deep-dive/clipboard.html
+  documentView.on('clipboardOutput', (event, data) => {
+    // get the editor ID so that we can compare it on paste/drag stop
+    copyFromEditorId = editor.id;
+  });
+
+  // prevent pasting/dragging nested elements into different editor instance
+  documentView.on('clipboardInput', (event, data) => {
+    const dataTransfer = data.dataTransfer;
+    const content = dataTransfer.getData('text/html');
+
+    // if it's not html content, abort and let the clipboard feature handle the input
+    if (!content) {
+      return;
+    }
+
+    // if we're pasting nested element
+    if (content.startsWith('<craft-entry')) {
+      // and the copyFromEditorId is different to editor.id we're pasting into,
+      if (copyFromEditorId != editor.id) {
+        // prevent and show message
+        Craft.cp.displayError(
+          Craft.t(
+            'ckeditor',
+            'Entries cannot be copied between CKEditor fields.',
+          ),
+        );
+        event.stop();
+      }
+    }
+  });
 
   return editor;
 };
