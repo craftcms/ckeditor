@@ -10,11 +10,14 @@ namespace craft\ckeditor\controllers;
 use Craft;
 use craft\ckeditor\Field;
 use craft\elements\Asset;
+use craft\errors\InvalidElementException;
 use craft\fieldlayoutelements\CustomField;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use yii\web\ServerErrorHttpException;
+use Throwable;
 
 /**
  * CKEditor controller
@@ -88,6 +91,39 @@ class CkeditorController extends Controller
             'cardHtml' => $cardHtml,
             'headHtml' => $view->getHeadHtml(),
             'bodyHtml' => $view->getBodyHtml(),
+        ]);
+    }
+
+    /**
+     * Duplicate nested entry & return duplicate's ID
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws ServerErrorHttpException
+     */
+    public function actionDuplicateNestedEntry(): Response
+    {
+        $entryId = $this->request->getRequiredBodyParam('entryId');
+        $siteId = $this->request->getBodyParam('siteId');
+        $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId, [
+            'status' => null,
+            'revisions' => null,
+        ]);
+
+        if (!$entry) {
+            throw new BadRequestHttpException("Invalid entry ID: $entryId");
+        }
+
+        try {
+            $newEntry = Craft::$app->getElements()->duplicateElement($entry);
+        } catch (Throwable $e) {
+            return $this->asFailure(Craft::t('app', 'Couldn’t duplicate {type}.', [
+                'type' => $entry::lowerDisplayName(),
+            ]), ['additionalMessage' => $e->getMessage()]);
+        }
+
+        return $this->asJson([
+            'newEntryId' => $newEntry->id,
         ]);
     }
 }
