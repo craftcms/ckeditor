@@ -10,14 +10,13 @@ namespace craft\ckeditor\controllers;
 use Craft;
 use craft\ckeditor\Field;
 use craft\elements\Asset;
-use craft\errors\InvalidElementException;
 use craft\fieldlayoutelements\CustomField;
 use craft\web\Controller;
+use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
-use Throwable;
 
 /**
  * CKEditor controller
