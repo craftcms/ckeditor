@@ -94,11 +94,12 @@ class CkeditorController extends Controller
     }
 
     /**
-     * Duplicate nested entry & return duplicate's ID
+     * Duplicates a nested entry and returns the duplicate’s ID.
      *
      * @return Response
      * @throws BadRequestHttpException
      * @throws ServerErrorHttpException
+     * @since 4.0.0
      */
     public function actionDuplicateNestedEntry(): Response
     {
