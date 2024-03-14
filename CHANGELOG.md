@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed an error that could occur when editing an entry with nested CKEditor entries that used a soft-deleted entry type. ([#191](https://github.com/craftcms/ckeditor/issues/191))
+
 ## 4.0.0 - 2024-03-14
 
 - CKEditor now requires Craft CMS 5.0.0-beta.7 or later.
