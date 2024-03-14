@@ -1057,17 +1057,24 @@ JS,
             $entryId = $entryIds[$i];
             /** @var Entry|null $entry */
             $entry = $entries[$entryId] ?? null;
-            if (!$entry) {
+
+            if (!$entry || (!$isCpRequest && $entry->trashed)) {
                 $entryHtml = '';
             } elseif ($isCpRequest) {
-                $entryHtml = $this->getCardHtml($entry);
-                if (!$static) {
-                    $entryHtml = Html::tag('craft-entry', options: [
-                        'data' => [
-                            'entry-id' => $entryId,
-                            'card-html' => $entryHtml,
-                        ],
-                    ]);
+                try {
+                    $entryHtml = $this->getCardHtml($entry);
+
+                    if (!$static) {
+                        $entryHtml = Html::tag('craft-entry', options: [
+                            'data' => [
+                                'entry-id' => $entryId,
+                                'card-html' => $entryHtml,
+                            ],
+                        ]);
+                    }
+                } catch (\Throwable $e) {
+                    // this can happen e.g. when the entry type has been deleted
+                    $entryHtml = '';
                 }
             } else {
                 $entryHtml = $entry->render();
