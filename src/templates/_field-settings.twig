@@ -52,6 +52,16 @@
   data: {'error-key': 'entryTypes'},
 }) }}
 
+{{ forms.textField({
+  label: '“New” Button Label'|t('app'),
+  instructions: 'The text label for the entry creation button.'|t('app'),
+  id: 'create-button-label',
+  name: 'createButtonLabel',
+  value: field.createButtonLabel,
+  placeholder: defaultCreateButtonLabel,
+  errors: field.getErrors('createButtonLabel')
+}) }}
+
 <hr>
 
 <a class="fieldtoggle" data-target="assets">{{ 'Assets'|t('app') }}</a>

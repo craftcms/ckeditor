@@ -65,8 +65,6 @@ class CkeditorAsset extends BaseCkeditorPackageAsset
             $this->registerRefHandles($view);
             $view->registerTranslations('app', [
                 'Edit {type}',
-                'entry',
-                'New {type}',
             ]);
             $view->registerTranslations('ckeditor', [
                 'Entries cannot be copied between CKEditor fields.',

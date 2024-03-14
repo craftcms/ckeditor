@@ -116,9 +116,7 @@ export default class CraftEntriesUI extends Plugin {
 
     const dropdownView = createDropdown(locale);
     dropdownView.buttonView.set({
-      label: Craft.t('app', 'New {type}', {
-        type: Craft.t('app', 'entry'),
-      }),
+      label: editor.config.get('createButtonLabel'),
       tooltip: true,
       withText: true,
       //commandValue: null,

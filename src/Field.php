@@ -370,6 +370,12 @@ class Field extends HtmlField implements ElementContainerFieldInterface
     public bool $showUnpermittedFiles = false;
 
     /**
+     * @var string|null The “New entry” button label.
+     * @since 4.0.0
+     */
+    public ?string $createButtonLabel = null;
+
+    /**
      * @var EntryType[] The field’s available entry types
      * @see getEntryTypes()
      * @see setEntryTypes()
@@ -568,6 +574,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface
                     'value' => null,
                 ],
             ], $transformOptions),
+            'defaultCreateButtonLabel' => $this->defaultCreateButtonLabel(),
         ]);
     }
 
@@ -761,6 +768,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface
             'accessibleFieldName' => $this->_accessibleFieldName($element),
             'describedBy' => $this->_describedBy($view),
             'entryTypeOptions' => $this->_getEntryTypeOptions(),
+            'createButtonLabel' => $this->createButtonLabel(),
             'findAndReplace' => [
                 'uiType' => 'dropdown',
             ],
@@ -1069,6 +1077,21 @@ JS,
         }
 
         return $value;
+    }
+
+    private function createButtonLabel(): string
+    {
+        if (isset($this->createButtonLabel)) {
+            return Craft::t('site', $this->createButtonLabel);
+        }
+        return $this->defaultCreateButtonLabel();
+    }
+
+    private function defaultCreateButtonLabel(): string
+    {
+        return Craft::t('app', 'New {type}', [
+            'type' => Entry::lowerDisplayName(),
+        ]);
     }
 
     private function isCpRequest(): bool

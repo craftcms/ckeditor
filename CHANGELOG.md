@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added the “‘New’ Button Label” setting. ([#159](https://github.com/craftcms/ckeditor/discussions/159))
 - Copy/pasting nested entry cards now duplicates the nested entries. ([#186](https://github.com/craftcms/ckeditor/issues/186), [#192](https://github.com/craftcms/ckeditor/pull/192))
 - Fixed a bug where it was possible to copy/paste nested entry cards between CKEditor fields. ([#192](https://github.com/craftcms/ckeditor/pull/192))
 
