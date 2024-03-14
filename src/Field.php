@@ -1076,7 +1076,7 @@ JS,
                             ],
                         ]);
                     }
-                } catch (\Throwable $e) {
+                } catch (InvalidConfigException) {
                     // this can happen e.g. when the entry type has been deleted
                     $entryHtml = '';
                 }
