@@ -1,65 +1,14 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
-
-- Added the “‘New’ Button Label” field setting. ([#159](https://github.com/craftcms/ckeditor/discussions/159))
-- Copy/pasting nested entry cards now duplicates the nested entries. ([#186](https://github.com/craftcms/ckeditor/issues/186), [#192](https://github.com/craftcms/ckeditor/pull/192))
-- Fixed a bug where it was possible to copy/paste nested entry cards between CKEditor fields. ([#192](https://github.com/craftcms/ckeditor/pull/192))
-
-## 4.0.0-beta.10 - 2024-03-12
+## 4.0.0 - 2024-03-14
 
 - CKEditor now requires Craft CMS 5.0.0-beta.7 or later.
-- Fixed a bug where nested entries were getting soft-deleted when their cards were cut from field values, but not restored when pasted back in.
-- Fixed an error that occurred when an element without a field layout was saved. ([#190](https://github.com/craftcms/ckeditor/issues/190))
-
-## 4.0.0-beta.9 - 2024-03-08
-
-- Fixed a bug where nested entries weren’t getting rendered in front-end output.
-
-## 4.0.0-beta.8 - 2024-03-07
-
-- CKEditor fields now support multiple instances. ([#188](https://github.com/craftcms/ckeditor/pull/188))
-- CKEditor config edit pages now warn when switching the Config Options setting from JavaScript to JSON if the JavaScript code contains any functions. ([#152](https://github.com/craftcms/ckeditor/issues/152), [#180](https://github.com/craftcms/ckeditor/pull/180))
-- Added `craft\ckeditor\Field::entryManager()`.
-- Fixed a bug where the “Link to an asset” option was showing up when there weren’t any available volumes with URLs. ([#179](https://github.com/craftcms/ckeditor/issues/179))
-- Fixed a bug where an error occurred when editing an unsaved element with a CKEditor field. ([#181](https://github.com/craftcms/ckeditor/issues/181))
-- Fixed a bug where “New entry” menus weren’t listing entry types in the field-defined order. ([#185](https://github.com/craftcms/ckeditor/issues/185))
-
-## 4.0.0-beta.7 - 2024-02-21
-
-- Added support for creating anchor links. ([#169](https://github.com/craftcms/ckeditor/discussions/169))
-- Improved accessibility for screen readers. ([#74](https://github.com/craftcms/ckeditor/issues/74), [#166](https://github.com/craftcms/ckeditor/pull/166))
-- Fixed a bug where resized images weren’t getting updated `width` and `height` attributes. ([#165](https://github.com/craftcms/ckeditor/pull/165))
-- Fixed JavaScript warnings. ([#168](https://github.com/craftcms/ckeditor/issues/168), [#171](https://github.com/craftcms/ckeditor/pull/171))
-
-## 4.0.0-beta.6 - 2024-02-15
-
-- CKEditor now requires Craft CMS 5.0.0-beta.2 or later.
-- Added support for querying and mutating nested entries within CKEditor fields via GraphQL directly. ([craftcms/cms#14366](https://github.com/craftcms/cms/pull/14366))
-
-## 4.0.0-beta.5 - 2024-02-10
-
-- Fixed a bug where CKEditor field values were displaying as `[]` within element tables and cards, and GraphQL results. ([#163](https://github.com/craftcms/ckeditor/issues/163), [#164](https://github.com/craftcms/ckeditor/issues/164))
-
-## 4.0.0-beta.4 - 2024-02-08
-
-- Added the `IndentBlock` CKEditor plugin, enabling the “Increase indent” and “Decrease indent” buttons to work on headings and paragraphs. ([#156](https://github.com/craftcms/ckeditor/pull/156))
-
-## 4.0.0-beta.3 - 2024-02-07
-
-- Fixed a bug where it was possible to change nested entries to types that the field wasn’t configured with. ([#157](https://github.com/craftcms/ckeditor/issues/157))
-
-## 4.0.0-beta.2 - 2024-02-07
-
-- Fixed a SQL error that occurred when creating a nested entry on PostgreSQL.
-
-## 4.0.0-beta.1 - 2024-02-06
-
-- CKEditor now requires Craft CMS 5.0.0-beta.1 or later.
 - Added the ability to embed nested entries within CKEditor fields.
 - Added the “Entry Types” field setting.
+- Added the “‘New’ Button Label” field setting. ([#159](https://github.com/craftcms/ckeditor/discussions/159))
 - It’s now possible to edit the selected CKEditor config from field settings.
 - The CKEditor inspector is now shown for admin users, if a `CRAFT_SHOW_CKEDITOR_INSPECTOR` environment variable is set to `true`.
+- Added `craft\ckeditor\Field::entryManager()`.
 
 ## 3.8.0 - 2024-02-21
 

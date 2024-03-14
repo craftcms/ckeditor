@@ -89,21 +89,14 @@ class Plugin extends \craft\base\Plugin
             }
         });
 
-        // keep track of which elements we're already in the middle of working on,
-        // so we don't end up redundantly maintaining nested elements
-        $activeElements = [];
-
-        Event::on(Element::class, Element::EVENT_AFTER_PROPAGATE, function(ModelEvent $event) use (&$activeElements) {
+        Event::on(Element::class, Element::EVENT_AFTER_PROPAGATE, function(ModelEvent $event) {
             /** @var Element $element */
             $element = $event->sender;
-            if (isset($activeElements[$element->id])) {
-                return;
+            if (!$element->resaving) {
+                foreach ($this->entryManagers($element) as $entryManager) {
+                    $entryManager->maintainNestedElements($element, $event->isNew);
+                }
             }
-            $activeElements[$element->id] = true;
-            foreach ($this->entryManagers($element) as $entryManager) {
-                $entryManager->maintainNestedElements($element, $event->isNew);
-            }
-            unset($activeElements[$element->id]);
         });
 
         Event::on(Element::class, Element::EVENT_BEFORE_DELETE, function(ModelEvent $event) {
