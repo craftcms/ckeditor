@@ -65,6 +65,7 @@ import {Anchor} from '@northernco/ckeditor5-anchor-drupal';
 const allPlugins = [
   CKEditor5.paragraph.Paragraph,
   CKEditor5.selectAll.SelectAll,
+  CKEditor5.clipboard.Clipboard,
   Alignment,
   Anchor,
   AutoImage,
@@ -372,6 +373,118 @@ const headingShortcuts = function (editor, config) {
   }
 };
 
+/**
+ * Handle cut, copy, paste, drag
+ * Prevents pasting/dragging nested entries to another editor instance.
+ * Duplicates nested entries on copy+paste
+ *
+ * @param editor
+ */
+const handleClipboard = function (editor) {
+  let copyFromEditorId = null;
+  const documentView = editor.editing.view.document;
+  const clipboardPipelinePlugin = editor.plugins.get('ClipboardPipeline');
+
+  // on cut/copy/drag start - get editor id
+  // https://ckeditor.com/docs/ckeditor5/latest/framework/deep-dive/clipboard.html
+  documentView.on('clipboardOutput', (event, data) => {
+    // get the editor ID so that we can compare it on paste/drag stop
+    copyFromEditorId = editor.id;
+  });
+
+  // https://ckeditor.com/docs/ckeditor5/latest/api/module_clipboard_clipboardpipeline-ClipboardPipeline.html
+  // handle pasting/dragging nested elements
+  documentView.on('clipboardInput', async (event, data) => {
+    let pasteContent = data.dataTransfer.getData('text/html');
+
+    // if it's not html content, abort and let the clipboard feature handle the input
+    if (!pasteContent) {
+      return;
+    }
+
+    // if what we're pasting contains nested element(s)
+    if (pasteContent.includes('<craft-entry')) {
+      // if the copyFromEditorId is different to editor.id we're pasting into,
+      if (copyFromEditorId != editor.id) {
+        // prevent and show message
+        Craft.cp.displayError(
+          Craft.t(
+            'ckeditor',
+            'Entries cannot be copied between CKEditor fields.',
+          ),
+        );
+        event.stop();
+      } else {
+        // if we're dragging - carry on
+        // if we're pasting - maybe duplicate
+        if (data.method == 'paste') {
+          let duplicatedContent = pasteContent;
+          let errors = false;
+          const siteId = Craft.siteId;
+          const editorData = editor.getData();
+          const matches = [
+            ...pasteContent.matchAll(/data-entry-id="([0-9]+)/g),
+          ];
+
+          // Stop the event emitter from calling further callbacks for this event interaction
+          // we need to get duplicates and update the content snippet that's being pasted in
+          // before we can call further events
+          event.stop();
+
+          // for each nested entry ID we found
+          for (let i = 0; i < matches.length; i++) {
+            let entryId = null;
+            if (matches[i][1]) {
+              entryId = matches[i][1];
+            }
+
+            if (entryId !== null) {
+              // check if this entry ID is in the field already
+              const regex = new RegExp('data-entry-id="' + entryId + '"');
+              if (!regex.test(editorData)) {
+                // if it's not - carry on
+              } else {
+                // duplicate it and replace the string's ID with the new one
+                await Craft.sendActionRequest(
+                  'POST',
+                  'ckeditor/ckeditor/duplicate-nested-entry',
+                  {
+                    data: {
+                      entryId: entryId,
+                      siteId: siteId,
+                    },
+                  },
+                )
+                  .then((response) => {
+                    if (response.data.newEntryId) {
+                      duplicatedContent = duplicatedContent.replace(
+                        entryId,
+                        response.data.newEntryId,
+                      );
+                    }
+                  })
+                  .catch((e) => {
+                    errors = true;
+                    Craft.cp.displayError(e?.response?.data?.message);
+                    console.error(e?.response?.data?.additionalMessage);
+                  });
+              }
+            }
+          }
+
+          // only update the data.content and fire further callbacks if we didn't encounter errors;
+          if (!errors) {
+            // data.content is what's passed down the chain to be pasted in
+            data.content = editor.data.htmlProcessor.toView(duplicatedContent);
+            // and now we can fire further callbacks for this event interaction
+            clipboardPipelinePlugin.fire('inputTransformation', data);
+          }
+        }
+      }
+    }
+  });
+};
+
 export const pluginNames = () => allPlugins.map((p) => p.pluginName);
 
 export const create = async function (element, config) {
@@ -464,6 +577,8 @@ export const create = async function (element, config) {
   if (plugins.includes(Heading)) {
     headingShortcuts(editor, config);
   }
+
+  handleClipboard(editor);
 
   return editor;
 };

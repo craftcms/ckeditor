@@ -1,5 +1,10 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Copy/pasting nested entry cards now duplicates the nested entries. ([#186](https://github.com/craftcms/ckeditor/issues/186), [#192](https://github.com/craftcms/ckeditor/pull/192))
+- Fixed a bug where it was possible to copy/paste nested entry cards between CKEditor fields. ([#192](https://github.com/craftcms/ckeditor/pull/192))
+
 ## 4.0.0-beta.10 - 2024-03-12
 
 - CKEditor now requires Craft CMS 5.0.0-beta.7 or later.
