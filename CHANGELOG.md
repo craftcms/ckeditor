@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed an error that could occur when editing an entry with nested CKEditor entries that used a soft-deleted entry type. ([#191](https://github.com/craftcms/ckeditor/issues/191))
+- Fixed a bug where revisions weren’t getting created for the owner element, when CKEditor fields were edited. ([#194](https://github.com/craftcms/ckeditor/pull/194))
 
 ## 4.0.0 - 2024-03-14
 
