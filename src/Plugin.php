@@ -96,6 +96,20 @@ class Plugin extends \craft\base\Plugin
                 foreach ($this->entryManagers($element) as $entryManager) {
                     $entryManager->maintainNestedElements($element, $event->isNew);
                 }
+            } else {
+                // if we are resaving, and it's an owner element,
+                // and all other "standard" conditions are met (see Entry::_shouldSaveRevision())
+                // create the revision
+                if (
+                    $element->getPrimaryOwnerId() === null &&
+                    $element->id &&
+                    !$element->propagating &&
+                    !$element->getIsDraft() &&
+                    !$element->getIsRevision() &&
+                    $element->getSection()?->enableVersioning
+                ) {
+                    Craft::$app->getRevisions()->createRevision($element);
+                }
             }
         });
 
