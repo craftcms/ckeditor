@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
+use craft\elements\Entry;
 use craft\elements\NestedElementManager;
 use craft\events\AssetBundleEvent;
 use craft\events\ModelEvent;
@@ -101,6 +102,8 @@ class Plugin extends \craft\base\Plugin
                 // and all other "standard" conditions are met (see Entry::_shouldSaveRevision())
                 // create the revision
                 if (
+                    $element instanceof Entry &&
+                    !Craft::$app->getRequest()->isConsoleRequest &&
                     $element->getPrimaryOwnerId() === null &&
                     $element->id &&
                     !$element->propagating &&
