@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## 3.8.2 - 2024-03-19
+
+- Fixed a bug where the “Insert image” toolbar button wasn’t available when editing CKEditor configs. ([#195](https://github.com/craftcms/ckeditor/issues/195))
+
 ## 3.8.1 - 2024-03-06
 
 - CKEditor config edit pages now warn when switching the Config Options setting from JavaScript to JSON if the JavaScript code contains any functions. ([#152](https://github.com/craftcms/ckeditor/issues/152), [#180](https://github.com/craftcms/ckeditor/pull/180))

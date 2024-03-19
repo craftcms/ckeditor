@@ -35,6 +35,7 @@ export default Garnish.Base.extend({
     CKEditor5.craftcms
       .create(editorElement, {
         linkOptions: [{elementType: 'craft\\elements\\Asset'}],
+        assetSources: ['*'],
       })
       .then((editor) => {
         const cf = editor.ui.componentFactory;
