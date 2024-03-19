@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed a bug where the “Insert image” toolbar button wasn’t available when editing CKEditor configs. ([#195](https://github.com/craftcms/ckeditor/issues/195))
+
 ## 4.0.1 - 2024-03-15
 
 - Fixed an error that could occur when editing an entry with nested CKEditor entries that used a soft-deleted entry type. ([#191](https://github.com/craftcms/ckeditor/issues/191))
