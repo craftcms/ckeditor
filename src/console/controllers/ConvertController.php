@@ -210,7 +210,7 @@ class ConvertController extends Controller
                     $ckeConfig = $this->generateCkeConfig($configName, $redactorConfig, $ckeConfigs, $fieldSettingsByConfig);
                     $this->stdout(PHP_EOL);
                 } else {
-                    $basename = ($field['settings']['redactorConfig'] ?? null) ?: 'Default.json';
+                    $basename = ($field['settings']['redactorConfig'] ?? $field['settings']['configFile'] ?? null) ?: 'Default.json';
                     if (!isset($configMap[$basename])) {
                         $this->stdout(PHP_EOL . PHP_EOL);
                         $configMap[$basename] = $this->resolveRedactorConfig($basename, $ckeConfigs, $fieldSettingsByConfig);
@@ -230,6 +230,7 @@ class ConvertController extends Controller
 
                 unset(
                     $field['settings']['cleanupHtml'],
+                    $field['settings']['configFile'],
                     $field['settings']['configSelectionMode'],
                     $field['settings']['manualConfig'],
                     $field['settings']['redactorConfig'],
