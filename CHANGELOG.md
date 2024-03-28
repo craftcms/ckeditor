@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 4.0.3 - 2024-03-28
 
 - Fixed a bug where the `ckeditor/convert` command wasn’t checking for and removing the old `configFile` Redactor setting. ([#199](https://github.com/craftcms/ckeditor/issues/199))
 
