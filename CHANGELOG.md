@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed a bug where the `ckeditor/convert` command wasn’t checking for and removing the old `configFile` Redactor setting. ([#199](https://github.com/craftcms/ckeditor/issues/199))
+
 ## 4.0.2 - 2024-03-19
 
 - Fixed a bug where the “Insert image” toolbar button wasn’t available when editing CKEditor configs. ([#195](https://github.com/craftcms/ckeditor/issues/195))
