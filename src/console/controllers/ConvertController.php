@@ -14,12 +14,16 @@ use craft\ckeditor\Field;
 use craft\ckeditor\Plugin;
 use craft\console\Controller;
 use craft\errors\OperationAbortedException;
+use craft\fields\Matrix;
 use craft\fields\MissingField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
+use craft\models\EntryType;
+use craft\models\ImageTransform;
+use craft\models\Volume;
 use craft\services\ProjectConfig;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -158,6 +162,227 @@ class ConvertController extends Controller
         'customstyles',
         'linkclass',
     ];
+
+    public function actionMatrix(string $fieldHandle): int
+    {
+        $field = Craft::$app->getFields()->getFieldByHandle($fieldHandle);
+
+        if (!$field) {
+            $this->stdout("No Matrix field with original handle `$fieldHandle` found.", Console::FG_YELLOW);
+            $this->stdout(PHP_EOL);
+            return ExitCode::OK;
+        }
+
+        if (!$field instanceof Matrix) {
+            $this->stdout("Field `$fieldHandle` is not a Matrix field.", Console::FG_YELLOW);
+            $this->stdout(PHP_EOL);
+            return ExitCode::OK;
+        }
+
+        // we have the field
+        $entryTypes = array_column($field->getEntryTypes(), null, 'handle');
+        $this->stdout('   ');
+
+        // if you want to choose content for your CKEfield along with nesting everything else in entries.
+        if ($this->confirm($this->markdownToAnsi("Does your `$field->name` matrix field contain a text field that should be used as text content of your converted CKEditor field HTML? (this can be a plain text field or a CKEditor field)"))) {
+            $chosenEntryTypeHandle = $this->select(
+                '   Which Entry Type (formerly block) contains this field?',
+                array_map(fn(EntryType $entryType) => $entryType->name, $entryTypes)
+            );
+
+            $chosenEntryType = $entryTypes[$chosenEntryTypeHandle];
+            $fields = array_column($chosenEntryType->getFieldLayout()?->getCustomFields() ?? [], null, 'handle');
+            $chosenFieldHandle = $this->select(
+                '   Which field would you like to use as text content of your converted CKEditor field?',
+                array_map(fn(\craft\base\Field $field) => $field->name, $fields)
+            );
+            $chosenField = $fields[$chosenFieldHandle];
+
+            // TODO: create new ET
+            $this->stdout($chosenField->name);
+        } else {
+            // if you "just" want to nest all content in entries in the CKEditor field
+            $this->stdout(PHP_EOL);
+            $this->stdout('   ');
+            $this->stdout("Your new CKEditor field will contain all the nested entries that your matrix field has and no copy. You can add text to it after conversion.");
+        }
+
+        $this->stdout(PHP_EOL);
+        $this->stdout(PHP_EOL);
+        $this->stdout("CKEditor field settings", Console::FG_GREEN);
+        $this->stdout(PHP_EOL);
+
+        $this->ckeFieldSettings();
+
+        $this->stdout("Starting conversion", Console::FG_GREEN);
+
+
+
+        $this->stdout(PHP_EOL);
+
+        return ExitCode::OK;
+    }
+
+    private function ckeFieldSettings(): void
+    {
+        $settings = [
+            'ckeConfig' => null,
+            'searchable' => false,
+            'wordLimit' => false,
+            'showWordCount' => false,
+            'enableSourceEditingForNonAdmins' => false,
+            'availableVolumes' => [],
+            'availableTransforms' => [],
+            'defaultTransform' => '',
+            'showUnpermittedVolumes' => false,
+            'showUnpermittedFiles' => false,
+        ];
+
+
+        $this->ckeConfigs = Plugin::getInstance()->getCkeConfigs();
+        $ckeConfigs = array_column($this->ckeConfigs->getAll(), null, 'name');
+        foreach ($ckeConfigs as $key => $value) {
+            unset($ckeConfigs[$key]);
+            $ckeConfigs[StringHelper::slugify($key)] = $value;
+        }
+
+        // todo: adjust for when we grab cke from
+        $chosenConfigName = $this->select('   Which CKEditor config should be used for this field?', array_map(fn(CkeConfig $ckeConfig) => $ckeConfig->name, $ckeConfigs));
+        $settings['ckeConfig'] = $ckeConfigs[$chosenConfigName]->uid;
+
+        if ($this->confirm("   Use this field’s values as search keywords?")) {
+            $settings['searchable'] = true;
+        }
+
+        if ($this->confirm("Would you like to set the “Word limit” for this field?")) {
+            $settings['wordLimit'] = (int)$this->prompt(
+                "Number of the words to limit to, e.g. 500:",
+                [
+                    'required' => true,
+                    'validator' => function($input, &$error) {
+                        if (!is_numeric($input)) {
+                            $error = "Please provide a number.";
+                            return false;
+                        }
+                        return true;
+                    }
+                ]
+            );
+        }
+
+        if ($this->confirm("Show word count?")) {
+            $settings['showWordCount'] = true;
+        }
+
+        if ($this->confirm("Show the “Source” button for non-admin users?")) {
+            $settings['enableSourceEditingForNonAdmins'] = true;
+        }
+
+        $settings['availableVolumes'] = $this->getAvailableVolumes();
+
+        $transforms = array_column( Craft::$app->getImageTransforms()->getAllTransforms(), null, 'handle');
+        $settings['availableTransforms'] = $this->getAvailableTransforms($transforms);
+        $settings['defaultTransform'] = $this->getDefaultTransform($transforms);
+
+        if ($this->confirm("Do you want to Show unpermitted volumes?")) {
+            $settings['showUnpermittedVolumes'] = true;
+        }
+
+        if ($this->confirm("Do you want to Show unpermitted files?")) {
+            $settings['showUnpermittedFiles'] = true;
+        }
+
+        // todo - make me work
+//        $ckeFieldInstance = new Field();
+//        $purifierConfigs = $ckeFieldInstance->configOptions('htmlpurifier');
+//        $htmlPurifierConfig = $this->select(
+//            "Which “HTML Purifier Config” should be used?",
+//            $purifierConfigs,
+//        );
+
+    }
+
+    private function getAvailableVolumes(): string|array
+    {
+        $chosenVolumeHandles = [];
+        $chosenVolumes = [];
+        $volumes = array_column(Craft::$app->getVolumes()->getAllVolumes(), null, 'handle');
+        do {
+            $volumeHandle = $this->select(
+                "Which volumes should be available in the CKEditor field?",
+                ['all' => '*'] + array_map(fn(Volume $volume) => $volume->name, $volumes),
+                ''
+            );
+
+            if ($volumeHandle !== '') {
+                $chosenVolumeHandles[] = $volumeHandle;
+            }
+        } while (!empty($volumeHandle) && $volumeHandle !== 'all' && count($chosenVolumeHandles) < count($volumes));
+
+        $chosenVolumeHandles = array_unique($chosenVolumeHandles);
+        if (in_array('all', $chosenVolumeHandles)) {
+            $chosenVolumes = '*';
+        } else {
+            $chosenVolumes = array_filter($volumes, function(Volume $volume) use ($chosenVolumeHandles) {
+                if (in_array($volume->handle, $chosenVolumeHandles)) {
+                    return $volume->uid;
+                }
+
+                return false;
+            });
+        }
+        // todo - I'm temporary
+        $this->stdout(implode(", ", $chosenVolumeHandles));
+
+        return $chosenVolumes;
+    }
+    private function getAvailableTransforms(array $transforms): string|array
+    {
+        $chosenTransformHandles = [];
+        $chosenTransforms = [];
+        do {
+            $transformHandle = $this->select(
+                "Which transforms should be available in the CKEditor field?",
+                ['all' => '*'] + array_map(fn(ImageTransform $transform) => $transform->name, $transforms),
+                ''
+            );
+
+            if ($transformHandle !== '') {
+                $chosenTransformHandles[] = $transformHandle;
+            }
+        } while (!empty($transformHandle) && $transformHandle !== 'all' && count($chosenTransformHandles) < count($transforms));
+
+        $chosenTransformHandles = array_unique($chosenTransformHandles);
+        if (in_array('all', $chosenTransformHandles)) {
+            $chosenTransforms = '*';
+        } else {
+            $chosenTransforms = array_filter($transforms, function(ImageTransform $transform) use ($chosenTransformHandles) {
+                if (in_array($transform->handle, $chosenTransformHandles)) {
+                    return $transform->uid;
+                }
+
+                return false;
+            });
+        }
+        // todo - I'm temporary
+        $this->stdout(implode(", ", $chosenTransformHandles));
+
+        return $chosenTransforms;
+    }
+
+    private function getDefaultTransform(array $transforms): string
+    {
+        $defaultTransformHandle = $this->select(
+            "Which transform should be used as a default?",
+            ['none' => ''] + array_map(fn(ImageTransform $transform) => $transform->name, $transforms),
+        );
+
+        if ($defaultTransformHandle == '') {
+            return '';
+        }
+
+        return $transforms[$defaultTransformHandle]->uid;
+    }
 
     /**
      * Converts Redactor fields to CKEditor
