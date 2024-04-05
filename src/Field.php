@@ -1007,6 +1007,11 @@ JS,
             $value = $this->_prepNestedEntriesForDisplay($value, $element?->siteId, $static);
         }
 
+        // @see https://github.com/craftcms/ckeditor/issues/197
+        if (!$this->isCpRequest()) {
+            $value = Craft::$app->getElements()->parseRefs($value, $element?->siteId);
+        }
+
         return parent::prepValueForInput($value, $element);
     }
 
