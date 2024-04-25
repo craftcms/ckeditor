@@ -650,7 +650,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if (!$this->isCpRequest()) {
-            $value = $this->prepValueForInput($value, $element);
+            $value = $this->_prepNestedEntriesForDisplay($value, $element?->siteId);
         }
 
         return parent::normalizeValue($value, $element);
@@ -1003,8 +1003,6 @@ JS,
             // Redactor to CKEditor syntax for <figure>
             // (https://github.com/craftcms/ckeditor/issues/96)
             $value = $this->_normalizeFigures($value);
-
-            $value = $this->_prepNestedEntriesForDisplay($value, $element?->siteId, $static);
         }
 
         return parent::prepValueForInput($value, $element);
