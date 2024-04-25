@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 4.0.4 - 2024-04-25
 
 - Fixed a bug where front-end links included element reference URL fragments. ([#197](https://github.com/craftcms/ckeditor/issues/197))
 - Fixed a bug where `resave` commands would replace nested entries with their rendered output in stored CKEditor field values. ([#211](https://github.com/craftcms/ckeditor/issues/211))
