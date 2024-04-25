@@ -649,7 +649,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
-        if (!$this->isCpRequest()) {
+        if (is_string($value) && $this->isSiteRequest()) {
             $value = $this->_prepNestedEntriesForDisplay($value, $element?->siteId);
         }
 
@@ -1047,7 +1047,7 @@ JS,
             return $value;
         }
 
-        $isCpRequest = $this->isCpRequest();
+        $isSiteRequest = $this->isSiteRequest();
         $entries = Entry::find()
             ->id($entryIds)
             ->siteId($elementSiteId)
@@ -1063,9 +1063,11 @@ JS,
             /** @var Entry|null $entry */
             $entry = $entries[$entryId] ?? null;
 
-            if (!$entry || (!$isCpRequest && $entry->trashed)) {
+            if (!$entry || ($isSiteRequest && $entry->trashed)) {
                 $entryHtml = '';
-            } elseif ($isCpRequest) {
+            } elseif ($isSiteRequest) {
+                $entryHtml = $entry->render();
+            } else {
                 try {
                     $entryHtml = $this->getCardHtml($entry);
 
@@ -1081,8 +1083,6 @@ JS,
                     // this can happen e.g. when the entry type has been deleted
                     $entryHtml = '';
                 }
-            } else {
-                $entryHtml = $entry->render();
             }
 
             $value = str_replace($marker, $entryHtml, $value);
@@ -1106,11 +1106,11 @@ JS,
         ]);
     }
 
-    private function isCpRequest(): bool
+    private function isSiteRequest(): bool
     {
         return (
-            Craft::$app->getRequest()->getIsCpRequest() &&
-            !Craft::$app->controller instanceof GraphqlController
+            Craft::$app->getRequest()->getIsSiteRequest() ||
+            Craft::$app->controller instanceof GraphqlController
         );
     }
 
