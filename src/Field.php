@@ -1063,7 +1063,7 @@ JS,
             /** @var Entry|null $entry */
             $entry = $entries[$entryId] ?? null;
 
-            if (!$entry || ($isSiteRequest && $entry->trashed)) {
+            if (!$entry || ($isSiteRequest && $entry->trashed && !Craft::$app->getRequest()->getIsPreview())) {
                 $entryHtml = '';
             } elseif ($isSiteRequest) {
                 $entryHtml = $entry->render();
