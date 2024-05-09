@@ -1003,6 +1003,11 @@ JS,
             // Redactor to CKEditor syntax for <figure>
             // (https://github.com/craftcms/ckeditor/issues/96)
             $value = $this->_normalizeFigures($value);
+
+            // without this, nested entries won't show in revisions
+            if ($static) {
+                $value = $this->_prepNestedEntriesForDisplay($value, $element?->siteId, $static);
+            }
         }
 
         return parent::prepValueForInput($value, $element);
