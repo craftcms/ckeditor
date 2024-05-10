@@ -72,6 +72,7 @@ class CkeditorController extends Controller
         $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId, [
             'status' => null,
             'revisions' => null,
+            'trashed' => null,
         ]);
 
         if (!$entry) {
