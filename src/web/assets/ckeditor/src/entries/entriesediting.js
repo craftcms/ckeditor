@@ -165,7 +165,6 @@ export default class CraftEntriesEditing extends Plugin {
 
     // if there's no cardHtml attribute for any reason - get the markup from Craft
     // this can happen e.g. if you make changes in the source mode and then come back to the editing mode
-    // or when using e.g. 'undo' command
     if (cardHtml == null) {
       const entryId = modelItem.getAttribute('entryId') ?? null;
       const siteId = Craft.siteId;
