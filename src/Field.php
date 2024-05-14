@@ -171,7 +171,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface
                             return array_map(fn($match) => (int)$match, $matches[1]);
                         }, self::fieldInstances($owner, $field)));
 
-                        $query = self::createEntryQuery($owner, $field)
+                        $query = self::createEntryQuery($owner, $field, false)
                             ->where(['in', 'elements.id', $entryIds])
                             ->trashed(null);
 
@@ -207,7 +207,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface
         return array_values(array_filter($customFields, fn(FieldInterface $f) => $f->id === $field->id));
     }
 
-    private static function createEntryQuery(?ElementInterface $owner, self $field): EntryQuery
+    private static function createEntryQuery(?ElementInterface $owner, self $field, bool $setOwner = true): EntryQuery
     {
         $query = Entry::find();
 
@@ -217,8 +217,10 @@ class Field extends HtmlField implements ElementContainerFieldInterface
                 ElementQuery::EVENT_BEFORE_PREPARE => function(
                     CancelableEvent $event,
                     EntryQuery $query,
-                ) use ($owner) {
-                    $query->ownerId = $owner->id;
+                ) use ($owner, $setOwner) {
+                    if ($setOwner) {
+                        $query->ownerId = $owner->id;
+                    }
 
                     // Clear out id=false if this query was populated previously
                     if ($query->id === false) {
@@ -1003,6 +1005,10 @@ JS,
             // Redactor to CKEditor syntax for <figure>
             // (https://github.com/craftcms/ckeditor/issues/96)
             $value = $this->_normalizeFigures($value);
+
+            // without this, nested entries won't show in revisions;
+            // not including it, also causes a layout shift when editing in the CP
+            $value = $this->_prepNestedEntriesForDisplay($value, $element?->siteId, $static);
         }
 
         return parent::prepValueForInput($value, $element);

@@ -147,7 +147,7 @@ export default class CraftEntriesEditing extends Plugin {
    * @returns {Promise<unknown>|Promise<T | string>}
    * @private
    */
-  _getCardHtml(modelItem) {
+  async _getCardHtml(modelItem) {
     let cardHtml = modelItem.getAttribute('cardHtml') ?? null;
 
     let parents = $(this.editor.sourceElement).parents('.field');
@@ -155,11 +155,26 @@ export default class CraftEntriesEditing extends Plugin {
 
     // if there's no cardHtml attribute for any reason - get the markup from Craft
     // this can happen e.g. if you make changes in the source mode and then come back to the editing mode
-    if (cardHtml == null) {
-      const entryId = modelItem.getAttribute('entryId') ?? null;
-      const siteId = Craft.siteId;
+    if (cardHtml) {
+      return {cardHtml};
+    }
 
-      return Craft.sendActionRequest(
+    const entryId = modelItem.getAttribute('entryId') ?? null;
+    const siteId = Craft.siteId;
+
+    try {
+      // Let the element editor handle the autosave first, in case the nested entry
+      // is soft-deleted and needs to be restored.
+      const editor = this.editor;
+      const $editorContainer = $(editor.ui.view.element).closest(
+        'form,.lp-editor-container',
+      );
+      const elementEditor = $editorContainer.data('elementEditor');
+      if (elementEditor) {
+        await elementEditor.checkForm();
+      }
+
+      const {data} = await Craft.sendActionRequest(
         'POST',
         'ckeditor/ckeditor/entry-card-html',
         {
@@ -169,32 +184,25 @@ export default class CraftEntriesEditing extends Plugin {
             layoutElementUid: layoutElementUid,
           },
         },
-      )
-        .then(({data}) => {
-          return data;
-        })
-        .catch(({response}) => {
-          console.error(response.data);
+      );
+      return data;
+    } catch (e) {
+      console.error(e?.response?.data);
 
-          let cardHtml =
-            '<div class="element card">' +
-            '<div class="card-content">' +
-            '<div class="card-heading">' +
-            '<div class="label error">' +
-            '<span>' +
-            response.data.message +
-            '</span>' +
-            '</div>' +
-            '</div>' +
-            '</div>' +
-            '</div>';
+      const cardHtml =
+        '<div class="element card">' +
+        '<div class="card-content">' +
+        '<div class="card-heading">' +
+        '<div class="label error">' +
+        '<span>' +
+        (e?.response?.data?.message || 'An unknown error occurred.') +
+        '</span>' +
+        '</div>' +
+        '</div>' +
+        '</div>' +
+        '</div>';
 
-          return {cardHtml: cardHtml};
-        });
-    } else {
-      return new Promise((resolve, reject) => {
-        resolve({cardHtml});
-      });
+      return {cardHtml};
     }
   }
 }
