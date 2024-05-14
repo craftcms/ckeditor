@@ -163,6 +163,17 @@ export default class CraftEntriesEditing extends Plugin {
     const siteId = Craft.siteId;
 
     try {
+      // Let the element editor handle the autosave first, in case the nested entry
+      // is soft-deleted and needs to be restored.
+      const editor = this.editor;
+      const $editorContainer = $(editor.ui.view.element).closest(
+        'form,.lp-editor-container',
+      );
+      const elementEditor = $editorContainer.data('elementEditor');
+      if (elementEditor) {
+        await elementEditor.checkForm();
+      }
+
       const {data} = await Craft.sendActionRequest(
         'POST',
         'ckeditor/ckeditor/entry-card-html',
