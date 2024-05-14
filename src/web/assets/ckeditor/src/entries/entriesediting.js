@@ -90,16 +90,6 @@ export default class CraftEntriesEditing extends Plugin {
           class: 'cke-entry-card',
           'data-entry-id': entryId,
         });
-
-        // ensure ownership
-        // this is primarily needed for when undoing removal of a nested entry
-        Craft.sendActionRequest('POST', 'ckeditor/ckeditor/ensure-ownership', {
-          data: {
-            ownerId: $(this.editor.sourceElement).parent().data('elementId'),
-            entryId: entryId,
-          },
-        });
-
         addCardHtmlToContainer(modelItem, viewWriter, cardContainer);
 
         // Enable widget handling on an entry element inside the editing view.

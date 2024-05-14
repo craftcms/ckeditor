@@ -9,11 +9,8 @@ namespace craft\ckeditor\controllers;
 
 use Craft;
 use craft\ckeditor\Field;
-use craft\db\Table;
 use craft\elements\Asset;
-use craft\elements\Entry;
 use craft\fieldlayoutelements\CustomField;
-use craft\helpers\Db;
 use craft\web\Controller;
 use Throwable;
 use yii\web\BadRequestHttpException;
@@ -58,60 +55,6 @@ class CkeditorController extends Controller
             'width' => $asset->getWidth($transform),
             'height' => $asset->getHeight($transform),
         ]);
-    }
-
-    /**
-     * Ensure ownership data for the nested element exists in the elements_owners table
-     *
-     * @return bool
-     * @throws BadRequestHttpException
-     * @throws Throwable
-     * @throws \yii\db\Exception
-     */
-    public function actionEnsureOwnership(): bool
-    {
-        $entryId = $this->request->getRequiredBodyParam('entryId');
-        $ownerId = $this->request->getRequiredBodyParam('ownerId');
-
-        $entry = Craft::$app->getEntries()->getEntryById($entryId, null, [
-            'status' => null,
-            'trashed' => null,
-        ]);
-
-        if (!$entry) {
-            throw new BadRequestHttpException("Invalid entry ID: $entryId");
-        }
-
-        $owner = Craft::$app->getEntries()->getEntryById($ownerId, null, [
-            'status' => null,
-            'revisions' => null,
-            'trashed' => null,
-        ]);
-
-        if ($owner !== null) {
-            if (!$owner->isProvisionalDraft) {
-                $user = Craft::$app->getUser()->getIdentity();
-
-                $provisional = Entry::find()
-                    ->provisionalDrafts()
-                    ->draftOf($owner->id)
-                    ->draftCreator($user->id)
-                    ->site('*')
-                    ->status(null)
-                    ->one();
-                if ($provisional) {
-                    $owner = $provisional;
-                }
-            }
-
-            Db::upsert(Table::ELEMENTS_OWNERS, [
-                'elementId' => $entry->id,
-                'ownerId' => $owner->id,
-                'sortOrder' => $entry->getSortOrder() ?? 1,
-            ], false, updateTimestamp: false);
-        }
-
-        return true;
     }
 
     /**
