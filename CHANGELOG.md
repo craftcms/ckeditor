@@ -1,5 +1,10 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed a bug where nested entries weren’t visible when viewing revisions. ([#227](https://github.com/craftcms/ckeditor/issues/227))
+- Fixed a bug where nested entry cards were getting rendered after page load. ([#221](https://github.com/craftcms/ckeditor/discussions/221))
+
 ## 4.0.4 - 2024-04-25
 
 - Fixed a bug where front-end links included element reference URL fragments. ([#197](https://github.com/craftcms/ckeditor/issues/197))
