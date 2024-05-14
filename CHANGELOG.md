@@ -5,7 +5,8 @@
 - Fixed a bug where nested entries weren’t visible when viewing revisions. ([#227](https://github.com/craftcms/ckeditor/issues/227))
 - Fixed a bug where nested entry cards were getting rendered after page load. ([#221](https://github.com/craftcms/ckeditor/discussions/221))
 - Fixed a bug where nested entry cards were getting labelled as invalid, for newly-created, then deleted, then restored entries. ([#224](https://github.com/craftcms/ckeditor/issues/224), [#228](https://github.com/craftcms/ckeditor/pull/228))
-- Fixed a bug where deleting and restoring an existing nested entry wouldn’t restore the entry’s ownership data. ([#228](https://github.com/craftcms/ckeditor/pull/228)) 
+- Fixed a bug where deleting and restoring an existing nested entry wouldn’t restore the entry’s ownership data. ([#228](https://github.com/craftcms/ckeditor/pull/228))
+- Fixed a bug where soft-deleted entries weren’t getting rendered on front-end preview requests. ([#223](https://github.com/craftcms/ckeditor/pull/223))
 
 ## 4.0.4 - 2024-04-25
 
