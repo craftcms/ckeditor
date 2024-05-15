@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed a bug where newly-created nested entries were getting soft-deleted. ([#229](https://github.com/craftcms/ckeditor/issues/229))
+
 ## 4.0.5 - 2024-05-14
 
 - Fixed a bug where nested entries weren’t visible when viewing revisions. ([#227](https://github.com/craftcms/ckeditor/issues/227))

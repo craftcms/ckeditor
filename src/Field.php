@@ -171,7 +171,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface
                             return array_map(fn($match) => (int)$match, $matches[1]);
                         }, self::fieldInstances($owner, $field)));
 
-                        $query = self::createEntryQuery($owner, $field, false)
+                        $query = self::createEntryQuery($owner, $field)
                             ->where(['in', 'elements.id', $entryIds])
                             ->trashed(null);
 
@@ -179,7 +179,40 @@ class Field extends HtmlField implements ElementContainerFieldInterface
                             $query->orderBy(new FixedOrderExpression('elements.id', $entryIds, Craft::$app->getDb()));
                         }
 
-                        return $query;
+                        $entries = $query->collect();
+
+                        // make sure all the expected entries came back
+                        $queriedEntryIds = [];
+                        foreach ($entries as $entry) {
+                            $queriedEntryIds[$entry->id] = true;
+                        }
+
+                        $missingEntryIds = [];
+                        foreach ($entryIds as $entryId) {
+                            if (!isset($queriedEntryIds[$entryId])) {
+                                $missingEntryIds[] = $entryId;
+                            }
+                        }
+
+                        if (!empty($missingEntryIds)) {
+                            // this could happen if any entries had been removed from the content,
+                            // so their ownership had been deleted from the draft.
+                            $missingEntries = self::createEntryQuery($owner, $field, false)
+                                ->where(['in', 'elements.id', $missingEntryIds])
+                                ->trashed(null)
+                                ->all();
+
+                            if (!empty($missingEntries)) {
+                                $maxSortOrder = $entries->max(fn(Entry $entry) => $entry->getSortOrder()) ?? 0;
+                                foreach ($missingEntries as $i => $entry) {
+                                    $entry->setSortOrder($maxSortOrder + $i + 1);
+                                }
+                            }
+
+                            $entries->push(...$missingEntries);
+                        }
+
+                        return $entries;
                     },
                     'valueSetter' => false,
                 ],
