@@ -13,15 +13,20 @@ use craft\ckeditor\CkeConfigs;
 use craft\ckeditor\Field;
 use craft\ckeditor\Plugin;
 use craft\console\Controller;
+use craft\db\Query;
+use craft\db\Table;
+use craft\elements\Entry;
 use craft\errors\OperationAbortedException;
 use craft\fields\Matrix;
 use craft\fields\MissingField;
+use craft\fields\PlainText;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\EntryType;
+use craft\models\FieldLayout;
 use craft\models\ImageTransform;
 use craft\models\Volume;
 use craft\services\ProjectConfig;
@@ -179,27 +184,61 @@ class ConvertController extends Controller
             return ExitCode::OK;
         }
 
-        // we have the field
-        $entryTypes = array_column($field->getEntryTypes(), null, 'handle');
-        $this->stdout('   ');
+        // we have the matrix field, let's set up the basics for the CKE field
+        [$chosenEntryType, $chosenField, $newEntryType] = $this->prepareMatrixFieldPort($field);
 
+        $this->stdout(PHP_EOL);
+        $this->stdout(PHP_EOL);
+
+        $this->stdout("Configure your new CKEditor field", Console::FG_GREEN);
+        $this->stdout(PHP_EOL);
+        $settings = $this->ckeFieldSettings($chosenField);
+
+        $this->stdout(PHP_EOL);
+        $this->stdout(PHP_EOL);
+
+        $this->stdout("Starting conversion", Console::FG_GREEN);
+        // TODO: do the conversion
+
+        $this->stdout(PHP_EOL);
+
+        return ExitCode::OK;
+    }
+
+    private function prepareMatrixFieldPort(Matrix $matrixField): array
+    {
+        $chosenEntryType = null;
+        $chosenField = null;
+        $newEntryType = null;
+
+        $entryTypes = array_column($matrixField->getEntryTypes(), null, 'handle');
+
+        $this->stdout('   ');
         // if you want to choose content for your CKEfield along with nesting everything else in entries.
-        if ($this->confirm($this->markdownToAnsi("Does your `$field->name` matrix field contain a text field that should be used as text content of your converted CKEditor field HTML? (this can be a plain text field or a CKEditor field)"))) {
+        if ($this->confirm($this->markdownToAnsi("Does your `$matrixField->name` matrix field contain a text field that should be used as text content of your converted CKEditor field HTML? (this can be a plain text field or a CKEditor field)"))) {
             $chosenEntryTypeHandle = $this->select(
                 '   Which Entry Type (formerly block) contains this field?',
                 array_map(fn(EntryType $entryType) => $entryType->name, $entryTypes)
             );
 
             $chosenEntryType = $entryTypes[$chosenEntryTypeHandle];
-            $fields = array_column($chosenEntryType->getFieldLayout()?->getCustomFields() ?? [], null, 'handle');
+            // only allow choosing from plainText and CKE type fields
+            $fields = array_column(
+                array_filter(
+                    $chosenEntryType->getFieldLayout()?->getCustomFields(),
+                    fn(\craft\base\Field $field) => $field instanceof PlainText || $field instanceof Field
+                ) ?? [], null, 'handle');
+
             $chosenFieldHandle = $this->select(
                 '   Which field would you like to use as text content of your converted CKEditor field?',
                 array_map(fn(\craft\base\Field $field) => $field->name, $fields)
             );
             $chosenField = $fields[$chosenFieldHandle];
 
-            // TODO: create new ET
-            $this->stdout($chosenField->name);
+            // create a duplicate of the selected entry type without the selected field
+            // and use it in ckeditor field’s entry types instead of the “original” entry type;
+            // name & handle to be the same as the “original” entry type with a - cke suffix
+            $newEntryType = $this->createReplacementEntryType($chosenEntryType, $chosenField);
         } else {
             // if you "just" want to nest all content in entries in the CKEditor field
             $this->stdout(PHP_EOL);
@@ -207,23 +246,97 @@ class ConvertController extends Controller
             $this->stdout("Your new CKEditor field will contain all the nested entries that your matrix field has and no copy. You can add text to it after conversion.");
         }
 
-        $this->stdout(PHP_EOL);
-        $this->stdout(PHP_EOL);
-        $this->stdout("CKEditor field settings", Console::FG_GREEN);
-        $this->stdout(PHP_EOL);
-
-        $this->ckeFieldSettings();
-
-        $this->stdout("Starting conversion", Console::FG_GREEN);
-
-
-
-        $this->stdout(PHP_EOL);
-
-        return ExitCode::OK;
+        return [$chosenEntryType, $chosenField, $newEntryType];
     }
 
-    private function ckeFieldSettings(): void
+    /**
+     * Duplicate selected entry type, and it's layout, sans the selected field
+     * which is supposed to be used to populate the content of the prosified CKE field.
+     *
+     * @param EntryType|null $chosenEntryType
+     * @param \craft\base\Field|null $chosenField
+     * @return EntryType
+     * @throws Exception
+     * @throws \Throwable
+     * @throws \craft\errors\EntryTypeNotFoundException
+     * @throws \yii\base\InvalidConfigException
+     */
+    private function createReplacementEntryType(EntryType $chosenEntryType, \craft\base\Field $chosenField): EntryType
+    {
+        $suffix = $this->getReplacementEntryTypeSuffix($chosenEntryType->handle);
+
+        // clone and prep entry type for duplication
+        $newEntryType = (clone $chosenEntryType);
+        $newEntryType->id = null;
+        $newEntryType->uid = null;
+        $newEntryType->name .= ' ' . $suffix;
+        $newEntryType->handle .= $suffix;
+
+        // prep field layout for duplication
+        $config = $newEntryType->getFieldLayout()->getConfig();
+        foreach ($config['tabs'] as $i => &$tab) {
+            $tab['uid'] = null;
+            foreach ($tab['elements'] as $j => &$element) {
+                if (isset($element['fieldUid']) && $element['fieldUid'] === $chosenField->uid) {
+                    unset($tab['elements'][$j]);
+                } else {
+                    $element['uid'] = null;
+                }
+            }
+        }
+
+        // create duplicated field layout
+        $newFieldLayout = FieldLayout::createFromConfig($config);
+        $newFieldLayout->type = Entry::class;
+
+        // set it on the entry type
+        $newEntryType->setFieldLayout($newFieldLayout);
+
+        // and save
+        if (!Craft::$app->getEntries()->saveEntryType($newEntryType)) {
+            throw new Exception("Couldn't duplicate entry type");
+        }
+
+        $this->stdout($this->markdownToAnsi("`$newEntryType->name` Entry Type has been created."));
+        return $newEntryType;
+    }
+
+    /**
+     * Get the suffix for the duplicated entry type.
+     *
+     * @param string $handle
+     * @return int
+     */
+    private function getReplacementEntryTypeSuffix(string $handle): int
+    {
+        $count = 0;
+
+        // get handles of all entry types that match the one we're duplicating
+        $matchingEntryTypeHandles = (new Query())
+            ->select('handle')
+            ->from(Table::ENTRYTYPES)
+            ->where(['like', 'handle', $handle])
+            ->column();
+
+        // sort them descending ensuring that "test9" is before "test10"
+        rsort($matchingEntryTypeHandles, SORT_NATURAL);
+
+        // get the highest number we've used so far
+        if (preg_match('/\d+$/', reset($matchingEntryTypeHandles), $matches)) {
+            $count = (int)$matches[0];
+        }
+
+        return $count + 1;
+    }
+
+    /**
+     * Compile an array of settings to use in the new CKEditor field.
+     *
+     * @param \craft\base\Field|null $chosenField
+     * @return array
+     * @throws Exception
+     */
+    private function ckeFieldSettings(?\craft\base\Field $chosenField = null): array
     {
         $settings = [
             'ckeConfig' => null,
@@ -246,15 +359,45 @@ class ConvertController extends Controller
             $ckeConfigs[StringHelper::slugify($key)] = $value;
         }
 
-        // todo: adjust for when we grab cke from
-        $chosenConfigName = $this->select('   Which CKEditor config should be used for this field?', array_map(fn(CkeConfig $ckeConfig) => $ckeConfig->name, $ckeConfigs));
-        $settings['ckeConfig'] = $ckeConfigs[$chosenConfigName]->uid;
+        // if you selected a top level field to populate the prosified field's content with
+        if ($chosenField instanceof Field) {
+            // check if the ckeconfig for this field has "createEntry" toolbar item added
+            $config = array_values(array_filter($ckeConfigs, fn($config) => $config->uid === $chosenField->ckeConfig))[0];
+            if (in_array('createEntry', $config->toolbar)) {
+                // if yes - just use that config
+                $settings['ckeConfig'] = $config->uid;
+            } else {
+                // if no - say that we're duplicating that config and adding "createEntry" feature to it
+                $this->stdout($this->markdownToAnsi("Field `$chosenField->name` doesn't have the `createEntry` feature enabled."));
+                $this->stdout(PHP_EOL);
+                $this->stdout($this->markdownToAnsi("Creating a duplicate of that config with the `createEntry` button added to the toolbar."));
+                $this->stdout(PHP_EOL);
+
+                $newConfig = (clone $config);
+                $newConfig->uid = StringHelper::UUID();
+
+                $suffix = $this->getReplacementCkeConfigSuffix($config->name, $ckeConfigs);
+                $newConfig->name = $config->name . ' ' . $suffix;
+
+                if (!Plugin::getInstance()->getCkeConfigs()->save($newConfig)) {
+                    throw new Exception("Couldn't duplicate CKEditor config");
+                }
+                $this->stdout($this->markdownToAnsi("`$newConfig->name` CKEditor config has been created."));
+                $this->stdout(PHP_EOL);
+
+                $settings['ckeConfig'] = $newConfig->uid;
+            }
+        } else {
+            // otherwise ask which config they'd like to use
+            $chosenConfigName = $this->select('   Which CKEditor config should be used for this field?', array_map(fn(CkeConfig $ckeConfig) => $ckeConfig->name, $ckeConfigs));
+            $settings['ckeConfig'] = $ckeConfigs[$chosenConfigName]->uid;
+        }
 
         if ($this->confirm("   Use this field’s values as search keywords?")) {
             $settings['searchable'] = true;
         }
 
-        if ($this->confirm("Would you like to set the “Word limit” for this field?")) {
+        if ($this->confirm("   Would you like to set the “Word limit” for this field?")) {
             $settings['wordLimit'] = (int)$this->prompt(
                 "Number of the words to limit to, e.g. 500:",
                 [
@@ -270,11 +413,11 @@ class ConvertController extends Controller
             );
         }
 
-        if ($this->confirm("Show word count?")) {
+        if ($this->confirm("   Show word count?")) {
             $settings['showWordCount'] = true;
         }
 
-        if ($this->confirm("Show the “Source” button for non-admin users?")) {
+        if ($this->confirm("   Show the “Source” button for non-admin users?")) {
             $settings['enableSourceEditingForNonAdmins'] = true;
         }
 
@@ -284,11 +427,11 @@ class ConvertController extends Controller
         $settings['availableTransforms'] = $this->getAvailableTransforms($transforms);
         $settings['defaultTransform'] = $this->getDefaultTransform($transforms);
 
-        if ($this->confirm("Do you want to Show unpermitted volumes?")) {
+        if ($this->confirm("   Do you want to Show unpermitted volumes?")) {
             $settings['showUnpermittedVolumes'] = true;
         }
 
-        if ($this->confirm("Do you want to Show unpermitted files?")) {
+        if ($this->confirm("   Do you want to Show unpermitted files?")) {
             $settings['showUnpermittedFiles'] = true;
         }
 
@@ -300,6 +443,32 @@ class ConvertController extends Controller
 //            $purifierConfigs,
 //        );
 
+        return $settings;
+    }
+
+    /**
+     * Get the suffix for the duplicated CkeConfig.
+     *
+     * @param string $name
+     * @param array $ckeConfigs
+     * @return int
+     */
+    private function getReplacementCkeConfigSuffix(string $name, array $ckeConfigs): int
+    {
+        $count = 0;
+
+        // get last cke config name that starts like this
+        $matchingNames = array_filter(
+            array_map(fn($config) => str_starts_with($config->name, $name) ? $config : null, $ckeConfigs)
+        );
+
+        krsort($matchingNames);
+
+        if (preg_match('/\d+$/', reset($matchingNames)->name, $matches)) {
+            $count = (int)$matches[0];
+        }
+
+        return $count + 1;
     }
 
     private function getAvailableVolumes(): string|array
@@ -309,7 +478,7 @@ class ConvertController extends Controller
         $volumes = array_column(Craft::$app->getVolumes()->getAllVolumes(), null, 'handle');
         do {
             $volumeHandle = $this->select(
-                "Which volumes should be available in the CKEditor field?",
+                "   Which volumes should be available in the CKEditor field?",
                 ['all' => '*'] + array_map(fn(Volume $volume) => $volume->name, $volumes),
                 ''
             );
@@ -332,7 +501,8 @@ class ConvertController extends Controller
             });
         }
         // todo - I'm temporary
-        $this->stdout(implode(", ", $chosenVolumeHandles));
+        $this->stdout(implode(", ", $chosenVolumeHandles), Console::FG_CYAN);
+        $this->stdout(PHP_EOL);
 
         return $chosenVolumes;
     }
@@ -342,7 +512,7 @@ class ConvertController extends Controller
         $chosenTransforms = [];
         do {
             $transformHandle = $this->select(
-                "Which transforms should be available in the CKEditor field?",
+                "   Which transforms should be available in the CKEditor field?",
                 ['all' => '*'] + array_map(fn(ImageTransform $transform) => $transform->name, $transforms),
                 ''
             );
@@ -365,7 +535,8 @@ class ConvertController extends Controller
             });
         }
         // todo - I'm temporary
-        $this->stdout(implode(", ", $chosenTransformHandles));
+        $this->stdout(implode(", ", $chosenTransformHandles), Console::FG_CYAN);
+        $this->stdout(PHP_EOL);
 
         return $chosenTransforms;
     }
@@ -373,11 +544,11 @@ class ConvertController extends Controller
     private function getDefaultTransform(array $transforms): string
     {
         $defaultTransformHandle = $this->select(
-            "Which transform should be used as a default?",
+            "   Which transform should be used as a default?",
             ['none' => ''] + array_map(fn(ImageTransform $transform) => $transform->name, $transforms),
         );
 
-        if ($defaultTransformHandle == '') {
+        if ($defaultTransformHandle == 'none') {
             return '';
         }
 
