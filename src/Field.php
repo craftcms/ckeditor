@@ -179,7 +179,40 @@ class Field extends HtmlField implements ElementContainerFieldInterface
                             $query->orderBy(new FixedOrderExpression('elements.id', $entryIds, Craft::$app->getDb()));
                         }
 
-                        return $query;
+                        $entries = $query->collect();
+
+                        // make sure all the expected entries came back
+                        $queriedEntryIds = [];
+                        foreach ($entries as $entry) {
+                            $queriedEntryIds[$entry->id] = true;
+                        }
+
+                        $missingEntryIds = [];
+                        foreach ($entryIds as $entryId) {
+                            if (!isset($queriedEntryIds[$entryId])) {
+                                $missingEntryIds[] = $entryId;
+                            }
+                        }
+
+                        if (!empty($missingEntryIds)) {
+                            // this could happen if any entries had been removed from the content,
+                            // so their ownership had been deleted from the draft.
+                            $missingEntries = self::createEntryQuery($owner, $field, false)
+                                ->where(['in', 'elements.id', $missingEntryIds])
+                                ->trashed(null)
+                                ->all();
+
+                            if (!empty($missingEntries)) {
+                                $maxSortOrder = $entries->max(fn(Entry $entry) => $entry->getSortOrder()) ?? 0;
+                                foreach ($missingEntries as $i => $entry) {
+                                    $entry->setSortOrder($maxSortOrder + $i + 1);
+                                }
+                            }
+
+                            $entries->push(...$missingEntries);
+                        }
+
+                        return $entries;
                     },
                     'valueSetter' => false,
                 ],
@@ -207,7 +240,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface
         return array_values(array_filter($customFields, fn(FieldInterface $f) => $f->id === $field->id));
     }
 
-    private static function createEntryQuery(?ElementInterface $owner, self $field): EntryQuery
+    private static function createEntryQuery(?ElementInterface $owner, self $field, bool $setOwner = true): EntryQuery
     {
         $query = Entry::find();
 
@@ -217,8 +250,10 @@ class Field extends HtmlField implements ElementContainerFieldInterface
                 ElementQuery::EVENT_BEFORE_PREPARE => function(
                     CancelableEvent $event,
                     EntryQuery $query,
-                ) use ($owner) {
-                    $query->ownerId = $owner->id;
+                ) use ($owner, $setOwner) {
+                    if ($setOwner) {
+                        $query->ownerId = $owner->id;
+                    }
 
                     // Clear out id=false if this query was populated previously
                     if ($query->id === false) {
@@ -649,8 +684,8 @@ class Field extends HtmlField implements ElementContainerFieldInterface
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
-        if (!$this->isCpRequest()) {
-            $value = $this->prepValueForInput($value, $element);
+        if (is_string($value) && $this->isSiteRequest()) {
+            $value = $this->_prepNestedEntriesForDisplay($value, $element?->siteId);
         }
 
         return parent::normalizeValue($value, $element);
@@ -1004,6 +1039,8 @@ JS,
             // (https://github.com/craftcms/ckeditor/issues/96)
             $value = $this->_normalizeFigures($value);
 
+            // without this, nested entries won't show in revisions;
+            // not including it, also causes a layout shift when editing in the CP
             $value = $this->_prepNestedEntriesForDisplay($value, $element?->siteId, $static);
         }
 
@@ -1049,7 +1086,7 @@ JS,
             return $value;
         }
 
-        $isCpRequest = $this->isCpRequest();
+        $isSiteRequest = $this->isSiteRequest();
         $entries = Entry::find()
             ->id($entryIds)
             ->siteId($elementSiteId)
@@ -1065,9 +1102,11 @@ JS,
             /** @var Entry|null $entry */
             $entry = $entries[$entryId] ?? null;
 
-            if (!$entry || (!$isCpRequest && $entry->trashed)) {
+            if (!$entry || ($isSiteRequest && $entry->trashed && !Craft::$app->getRequest()->getIsPreview())) {
                 $entryHtml = '';
-            } elseif ($isCpRequest) {
+            } elseif ($isSiteRequest) {
+                $entryHtml = $entry->render();
+            } else {
                 try {
                     $entryHtml = $this->getCardHtml($entry);
 
@@ -1083,8 +1122,6 @@ JS,
                     // this can happen e.g. when the entry type has been deleted
                     $entryHtml = '';
                 }
-            } else {
-                $entryHtml = $entry->render();
             }
 
             $value = str_replace($marker, $entryHtml, $value);
@@ -1108,11 +1145,11 @@ JS,
         ]);
     }
 
-    private function isCpRequest(): bool
+    private function isSiteRequest(): bool
     {
         return (
-            Craft::$app->getRequest()->getIsCpRequest() &&
-            !Craft::$app->controller instanceof GraphqlController
+            Craft::$app->getRequest()->getIsSiteRequest() ||
+            Craft::$app->controller instanceof GraphqlController
         );
     }
 

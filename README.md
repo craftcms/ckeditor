@@ -2,9 +2,23 @@
 
 <h1 align="center">CKEditor</h1>
 
-This plugin adds a “CKEditor” field type to Craft CMS, which provides a deeply-integrated rich text editor, powered by [CKEditor 5](https://ckeditor.com/).
+This plugin adds a “CKEditor” field type to Craft CMS, which provides a deeply-integrated rich text and longform content editor, powered by [CKEditor 5](https://ckeditor.com/).
 
-![A CKEditor field with example content filled in.](field.png)
+![A CKEditor field with example content filled in.](images/field.png)
+
+**Table of Contents:**
+
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Configuration](#configuration)
+  - [Registering Custom Styles](#registering-custom-styles)
+  - [HTML Purifier Configs](#html-purifier-configs)
+  - [Embedding Media](#embedding-media)
+- [Longform Content with Nested Entries](#longform-content-with-nested-entries)
+  - [Setup](#setup)
+  - [Rendering Nested Entries on the Front End](#rendering-nested-entries-on-the-front-end)
+- [Converting Redactor Fields](#converting-redactor-fields)
+- [Adding CKEditor Plugins](#adding-ckeditor-plugins)
 
 ## Requirements
 
@@ -14,11 +28,11 @@ This plugin requires Craft CMS 5.0.0-beta.7 or later.
 
 You can install this plugin from the Plugin Store or with Composer.
 
-#### From the Plugin Store
+**From the Plugin Store:**
 
 Go to the Plugin Store in your project’s Control Panel and search for “CKEditor”. Then click on the “Install” button in its modal window.
 
-#### With Composer
+**With Composer:**
 
 Open your terminal and run the following commands:
 
@@ -41,7 +55,7 @@ Configurations define the available toolbar buttons, as well as any custom [conf
 
 New configs can also be created inline from CKEditor field settings.
 
-![A “Create a new field” page within the Craft CMS control panel, with “CKEditor” as the chosen field type. A slideout is open with CKEditor config settings.](field-settings.png)
+![A “Create a new field” page within the Craft CMS control panel, with “CKEditor” as the chosen field type. A slideout is open with CKEditor config settings.](images/field-settings.png)
 
 ### Registering Custom Styles
 
@@ -128,6 +142,50 @@ Event::on(
 CKEditor 5 stores references to embedded media embeds using `oembed` tags. Craft CMS configures HTML Purifier to support these tags, however you will need to ensure that the `URI.SafeIframeRegexp` HTML Purifier setting is set to allow any domains you wish to embed content from. 
 
 See CKEditor’s [media embed documentation](https://ckeditor.com/docs/ckeditor5/latest/features/media-embed.html#displaying-embedded-media-on-your-website) for examples of how to show the embedded media on your front end.
+
+## Longform Content with Nested Entries
+
+CKEditor fields can be configured to manage nested entries, which will be displayed as cards within your rich text content, and edited via slideouts.
+
+![A CKEditor field with a nested entry’s slideout open.](images/nested-entry.png)
+
+Nested entries can be created anywhere within your content, and they can be moved, copied, and deleted, just like images and embedded media.
+
+### Setup
+
+To configure a CKEditor field to manage nested entries, follow these steps:
+
+1. Go to **Settings** → **Fields** and click on your CKEditor field’s name (or create a new one).
+2. Double-click on the selected CKEditor config to open its settings.
+3. Drag the “New entry” menu button into the toolbar, and save the CKEditor config.
+4. Back on the field’s settings, select one or more entry types which should be available within CKEditor fields.
+5. Save the field’s settings.
+
+Now the field is set up to manage nested entries! The next time you edit an element with that CKEditor field, the “New entry” menu button will be shown in the toolbar, and when you choose an entry type from it, a slideout will open where you can enter content for the nested entry.
+
+An entry card will appear within the rich text content after you press **Save** within the slideout. The card can be moved via drag-n-drop or cut/paste from there.
+
+You can also copy/paste the card to duplicate the nested entry.
+
+To delete the nested entry, simply select it and press the **Delete** key.
+
+> [!NOTE]  
+> Copy/pasting entry cards across separate CKEditor fields is not supported.
+
+### Rendering Nested Entries on the Front End
+
+On the front end, nested entries will be rendered automatically via their [partial templates](https://craftcms.com/docs/5.x/system/elements.html#rendering-elements).
+
+For each entry type selected by your CKEditor field, create a `_partials/entry/<entryTypeHandle>.twig` file within your `templates/` folder, and place your template code for the entry type within it.
+
+An `entry` variable will be available to the template, which references the entry being rendered.
+
+> [!TIP]
+> If your nested entries contain any relation fields, you can eager-load their related elements for each of the CKEditor field’s nested entries using [`eagerly()`](https://craftcms.com/docs/5.x/development/eager-loading.html#lazy-eager-loading).
+> 
+> ```twig
+> {% for image in entry.myAssetsField.eagerly().all() %}
+> ```
 
 ## Converting Redactor Fields
 
