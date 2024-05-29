@@ -8,6 +8,8 @@
 namespace craft\ckeditor\console\controllers;
 
 use Craft;
+use craft\base\Field as BaseField;
+use craft\base\FieldInterface;
 use craft\ckeditor\CkeConfig;
 use craft\ckeditor\CkeConfigs;
 use craft\ckeditor\Field;
@@ -266,7 +268,7 @@ class ConvertController extends Controller
      * @param Matrix $field
      * @param EntryType|null $chosenEntryType
      * @param EntryType|null $newEntryType
-     * @param \craft\base\Field|null $chosenField
+     * @param BaseField|null $chosenField
      * @return void
      */
     private function convertMatrixToCke(
@@ -274,7 +276,7 @@ class ConvertController extends Controller
         Matrix $field,
         ?EntryType $chosenEntryType = null,
         ?EntryType $newEntryType = null,
-        ?\craft\base\Field $chosenField = null,
+        ?BaseField $chosenField = null,
     ): void {
         $this->stdout("Starting field conversion\n", Console::FG_GREEN);
 
@@ -293,6 +295,7 @@ class ConvertController extends Controller
             PropagationMethod::SiteGroup->value => Field::TRANSLATION_METHOD_SITE_GROUP,
             PropagationMethod::Language->value => Field::TRANSLATION_METHOD_LANGUAGE,
             PropagationMethod::Custom->value => Field::TRANSLATION_METHOD_CUSTOM,
+            default => Field::TRANSLATION_METHOD_NONE,
         };
 
         // set the settings
@@ -321,14 +324,14 @@ class ConvertController extends Controller
      * @param Field $field
      * @param EntryType|null $chosenEntryType
      * @param EntryType|null $newEntryType
-     * @param \craft\base\Field|null $chosenField
+     * @param BaseField|null $chosenField
      * @return void
      */
     private function convertMatrixToCkeContent(
         Field $field,
         ?EntryType $chosenEntryType = null,
         ?EntryType $newEntryType = null,
-        ?\craft\base\Field $chosenField = null,
+        ?BaseField $chosenField = null,
     ): void {
         $this->stdout("Starting content conversion\n", Console::FG_GREEN);
 
@@ -428,9 +431,9 @@ class ConvertController extends Controller
             // only allow choosing from plainText and CKE type fields
             $fields = array_column(
                 array_filter(
-                    $chosenEntryType->getFieldLayout()?->getCustomFields(),
-                    fn(\craft\base\Field $field) => $field instanceof PlainText || $field instanceof Field
-                ) ?? [], null, 'handle');
+                    $chosenEntryType->getFieldLayout()->getCustomFields(),
+                    fn(FieldInterface $field) => $field instanceof PlainText || $field instanceof Field
+                ), null, 'handle');
 
             if (empty($fields)) {
                 $this->stdout("\n   ");
@@ -443,7 +446,7 @@ class ConvertController extends Controller
 
             $chosenFieldHandle = $this->select(
                 '   Which field would you like to use as text content of your converted CKEditor field?',
-                array_map(fn(\craft\base\Field $field) => $field->name, $fields)
+                array_map(fn(BaseField $field) => $field->name, $fields)
             );
             $chosenField = $fields[$chosenFieldHandle];
 
@@ -463,12 +466,12 @@ class ConvertController extends Controller
      * Duplicate selected entry type, and it's layout, sans the field
      * which is supposed to be used to populate the content of the prosified CKE field.
      *
-     * @param EntryType|null $chosenEntryType
-     * @param \craft\base\Field|null $chosenField
+     * @param EntryType $chosenEntryType
+     * @param BaseField $chosenField
      * @return EntryType
      * @throws Exception
      */
-    private function createReplacementEntryType(EntryType $chosenEntryType, \craft\base\Field $chosenField): EntryType
+    private function createReplacementEntryType(EntryType $chosenEntryType, BaseField $chosenField): EntryType
     {
         $suffix = $this->getReplacementEntryTypeSuffix($chosenEntryType->handle);
 
@@ -542,11 +545,11 @@ class ConvertController extends Controller
     /**
      * Compile an array of settings to use in the converted CKEditor field.
      *
-     * @param \craft\base\Field|null $chosenField
+     * @param BaseField|null $chosenField
      * @return array
      * @throws Exception
      */
-    private function ckeFieldSettings(?\craft\base\Field $chosenField = null): array
+    private function ckeFieldSettings(?BaseField $chosenField = null): array
     {
         $settings = [
             'ckeConfig' => null,
