@@ -223,7 +223,7 @@ class ConvertController extends Controller
             // if we're dealing with a CKE field already, we should skip all the project config adjustments and only deal with content
             $this->stdout("Field `$fieldHandle` is already a CKEditor field. Proceeding to content conversion.\n", Console::FG_GREEN);
             $skipProjectConfig = true;
-        } else if (!$field instanceof Matrix) {
+        } elseif (!$field instanceof Matrix) {
             // otherwise, ensure we're dealing with a matrix field
             $this->stdout("Field `$fieldHandle` is not a Matrix field.\n", Console::FG_YELLOW);
             return ExitCode::OK;
@@ -274,7 +274,7 @@ class ConvertController extends Controller
         Matrix $field,
         ?EntryType $chosenEntryType = null,
         ?EntryType $newEntryType = null,
-        ?\craft\base\Field $chosenField = null
+        ?\craft\base\Field $chosenField = null,
     ): void {
         $this->stdout("Starting field conversion\n", Console::FG_GREEN);
 
@@ -328,7 +328,7 @@ class ConvertController extends Controller
         Field $field,
         ?EntryType $chosenEntryType = null,
         ?EntryType $newEntryType = null,
-        ?\craft\base\Field $chosenField = null
+        ?\craft\base\Field $chosenField = null,
     ): void {
         $this->stdout("Starting content conversion\n", Console::FG_GREEN);
 
@@ -387,7 +387,7 @@ class ConvertController extends Controller
                 }
             } else {
                 // populate the CKEditor field with content which is: <craft-entry data-entry-id=\"<nested entry id>\”></craft-entry>
-                $valueIds = array_map(fn (Entry $entry) => $entry->id, $nestedEntries);
+                $valueIds = array_map(fn(Entry $entry) => $entry->id, $nestedEntries);
                 $value = '';
                 foreach ($valueIds as $id) {
                     $value .= '<craft-entry data-entry-id="' . $id . '"></craft-entry>';
@@ -623,7 +623,7 @@ class ConvertController extends Controller
                             return false;
                         }
                         return true;
-                    }
+                    },
                 ]
             );
         }
@@ -638,7 +638,7 @@ class ConvertController extends Controller
 
         $settings['availableVolumes'] = $this->getAvailableVolumes();
 
-        $transforms = array_column( Craft::$app->getImageTransforms()->getAllTransforms(), null, 'handle');
+        $transforms = array_column(Craft::$app->getImageTransforms()->getAllTransforms(), null, 'handle');
         $settings['availableTransforms'] = $this->getAvailableTransforms($transforms);
         $settings['defaultTransform'] = $this->getDefaultTransform($transforms);
 
@@ -670,7 +670,8 @@ class ConvertController extends Controller
      * @return string[]
      * @throws Exception
      */
-    private function getHtmlPurifierConfigOptions(): array {
+    private function getHtmlPurifierConfigOptions(): array
+    {
         $options = ['Default' => ''];
         $path = Craft::$app->getPath()->getConfigPath() . DIRECTORY_SEPARATOR . 'htmlpurifier';
 
