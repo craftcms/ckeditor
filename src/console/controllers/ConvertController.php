@@ -23,6 +23,7 @@ use craft\fields\MissingField;
 use craft\fields\PlainText;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
+use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
@@ -431,6 +432,15 @@ class ConvertController extends Controller
                     fn(\craft\base\Field $field) => $field instanceof PlainText || $field instanceof Field
                 ) ?? [], null, 'handle');
 
+            if (empty($fields)) {
+                $this->stdout("\n   ");
+                $this->stdout($this->markdownToAnsi("`$chosenEntryTypeHandle` doesn't contain any Plain Text or CKEditor fields."));
+                $this->stdout("\n   Proceeding with populating the CKEditor field with the entries from the Matrix field.");
+                $chosenEntryType = null;
+
+                return [null, null, null];
+            }
+
             $chosenFieldHandle = $this->select(
                 '   Which field would you like to use as text content of your converted CKEditor field?',
                 array_map(fn(\craft\base\Field $field) => $field->name, $fields)
@@ -456,6 +466,7 @@ class ConvertController extends Controller
      * @param EntryType|null $chosenEntryType
      * @param \craft\base\Field|null $chosenField
      * @return EntryType
+     * @throws Exception
      */
     private function createReplacementEntryType(EntryType $chosenEntryType, \craft\base\Field $chosenField): EntryType
     {
@@ -468,9 +479,12 @@ class ConvertController extends Controller
         $newEntryType->name .= ' ' . $suffix;
         $newEntryType->handle .= $suffix;
 
+        $this->stdout("\n   ");
+        $this->stdout($this->markdownToAnsi("Duplicating `$chosenEntryType->handle` Entry Type without the `$chosenField->handle` field."));
+        $this->stdout(PHP_EOL);
         // prep field layout for duplication
         $config = $newEntryType->getFieldLayout()->getConfig();
-        foreach ($config['tabs'] as $i => &$tab) {
+        foreach ($config['tabs'] as &$tab) {
             $tab['uid'] = null;
             foreach ($tab['elements'] as $j => &$element) {
                 if (isset($element['fieldUid']) && $element['fieldUid'] === $chosenField->uid) {
@@ -493,7 +507,7 @@ class ConvertController extends Controller
             throw new Exception("Couldn't duplicate entry type");
         }
 
-        $this->stdout($this->markdownToAnsi("`$newEntryType->name` Entry Type has been created.\n"));
+        $this->stdout("\n " . $this->markdownToAnsi(" ✓ `$newEntryType->name` Entry Type has been created.\n"));
         return $newEntryType;
     }
 
@@ -564,8 +578,8 @@ class ConvertController extends Controller
                 $settings['ckeConfig'] = $config->uid;
             } else {
                 // if no - say that we're duplicating that config and adding "createEntry" feature to it
-                $this->stdout($this->markdownToAnsi("Field `$chosenField->name` doesn't have the `createEntry` feature enabled.\n"));
-                $this->stdout($this->markdownToAnsi("Creating a duplicate of that config with the `createEntry` button added to the toolbar.\n"));
+                $this->stdout($this->markdownToAnsi("   Field `$chosenField->name` doesn't have the `createEntry` feature enabled.\n"));
+                $this->stdout($this->markdownToAnsi("   Creating a duplicate of that config with the `createEntry` button added to the toolbar.\n"));
 
                 $newConfig = (clone $config);
                 $newConfig->uid = StringHelper::UUID();
@@ -576,7 +590,7 @@ class ConvertController extends Controller
                 if (!Plugin::getInstance()->getCkeConfigs()->save($newConfig)) {
                     throw new Exception("Couldn't duplicate CKEditor config");
                 }
-                $this->stdout($this->markdownToAnsi("`$newConfig->name` CKEditor config has been created.\n"));
+                $this->stdout($this->markdownToAnsi("   `$newConfig->name` CKEditor config has been created.\n"));
 
                 $settings['ckeConfig'] = $newConfig->uid;
             }
@@ -636,15 +650,47 @@ class ConvertController extends Controller
             $settings['showUnpermittedFiles'] = true;
         }
 
-        // todo - make me work
-//        $ckeFieldInstance = new Field();
-//        $purifierConfigs = $ckeFieldInstance->configOptions('htmlpurifier');
-//        $htmlPurifierConfig = $this->select(
-//            "Which “HTML Purifier Config” should be used?",
-//            $purifierConfigs,
-//        );
+        if ($this->confirm("   Purify HTML?", true)) {
+            $settings['purifyHtml'] = true;
+
+            $purifierConfigs = $this->getHtmlPurifierConfigOptions();
+            $htmlPurifierConfig = $this->select(
+                "   Which “HTML Purifier Config” should be used?",
+                $purifierConfigs,
+            );
+            $settings['purifierConfig'] = $purifierConfigs[$htmlPurifierConfig];
+        }
 
         return $settings;
+    }
+
+    /**
+     * Return an array of available configs from the config/htmlpurifier directory.
+     *
+     * @return string[]
+     * @throws Exception
+     */
+    private function getHtmlPurifierConfigOptions(): array {
+        $options = ['Default' => ''];
+        $path = Craft::$app->getPath()->getConfigPath() . DIRECTORY_SEPARATOR . 'htmlpurifier';
+
+        if (is_dir($path)) {
+            $files = FileHelper::findFiles($path, [
+                'only' => ['*.json'],
+                'recursive' => false,
+            ]);
+
+            foreach ($files as $file) {
+                $filename = basename($file);
+                if ($filename !== 'Default.json') {
+                    $options[pathinfo($file, PATHINFO_FILENAME)] = $filename;
+                }
+            }
+        }
+
+        ksort($options);
+
+        return $options;
     }
 
     /**
