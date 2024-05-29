@@ -577,7 +577,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface
      */
     public function canDeleteElementForSite(NestedElementInterface $element, User $user): ?bool
     {
-        return Craft::$app->getElements()->canSave($element->getOwner(), $user);
+        return false;
     }
 
     /**

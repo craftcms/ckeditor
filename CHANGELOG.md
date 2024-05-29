@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed a bug where nested entry edit pages could have a “Delete for site” action.
+
 ## 4.0.6 - 2024-05-15
 
 - Fixed a bug where newly-created nested entries were getting soft-deleted. ([#229](https://github.com/craftcms/ckeditor/issues/229))
