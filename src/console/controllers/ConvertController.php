@@ -16,6 +16,7 @@ use craft\console\Controller;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
+use craft\enums\PropagationMethod;
 use craft\errors\OperationAbortedException;
 use craft\fields\Matrix;
 use craft\fields\MissingField;
@@ -197,12 +198,104 @@ class ConvertController extends Controller
         $this->stdout(PHP_EOL);
         $this->stdout(PHP_EOL);
 
-        $this->stdout("Starting conversion", Console::FG_GREEN);
-        // TODO: do the conversion
+        $this->convertMatrixToCke($settings, $field, $chosenEntryType, $chosenField, $newEntryType);
 
         $this->stdout(PHP_EOL);
 
         return ExitCode::OK;
+    }
+
+    private function convertMatrixToCke(
+        array $settings,
+        Matrix $field,
+        ?EntryType $chosenEntryType = null,
+        ?\craft\base\Field $chosenField = null,
+        ?EntryType $newEntryType = null)
+    : void
+    {
+        $this->stdout("Starting conversion", Console::FG_GREEN);
+
+        // get matrix field form PC
+        $this->projectConfig = Craft::$app->getProjectConfig();
+        $pcField = $this->projectConfig->get("fields.{$field->uid}");
+
+        // change its type
+        $pcField['type'] = Field::class;
+
+        // translate propagation into translation method
+        $pcField['translationKeyFormat'] = $pcField['settings']['propagationKeyFormat'];
+        $pcField['translationMethod'] = match ($pcField['settings']['propagationMethod']) {
+            PropagationMethod::All->value => Field::TRANSLATION_METHOD_NONE,
+            PropagationMethod::None->value => Field::TRANSLATION_METHOD_SITE,
+            PropagationMethod::SiteGroup->value => Field::TRANSLATION_METHOD_SITE_GROUP,
+            PropagationMethod::Language->value => Field::TRANSLATION_METHOD_LANGUAGE,
+            PropagationMethod::Custom->value => Field::TRANSLATION_METHOD_CUSTOM,
+        };
+
+        // set the settings
+        $pcField['settings'] = $settings;
+
+        // set the entry types
+        $pcField['settings']['entryTypes'] = $field->settings['entryTypes'];
+        if ($chosenEntryType !== null && $newEntryType !== null) {
+            if (($key = array_search($chosenEntryType->uid, $pcField['settings']['entryTypes'])) !== false) {
+                $pcField['settings']['entryTypes'][$key] = $newEntryType->uid;
+            }
+        }
+
+        $this->projectConfig->set("fields.{$field->uid}", $pcField);
+
+        // todo: this might have to go into a separate method?
+        // get all the nested entries belonging to the field we’re converting
+        $nestedEntries = Entry::find()
+            ->fieldId($field->id)
+            ->drafts(null)
+            ->revisions(null)
+            ->trashed(null)
+            ->status(null)
+            ->all();
+
+        $groupedNestedEntries = [];
+        foreach ($nestedEntries as $entry) {
+            $groupedNestedEntries[$entry->ownerId][] = $entry;
+        }
+
+        // todo: if nested entry is of $chosenEntryType type - we need to change its type to $newEntryType
+        foreach ($groupedNestedEntries as $nestedEntries) {
+            $owner = $nestedEntries[0]->getOwner();
+
+            if ($chosenEntryType !== null && $newEntryType !== null) {
+                $value = '';
+                /** @var Entry $entry */
+                foreach ($nestedEntries as $entry) {
+                    if ($entry->type->uid === $chosenEntryType->uid) {
+                        $value .= $entry->getFieldValue($chosenField->handle);
+                        $value .= '<craft-entry data-entry-id="' . $entry->id . '"></craft-entry>';
+                        $entry->setTypeId($newEntryType->id);
+                        Craft::$app->getElements()->saveElement($entry, false);
+                    } else {
+                        $value .= '<craft-entry data-entry-id="' . $entry->id . '"></craft-entry>';
+                    }
+                }
+            } else {
+                $valueIds = array_map(fn (Entry $entry) => $entry->id, $nestedEntries);
+                $value = '';
+                foreach ($valueIds as $id) {
+                    $value .= '<craft-entry data-entry-id="' . $id . '"></craft-entry>';
+                }
+            }
+
+            $owner->setFieldValue($field->handle, $value);
+            Craft::$app->getElements()->saveElement($owner, false);
+        }
+
+            // if we have the top-level HTML field defined:
+                // iterate through each nested entry,
+                // if the nested entry is the one containing the top-level field, get its content and place it before/after the rest of that entry’s content followed/prepended by the <craft-entry data-entry-id=\"<nested entry id>\"></craft-entry> + change the entry type to the ID of the duplicate that doesn’t contain that field
+                // for other nested entries add the <craft-entry data-entry-id=\"<nested entry id>\”></craft-entry>
+            // otherwise
+                // just populate the CKEditor field with content which is: <craft-entry data-entry-id=\"<nested entry id>\”></craft-entry>
+            // save each owner
     }
 
     private function prepareMatrixFieldPort(Matrix $matrixField): array
@@ -362,7 +455,7 @@ class ConvertController extends Controller
         // if you selected a top level field to populate the prosified field's content with
         if ($chosenField instanceof Field) {
             // check if the ckeconfig for this field has "createEntry" toolbar item added
-            $config = array_values(array_filter($ckeConfigs, fn($config) => $config->uid === $chosenField->ckeConfig))[0];
+            $config = array_values(array_filter($ckeConfigs, fn($ckeConfig) => $ckeConfig->uid === $chosenField->ckeConfig))[0];
             if (in_array('createEntry', $config->toolbar)) {
                 // if yes - just use that config
                 $settings['ckeConfig'] = $config->uid;
@@ -388,8 +481,16 @@ class ConvertController extends Controller
                 $settings['ckeConfig'] = $newConfig->uid;
             }
         } else {
-            // otherwise ask which config they'd like to use
-            $chosenConfigName = $this->select('   Which CKEditor config should be used for this field?', array_map(fn(CkeConfig $ckeConfig) => $ckeConfig->name, $ckeConfigs));
+            // otherwise ask which config they'd like to use - only show those that contain 'createEntry'
+            $chosenConfigName = $this->select(
+                '   Which CKEditor config should be used for this field?',
+                array_filter(
+                    array_map(
+                        fn(CkeConfig $ckeConfig) => in_array('createEntry', $ckeConfig->toolbar) ? $ckeConfig->name : null,
+                        $ckeConfigs
+                    )
+                )
+            );
             $settings['ckeConfig'] = $ckeConfigs[$chosenConfigName]->uid;
         }
 
@@ -399,7 +500,7 @@ class ConvertController extends Controller
 
         if ($this->confirm("   Would you like to set the “Word limit” for this field?")) {
             $settings['wordLimit'] = (int)$this->prompt(
-                "Number of the words to limit to, e.g. 500:",
+                "   Number of the words to limit to, e.g. 500:",
                 [
                     'required' => true,
                     'validator' => function($input, &$error) {
