@@ -528,8 +528,12 @@ class ConvertController extends Controller
         $matchingEntryTypeHandles = (new Query())
             ->select('handle')
             ->from(Table::ENTRYTYPES)
-            ->where(['like', 'handle', $handle])
+            ->where(['like', 'handle', $handle.'%', false])
             ->column();
+
+        $matchingEntryTypeHandles = array_filter($matchingEntryTypeHandles, function($matchingEntryTypeHandle) use($handle) {
+            return preg_match('/^'.$handle.'\d?$/', $matchingEntryTypeHandle);
+        });
 
         // sort them descending ensuring that "test9" is before "test10"
         rsort($matchingEntryTypeHandles, SORT_NATURAL);
@@ -737,7 +741,7 @@ class ConvertController extends Controller
             $volumeHandle = $this->select(
                 "   Which volumes should be available in the CKEditor field?",
                 ['all' => '*'] + array_map(fn(Volume $volume) => $volume->name, $volumes),
-                ''
+                'all'
             );
 
             if ($volumeHandle !== '') {
@@ -776,7 +780,7 @@ class ConvertController extends Controller
             $transformHandle = $this->select(
                 "   Which transforms should be available in the CKEditor field?",
                 ['all' => '*'] + array_map(fn(ImageTransform $transform) => $transform->name, $transforms),
-                ''
+                'all'
             );
 
             if ($transformHandle !== '') {
@@ -812,6 +816,7 @@ class ConvertController extends Controller
         $defaultTransformHandle = $this->select(
             "   Which transform should be used as a default?",
             ['none' => ''] + array_map(fn(ImageTransform $transform) => $transform->name, $transforms),
+            'none'
         );
 
         if ($defaultTransformHandle == 'none') {
