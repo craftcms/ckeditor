@@ -528,11 +528,11 @@ class ConvertController extends Controller
         $matchingEntryTypeHandles = (new Query())
             ->select('handle')
             ->from(Table::ENTRYTYPES)
-            ->where(['like', 'handle', $handle.'%', false])
+            ->where(['like', 'handle', $handle . '%', false])
             ->column();
 
-        $matchingEntryTypeHandles = array_filter($matchingEntryTypeHandles, function($matchingEntryTypeHandle) use($handle) {
-            return preg_match('/^'.$handle.'\d?$/', $matchingEntryTypeHandle);
+        $matchingEntryTypeHandles = array_filter($matchingEntryTypeHandles, function($matchingEntryTypeHandle) use ($handle) {
+            return preg_match('/^' . $handle . '\d?$/', $matchingEntryTypeHandle);
         });
 
         // sort them descending ensuring that "test9" is before "test10"
