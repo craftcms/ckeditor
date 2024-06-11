@@ -23,11 +23,9 @@
     "docs": "https://github.com/craftcms/ckeditor/blob/master/README.md",
     "rss": "https://github.com/craftcms/ckeditor/commits/master.atom"
   },
-  "minimum-stability": "dev",
-  "prefer-stable": true,
   "require": {
     "php": "^8.2",
-    "craftcms/cms": "^5.0.0-beta.7",
+    "craftcms/cms": "^5.2.0-beta.1",
     "craftcms/html-field": "^3.0.0-alpha",
     "nystudio107/craft-code-editor": ">=1.0.8 <=1.0.13 || ^1.0.16"
   },

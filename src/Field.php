@@ -34,6 +34,7 @@ use craft\events\CancelableEvent;
 use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -1096,6 +1097,8 @@ JS,
             ->trashed(null)
             ->indexBy('id')
             ->all();
+
+        ElementHelper::swapInProvisionalDrafts($entries);
 
         foreach ($markers as $i => $marker) {
             $entryId = $entryIds[$i];
