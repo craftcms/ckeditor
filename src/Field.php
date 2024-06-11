@@ -13,6 +13,10 @@ use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
+use craft\ckeditor\data\BaseChunk;
+use craft\ckeditor\data\Entry as EntryChunk;
+use craft\ckeditor\data\FieldData;
+use craft\ckeditor\data\Markup;
 use craft\ckeditor\events\DefineLinkOptionsEvent;
 use craft\ckeditor\events\ModifyConfigEvent;
 use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
@@ -54,7 +58,6 @@ use HTMLPurifier_HTMLDefinition;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\db\Exception;
 
 /**
  * CKEditor field type
@@ -166,9 +169,15 @@ class Field extends HtmlField implements ElementContainerFieldInterface
                     ],
                     'valueGetter' => function(ElementInterface $owner, bool $fetchAll = false) use ($field) {
                         $entryIds = array_merge(...array_map(function(self $fieldInstance) use ($owner) {
+                            /** @var FieldData|null $value */
                             $value = $owner->getFieldValue($fieldInstance->handle);
-                            preg_match_all('/<craft-entry\s+data-entry-id="(\d+)"[^>]*>/i', $value, $matches);
-                            return array_map(fn($match) => (int)$match, $matches[1]);
+                            if (!$value) {
+                                return [];
+                            }
+                            return $value->getChunks(false)
+                                ->filter(fn(BaseChunk $chunk) => $chunk instanceof EntryChunk)
+                                ->map(fn(EntryChunk $chunk) => $chunk->entryId)
+                                ->all();
                         }, self::fieldInstances($owner, $field)));
 
                         $query = self::createEntryQuery($owner, $field)
@@ -284,9 +293,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface
 
     private static function afterDuplicateNestedElements(DuplicateNestedElementsEvent $event, self $field): void
     {
-        $oldEntryIds = array_keys($event->newElementIds);
-        $newElementIds = array_values($event->newElementIds);
-        self::adjustFieldValues($event->target, $field, $oldEntryIds, $newElementIds, true);
+        self::adjustFieldValues($event->target, $field, $event->newElementIds, true);
     }
 
     private static function afterCreateRevisions(DuplicateNestedElementsEvent $event, self $field): void
@@ -296,53 +303,56 @@ class Field extends HtmlField implements ElementContainerFieldInterface
             ...$event->target->getLocalized()->status(null)->all(),
         ];
 
-        $oldElementIds = array_keys($event->newElementIds);
-        $newElementIds = array_values($event->newElementIds);
-
         foreach ($revisionOwners as $revisionOwner) {
-            self::adjustFieldValues($revisionOwner, $field, $oldElementIds, $newElementIds, false);
+            self::adjustFieldValues($revisionOwner, $field, $event->newElementIds, false);
         }
     }
 
     private static function adjustFieldValues(
         ElementInterface $owner,
         self $field,
-        array $oldEntryIds,
         array $newEntryIds,
         bool $propagate,
     ): void {
-        if (empty($oldEntryIds) || $oldEntryIds === $newEntryIds) {
+        // Filter out any IDs that haven't changed
+        $newEntryIds = Collection::make($newEntryIds)
+            ->filter(fn(int $newId, int $oldId) => $newId !== $oldId)
+            ->all();
+        if (empty($newEntryIds)) {
             return;
         }
 
         $resave = false;
 
         foreach (self::fieldInstances($owner, $field) as $fieldInstance) {
-            /** @var HtmlFieldData|null $oldValue */
-            $oldValue = $owner->getFieldValue($fieldInstance->handle);
-            $oldValue = $oldValue?->getRawContent();
-
-            if (!$oldValue) {
+            /** @var FieldData|null $value */
+            $value = $owner->getFieldValue($fieldInstance->handle);
+            if (!$value) {
                 continue;
             }
 
-            // and in the field value replace elementIds from original (duplicateOf) with elementIds from the new owner
-            $newValue = preg_replace_callback(
-                '/(<craft-entry\sdata-entry-id=")(\d+)("[^>]*>)/i',
-                function(array $match) use ($oldEntryIds, $newEntryIds) {
-                    $key = array_search($match[2], $oldEntryIds);
-                    if (isset($newEntryIds[$key])) {
-                        return $match[1] . $newEntryIds[$key] . $match[3];
-                    }
-                    return $match[1] . $match[2] . $match[3];
-                },
-                $oldValue,
-            );
-
-            if ($oldValue !== $newValue) {
-                $owner->setFieldValue($fieldInstance->handle, $newValue);
-                $resave = true;
+            $chunks = $value->getChunks(false);
+            if (!$chunks->contains(fn(BaseChunk $chunk) => (
+                $chunk instanceof EntryChunk &&
+                isset($newEntryIds[$chunk->entryId])
+            ))) {
+                continue;
             }
+
+            $newValue = $chunks
+                ->map(function(BaseChunk $chunk) use ($newEntryIds) {
+                    if ($chunk instanceof Markup) {
+                        return $chunk->rawHtml;
+                    }
+
+                    /** @var EntryChunk $chunk */
+                    $id = $newEntryIds[$chunk->entryId] ?? $chunk->entryId;
+                    return sprintf('<craft-entry data-entry-id="%s">&nbsp;</craft-entry>', $id);
+                })
+                ->join('');
+
+            $owner->setFieldValue($fieldInstance->handle, $newValue);
+            $resave = true;
         }
 
         if ($resave) {
@@ -682,18 +692,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
-    {
-        if (is_string($value) && $this->isSiteRequest()) {
-            $value = $this->_prepNestedEntriesForDisplay($value, $element?->siteId);
-        }
-
-        return parent::normalizeValue($value, $element);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value instanceof HtmlFieldData) {
@@ -767,6 +765,14 @@ class Field extends HtmlField implements ElementContainerFieldInterface
                 'allowOwnerRevisions' => true,
             ],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function createFieldData(string $content, ?int $siteId): HtmlFieldData
+    {
+        return new FieldData($content, $siteId);
     }
 
     /**
@@ -1019,8 +1025,34 @@ JS,
      */
     protected function prepValueForInput($value, ?ElementInterface $element, bool $static = false): string
     {
-        if ($value instanceof HtmlFieldData) {
-            $value = $value->getRawContent();
+        if ($value instanceof FieldData) {
+            $value = $value->getChunks()
+                ->map(function(BaseChunk $chunk) use ($static) {
+                    if ($chunk instanceof Markup) {
+                        return $chunk->rawHtml;
+                    }
+
+                    /** @var EntryChunk $chunk */
+                    $entry = $chunk->getEntry();
+                    if (!$entry) {
+                        return '';
+                    }
+
+                    try {
+                        if (!$static) {
+                            return Html::tag('craft-entry', options: [
+                                'data' => [
+                                    'entry-id' => $entry->id,
+                                    'card-html' => $this->getCardHtml($entry),
+                                ],
+                            ]);
+                        }
+                    } catch (InvalidConfigException) {
+                        // this can happen e.g. when the entry type has been deleted
+                        return '';
+                    }
+                })
+                ->join('');
         }
 
         if ($value !== null) {
@@ -1038,10 +1070,6 @@ JS,
             // Redactor to CKEditor syntax for <figure>
             // (https://github.com/craftcms/ckeditor/issues/96)
             $value = $this->_normalizeFigures($value);
-
-            // without this, nested entries won't show in revisions;
-            // not including it, also causes a layout shift when editing in the CP
-            $value = $this->_prepNestedEntriesForDisplay($value, $element?->siteId, $static);
         }
 
         return parent::prepValueForInput($value, $element);
@@ -1066,70 +1094,6 @@ JS,
         return $entryTypeOptions;
     }
 
-    /**
-     * Fill the CKE markup (<craft-entry data-entry-id="96"></craft-entry>)
-     *  with actual card or template HTML of the entry it's linking to.
-     * If it's not a CP request - always use the rendered HTML
-     * If it's a CP request - use rendered HTML if that's what's assigned to the entry type in the field's setting; otherwise use card HTML.
-     * If it's a static request
-     *
-     * @param string $value
-     * @param int|null $elementSiteId
-     * @param bool $static
-     * @return string
-     */
-    private function _prepNestedEntriesForDisplay(string $value, ?int $elementSiteId, bool $static = false): string
-    {
-        [$entryIds, $markers] = $this->findEntries($value, true);
-
-        if (empty($entryIds)) {
-            return $value;
-        }
-
-        $isSiteRequest = $this->isSiteRequest();
-        $entries = Entry::find()
-            ->id($entryIds)
-            ->siteId($elementSiteId)
-            ->status(null)
-            ->drafts(null)
-            ->revisions(null)
-            ->trashed(null)
-            ->indexBy('id')
-            ->all();
-
-        foreach ($markers as $i => $marker) {
-            $entryId = $entryIds[$i];
-            /** @var Entry|null $entry */
-            $entry = $entries[$entryId] ?? null;
-
-            if (!$entry || ($isSiteRequest && $entry->trashed && !Craft::$app->getRequest()->getIsPreview())) {
-                $entryHtml = '';
-            } elseif ($isSiteRequest) {
-                $entryHtml = $entry->render();
-            } else {
-                try {
-                    $entryHtml = $this->getCardHtml($entry);
-
-                    if (!$static) {
-                        $entryHtml = Html::tag('craft-entry', options: [
-                            'data' => [
-                                'entry-id' => $entryId,
-                                'card-html' => $entryHtml,
-                            ],
-                        ]);
-                    }
-                } catch (InvalidConfigException) {
-                    // this can happen e.g. when the entry type has been deleted
-                    $entryHtml = '';
-                }
-            }
-
-            $value = str_replace($marker, $entryHtml, $value);
-        }
-
-        return $value;
-    }
-
     private function createButtonLabel(): string
     {
         if (isset($this->createButtonLabel)) {
@@ -1143,46 +1107,6 @@ JS,
         return Craft::t('app', 'New {type}', [
             'type' => Entry::lowerDisplayName(),
         ]);
-    }
-
-    private function isSiteRequest(): bool
-    {
-        return (
-            Craft::$app->getRequest()->getIsSiteRequest() ||
-            Craft::$app->controller instanceof GraphqlController
-        );
-    }
-
-    private function findEntries(string &$html, bool $replaceWithMarkers = false): array
-    {
-        $entryIds = [];
-        $markers = [];
-        $offset = 0;
-        $r = '';
-
-        while (($pos = stripos($html, '<craft-entry data-entry-id="', $offset)) !== false) {
-            $idStartPos = $pos + 28;
-            $closingTagPos = strpos($html, '</craft-entry>', $idStartPos);
-            if ($closingTagPos === false) {
-                break;
-            }
-            $endPos = $closingTagPos + 14;
-            if (!preg_match('/^\d+/', substr($html, $idStartPos, $closingTagPos - $idStartPos), $match)) {
-                break;
-            }
-            $entryIds[] = $match[0];
-            if ($replaceWithMarkers) {
-                $markers[] = $marker = sprintf('{marker:%s}', mt_rand());
-                $r .= substr($html, $offset, $pos - $offset) . $marker;
-            }
-            $offset = $endPos;
-        }
-
-        if ($replaceWithMarkers && $offset !== 0) {
-            $html = $r . substr($html, $offset);
-        }
-
-        return [$entryIds, $markers];
     }
 
     /**
