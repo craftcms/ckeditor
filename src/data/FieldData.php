@@ -12,6 +12,7 @@ use ArrayIterator;
 use Countable;
 use Craft;
 use craft\elements\Entry as EntryElement;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\htmlfield\HtmlFieldData;
 use Illuminate\Support\Collection;
@@ -156,6 +157,8 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
         } else {
             $entries = [];
         }
+
+        ElementHelper::swapInProvisionalDrafts($entries);
 
         $entryChunks->each(function(Entry $chunk) use ($entries) {
             $chunk->setEntry($entries[$chunk->entryId] ?? null);

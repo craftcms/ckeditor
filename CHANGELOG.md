@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Entry cards now display provisional changes, with an “Edited” label.
+- CKEditor now requires Craft CMS 5.2+.
 - Fixed a bug where nested entry edit pages could have a “Delete for site” action.
 
 ## 4.0.6 - 2024-05-15
