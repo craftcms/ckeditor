@@ -21,7 +21,6 @@ use craft\ckeditor\events\DefineLinkOptionsEvent;
 use craft\ckeditor\events\ModifyConfigEvent;
 use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
-use craft\controllers\GraphqlController;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\Table;
