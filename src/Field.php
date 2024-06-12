@@ -182,6 +182,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface
 
                         $query = self::createEntryQuery($owner, $field)
                             ->where(['in', 'elements.id', $entryIds])
+                            ->status(null)
                             ->trashed(null);
 
                         if (!empty($entryIds)) {
@@ -872,6 +873,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface
         $event = new ModifyConfigEvent([
             'baseConfig' => $baseConfig,
             'ckeConfig' => $ckeConfig,
+            'toolbar' => $toolbar,
         ]);
         $this->trigger(self::EVENT_MODIFY_CONFIG, $event);
 
@@ -893,7 +895,7 @@ JS;
         }
 
         $baseConfigJs = Json::encode($event->baseConfig);
-        $toolbarJs = Json::encode($toolbar);
+        $toolbarJs = Json::encode($event->toolbar);
         $languageJs = Json::encode([
             'ui' => BaseCkeditorPackageAsset::uiLanguage(),
             'content' => $element?->getSite()->language ?? Craft::$app->language,
@@ -1026,7 +1028,8 @@ JS,
     protected function prepValueForInput($value, ?ElementInterface $element, bool $static = false): string
     {
         if ($value instanceof FieldData) {
-            $chunks = $value->getChunks();
+            $chunks = $value->getChunks(false)
+                ->filter(fn(BaseChunk $chunk) => !$chunk instanceof EntryChunk || $chunk->getEntry() !== null);
 
             /** @var Entry[] $entries */
             $entries = $chunks

@@ -69,17 +69,19 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
     /**
      * Returns a collection of the content chunks.
      *
-     * @param bool $loadEntries
+     * @param bool $enabledEntriesOnly
      * @return Collection<BaseChunk>
      */
-    public function getChunks(bool $loadEntries = true): Collection
+    public function getChunks(bool $enabledEntriesOnly = true): Collection
     {
         $this->parse();
 
-        if ($loadEntries) {
+        if ($enabledEntriesOnly) {
             $this->loadEntries();
-            return $this->chunks
-                ->filter(fn(BaseChunk $chunk) => !$chunk instanceof Entry || $chunk->getEntry() !== null);
+            return $this->chunks->filter(fn(BaseChunk $chunk) => (
+                !$chunk instanceof Entry ||
+                $chunk->getEntry()?->getStatus() === EntryElement::STATUS_LIVE
+            ));
         }
 
         return $this->chunks;
