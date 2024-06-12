@@ -1098,7 +1098,9 @@ JS,
             ->indexBy('id')
             ->all();
 
-        ElementHelper::swapInProvisionalDrafts($entries);
+        if (!$isSiteRequest) {
+            ElementHelper::swapInProvisionalDrafts($entries);
+        }
 
         foreach ($markers as $i => $marker) {
             $entryId = $entryIds[$i];
