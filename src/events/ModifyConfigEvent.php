@@ -29,7 +29,8 @@ class ModifyConfigEvent extends Event
     public CkeConfig $ckeConfig;
 
     /**
-     * @var array<string> $toolbar The toolbar config
+     * @var string[] $toolbar The toolbar config
+     * @since 3.9.0
      */
     public array $toolbar;
 }
