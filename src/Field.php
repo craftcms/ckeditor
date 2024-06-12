@@ -1046,7 +1046,9 @@ JS,
                     $entry = $entries[$chunk->entryId];
 
                     try {
-                        if (!$static) {
+                        if ($static) {
+                            return $this->getCardHtml($entry);
+                        } else {
                             return Html::tag('craft-entry', options: [
                                 'data' => [
                                     'entry-id' => $entry->isProvisionalDraft ? $entry->getCanonicalId() : $entry->id,
