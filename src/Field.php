@@ -1034,7 +1034,10 @@ JS,
                 ->keyBy(fn(EntryChunk $chunk) => $chunk->entryId)
                 ->map(fn(EntryChunk $chunk) => $chunk->getEntry())
                 ->all();
-            ElementHelper::swapInProvisionalDrafts($entries);
+
+            if (!$static) {
+                ElementHelper::swapInProvisionalDrafts($entries);
+            }
 
             $value = $chunks
                 ->map(function(BaseChunk $chunk) use ($static, $entries) {
@@ -1046,18 +1049,22 @@ JS,
                     $entry = $entries[$chunk->entryId];
 
                     try {
-                        if (!$static) {
-                            return Html::tag('craft-entry', options: [
-                                'data' => [
-                                    'entry-id' => $entry->isProvisionalDraft ? $entry->getCanonicalId() : $entry->id,
-                                    'card-html' => $this->getCardHtml($entry),
-                                ],
-                            ]);
-                        }
+                        $cardHtml = $this->getCardHtml($entry);
                     } catch (InvalidConfigException) {
                         // this can happen e.g. when the entry type has been deleted
                         return '';
                     }
+
+                    if ($static) {
+                        return $cardHtml;
+                    }
+
+                    return Html::tag('craft-entry', options: [
+                        'data' => [
+                            'entry-id' => $entry->isProvisionalDraft ? $entry->getCanonicalId() : $entry->id,
+                            'card-html' => $cardHtml,
+                        ],
+                    ]);
                 })
                 ->join('');
         }
