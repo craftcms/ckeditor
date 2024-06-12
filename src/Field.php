@@ -1046,20 +1046,22 @@ JS,
                     $entry = $entries[$chunk->entryId];
 
                     try {
-                        if ($static) {
-                            return $this->getCardHtml($entry);
-                        } else {
-                            return Html::tag('craft-entry', options: [
-                                'data' => [
-                                    'entry-id' => $entry->isProvisionalDraft ? $entry->getCanonicalId() : $entry->id,
-                                    'card-html' => $this->getCardHtml($entry),
-                                ],
-                            ]);
-                        }
+                        $cardHtml = $this->getCardHtml($entry);
                     } catch (InvalidConfigException) {
                         // this can happen e.g. when the entry type has been deleted
                         return '';
                     }
+
+                    if ($static) {
+                        return $cardHtml;
+                    }
+
+                    return Html::tag('craft-entry', options: [
+                        'data' => [
+                            'entry-id' => $entry->isProvisionalDraft ? $entry->getCanonicalId() : $entry->id,
+                            'card-html' => $cardHtml,
+                        ],
+                    ]);
                 })
                 ->join('');
         }
