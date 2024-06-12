@@ -10,6 +10,7 @@ namespace craft\ckeditor\controllers;
 use Craft;
 use craft\ckeditor\Field;
 use craft\elements\Asset;
+use craft\elements\Entry;
 use craft\fieldlayoutelements\CustomField;
 use craft\web\Controller;
 use Throwable;
@@ -69,10 +70,21 @@ class CkeditorController extends Controller
         $siteId = $this->request->getBodyParam('siteId');
         $layoutElementUid = $this->request->getBodyParam('layoutElementUid');
 
-        $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId, [
-            'status' => null,
-            'revisions' => null,
-        ]);
+        // try to get provisional draft first
+        $entry = Entry::find()
+            ->draftOf($entryId)
+            ->provisionalDrafts()
+            ->siteId($siteId)
+            ->status(null)
+            ->one();
+
+        // if that fails, get the canonical
+        if (!$entry) {
+            $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId, [
+                'status' => null,
+                'revisions' => null,
+            ]);
+        }
 
         if (!$entry) {
             throw new BadRequestHttpException("Invalid entry ID: $entryId");
