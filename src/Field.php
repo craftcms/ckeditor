@@ -368,6 +368,7 @@ class Field extends HtmlField
         $event = new ModifyConfigEvent([
             'baseConfig' => $baseConfig,
             'ckeConfig' => $ckeConfig,
+            'toolbar' => $toolbar,
         ]);
         $this->trigger(self::EVENT_MODIFY_CONFIG, $event);
 
@@ -389,7 +390,7 @@ JS;
         }
 
         $baseConfigJs = Json::encode($event->baseConfig);
-        $toolbarJs = Json::encode($toolbar);
+        $toolbarJs = Json::encode($event->toolbar);
         $languageJs = Json::encode([
             'ui' => BaseCkeditorPackageAsset::uiLanguage(),
             'content' => $element?->getSite()->language ?? Craft::$app->language,
