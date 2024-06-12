@@ -1027,7 +1027,8 @@ JS,
     protected function prepValueForInput($value, ?ElementInterface $element, bool $static = false): string
     {
         if ($value instanceof FieldData) {
-            $chunks = $value->getChunks();
+            $chunks = $value->getChunks(false)
+                ->filter(fn(BaseChunk $chunk) => !$chunk instanceof EntryChunk || $chunk->getEntry() !== null);
 
             /** @var Entry[] $entries */
             $entries = $chunks

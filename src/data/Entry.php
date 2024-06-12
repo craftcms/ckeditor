@@ -34,13 +34,7 @@ class Entry extends BaseChunk
 
     public function getHtml(): string
     {
-        $entry = $this->getEntry();
-
-        if ($entry?->getStatus() !== EntryElement::STATUS_LIVE) {
-            return '';
-        }
-
-        return $entry->render();
+        return $this->getEntry()?->render() ?? '';
     }
 
     public function getEntry(): ?EntryElement
