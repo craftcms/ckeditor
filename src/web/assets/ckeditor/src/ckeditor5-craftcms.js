@@ -447,7 +447,7 @@ const handleClipboard = function (editor, plugins) {
                   Craft.cp.displayError(
                     Craft.t(
                       'ckeditor',
-                      'CKEditor field you’re pasting to, doesn’t allow nesting of Craft Entries.',
+                      'This field doesn’t allow nested entries.',
                     ),
                   );
                   errors = true;

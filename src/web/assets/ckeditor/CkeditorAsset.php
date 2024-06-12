@@ -73,6 +73,7 @@ class CkeditorAsset extends BaseCkeditorPackageAsset
                 'Insert link',
                 'Link to the current site',
                 'Site: {name}',
+                'This field doesn’t allow nested entries.',
             ]);
             $view->registerJsWithVars(fn($attach) => <<<JS
 Craft.showCkeditorInspector = $attach;

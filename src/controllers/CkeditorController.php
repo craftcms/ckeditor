@@ -120,8 +120,8 @@ class CkeditorController extends Controller
         if ($targetEntryTypeIds !== null) {
             if (!in_array($entry->typeId, $targetEntryTypeIds)) {
                 return $this->asFailure(
-                    Craft::t('ckeditor', 'Entry Type “{entryType}” is not available in the field you’re trying to paste to.', [
-                        'entryType' => $entry->type->name,
+                    Craft::t('ckeditor', 'This field doesn’t allow nested {type} entries.', [
+                        'type' => $entry->getType()->getUiLabel(),
                     ])
                 );
             }
