@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "12cccbc09cb9183031c796e5762e6fc1",
+    "content-hash": "232e9c03a0fa46977e9af5cd5e500a08",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -331,16 +331,16 @@
         },
         {
             "name": "craftcms/cms",
-            "version": "5.2.x-dev",
+            "version": "5.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/craftcms/cms.git",
-                "reference": "f6c9b112de446781abdcc7e589260c0d71535881"
+                "reference": "1b2dd98384df894c87f3d6c21ad804220f63e19c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/cms/zipball/f6c9b112de446781abdcc7e589260c0d71535881",
-                "reference": "f6c9b112de446781abdcc7e589260c0d71535881",
+                "url": "https://api.github.com/repos/craftcms/cms/zipball/1b2dd98384df894c87f3d6c21ad804220f63e19c",
+                "reference": "1b2dd98384df894c87f3d6c21ad804220f63e19c",
                 "shasum": ""
             },
             "require": {
@@ -456,7 +456,7 @@
                 "rss": "https://github.com/craftcms/cms/releases.atom",
                 "source": "https://github.com/craftcms/cms"
             },
-            "time": "2024-06-12T12:46:29+00:00"
+            "time": "2024-06-12T16:34:15+00:00"
         },
         {
             "name": "craftcms/html-field",
@@ -7695,17 +7695,9 @@
             "time": "2023-11-12T22:43:29+00:00"
         }
     ],
-    "aliases": [
-        {
-            "package": "craftcms/cms",
-            "version": "5.2.9999999.9999999-dev",
-            "alias": "5.2.0",
-            "alias_normalized": "5.2.0.0"
-        }
-    ],
+    "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "craftcms/cms": 20,
         "craftcms/ecs": 20,
         "craftcms/phpstan": 20,
         "craftcms/rector": 20
