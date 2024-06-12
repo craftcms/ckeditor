@@ -37,6 +37,7 @@ use craft\events\CancelableEvent;
 use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -1025,23 +1026,30 @@ JS,
     protected function prepValueForInput($value, ?ElementInterface $element, bool $static = false): string
     {
         if ($value instanceof FieldData) {
-            $value = $value->getChunks()
-                ->map(function(BaseChunk $chunk) use ($static) {
+            $chunks = $value->getChunks();
+
+            /** @var Entry[] $entries */
+            $entries = $chunks
+                ->filter(fn(BaseChunk $chunk) => $chunk instanceof EntryChunk)
+                ->keyBy(fn(EntryChunk $chunk) => $chunk->entryId)
+                ->map(fn(EntryChunk $chunk) => $chunk->getEntry())
+                ->all();
+            ElementHelper::swapInProvisionalDrafts($entries);
+
+            $value = $chunks
+                ->map(function(BaseChunk $chunk) use ($static, $entries) {
                     if ($chunk instanceof Markup) {
                         return $chunk->rawHtml;
                     }
 
                     /** @var EntryChunk $chunk */
-                    $entry = $chunk->getEntry();
-                    if (!$entry) {
-                        return '';
-                    }
+                    $entry = $entries[$chunk->entryId];
 
                     try {
                         if (!$static) {
                             return Html::tag('craft-entry', options: [
                                 'data' => [
-                                    'entry-id' => $entry->id,
+                                    'entry-id' => $entry->isProvisionalDraft ? $entry->getCanonicalId() : $entry->id,
                                     'card-html' => $this->getCardHtml($entry),
                                 ],
                             ]);
