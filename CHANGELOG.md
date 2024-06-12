@@ -8,7 +8,8 @@
 - Added `craft\ckeditor\events\ModifyConfigEvent::$toolbar`. ([#233](https://github.com/craftcms/ckeditor/pull/233))
 - CKEditor now requires Craft CMS 5.2+.
 - Fixed a bug where nested entry edit pages could have a “Delete for site” action.
-- Fixed a bug where disabled nested entries were getting deleted.
+- Fixed a bug where disabled nested entries were getting rendered on the front end. ([#246](https://github.com/craftcms/ckeditor/issues/246))
+- Fixed a bug where disabled nested entries could get deleted.
 
 ## 4.0.6 - 2024-05-15
 
