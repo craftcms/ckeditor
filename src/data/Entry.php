@@ -36,7 +36,7 @@ class Entry extends BaseChunk
     {
         $entry = $this->getEntry();
 
-        if (!$entry || $entry->getStatus() !== EntryElement::STATUS_LIVE) {
+        if ($entry?->getStatus() !== EntryElement::STATUS_LIVE) {
             return '';
         }
 
