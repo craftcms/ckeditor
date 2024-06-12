@@ -1034,7 +1034,10 @@ JS,
                 ->keyBy(fn(EntryChunk $chunk) => $chunk->entryId)
                 ->map(fn(EntryChunk $chunk) => $chunk->getEntry())
                 ->all();
-            ElementHelper::swapInProvisionalDrafts($entries);
+
+            if (!$static) {
+                ElementHelper::swapInProvisionalDrafts($entries);
+            }
 
             $value = $chunks
                 ->map(function(BaseChunk $chunk) use ($static, $entries) {
