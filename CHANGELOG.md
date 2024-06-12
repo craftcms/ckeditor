@@ -4,6 +4,7 @@
 
 - Entry cards now display provisional changes, with an “Edited” label.
 - It’s now possible to loop over CKEditor field values from templates, which will split the value into chunks representing HTML markup and nested entry entries. ([#241](https://github.com/craftcms/ckeditor/pull/241))
+- It’s now possible to copy/paste nested entries across CKEditor fields, as long as the entry type is allowed. ([#237](https://github.com/craftcms/ckeditor/discussions/237))
 - Added `craft\ckeditor\events\ModifyConfigEvent::$toolbar`. ([#233](https://github.com/craftcms/ckeditor/pull/233))
 - CKEditor now requires Craft CMS 5.2+.
 - Fixed a bug where nested entry edit pages could have a “Delete for site” action.
