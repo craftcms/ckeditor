@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Entry cards now display provisional changes, with an “Edited” label.
+- It’s now possible to loop over CKEditor field values from templates, which will split the value into chunks representing HTML markup and nested entry entries. ([#241](https://github.com/craftcms/ckeditor/pull/241))
 - CKEditor now requires Craft CMS 5.2+.
 - Fixed a bug where nested entry edit pages could have a “Delete for site” action.
 
