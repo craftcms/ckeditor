@@ -8,6 +8,7 @@
 
 namespace craft\ckeditor\data;
 
+use craft\web\twig\SafeHtml;
 use yii\base\BaseObject;
 
 /**
@@ -18,7 +19,7 @@ use yii\base\BaseObject;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.1.0
  */
-abstract class BaseChunk extends BaseObject
+abstract class BaseChunk extends BaseObject implements SafeHtml
 {
     abstract public function getType(): string;
     abstract public function getHtml(): string;
