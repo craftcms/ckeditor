@@ -380,7 +380,7 @@ const headingShortcuts = function (editor, config) {
  *
  * @param editor
  */
-const handleClipboard = function (editor) {
+const handleClipboard = function (editor, plugins) {
   let copyFromEditorId = null;
   const documentView = editor.editing.view.document;
   const clipboardPipelinePlugin = editor.plugins.get('ClipboardPipeline');
@@ -404,81 +404,94 @@ const handleClipboard = function (editor) {
 
     // if what we're pasting contains nested element(s)
     if (pasteContent.includes('<craft-entry')) {
-      // if the copyFromEditorId is different to editor.id we're pasting into,
-      if (copyFromEditorId != editor.id) {
-        // prevent and show message
-        Craft.cp.displayError(
-          Craft.t(
-            'ckeditor',
-            'Entries cannot be copied between CKEditor fields.',
-          ),
-        );
+      if (data.method == 'drop' && copyFromEditorId === editor.id) {
+        // if we're dragging AND it's the same editor instance - carry on
+      }
+      // if we're pasting or dragging to a different editor instance - maybe duplicate
+      else if (
+        data.method == 'paste' ||
+        (data.method == 'drop' && copyFromEditorId !== editor.id)
+      ) {
+        let duplicatedContent = pasteContent;
+        let errors = false;
+        const siteId = Craft.siteId;
+        const editorData = editor.getData();
+        const matches = [...pasteContent.matchAll(/data-entry-id="([0-9]+)/g)];
+
+        // Stop the event emitter from calling further callbacks for this event interaction
+        // we need to get duplicates and update the content snippet that's being pasted in
+        // before we can call further events
         event.stop();
-      } else {
-        // if we're dragging - carry on
-        // if we're pasting - maybe duplicate
-        if (data.method == 'paste') {
-          let duplicatedContent = pasteContent;
-          let errors = false;
-          const siteId = Craft.siteId;
-          const editorData = editor.getData();
-          const matches = [
-            ...pasteContent.matchAll(/data-entry-id="([0-9]+)/g),
-          ];
 
-          // Stop the event emitter from calling further callbacks for this event interaction
-          // we need to get duplicates and update the content snippet that's being pasted in
-          // before we can call further events
-          event.stop();
+        // for each nested entry ID we found
+        for (let i = 0; i < matches.length; i++) {
+          let entryId = null;
+          if (matches[i][1]) {
+            entryId = matches[i][1];
+          }
 
-          // for each nested entry ID we found
-          for (let i = 0; i < matches.length; i++) {
-            let entryId = null;
-            if (matches[i][1]) {
-              entryId = matches[i][1];
-            }
+          if (entryId !== null) {
+            // check if we're copying to a different field and if this entry ID is in the field already
+            const regex = new RegExp('data-entry-id="' + entryId + '"');
+            // if we're pasting to the same editor instance and that entryId isn't in use there (cut & paste) - carry on
+            if (copyFromEditorId === editor.id && !regex.test(editorData)) {
+              // if it's not - carry on
+            } else {
+              // if it's a different editor instance or the entryId is already is use (copy & paste)
+              // duplicate it and replace the string's ID with the new one
 
-            if (entryId !== null) {
-              // check if this entry ID is in the field already
-              const regex = new RegExp('data-entry-id="' + entryId + '"');
-              if (!regex.test(editorData)) {
-                // if it's not - carry on
-              } else {
-                // duplicate it and replace the string's ID with the new one
-                await Craft.sendActionRequest(
-                  'POST',
-                  'ckeditor/ckeditor/duplicate-nested-entry',
-                  {
-                    data: {
-                      entryId: entryId,
-                      siteId: siteId,
-                    },
-                  },
-                )
-                  .then((response) => {
-                    if (response.data.newEntryId) {
-                      duplicatedContent = duplicatedContent.replace(
-                        entryId,
-                        response.data.newEntryId,
-                      );
-                    }
-                  })
-                  .catch((e) => {
-                    errors = true;
-                    Craft.cp.displayError(e?.response?.data?.message);
-                    console.error(e?.response?.data?.additionalMessage);
-                  });
+              let targetEntryTypeIds = null;
+              if (copyFromEditorId !== editor.id) {
+                if (!plugins.includes(CraftEntries)) {
+                  // if we're pasting to a different editor instance and that instance doesn't have CraftEntries plugins - bail straight away
+                  Craft.cp.displayError(
+                    Craft.t(
+                      'ckeditor',
+                      'This field doesn’t allow nested entries.',
+                    ),
+                  );
+                  errors = true;
+                } else {
+                  targetEntryTypeIds = editor.config
+                    .get('entryTypeOptions')
+                    .map((option) => option['value']);
+                }
               }
+
+              await Craft.sendActionRequest(
+                'POST',
+                'ckeditor/ckeditor/duplicate-nested-entry',
+                {
+                  data: {
+                    entryId: entryId,
+                    siteId: siteId,
+                    targetEntryTypeIds: targetEntryTypeIds,
+                  },
+                },
+              )
+                .then((response) => {
+                  if (response.data.newEntryId) {
+                    duplicatedContent = duplicatedContent.replace(
+                      entryId,
+                      response.data.newEntryId,
+                    );
+                  }
+                })
+                .catch((e) => {
+                  errors = true;
+                  Craft.cp.displayError(e?.response?.data?.message);
+                  console.error(e?.response?.data?.additionalMessage);
+                });
             }
           }
+        }
 
-          // only update the data.content and fire further callbacks if we didn't encounter errors;
-          if (!errors) {
-            // data.content is what's passed down the chain to be pasted in
-            data.content = editor.data.htmlProcessor.toView(duplicatedContent);
-            // and now we can fire further callbacks for this event interaction
-            clipboardPipelinePlugin.fire('inputTransformation', data);
-          }
+        // only update the data.content and fire further callbacks if we didn't encounter errors;
+        if (!errors) {
+          // data.content is what's passed down the chain to be pasted in
+          data.content = editor.data.htmlProcessor.toView(duplicatedContent);
+          // and now we can fire further callbacks for this event interaction
+          clipboardPipelinePlugin.fire('inputTransformation', data);
         }
       }
     }
@@ -578,7 +591,7 @@ export const create = async function (element, config) {
     headingShortcuts(editor, config);
   }
 
-  handleClipboard(editor);
+  handleClipboard(editor, plugins);
 
   return editor;
 };
