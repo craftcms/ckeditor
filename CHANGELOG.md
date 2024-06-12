@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 4.1.0 - 2024-06-12
 
 - Entry cards now display provisional changes, with an “Edited” label.
 - It’s now possible to loop over CKEditor field values from templates, which will split the value into chunks representing HTML markup and nested entry entries. ([#241](https://github.com/craftcms/ckeditor/pull/241))
