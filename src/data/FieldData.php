@@ -12,7 +12,6 @@ use ArrayIterator;
 use Countable;
 use Craft;
 use craft\elements\Entry as EntryElement;
-use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\htmlfield\HtmlFieldData;
 use Illuminate\Support\Collection;
