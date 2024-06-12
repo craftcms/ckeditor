@@ -182,6 +182,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface
 
                         $query = self::createEntryQuery($owner, $field)
                             ->where(['in', 'elements.id', $entryIds])
+                            ->status(null)
                             ->trashed(null);
 
                         if (!empty($entryIds)) {
