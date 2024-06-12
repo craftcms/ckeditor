@@ -26,11 +26,11 @@ This plugin requires Craft CMS 5.2.0 or later.
 
 ## Installation
 
-You can install this plugin from the Plugin Store or with Composer.
+You can install this plugin from Craft’s in-app Plugin Store or with Composer.
 
 **From the Plugin Store:**
 
-Go to the Plugin Store in your project’s Control Panel and search for “CKEditor”. Then click on the “Install” button in its modal window.
+Go to the Plugin Store in your project’s Control Panel and search for “CKEditor,” then click on the “Install” button in the sidebar.
 
 **With Composer:**
 
@@ -38,20 +38,20 @@ Open your terminal and run the following commands:
 
 ```bash
 # go to the project directory
-cd /path/to/my-project.test
+cd /path/to/my-project
 
 # tell Composer to load the plugin
 composer require craftcms/ckeditor
 
 # tell Craft to install the plugin
-./craft plugin/install ckeditor
+php craft plugin/install ckeditor
 ```
 
 ## Configuration
 
 CKEditor configs are managed globally from **Settings** → **CKEditor**.
 
-Configurations define the available toolbar buttons, as well as any custom [config options](https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html) and CSS styles that should be regisered with the field.
+Configurations define the available toolbar buttons, as well as any custom [config options](https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html) and CSS styles that should be registered with the field.
 
 New configs can also be created inline from CKEditor field settings.
 
@@ -99,11 +99,9 @@ You can then register custom CSS styles that should be applied within the editor
 
 ### HTML Purifier Configs
 
-CKEditor fields use [HTML Purifier](http://htmlpurifier.org) to ensure that no malicious code makes it into its field values, to prevent XSS attacks
-and other vulnerabilities.
+CKEditor fields use [HTML Purifier](http://htmlpurifier.org) to ensure that no malicious code makes it into its field values, to prevent XSS attacks and other vulnerabilities.
 
-You can create custom HTML Purifier configs that will be available to your CKEditor fields. They should be created as JSON files in
-your `config/htmlpurifier/` folder.
+You can create custom HTML Purifier configs that will be available to your CKEditor fields. They should be created as JSON files in your `config/htmlpurifier/` folder.
 
 Use this as a starting point, which is the default config that CKEditor fields use if no custom HTML Purifier config is selected:
 
@@ -145,7 +143,7 @@ See CKEditor’s [media embed documentation](https://ckeditor.com/docs/ckeditor5
 
 ## Longform Content with Nested Entries
 
-CKEditor fields can be configured to manage nested entries, which will be displayed as cards within your rich text content, and edited via slideouts.
+CKEditor fields can be configured to manage nested entries, which will be displayed as [cards](https://craftcms.com/docs/5.x/system/elements.html#chips-cards) within your rich text content, and edited via [slideouts](https://craftcms.com/docs/5.x/system/control-panel.html#slideouts).
 
 ![A CKEditor field with a nested entry’s slideout open.](images/nested-entry.png)
 
@@ -186,6 +184,56 @@ An `entry` variable will be available to the template, which references the entr
 > ```twig
 > {% for image in entry.myAssetsField.eagerly().all() %}
 > ```
+
+### Rendering Chunks
+
+CKEditor field content is represented by an object that can be output as a string (`{{ entry.myCkeditorField }}`), or used like an array:
+
+```twig
+{% for chunk in entry.myCkeditorField %}
+  <div class="chunk {{ chunk.type }}">
+    {{ chunk }}
+  </div>
+{% endfor %}
+```
+
+“Chunks” have two `type`s: `markup`, containing CKEditor HTML; and `entry`, representing a single nested entry. Adjacent markup chunks are collapsed into one another in cases where the nested entry is disabled.
+
+This example treats both chunk types as strings. For entry chunks, this is equivalent to calling `{{ entry.render() }}`. If you would like to customize the data passed to the element partial, or use a different representation of the entry entirely, you have access to the nested entry via `chunk.entry`:
+
+```twig
+{% for chunk in entry.myCkeditorField %}
+  {% if chunk.type == 'markup' %}
+    <div class="chunk markup">
+      {{ chunk }}
+    </div>
+  {% else %}
+    <div class="chunk entry" data-entry-id="{{ chunk.entry.id }}">
+      {# Call the render() method with custom params... #}
+      {{ chunk.entry.render({
+        isRss: true,
+      }) }}
+
+      {# ...or provide completely custom HTML for each supported entry type! #}
+      {% switch chunk.entry.type.handle %}
+        {% case 'gallery' %}
+          {% set slides = chunk.entry.slides.eagerly().all() %}
+          {% for slide in slides %}
+            <figure>
+              {# ... #}
+            </figure>
+        {% case 'document' %}
+          {% set doc = chunk.entry.attachment.eagerly().one() %}
+
+          <a href="{{ doc.url }}" download>Download {{ doc.filename }}</a> ({{ doc.size|filesize }})
+        {% default %}
+          {# For anything else: #}
+          {{ chunk.entry.render() }}
+      {% endswitch %}
+    </div>
+  {% endif %}
+{% endfor %}
+```
 
 ## Converting Redactor Fields
 
