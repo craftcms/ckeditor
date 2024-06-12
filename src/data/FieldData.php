@@ -158,8 +158,6 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
             $entries = [];
         }
 
-        ElementHelper::swapInProvisionalDrafts($entries);
-
         $entryChunks->each(function(Entry $chunk) use ($entries) {
             $chunk->setEntry($entries[$chunk->entryId] ?? null);
         });
