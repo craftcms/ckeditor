@@ -8,6 +8,8 @@
 namespace craft\ckeditor;
 
 use Craft;
+use craft\base\Actionable;
+use craft\base\Chippable;
 use craft\base\Model;
 use craft\helpers\Json;
 use Illuminate\Support\Collection;
@@ -21,8 +23,14 @@ use yii\validators\Validator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class CkeConfig extends Model
+class CkeConfig extends Model implements Chippable, Actionable
 {
+    public static function get(int|string $id): ?static
+    {
+        /** @phpstan-ignore-next-line */
+        return Plugin::getInstance()->getCkeConfigs()->getByUid($id);
+    }
+
     /**
      * @var string|null The configuration UUID
      */
@@ -99,6 +107,48 @@ class CkeConfig extends Model
         unset($config['listPlugin']);
 
         parent::__construct($config);
+    }
+
+    public function getId(): ?string
+    {
+        return $this->uid;
+    }
+
+    public function getUiLabel(): string
+    {
+        return $this->name;
+    }
+
+    public function getActionMenuItems(): array
+    {
+        $items = [];
+
+        if (
+            $this->uid &&
+            Craft::$app->getUser()->getIsAdmin() &&
+            Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+        ) {
+            $editId = sprintf('action-edit-%s', mt_rand());
+            $items[] = [
+                'id' => $editId,
+                'icon' => 'edit',
+                'label' => Craft::t('app', 'Edit'),
+            ];
+
+            $view = Craft::$app->getView();
+            $view->registerJsWithVars(fn($id, $params) => <<<JS
+$('#' + $id).on('click', () => {
+  new Craft.CpScreenSlideout('ckeditor/cke-configs/edit', {
+    params: $params,
+  });
+});
+JS, [
+                $view->namespaceInputId($editId),
+                ['uid' => $this->uid],
+            ]);
+        }
+
+        return $items;
     }
 
     public function attributeLabels(): array

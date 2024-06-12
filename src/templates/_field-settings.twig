@@ -1,40 +1,14 @@
 {% import '_includes/forms.twig' as forms %}
 
-{% embed '_includes/forms/field.twig' with {
+{{ forms.componentSelectField({
   label: 'CKEditor Config'|t('ckeditor'),
   id: 'cke-config',
-  field: field,
-} %}
-  {% block input %}
-    {% set addOptionFn %}
-      (createOption, selectize) => {
-        const slideout = new Craft.CpScreenSlideout('ckeditor/cke-configs/edit');
-        slideout.on('submit', ev => {
-          createOption({
-              text: ev.data.name,
-              value: ev.data.uid,
-          });
-        });
-        slideout.on('close', () => {
-          if (selectize.lastValidValue === '__add__') {
-            selectize.lastValidValue = '';
-          }
-          selectize.focus();
-        });
-      }
-    {% endset %}
-
-    {% include '_includes/forms/selectize' with {
-        name: 'ckeConfig',
-        options: plugin('ckeditor').ckeConfigs.getAll()|map(ckeConfig => {
-          label: ckeConfig.name,
-          value: ckeConfig.uid,
-        }),
-        addOptionLabel: 'Create a new config…'|t('ckeditor'),
-        value: field.ckeConfig,
-    } %}
-  {% endblock %}
-{% endembed %}
+  name: 'ckeConfig',
+  options: plugin('ckeditor').ckeConfigs.getAll(),
+  value: field.ckeConfig ? plugin('ckeditor').ckeConfigs.getByUid(field.ckeConfig) : null,
+  limit: 1,
+  createAction: 'ckeditor/cke-configs/edit',
+}) }}
 
 {{ forms.textField({
   id: 'word-limit',
@@ -60,6 +34,32 @@
   name: 'enableSourceEditingForNonAdmins',
   label: 'Show the “Source” button for non-admin users?'|t('ckeditor'),
   on: field.enableSourceEditingForNonAdmins,
+}) }}
+
+<hr>
+
+{% set headlessMode = craft.app.config.general.headlessMode %}
+{% set entryTypes = entryTypeRows ?? [] %}
+
+{{ forms.entryTypeSelectField({
+  label: 'Entry Types'|t('app'),
+  instructions: 'Choose the types of entries that can be created in this field.'|t('app'),
+  id: 'entry-types',
+  name: 'entryTypes[]',
+  values: field.getEntryTypes(),
+  create: true,
+  errors: field.getErrors('entryTypes'),
+  data: {'error-key': 'entryTypes'},
+}) }}
+
+{{ forms.textField({
+  label: '“New” Button Label'|t('app'),
+  instructions: 'The text label for the entry creation button.'|t('app'),
+  id: 'create-button-label',
+  name: 'createButtonLabel',
+  value: field.createButtonLabel,
+  placeholder: defaultCreateButtonLabel,
+  errors: field.getErrors('createButtonLabel')
 }) }}
 
 <hr>
@@ -143,19 +143,4 @@
       value: field.purifierConfig
     }) }}
   </div>
-
-  {% if craft.app.db.isMysql %}
-    {{ forms.selectField({
-      label: "Column Type"|t('ckeditor'),
-      id: 'column-type',
-      name: 'columnType',
-      instructions: "The type of column this field should get in the database."|t('ckeditor'),
-      options: [
-        { value: 'text', label: 'text (~64KB)' },
-        { value: 'mediumtext', label: 'mediumtext (~16MB)' },
-      ],
-      value: field.columnType,
-      warning: (field.id ? "Changing this may result in data loss."|t('ckeditor')),
-    }) }}
-  {% endif %}
 </div>

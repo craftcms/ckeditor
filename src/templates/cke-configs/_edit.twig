@@ -20,17 +20,19 @@
   id: 'name',
   name: 'name',
   value: ckeConfig.name,
-  errors: ckeConfig.getErrors('name'),
   autofocus: true,
   required: true,
+  errors: ckeConfig.getErrors('name'),
+  data: {'error-key': 'name'},
 }) }}
 
 {% embed '_includes/forms/field.twig' with {
   label: 'Toolbar'|t('ckeditor'),
   instructions: 'Drag toolbar items into the editor.'|t('ckeditor'),
   id: 'toolbar',
-  errors: ckeConfig.getErrors('toolbar'),
   ckeConfig: ckeConfig,
+  errors: ckeConfig.getErrors('toolbar'),
+  data: {'error-key': 'toolbar'},
 } %}
   {% block input %}
     <div id="toolbar-builder" class="ckeditor-tb pane">
@@ -80,8 +82,9 @@
     link: 'https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html',
   }),
   id: 'config-options',
-  errors: ckeConfig.getErrors('json')|merge(ckeConfig.getErrors('js')),
   ckeConfig: ckeConfig,
+  errors: ckeConfig.getErrors('json')|merge(ckeConfig.getErrors('js')),
+  data: {'error-key': 'json'},
 } %}
   {% block input %}
     {% import 'codeeditor/codeEditor.twig' as codeEditor %}

@@ -134,3 +134,15 @@ a.ck.ck-button:focus {
   border-bottom-right-radius: var(--ck-border-radius);
   background: var(--ck-color-base-background);
 }
+
+.cke-entry-card {
+  margin: 0.9em auto; /* same as images */
+  border-radius: var(--large-border-radius);
+}
+
+/* patch in https://github.com/ckeditor/ckeditor5/pull/15795 */
+.ck.ck-editor__editable_inline > :last-child,
+.ck.ck-editor__editable_inline
+  > :has(+ .ck-fake-selection-container:last-child) {
+  margin-bottom: var(--ck-spacing-large);
+}

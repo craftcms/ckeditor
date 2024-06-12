@@ -1,17 +1,52 @@
 # Release Notes for CKEditor for Craft CMS
 
-## 3.8.3 - 2024-03-28
+## Unreleased
+
+- Entry cards now display provisional changes, with an “Edited” label.
+- It’s now possible to loop over CKEditor field values from templates, which will split the value into chunks representing HTML markup and nested entry entries. ([#241](https://github.com/craftcms/ckeditor/pull/241))
+- CKEditor now requires Craft CMS 5.2+.
+- Fixed a bug where nested entry edit pages could have a “Delete for site” action.
+- Fixed a bug where disabled nested entries were getting deleted.
+
+## 4.0.6 - 2024-05-15
+
+- Fixed a bug where newly-created nested entries were getting soft-deleted. ([#229](https://github.com/craftcms/ckeditor/issues/229))
+
+## 4.0.5 - 2024-05-14
+
+- Fixed a bug where nested entries weren’t visible when viewing revisions. ([#227](https://github.com/craftcms/ckeditor/issues/227))
+- Fixed a bug where nested entry cards were getting rendered after page load. ([#221](https://github.com/craftcms/ckeditor/discussions/221))
+- Fixed a bug where nested entry cards were getting labelled as invalid, for newly-created, then deleted, then restored entries. ([#224](https://github.com/craftcms/ckeditor/issues/224), [#228](https://github.com/craftcms/ckeditor/pull/228))
+- Fixed a bug where deleting and restoring an existing nested entry wouldn’t restore the entry’s ownership data. ([#228](https://github.com/craftcms/ckeditor/pull/228))
+- Fixed a bug where soft-deleted entries weren’t getting rendered on front-end preview requests. ([#223](https://github.com/craftcms/ckeditor/pull/223))
+
+## 4.0.4 - 2024-04-25
+
+- Fixed a bug where front-end links included element reference URL fragments. ([#197](https://github.com/craftcms/ckeditor/issues/197))
+- Fixed a bug where `resave` commands would replace nested entries with their rendered output in stored CKEditor field values. ([#211](https://github.com/craftcms/ckeditor/issues/211))
+
+## 4.0.3 - 2024-03-28
 
 - Fixed a bug where the `ckeditor/convert` command wasn’t checking for and removing the old `configFile` Redactor setting. ([#199](https://github.com/craftcms/ckeditor/issues/199))
 
-## 3.8.2 - 2024-03-19
+## 4.0.2 - 2024-03-19
 
 - Fixed a bug where the “Insert image” toolbar button wasn’t available when editing CKEditor configs. ([#195](https://github.com/craftcms/ckeditor/issues/195))
 
-## 3.8.1 - 2024-03-06
+## 4.0.1 - 2024-03-15
 
-- CKEditor config edit pages now warn when switching the Config Options setting from JavaScript to JSON if the JavaScript code contains any functions. ([#152](https://github.com/craftcms/ckeditor/issues/152), [#180](https://github.com/craftcms/ckeditor/pull/180))
-- Fixed a bug where the “Link to an asset” option was showing up when there weren’t any available volumes with URLs. ([#179](https://github.com/craftcms/ckeditor/issues/179))
+- Fixed an error that could occur when editing an entry with nested CKEditor entries that used a soft-deleted entry type. ([#191](https://github.com/craftcms/ckeditor/issues/191))
+- Fixed a bug where revisions weren’t getting created for the owner element, when CKEditor fields were edited. ([#194](https://github.com/craftcms/ckeditor/pull/194))
+
+## 4.0.0 - 2024-03-14
+
+- CKEditor now requires Craft CMS 5.0.0-beta.7 or later.
+- Added the ability to embed nested entries within CKEditor fields.
+- Added the “Entry Types” field setting.
+- Added the “‘New’ Button Label” field setting. ([#159](https://github.com/craftcms/ckeditor/discussions/159))
+- It’s now possible to edit the selected CKEditor config from field settings.
+- The CKEditor inspector is now shown for admin users, if a `CRAFT_SHOW_CKEDITOR_INSPECTOR` environment variable is set to `true`.
+- Added `craft\ckeditor\Field::entryManager()`.
 
 ## 3.8.0 - 2024-02-21
 

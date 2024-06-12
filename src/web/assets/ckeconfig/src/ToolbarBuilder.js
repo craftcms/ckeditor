@@ -36,6 +36,7 @@ export default Garnish.Base.extend({
       .create(editorElement, {
         linkOptions: [{elementType: 'craft\\elements\\Asset'}],
         assetSources: ['*'],
+        entryTypeOptions: [{label: 'fake', value: 'fake'}],
       })
       .then((editor) => {
         const cf = editor.ui.componentFactory;

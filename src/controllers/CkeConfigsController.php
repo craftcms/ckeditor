@@ -72,6 +72,7 @@ class CkeConfigsController extends Controller
         }
 
         $response = $this->asCpScreen()
+            ->editUrl($ckeConfig->uid ? "settings/ckeditor/$ckeConfig->uid" : null)
             ->action('ckeditor/cke-configs/save')
             ->addCrumb(Craft::t('app', 'Settings'), 'settings')
             ->addCrumb(Craft::t('ckeditor', 'CKEditor Configs'), 'settings/ckeditor')
@@ -99,8 +100,10 @@ class CkeConfigsController extends Controller
                         $containerId,
                         $jsonSchemaUri,
                     ) => <<<JS
-const configOptions = new CKEditor5.craftcms.ConfigOptions($configOptionsId, $jsonSchemaUri);
-new CKEditor5.craftcms.ToolbarBuilder($toolbarBuilderId, $containerId, configOptions);
+(() => {
+  const configOptions = new CKEditor5.craftcms.ConfigOptions($configOptionsId, $jsonSchemaUri);
+  new CKEditor5.craftcms.ToolbarBuilder($toolbarBuilderId, $containerId, configOptions);
+})();
 JS,
                     [
                         $this->view->namespaceInputId('toolbar-builder'),
