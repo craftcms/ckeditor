@@ -84,6 +84,10 @@ a.ck.ck-button:focus {
 }
 
 /* content */
+.ck.ck-content ul:last-child {
+  padding-bottom: 0 !important;
+}
+
 .ck.ck-content[dir='ltr'] ul {
   padding-left: 40px;
 }
