@@ -358,7 +358,7 @@ class Field extends HtmlField
             'ui' => [
                 'viewportOffset' => ['top' => 50],
                 'poweredBy' => [
-                    'position' => 'inside',
+                    'position' => 'outside',
                     'label' => '',
                 ],
             ],
