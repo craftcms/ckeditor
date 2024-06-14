@@ -50,11 +50,7 @@ a.ck.ck-button:focus {
 }
 
 .ck.ck-editor__editable_inline {
-  padding: calc(var(--m) - 2px) var(--m)
-    calc(
-      var(--m) + var(--ck-powered-by-line-height) +
-        var(--ck-powered-by-padding-vertical)
-    ) !important;
+  padding: calc(var(--m) - 2px) var(--m) !important;
 }
 
 .ck.ck-editor__editable.ck-focused:not(.ck-editor__nested-editable) {
