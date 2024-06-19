@@ -43,6 +43,30 @@ New configs can also be created inline from CKEditor field settings.
 
 ![A “Create a new field” page within the Craft CMS control panel, with “CKEditor” as the chosen field type. A slideout is open with CKEditor config settings.](field-settings.png)
 
+> [!NOTE]  
+> Once you selected which buttons should be available in your configuration, you can customise them further via the "Config Options".
+>
+> Available options can be found in the [CKEditor's documentation](https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html).
+
+#### Example
+By default, the "Insert table" button comes with Table Row, Table Column and Merge buttons, but it's also able to show e.g. Table Properties, Table Cell Properties or Table Caption options.
+To include them, alongside the default ones, you can add the following under "Config Options":
+```json
+{
+  "table": {
+    "contentToolbar": [
+      "tableRow",
+      "tableColumn",
+      "mergeTableCells",
+      "toggleTableCaption",
+      "tableProperties",
+      "tableCellProperties"
+    ]
+  }
+}
+```
+Some of those options can be then customized further. For example, you can specify what colours should be available as the [cell's background](https://ckeditor.com/docs/ckeditor5/latest/api/module_table_tableconfig-TableConfig.html#member-tableCellProperties).
+
 ### Registering Custom Styles
 
 CKEditor’s [Styles](https://ckeditor.com/docs/ckeditor5/latest/features/style.html) plugin makes it easy to apply custom styles to your content via CSS classes.
