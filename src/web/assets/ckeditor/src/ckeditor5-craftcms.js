@@ -436,7 +436,9 @@ const handleClipboard = function (editor, plugins) {
         ownerId = elementEditor.settings.elementId;
 
         // get the target field id, in case we're pasting to a different field all together (not different instance, different field)
-        layoutElementUid = $editorElement.parents('.field').data('layoutElement');
+        layoutElementUid = $editorElement
+          .parents('.field')
+          .data('layoutElement');
 
         // for each nested entry ID we found
         for (let i = 0; i < matches.length; i++) {
