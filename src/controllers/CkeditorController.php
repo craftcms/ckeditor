@@ -10,6 +10,7 @@ namespace craft\ckeditor\controllers;
 use Craft;
 use craft\ckeditor\Field;
 use craft\elements\Asset;
+use craft\elements\Entry;
 use craft\fieldlayoutelements\CustomField;
 use craft\web\Controller;
 use Throwable;
@@ -69,6 +70,8 @@ class CkeditorController extends Controller
         $siteId = $this->request->getBodyParam('siteId');
         $layoutElementUid = $this->request->getBodyParam('layoutElementUid');
 
+        // it's okay to limit to provided siteId, as we're "just" after the card html;
+        // all the hard work has already been done
         $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId, [
             'status' => null,
             'revisions' => null,
@@ -106,10 +109,14 @@ class CkeditorController extends Controller
         $entryId = $this->request->getRequiredBodyParam('entryId');
         $siteId = $this->request->getBodyParam('siteId');
         $targetEntryTypeIds = $this->request->getBodyParam('targetEntryTypeIds');
+        $targetOwnerId = $this->request->getBodyParam('targetOwnerId');
+        $targetLayoutElementUid = $this->request->getBodyParam('targetLayoutElementUid');
+        $targetFieldId = null;
 
-        $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId, [
+        $entry = Craft::$app->getEntries()->getEntryById($entryId, null, [
             'status' => null,
             'revisions' => null,
+            'preferSites' => [$siteId],
         ]);
 
         if (!$entry) {
@@ -127,8 +134,33 @@ class CkeditorController extends Controller
             }
         }
 
+        // get ID of the field we're duplicating (e.g. pasting) into
+        if ($targetLayoutElementUid !== null) {
+            if ($targetOwnerId !== null && $entry->primaryOwnerId !== $targetOwnerId) {
+                $owner = Craft::$app->getElements()->getElementById($targetOwnerId);
+            } else {
+                $owner = $entry->getOwner();
+            }
+            /** @var CustomField $layoutElement */
+            $layoutElement = $owner->getFieldLayout()->getElementByUid($targetLayoutElementUid);
+            /** @var Field $field */
+            $field = $layoutElement->getField();
+            $targetFieldId = $field->id;
+        }
+
+        $newAttrs = [];
+        if ($siteId !== null && $entry->siteId !== $siteId) {
+            $newAttrs['siteId'] = $siteId;
+        }
+        if ($targetOwnerId !== null && $entry->primaryOwnerId !== $targetOwnerId) {
+            $newAttrs['primaryOwnerId'] = $targetOwnerId;
+        }
+        if ($targetFieldId !== null && $entry->fieldId !== $targetFieldId) {
+            $newAttrs['fieldId'] = $targetFieldId;
+        }
+
         try {
-            $newEntry = Craft::$app->getElements()->duplicateElement($entry);
+            $newEntry = Craft::$app->getElements()->duplicateElement($entry, $newAttrs);
         } catch (Throwable $e) {
             return $this->asFailure(Craft::t('app', 'Couldn’t duplicate {type}.', [
                 'type' => $entry::lowerDisplayName(),
