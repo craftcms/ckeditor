@@ -92,10 +92,8 @@ class Plugin extends \craft\base\Plugin
         Event::on(Element::class, Element::EVENT_AFTER_PROPAGATE, function(ModelEvent $event) {
             /** @var Element $element */
             $element = $event->sender;
-            if (!$element->resaving) {
-                foreach ($this->entryManagers($element) as $entryManager) {
-                    $entryManager->maintainNestedElements($element, $event->isNew);
-                }
+            foreach ($this->entryManagers($element) as $entryManager) {
+                $entryManager->maintainNestedElements($element, $event->isNew);
             }
         });
 
