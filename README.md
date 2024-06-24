@@ -182,7 +182,7 @@ See CKEditor’s [media embed documentation](https://ckeditor.com/docs/ckeditor5
 
 ## Converting Redactor Fields
 
-You can used the `ckeditor/convert` command to convert any existing Redactor fields over to CKEditor. For each unique Redactor config, a new CKEditor config will be created and associated with the appropriate field(s).
+You can use the `ckeditor/convert` command to convert any existing Redactor fields over to CKEditor. For each unique Redactor config, a new CKEditor config will be created and associated with the appropriate field(s).
 
 ```sh
 php craft ckeditor/convert
