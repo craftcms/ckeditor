@@ -647,7 +647,7 @@ JS,
             }
 
             $preContent = Html::tag('code', $preContent, [
-                'class' => 'language-plaintext'
+                'class' => 'language-plaintext',
             ]);
 
             $value = substr($value, 0, $startPos) . $preContent . substr($value, $endPos);
