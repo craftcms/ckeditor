@@ -536,6 +536,9 @@ JS,
             // Redactor to CKEditor syntax for <figure>
             // (https://github.com/craftcms/ckeditor/issues/96)
             $value = $this->_normalizeFigures($value);
+            // Redactor to CKEditor syntax for <pre>
+            // (https://github.com/craftcms/ckeditor/issues/258)
+            $value = $this->_normalizePreTags($value);
         }
 
         return parent::prepValueForInput($value, $element);
@@ -554,6 +557,9 @@ JS,
             // Redactor to CKEditor syntax for <figure>
             // (https://github.com/craftcms/ckeditor/issues/96)
             $value = $this->_normalizeFigures($value);
+            // Redactor to CKEditor syntax for <pre>
+            // (https://github.com/craftcms/ckeditor/issues/258)
+            $value = $this->_normalizePreTags($value);
         }
 
         return parent::serializeValue($value, $element);
@@ -614,6 +620,39 @@ JS,
             },
             $value,
         );
+
+        return $value;
+    }
+
+    /**
+     * Normalizes <pre> tags, ensuring they have a <code> tag inside them.
+     * If there's no <code> tag in there, ensure it's added with class="language-plaintext".
+     *
+     * @param string $value
+     * @return string
+     */
+    private function _normalizePreTags(string $value): string
+    {
+        $offset = 0;
+        while (preg_match('/<pre\b[^>]*>\s*(.*?)<\/pre>/is', $value, $match, PREG_OFFSET_CAPTURE, $offset)) {
+            /** @var int $startPos */
+            $startPos = $match[1][1];
+            $endPos = $startPos + strlen($match[1][0]);
+            $preContent = $match[1][0];
+
+            // if there's already a <code tag inside, leave it alone and carry on
+            if (str_starts_with($preContent, '<code')) {
+                $offset = $startPos + strlen($preContent);
+                continue;
+            }
+
+            $preContent = Html::tag('code', $preContent, [
+                'class' => 'language-plaintext'
+            ]);
+
+            $value = substr($value, 0, $startPos) . $preContent . substr($value, $endPos);
+            $offset = $startPos + strlen($preContent);
+        }
 
         return $value;
     }
