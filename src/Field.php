@@ -1305,6 +1305,7 @@ JS,
                 foreach ($sites as $site) {
                     if (isset($sectionSiteSettings[$site->id]) && $sectionSiteSettings[$site->id]->hasUrls) {
                         $sources[] = 'section:' . $section->uid;
+                        break;
                     }
                 }
             }
