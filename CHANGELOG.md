@@ -1,6 +1,7 @@
 # Release Notes for CKEditor for Craft CMS
 
 ## Unreleased
+
 - CKEditor now requires Craft CMS 5.3+.
 - CKEditor fields can now be merged together. ([#277](https://github.com/craftcms/ckeditor/pull/277))
 
