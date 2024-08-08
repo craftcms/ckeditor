@@ -2,6 +2,11 @@
 
 ## Unreleased (5.0)
 
+> [!NOTE]
+> CKEditor fields now store relations for any linked elements and embedded assets. Make sure you’re specifying `field` keys within `relatedTo` element query params (or `relatedViaField` keys within GraphQL relation arguments), to avoid unexpected relations from showing up the front end.
+
+- CKEditor fields now store relations for any linked elements and embedded assets.
+
 ## Unreleased (4.x)
 
 - CKEditor now requires Craft CMS 5.3+.
