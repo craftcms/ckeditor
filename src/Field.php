@@ -43,6 +43,7 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\htmlfield\events\ModifyPurifierConfigEvent;
 use craft\htmlfield\HtmlField;
@@ -1115,6 +1116,30 @@ JS,
         }
 
         return parent::prepValueForInput($value, $element);
+    }
+
+    /**
+     * @innheritdoc
+     */
+    protected function searchKeywords(mixed $value, ElementInterface $element): string
+    {
+        /** @var FieldData|null $value */
+        if (!$value) {
+            return '';
+        }
+
+        $keywords = $value->getChunks()
+            ->filter(fn(BaseChunk $chunk) => $chunk instanceof Markup)
+            ->map(fn(Markup $chunk) => $chunk->getHtml())
+            ->join(' ');
+
+        if (!Craft::$app->getDb()->getSupportsMb4()) {
+            $keywords = StringHelper::encodeMb4($keywords);
+        }
+
+        $keywords .= self::entryManager($this)->getSearchKeywords($element);
+
+        return $keywords;
     }
 
     /**
