@@ -27,4 +27,10 @@ class ModifyConfigEvent extends Event
      * @var CkeConfig $ckeConfig The CKEditor config
      */
     public CkeConfig $ckeConfig;
+
+    /**
+     * @var string[] $toolbar The toolbar config
+     * @since 4.1.0
+     */
+    public array $toolbar;
 }

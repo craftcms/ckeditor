@@ -2,7 +2,20 @@
 
 ## Unreleased
 
+- CKEditor now requires Craft CMS 5.3+.
+- CKEditor fields can now be merged together. ([#277](https://github.com/craftcms/ckeditor/pull/277))
+- Fixed a bug where CKEditor fields’ search keywords were including nested entries’ rendered partial templates rather than nested entries’ search keywords.
+
+## 4.1.0 - 2024-06-12
+
+- Entry cards now display provisional changes, with an “Edited” label.
+- It’s now possible to loop over CKEditor field values from templates, which will split the value into chunks representing HTML markup and nested entry entries. ([#241](https://github.com/craftcms/ckeditor/pull/241))
+- It’s now possible to copy/paste nested entries across CKEditor fields, as long as the entry type is allowed. ([#237](https://github.com/craftcms/ckeditor/discussions/237))
+- Added `craft\ckeditor\events\ModifyConfigEvent::$toolbar`. ([#233](https://github.com/craftcms/ckeditor/pull/233))
+- CKEditor now requires Craft CMS 5.2+.
 - Fixed a bug where nested entry edit pages could have a “Delete for site” action.
+- Fixed a bug where disabled nested entries were getting rendered on the front end. ([#246](https://github.com/craftcms/ckeditor/issues/246))
+- Fixed a bug where disabled nested entries could get deleted.
 
 ## 4.0.6 - 2024-05-15
 

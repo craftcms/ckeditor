@@ -41,6 +41,8 @@ return [
     'The default transform that should be applied when inserting an image.' => 'The default transform that should be applied when inserting an image.',
     'The transforms that should be available when inserting images.' => 'The transforms that should be available when inserting images.',
     'The type of column this field should get in the database.' => 'The type of column this field should get in the database.',
+    'This field doesn’t allow nested {type} entries.' => 'This field doesn’t allow nested {type} entries.',
+    'This field doesn’t allow nested entries.' => 'This field doesn’t allow nested entries.',
     'Toolbar' => 'Toolbar',
     'View available settings' => 'View available settings',
     'Word Limit' => 'Word Limit',

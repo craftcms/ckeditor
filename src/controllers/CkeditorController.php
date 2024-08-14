@@ -105,6 +105,8 @@ class CkeditorController extends Controller
     {
         $entryId = $this->request->getRequiredBodyParam('entryId');
         $siteId = $this->request->getBodyParam('siteId');
+        $targetEntryTypeIds = $this->request->getBodyParam('targetEntryTypeIds');
+
         $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId, [
             'status' => null,
             'revisions' => null,
@@ -112,6 +114,17 @@ class CkeditorController extends Controller
 
         if (!$entry) {
             throw new BadRequestHttpException("Invalid entry ID: $entryId");
+        }
+
+        // check if the target field accepts the entry type we're trying to duplicate
+        if ($targetEntryTypeIds !== null) {
+            if (!in_array($entry->typeId, $targetEntryTypeIds)) {
+                return $this->asFailure(
+                    Craft::t('ckeditor', 'This field doesn’t allow nested {type} entries.', [
+                        'type' => $entry->getType()->getUiLabel(),
+                    ])
+                );
+            }
         }
 
         try {
