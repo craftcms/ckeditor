@@ -3,7 +3,9 @@
 ## Unreleased
 
 - CKEditor now requires Craft CMS 5.3+.
+- Added the `ckeditor/convert/matrix` command. ([#234](https://github.com/craftcms/ckeditor/pull/234))
 - CKEditor fields can now be merged together. ([#277](https://github.com/craftcms/ckeditor/pull/277))
+- Added `craft\ckeditor\migrations\BaseConvertMatrixContentMigration`.
 - Fixed a bug where CKEditor fields’ search keywords were including nested entries’ rendered partial templates rather than nested entries’ search keywords.
 
 ## 4.1.0 - 2024-06-12
