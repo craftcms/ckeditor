@@ -10,6 +10,7 @@
 - Fixed a bug where CKEditor fields’ search keywords were including nested entries’ rendered partial templates rather than nested entries’ search keywords.
 - Fixed a bug where nested entries weren’t always getting propagated correctly. ([#254](https://github.com/craftcms/ckeditor/issues/254))
 - Fixed a bug where code blocks created by a Redactor field only had `<pre>` tags with no `<code>` tags inside them. ([#258](https://github.com/craftcms/ckeditor/issues/258))
+- Fixed a bug where dropdown menus didn’t have a maximum height. ([#268](https://github.com/craftcms/ckeditor/issues/268))
 
 ## 4.1.0 - 2024-06-12
 

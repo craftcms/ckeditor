@@ -65,6 +65,11 @@ a.ck.ck-button:focus {
   border: none !important;
 }
 
+.ck.ck-dropdown__panel-visible {
+  max-height: 50vh;
+  overflow-y: scroll;
+}
+
 .ck.ck-dropdown .ck-button.ck-dropdown__button.ck-on {
   border-bottom-left-radius: var(--ck-border-radius) !important;
   border-bottom-right-radius: var(--ck-border-radius) !important;
