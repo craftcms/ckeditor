@@ -6,6 +6,7 @@
 - Added `craft\ckeditor\events\ModifyConfigEvent::$toolbar`. ([#233](https://github.com/craftcms/ckeditor/pull/233))
 - Fixed a bug where code blocks created by a Redactor field only had `<pre>` tags with no `<code>` tags inside them. ([#258](https://github.com/craftcms/ckeditor/issues/258))
 - Fixed a bug where dropdown menus didn’t have a maximum height. ([#268](https://github.com/craftcms/ckeditor/issues/268))
+- Fixed a bug where word counts weren’t handling unicode characters correctly. ([#275](https://github.com/craftcms/ckeditor/issues/275))
 
 ## 3.8.3 - 2024-03-28
 

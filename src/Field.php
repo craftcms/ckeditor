@@ -209,7 +209,7 @@ class Field extends HtmlField
                     $value = strip_tags((string)$element->getFieldValue($this->handle));
                     if (
                         // regex copied from the WordCount plugin, for consistency
-                        preg_match_all('/(?:[\p{L}\p{N}]+\S?)+/', $value, $matches) &&
+                        preg_match_all('/(?:[\p{L}\p{N}]+\S?)+/u', $value, $matches) &&
                         count($matches[0]) > $this->wordLimit
                     ) {
                         $element->addError(
