@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added `craft\ckeditor\events\ModifyConfigEvent::$toolbar`. ([#233](https://github.com/craftcms/ckeditor/pull/233))
+- Fixed a bug where code blocks created by a Redactor field only had `<pre>` tags with no `<code>` tags inside them. ([#258](https://github.com/craftcms/ckeditor/issues/258))
 
 ## 3.8.3 - 2024-03-28
 
