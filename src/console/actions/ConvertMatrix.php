@@ -60,7 +60,7 @@ class ConvertMatrix extends Action
 
         if (!$matrixField instanceof Matrix) {
             // otherwise, ensure we're dealing with a matrix field
-            $this->controller->stdout("$matrixField->name is not a Matrix field.\n", Console::FG_RED);
+            $this->controller->stdout("“{$matrixField->name}” is not a Matrix field.\n", Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
