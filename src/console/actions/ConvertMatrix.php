@@ -65,14 +65,14 @@ class ConvertMatrix extends Action
         }
 
         // we have the matrix field, let's set up the basics for the CKE field
-        /** @var EntryType|null $htmlEntryType */
-        /** @var Field|PlainText|null $htmlField */
-        /** @var string $markdownFlavor */
-        /** @var bool $preserveHtmlEntries */
         try {
+            /** @var EntryType|null $htmlEntryType */
+            /** @var Field|PlainText|null $htmlField */
+            /** @var string $markdownFlavor */
+            /** @var bool $preserveHtmlEntries */
             [$htmlEntryType, $htmlField, $markdownFlavor, $preserveHtmlEntries] = $this->prepareContentPopulation($matrixField);
         } catch (OperationAbortedException) {
-            $this->stdout("Field conversion aborted.\n", Console::FG_YELLOW);
+            $this->controller->stdout("Field conversion aborted.\n", Console::FG_YELLOW);
             return ExitCode::OK;
         }
 
