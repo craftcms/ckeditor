@@ -223,7 +223,7 @@ EOD,
         $choice = $this->controller->select('Choose:', [
             ...$eligibleEntryTypes->map(fn(EntryType $entryType) => $entryType->name)->all(),
             'none' => 'None',
-        ]);
+        ], $eligibleEntryTypes->count() === 1 ? $eligibleEntryTypes->keys()->first() : null);
         if ($choice === 'none') {
             return null;
         }
