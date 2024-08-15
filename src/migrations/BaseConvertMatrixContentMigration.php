@@ -10,7 +10,6 @@ use craft\db\Table;
 use craft\elements\Entry;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
-use yii\base\InvalidConfigException;
 
 /**
  * Base convert matrix content migration class.
@@ -98,7 +97,7 @@ class BaseConvertMatrixContentMigration extends Migration
             // group by site ID
             /** @var array<int,Entry[]> $groupedNestedEntries */
             $groupedNestedEntries = ArrayHelper::index($allNestedEntries, null, [
-                fn(Entry $entry) => $entry->siteId
+                fn(Entry $entry) => $entry->siteId,
             ]);
 
             foreach ($groupedNestedEntries as $nestedEntries) {
