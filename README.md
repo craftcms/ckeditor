@@ -57,6 +57,59 @@ New configs can also be created inline from CKEditor field settings.
 
 ![A “Create a new field” page within the Craft CMS control panel, with “CKEditor” as the chosen field type. A slideout is open with CKEditor config settings.](images/field-settings.png)
 
+Once you have selected which toolbar buttons should be available in fields using a given configuration, additional settings may be applied via **Config options**. Options can be defined as static JSON, or a dynamically-evaluated JavaScript snippet; the latter is used as the body of an [immediately-invoked function expression](https://developer.mozilla.org/en-US/docs/Glossary/IIFE), and does not receive any arguments.
+
+> [!NOTE]  
+> Available options can be found in the [CKEditor's documentation](https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html). Craft will auto-complete config properties for most bundled CKEditor extensions.
+
+### Examples
+
+#### Table Features
+
+Suppose we wanted to give editors more control over the layout and appearance of in-line tables. Whenever you add the “Insert table” button to an editor, inline controls are exposed for _Table Row_, _Table Column_, and _Merge_. These can be supplemented with _Table Properties_, _Table Cell Properties_, and _Table Caption_ buttons by adding them in the field’s **Config options** section:
+
+```json
+{
+  "table": {
+    "contentToolbar": [
+      "tableRow",
+      "tableColumn",
+      "mergeTableCells",
+      "toggleTableCaption",
+      "tableProperties",
+      "tableCellProperties"
+    ]
+  }
+}
+```
+
+Some of these additional buttons can be customized further. For example, to modify the colors available for a cell’s background (within the “[Table Cell Properties](https://ckeditor.com/docs/ckeditor5/latest/api/module_table_tableconfig-TableConfig.html#member-tableCellProperties)” balloon), you would provide an array compatible with the [`TableColorConfig` schema](https://ckeditor.com/docs/ckeditor5/latest/api/module_table_tableconfig-TableColorConfig.html) under `table.tableCellProperties.backgroundColors`.
+
+#### External Links
+
+Multiple configuration concerns can coexist in one **Config options** object! You might have a `table` key at the top level to customize table controls (as we've done above), as well as a `link` key that introduces “external” link support:
+
+```json
+{
+  "table": { /* ... */ },
+  "link": {
+    "decorators": {
+      "openInNewTab": {
+        "mode": "manual",
+        "label": "Open in new tab?",
+        "attributes": {
+          "target": "_blank",
+          "rel": "noopener noreferrer"
+        }
+      }
+    }
+  }
+}
+```
+
+> [!TIP]  
+> An automatic version of this feature is available natively, via the [`link.addTargetToExternalLinks`](https://ckeditor.com/docs/ckeditor5/latest/api/module_link_linkconfig-LinkConfig.html#member-addTargetToExternalLinks) option.
+
 ### Registering Custom Styles
 
 CKEditor’s [Styles](https://ckeditor.com/docs/ckeditor5/latest/features/style.html) plugin makes it easy to apply custom styles to your content via CSS classes.
@@ -237,7 +290,7 @@ This example treats both chunk types as strings. For entry chunks, this is equiv
 
 ## Converting Redactor Fields
 
-You can used the `ckeditor/convert` command to convert any existing Redactor fields over to CKEditor. For each unique Redactor config, a new CKEditor config will be created.
+You can use the `ckeditor/convert` command to convert any existing Redactor fields over to CKEditor. For each unique Redactor config, a new CKEditor config will be created and associated with the appropriate field(s).
 
 ```sh
 php craft ckeditor/convert
@@ -252,7 +305,8 @@ The first step is to create a [DLL-compatible](https://ckeditor.com/docs/ckedito
 - If you’re including one of CKEditor’s [first-party packages](https://github.com/ckeditor/ckeditor5/tree/master/packages), it will already include a `build` directory with a DLL-compatible package inside it.
 - If you’re creating a custom CKEditor plugin, use [CKEditor’s package generator](https://ckeditor.com/docs/ckeditor5/latest/framework/plugins/package-generator/using-package-generator.html) to scaffold it, and run its [`dll:build` command](https://ckeditor.com/docs/ckeditor5/latest/framework/plugins/package-generator/javascript-package.html#dllbuild) to create a DLL-compatible package.
 
-> :bulb: Check out CKEditor’s [Implementing an inline widget](https://ckeditor.com/docs/ckeditor5/latest/framework/tutorials/implementing-an-inline-widget.html) tutorial for an in-depth look at how to create a custom CKEditor plugin.
+> [!TIP]  
+> Check out CKEditor’s [Implementing an inline widget](https://ckeditor.com/docs/ckeditor5/latest/framework/tutorials/implementing-an-inline-widget.html) tutorial for an in-depth look at how to create a custom CKEditor plugin.
 
 Once the CKEditor package is in place in your Craft plugin, create an [asset bundle](https://craftcms.com/docs/4.x/extend/asset-bundles.html) which extends [`BaseCkeditorPackageAsset`](src/web/assets/BaseCkeditorPackageAsset.php). The asset bundle defines the package’s build directory, filename, a list of CKEditor plugin names provided by the package, and any toolbar items that should be made available via the plugin.
 
