@@ -65,19 +65,19 @@ class ConvertMatrix extends Action
         }
 
         // we have the matrix field, let's set up the basics for the CKE field
-        /** @var EntryType|null $outgoingEntryType */
-        /** @var Field|PlainText|null $outgoingTextField */
+        /** @var EntryType|null $htmlEntryType */
+        /** @var Field|PlainText|null $htmlField */
         /** @var string $markdownFlavor */
-        /** @var bool $preserveTextEntries */
+        /** @var bool $preserveHtmlEntries */
         try {
-            [$outgoingEntryType, $outgoingTextField, $markdownFlavor, $preserveTextEntries] = $this->prepareContentPopulation($matrixField);
+            [$htmlEntryType, $htmlField, $markdownFlavor, $preserveHtmlEntries] = $this->prepareContentPopulation($matrixField);
         } catch (OperationAbortedException) {
             $this->stdout("Field conversion aborted.\n", Console::FG_YELLOW);
             return ExitCode::OK;
         }
 
         // get the CKEditor config
-        $ckeConfig = $this->ckeConfig($matrixField->name, $outgoingTextField);
+        $ckeConfig = $this->ckeConfig($matrixField->name, $htmlField);
 
         $this->controller->stdout("\n");
 
@@ -125,10 +125,10 @@ class ConvertMatrix extends Action
 
         $this->controller->do("Generating the content migration", function() use (
             $ckeField,
-            $outgoingEntryType,
-            $outgoingTextField,
+            $htmlEntryType,
+            $htmlField,
             $markdownFlavor,
-            $preserveTextEntries,
+            $preserveHtmlEntries,
             $migrationName,
             $migrationPath,
         ) {
@@ -136,10 +136,10 @@ class ConvertMatrix extends Action
                 'namespace' => Craft::$app->getContentMigrator()->migrationNamespace,
                 'className' => $migrationName,
                 'ckeFieldUid' => $ckeField->uid,
-                'outgoingEntryTypeUid' => $outgoingEntryType?->uid,
-                'outgoingTextFieldUid' => $outgoingTextField?->layoutElement->uid,
+                'htmlEntryTypeUid' => $htmlEntryType?->uid,
+                'htmlFieldUid' => $htmlField?->layoutElement->uid,
                 'markdownFlavor' => $markdownFlavor,
-                'preserveTextEntries' => $preserveTextEntries,
+                'preserveHtmlEntries' => $preserveHtmlEntries,
             ], $this);
             FileHelper::writeToFile($migrationPath, $content);
         });
@@ -160,18 +160,18 @@ EOD,
 
     private function prepareContentPopulation(Matrix $matrixField): array
     {
-        $outgoingEntryType = $this->outgoingEntryType($matrixField);
-        if (!$outgoingEntryType) {
+        $htmlEntryType = $this->htmlEntryType($matrixField);
+        if (!$htmlEntryType) {
             return [null, null, 'none', false];
         }
 
-        $customFields = $outgoingEntryType->getFieldLayout()->getCustomFields();
-        $outgoingTextField = $this->outgoingTextField($customFields);
+        $customFields = $htmlEntryType->getFieldLayout()->getCustomFields();
+        $htmlField = $this->htmlField($customFields);
 
-        if ($outgoingTextField instanceof PlainText) {
+        if ($htmlField instanceof PlainText) {
             $flavors = array_keys(Markdown::$flavors);
             $markdownFlavor = $this->controller->select(
-                $this->controller->markdownToAnsi("Which Markdown flavor should `$outgoingTextField->name` fields be parsed with?"),
+                $this->controller->markdownToAnsi("Which Markdown flavor should `$htmlField->name` fields be parsed with?"),
                 [...array_combine($flavors, $flavors), 'none'],
                 'original',
             );
@@ -180,15 +180,15 @@ EOD,
         }
 
         if (count($customFields) === 1) {
-            $preserveTextEntries = false;
+            $preserveHtmlEntries = false;
         } else {
-            $preserveTextEntries = $this->controller->confirm($this->controller->markdownToAnsi("Preserve `$outgoingEntryType->name` entries alongside their extracted HTML?"));
+            $preserveHtmlEntries = $this->controller->confirm($this->controller->markdownToAnsi("Preserve `$htmlEntryType->name` entries alongside their extracted HTML?"));
         }
 
-        return [$outgoingEntryType, $outgoingTextField, $markdownFlavor, $preserveTextEntries];
+        return [$htmlEntryType, $htmlField, $markdownFlavor, $preserveHtmlEntries];
     }
 
-    private function outgoingEntryType(Matrix $matrixField): ?EntryType
+    private function htmlEntryType(Matrix $matrixField): ?EntryType
     {
         $entryTypes = Collection::make($matrixField->getEntryTypes());
 
@@ -206,7 +206,7 @@ EOD,
             ->keyBy(fn(EntryType $entryType) => $entryType->handle);
 
         if ($eligibleEntryTypes->isEmpty()) {
-            $this->controller->warning("`$matrixField->name` doesn’t have any entry types with CKEditor or Plain Text fields.");
+            $this->controller->warning("`$matrixField->name` doesn’t have any entry types with CKEditor/Plain Text fields.");
             if (!$this->controller->confirm('Continue anyway?', true)) {
                 throw new OperationAbortedException();
             }
@@ -230,7 +230,7 @@ EOD,
         return $eligibleEntryTypes->get($choice);
     }
 
-    private function outgoingTextField(array $customFields): Field|PlainText
+    private function htmlField(array $customFields): Field|PlainText
     {
         /** @var Collection<Field|PlainText> $eligibleFields */
         $eligibleFields = Collection::make($customFields)
@@ -252,13 +252,13 @@ EOD,
         return $eligibleFields->get($choice);
     }
 
-    private function ckeConfig(string $fieldName, Field|PlainText|null $outgoingTextField = null): CkeConfig
+    private function ckeConfig(string $fieldName, Field|PlainText|null $htmlField = null): CkeConfig
     {
         $ckeConfigsService = Plugin::getInstance()->getCkeConfigs();
 
         // if a CKEditor field was chosen to populate the converted field's content, use its CKEditor config
-        if ($outgoingTextField instanceof Field && $outgoingTextField->ckeConfig) {
-            return $ckeConfigsService->getByUid($outgoingTextField->ckeConfig);
+        if ($htmlField instanceof Field && $htmlField->ckeConfig) {
+            return $ckeConfigsService->getByUid($htmlField->ckeConfig);
         }
 
         $ckeConfigs = Collection::make($ckeConfigsService->getAll())

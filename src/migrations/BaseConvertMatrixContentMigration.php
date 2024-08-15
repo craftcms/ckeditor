@@ -23,10 +23,10 @@ use yii\helpers\Markdown;
 class BaseConvertMatrixContentMigration extends Migration
 {
     public string $ckeFieldUid;
-    public ?string $outgoingEntryTypeUid;
-    public ?string $outgoingTextFieldUid;
+    public ?string $htmlEntryTypeUid;
+    public ?string $htmlFieldUid;
     public string $markdownFlavor;
-    public bool $preserveTextEntries;
+    public bool $preserveHtmlEntries;
 
     public function safeUp(): bool
     {
@@ -43,24 +43,24 @@ class BaseConvertMatrixContentMigration extends Migration
             return false;
         }
 
-        $outgoingEntryType = null;
-        $outgoingTextField = null;
+        $htmlEntryType = null;
+        $htmlField = null;
 
         $entriesService = Craft::$app->getEntries();
-        if ($this->outgoingEntryTypeUid) {
-            $outgoingEntryType = $entriesService->getEntryTypeByUid($this->outgoingEntryTypeUid);
-            if (!$outgoingEntryType) {
-                echo "Invalid entry type UUID: $this->outgoingEntryTypeUid";
+        if ($this->htmlEntryTypeUid) {
+            $htmlEntryType = $entriesService->getEntryTypeByUid($this->htmlEntryTypeUid);
+            if (!$htmlEntryType) {
+                echo "Invalid entry type UUID: $this->htmlEntryTypeUid";
                 return false;
             }
 
-            if ($this->outgoingTextFieldUid) {
-                $outgoingTextFieldLayoutElement = $outgoingEntryType->getFieldLayout()->getElementByUid($this->outgoingTextFieldUid);
-                if (!$outgoingTextFieldLayoutElement instanceof CustomField) {
-                    echo "Invalid field layout element UUID: $this->outgoingTextFieldUid";
+            if ($this->htmlFieldUid) {
+                $htmlFieldLayoutElement = $htmlEntryType->getFieldLayout()->getElementByUid($this->htmlFieldUid);
+                if (!$htmlFieldLayoutElement instanceof CustomField) {
+                    echo "Invalid field layout element UUID: $this->htmlFieldUid";
                     return false;
                 }
-                $outgoingTextField = $outgoingTextFieldLayoutElement->getField();
+                $htmlField = $htmlFieldLayoutElement->getField();
             }
         }
 
@@ -105,16 +105,16 @@ class BaseConvertMatrixContentMigration extends Migration
                     // if the nested entry is the one containing the top-level field,
                     // get its content and place it before the rest of that entry’s content
                     // possibly followed by the <craft-entry data-entry-id=\"<nested entry id>\"></craft-entry>
-                    if ($entry->type->uid === $outgoingEntryType?->uid) {
-                        $textValue = $entry->getFieldValue($outgoingTextField->handle);
-                        if ($this->markdownFlavor !== 'none' && $outgoingTextField instanceof PlainText) {
+                    if ($entry->type->uid === $htmlEntryType?->uid) {
+                        $textValue = $entry->getFieldValue($htmlField->handle);
+                        if ($this->markdownFlavor !== 'none' && $htmlField instanceof PlainText) {
                             // Parse it as Markdown
                             $value .= Markdown::process($textValue, $this->markdownFlavor);
                         } else {
                             $value .= $textValue;
                         }
 
-                        if ($this->preserveTextEntries) {
+                        if ($this->preserveHtmlEntries) {
                             $value .= sprintf('<craft-entry data-entry-id="%s"></craft-entry>', $entry->id);
                         } else {
                             $elementsService->deleteElement($entry);
