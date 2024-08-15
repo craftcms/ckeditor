@@ -361,14 +361,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         }
 
         if ($resave) {
-            // set resaving=true to avoid our EVENT_AFTER_PROPAGATE handler from dealing with the owner recursively,
-            // and to avoid a new revision getting created.
-            $resaving = $owner->resaving;
-            $owner->resaving = true;
-
             Craft::$app->getElements()->saveElement($owner, false, $propagate, false);
-
-            $owner->resaving = $resaving;
         }
     }
 
