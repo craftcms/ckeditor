@@ -82,36 +82,35 @@ class ConvertMatrix extends Action
 
         $this->controller->stdout("Starting field conversion\n", Console::FG_GREEN);
 
-        // get matrix field form PC
+        // get the Matrix field’s config
         $this->projectConfig = Craft::$app->getProjectConfig();
-        $pcField = $this->projectConfig->get("fields.{$matrixField->uid}");
+        $config = $this->projectConfig->get("fields.{$matrixField->uid}");
 
         // change its type
-        $pcField['type'] = Field::class;
+        $config['type'] = Field::class;
 
-        // translate propagation into translation method
-        $pcField['translationKeyFormat'] = $pcField['settings']['propagationKeyFormat'];
-        $pcField['translationMethod'] = match ($pcField['settings']['propagationMethod']) {
-            PropagationMethod::All->value => Field::TRANSLATION_METHOD_NONE,
+        // Propagation Method => Translation Method
+        $config['translationMethod'] = match ($config['settings']['propagationMethod'] ?? null) {
             PropagationMethod::None->value => Field::TRANSLATION_METHOD_SITE,
             PropagationMethod::SiteGroup->value => Field::TRANSLATION_METHOD_SITE_GROUP,
             PropagationMethod::Language->value => Field::TRANSLATION_METHOD_LANGUAGE,
             PropagationMethod::Custom->value => Field::TRANSLATION_METHOD_CUSTOM,
             default => Field::TRANSLATION_METHOD_NONE,
         };
+        $config['translationKeyFormat'] = $config['settings']['propagationKeyFormat'] ?? null;
 
         // set the settings
-        $pcField['settings'] = $settings;
+        $config['settings'] = $settings;
 
         // set the entry types
-        $pcField['settings']['entryTypes'] = $matrixField->settings['entryTypes'];
+        $config['settings']['entryTypes'] = $matrixField->settings['entryTypes'];
         if ($outgoingEntryType !== null && $replacementEntryType !== null) {
-            if (($key = array_search($outgoingEntryType->uid, $pcField['settings']['entryTypes'])) !== false) {
-                $pcField['settings']['entryTypes'][$key] = $replacementEntryType->uid;
+            if (($key = array_search($outgoingEntryType->uid, $config['settings']['entryTypes'])) !== false) {
+                $config['settings']['entryTypes'][$key] = $replacementEntryType->uid;
             }
         }
 
-        $this->projectConfig->set("fields.{$matrixField->uid}", $pcField);
+        $this->projectConfig->set("fields.{$matrixField->uid}", $config);
 
         $this->controller->stdout(" ✓ Finished converting the Matrix field to CKEditor field.\n\n", Console::FG_GREEN);
 
@@ -212,8 +211,8 @@ EOD,
     }
 
     /**
-     * Duplicate selected entry type, and it's layout, sans the field
-     * which is supposed to be used to populate the content of the prosified CKE field.
+     * Duplicate selected entry type and its layout, sans the field
+     * which is supposed to be used to populate the content of the converted field.
      *
      * @param EntryType $outgoingEntryType
      * @param BaseField $outgoingTextField
@@ -317,7 +316,6 @@ EOD,
             'showUnpermittedFiles' => false,
         ];
 
-
         $this->ckeConfigs = Plugin::getInstance()->getCkeConfigs();
         $ckeConfigs = array_column($this->ckeConfigs->getAll(), null, 'name');
         foreach ($ckeConfigs as $key => $value) {
@@ -325,7 +323,7 @@ EOD,
             $ckeConfigs[StringHelper::slugify($key)] = $value;
         }
 
-        // if you selected a top level field to populate the prosified field's content with
+        // if you selected a top level field to populate the converted field's content with
         if ($outgoingTextField instanceof Field) {
             // check if the ckeconfig for this field has "createEntry" toolbar item added
             $config = array_values(array_filter($ckeConfigs, fn($ckeConfig) => $ckeConfig->uid === $outgoingTextField->ckeConfig))[0];
