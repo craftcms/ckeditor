@@ -5,6 +5,7 @@
 - CKEditor configs created via the `ckeditor/convert` command now allow modifying HTML attributes, classes, and styles within the source view, if the Redactor config included the `html` button. ([#264](https://github.com/craftcms/ckeditor/pull/264), [#263](https://github.com/craftcms/ckeditor/issues/263))
 - Added `craft\ckeditor\events\ModifyConfigEvent::$toolbar`. ([#233](https://github.com/craftcms/ckeditor/pull/233))
 - Fixed a bug where code blocks created by a Redactor field only had `<pre>` tags with no `<code>` tags inside them. ([#258](https://github.com/craftcms/ckeditor/issues/258))
+- Fixed a bug where dropdown menus didn’t have a maximum height. ([#268](https://github.com/craftcms/ckeditor/issues/268))
 
 ## 3.8.3 - 2024-03-28
 
