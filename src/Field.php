@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
+use craft\base\MergeableFieldInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
 use craft\ckeditor\data\BaseChunk;
@@ -24,6 +25,7 @@ use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\Table;
+use craft\db\Table as DbTable;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\db\ElementQuery;
@@ -37,9 +39,11 @@ use craft\events\CancelableEvent;
 use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\htmlfield\events\ModifyPurifierConfigEvent;
 use craft\htmlfield\HtmlField;
@@ -64,7 +68,7 @@ use yii\base\InvalidConfigException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
-class Field extends HtmlField implements ElementContainerFieldInterface
+class Field extends HtmlField implements ElementContainerFieldInterface, MergeableFieldInterface
 {
     /**
      * @event ModifyPurifierConfigEvent The event that is triggered when creating HTML Purifier config
@@ -762,6 +766,28 @@ class Field extends HtmlField implements ElementContainerFieldInterface
     }
 
     /**
+     * @innheritdoc
+     */
+    public function canMergeInto(FieldInterface $persistingField, ?string &$reason): bool
+    {
+        if (!$persistingField instanceof self) {
+            $reason = 'CKEditor fields can only be merged into other CKEditor fields.';
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterMergeFrom(FieldInterface $outgoingField)
+    {
+        Db::update(DbTable::ENTRIES, ['fieldId' => $this->id], ['fieldId' => $outgoingField->id]);
+        parent::afterMergeFrom($outgoingField);
+    }
+
+    /**
      * @inheritdoc
      */
     protected function createFieldData(string $content, ?int $siteId): HtmlFieldData
@@ -1086,6 +1112,30 @@ JS,
     }
 
     /**
+     * @innheritdoc
+     */
+    protected function searchKeywords(mixed $value, ElementInterface $element): string
+    {
+        /** @var FieldData|null $value */
+        if (!$value) {
+            return '';
+        }
+
+        $keywords = $value->getChunks()
+            ->filter(fn(BaseChunk $chunk) => $chunk instanceof Markup)
+            ->map(fn(Markup $chunk) => $chunk->getHtml())
+            ->join(' ');
+
+        if (!Craft::$app->getDb()->getSupportsMb4()) {
+            $keywords = StringHelper::encodeMb4($keywords);
+        }
+
+        $keywords .= self::entryManager($this)->getSearchKeywords($element);
+
+        return $keywords;
+    }
+
+    /**
      * Returns entry type options in form of an array with 'label' and 'value' keys for each option.
      *
      * @return array
@@ -1298,6 +1348,7 @@ JS,
                 foreach ($sites as $site) {
                     if (isset($sectionSiteSettings[$site->id]) && $sectionSiteSettings[$site->id]->hasUrls) {
                         $sources[] = 'section:' . $section->uid;
+                        break;
                     }
                 }
             }
@@ -1456,6 +1507,9 @@ JS,
      */
     private function _adjustPurifierConfig(HTMLPurifier_Config $purifierConfig): HTMLPurifier_Config
     {
+        /** @var HTMLPurifier_HTMLDefinition|null $def */
+        $def = $purifierConfig->getDefinition('HTML', true);
+
         $ckeConfig = $this->_ckeConfig();
 
         // These will come back as indexed (key => true) arrays
@@ -1479,8 +1533,6 @@ JS,
 
         if (in_array('todoList', $ckeConfig->toolbar)) {
             // Add input[type=checkbox][disabled][checked] to the definition
-            /** @var HTMLPurifier_HTMLDefinition|null $def */
-            $def = $purifierConfig->getDefinition('HTML', true);
             $def?->addElement('input', 'Inline', 'Inline', '', [
                 'type' => 'Enum#checkbox',
                 'disabled' => 'Enum#disabled',
@@ -1489,20 +1541,14 @@ JS,
         }
 
         if (in_array('numberedList', $ckeConfig->toolbar)) {
-            /** @var HTMLPurifier_HTMLDefinition|null $def */
-            $def = $purifierConfig->getDefinition('HTML', true);
             $def?->addAttribute('ol', 'style', 'Text');
         }
 
         if (in_array('bulletedList', $ckeConfig->toolbar)) {
-            /** @var HTMLPurifier_HTMLDefinition|null $def */
-            $def = $purifierConfig->getDefinition('HTML', true);
             $def?->addAttribute('ul', 'style', 'Text');
         }
 
         if (in_array('createEntry', $ckeConfig->toolbar)) {
-            /** @var HTMLPurifier_HTMLDefinition|null $def */
-            $def = $purifierConfig->getDefinition('HTML', true);
             $def?->addElement('craft-entry', 'Inline', 'Inline', '', [
                 'data-entry-id' => 'Number',
             ]);
