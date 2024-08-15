@@ -290,11 +290,21 @@ This example treats both chunk types as strings. For entry chunks, this is equiv
 
 ## Converting Redactor Fields
 
-You can use the `ckeditor/convert` command to convert any existing Redactor fields over to CKEditor. For each unique Redactor config, a new CKEditor config will be created and associated with the appropriate field(s).
+You can use the `ckeditor/convert/redactor` command to convert any existing Redactor fields over to CKEditor. For each unique Redactor config, a new CKEditor config will be created and associated with the appropriate field(s).
 
 ```sh
-php craft ckeditor/convert
+php craft ckeditor/convert/redactor
 ```
+
+## Converting Matrix Fields
+
+You can use the `ckeditor/convert/matrix` command to convert a Matrix field over to CKEditor. Each of the Matrix field’s entry types will be assigned to the CKEditor field, and field values will be a mix of HTML content extracted from one of the nested entry types of your choosing (if desired) combined with nested entries.
+
+```sh
+php craft ckeditor/convert/matrix <myMatrixFieldHandle>
+```
+
+The command will generate a new content migration, which will need to be run on other environments (via `craft up`) in order to update existing elements’ field values.
 
 ## Adding CKEditor Plugins
 
