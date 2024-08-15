@@ -5,9 +5,12 @@ namespace craft\ckeditor\migrations;
 use Craft;
 use craft\ckeditor\Field;
 use craft\db\Migration;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Entry;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
+use yii\base\InvalidConfigException;
 
 /**
  * Base convert matrix content migration class.
@@ -37,8 +40,6 @@ class BaseConvertMatrixContentMigration extends Migration
             echo "$ckeField->name is not a CKEditor field.";
             return false;
         }
-
-        echo '    > Starting content conversion … ';
 
         $outgoingEntryType = null;
         $outgoingTextField = null;
@@ -70,61 +71,75 @@ class BaseConvertMatrixContentMigration extends Migration
             }
         }
 
-        // get all the nested entries belonging to the field we’re converting
-        /** @var Entry[] $allNestedEntries */
-        $allNestedEntries = Entry::find()
-            ->fieldId($ckeField->id)
-            ->drafts(null)
-            ->revisions(null)
-            ->trashed(null)
-            ->status(null)
-            ->all();
+        $elementsService = Craft::$app->getElements();
 
-        // group them by ownerId
-        /** @var array<int,Entry[]> $groupedNestedEntries */
-        $groupedNestedEntries = ArrayHelper::index($allNestedEntries, null, [
-            fn(Entry $entry) => $entry->ownerId,
-        ]);
+        // get all the owner element IDs that have nested entries for this field
+        $ownerIds = (new Query())
+            ->select('o.ownerId')
+            ->from(['e' => Table::ENTRIES])
+            ->innerJoin(['o' => Table::ELEMENTS_OWNERS], '[[o.elementId]] = [[e.id]]')
+            ->where(['e.fieldId' => $ckeField->id])
+            ->groupBy('ownerId')
+            ->column();
 
-        // iterate through all the nested entries
-        foreach ($groupedNestedEntries as $nestedEntries) {
-            $owner = $nestedEntries[0]->getOwner();
+        foreach ($ownerIds as $ownerId) {
+            // get all the nested entries for the owner/field
+            /** @var Entry[] $allNestedEntries */
+            $allNestedEntries = Entry::find()
+                ->ownerId($ownerId)
+                ->fieldId($ckeField->id)
+                ->siteId('*')
+                ->drafts(null)
+                ->revisions(null)
+                ->trashed(null)
+                ->status(null)
+                ->all();
 
-            // if we have the top-level HTML field defined:
-            if ($outgoingEntryType !== null && $replacementEntryType !== null) {
-                $value = '';
-                // iterate through each nested entry,
-                foreach ($nestedEntries as $entry) {
-                    // if the nested entry is the one containing the top-level field,
-                    // get its content and place it before the rest of that entry’s content
-                    // followed by the <craft-entry data-entry-id=\"<nested entry id>\"></craft-entry>;
-                    // also change the entry type to the ID of the duplicate that doesn’t contain that field
-                    if ($entry->type->uid === $outgoingEntryType->uid) {
-                        $value .= $entry->getFieldValue($outgoingTextField->handle);
-                        $value .= '<craft-entry data-entry-id="' . $entry->id . '"></craft-entry>';
-                        $entry->setTypeId($replacementEntryType->id);
-                        Craft::$app->getElements()->saveElement($entry, false);
-                    } else {
-                        // for other nested entries add the <craft-entry data-entry-id=\"<nested entry id>\”></craft-entry>
-                        $value .= '<craft-entry data-entry-id="' . $entry->id . '"></craft-entry>';
+            // group by site ID
+            /** @var array<int,Entry[]> $groupedNestedEntries */
+            $groupedNestedEntries = ArrayHelper::index($allNestedEntries, null, [
+                fn(Entry $entry) => $entry->siteId
+            ]);
+
+            foreach ($groupedNestedEntries as $nestedEntries) {
+                $owner = $nestedEntries[0]->getOwner();
+
+                echo sprintf('    > Updating %s %s ("%s") in %s … ', $owner::lowerDisplayName(),  $owner->id, $owner->getUiLabel(), $owner->getSite()->name);
+
+                // if we have the top-level HTML field defined:
+                if ($outgoingEntryType !== null && $replacementEntryType !== null) {
+                    $value = '';
+                    // iterate through each nested entry,
+                    foreach ($nestedEntries as $entry) {
+                        // if the nested entry is the one containing the top-level field,
+                        // get its content and place it before the rest of that entry’s content
+                        // followed by the <craft-entry data-entry-id=\"<nested entry id>\"></craft-entry>;
+                        // also change the entry type to the ID of the duplicate that doesn’t contain that field
+                        if ($entry->type->uid === $outgoingEntryType->uid) {
+                            $value .= $entry->getFieldValue($outgoingTextField->handle);
+                            $value .= sprintf('<craft-entry data-entry-id="%s"></craft-entry>', $entry->id);
+                            $entry->setTypeId($replacementEntryType->id);
+                            $elementsService->saveElement($entry, false);
+                        } else {
+                            // for other nested entries add the <craft-entry data-entry-id=\"<nested entry id>\”></craft-entry>
+                            $value .= sprintf('<craft-entry data-entry-id="%s"></craft-entry>', $entry->id);
+                        }
+                    }
+                } else {
+                    // populate the CKEditor field with content which is: <craft-entry data-entry-id=\"<nested entry id>\”></craft-entry>
+                    $valueIds = array_map(fn(Entry $entry) => $entry->id, $nestedEntries);
+                    $value = '';
+                    foreach ($valueIds as $id) {
+                        $value .= sprintf('<craft-entry data-entry-id="%s"></craft-entry>', $id);
                     }
                 }
-            } else {
-                // populate the CKEditor field with content which is: <craft-entry data-entry-id=\"<nested entry id>\”></craft-entry>
-                $valueIds = array_map(fn(Entry $entry) => $entry->id, $nestedEntries);
-                $value = '';
-                foreach ($valueIds as $id) {
-                    $value .= '<craft-entry data-entry-id="' . $id . '"></craft-entry>';
-                }
+
+                $owner->setFieldValue($ckeField->handle, $value);
+                $elementsService->saveElement($owner, false);
+                echo "✓\n";
             }
-
-            $owner->setFieldValue($ckeField->handle, $value);
-
-            // save each owner
-            Craft::$app->getElements()->saveElement($owner, false);
         }
 
-        echo "✓\n";
         return true;
     }
 }
