@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 4.2.0 - 2024-08-15
 
 - CKEditor now requires Craft CMS 5.3+.
 - Added the `ckeditor/convert/matrix` command. ([#234](https://github.com/craftcms/ckeditor/pull/234))
