@@ -8,15 +8,11 @@
 namespace craft\ckeditor\console\actions;
 
 use Craft;
-use craft\base\Field as BaseField;
 use craft\base\FieldInterface;
 use craft\ckeditor\CkeConfig;
 use craft\ckeditor\console\controllers\ConvertController;
 use craft\ckeditor\Field;
 use craft\ckeditor\Plugin;
-use craft\db\Query;
-use craft\db\Table;
-use craft\elements\Entry;
 use craft\enums\PropagationMethod;
 use craft\errors\OperationAbortedException;
 use craft\fields\Matrix;
@@ -25,7 +21,6 @@ use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\models\EntryType;
-use craft\models\FieldLayout;
 use Illuminate\Support\Collection;
 use yii\base\Action;
 use yii\base\Exception;
