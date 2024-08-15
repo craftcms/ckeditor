@@ -54,76 +54,37 @@ class ConvertMatrix extends Action
      */
     public function run(string $fieldHandle): int
     {
-        $field = Craft::$app->getFields()->getFieldByHandle($fieldHandle);
-        $skipProjectConfig = false;
+        $matrixField = Craft::$app->getFields()->getFieldByHandle($fieldHandle);
 
-        if (!$field) {
+        if (!$matrixField) {
             $this->controller->stdout("No field with original handle of `$fieldHandle` found.\n", Console::FG_YELLOW);
             return ExitCode::OK;
         }
 
-        if ($field instanceof Field) {
-            // if we're dealing with a CKE field already, we should skip all the project config adjustments and only deal with content
-            $this->controller->stdout("Field `$fieldHandle` is already a CKEditor field. Proceeding to content conversion.\n", Console::FG_GREEN);
-            $skipProjectConfig = true;
-        } elseif (!$field instanceof Matrix) {
+        if (!$matrixField instanceof Matrix) {
             // otherwise, ensure we're dealing with a matrix field
             $this->controller->stdout("Field `$fieldHandle` is not a Matrix field.\n", Console::FG_YELLOW);
             return ExitCode::OK;
         }
 
-        if ($skipProjectConfig) {
-            $this->convertMatrixToCkeContent($field);
-        } else {
-            // we have the matrix field, let's set up the basics for the CKE field
-            [$chosenEntryType, $chosenField, $newEntryType] = $this->prepareContentPopulation($field);
+        // we have the matrix field, let's set up the basics for the CKE field
+        /** @var EntryType|null $outgoingEntryType */
+        /** @var FieldInterface|null $outgoingTextField */
+        /** @var EntryType|null $replacementEntryType */
+        [$outgoingEntryType, $outgoingTextField, $replacementEntryType] = $this->prepareContentPopulation($matrixField);
 
-            $this->controller->stdout("\n\n");
+        $this->controller->stdout("\n\n");
 
-            $this->controller->stdout("Configure your new CKEditor field\n", Console::FG_GREEN);
-            $settings = $this->ckeFieldSettings($chosenField);
+        $this->controller->stdout("Configure your new CKEditor field\n", Console::FG_GREEN);
+        $settings = $this->ckeFieldSettings($outgoingTextField);
 
-            $this->controller->stdout("\n\n");
+        $this->controller->stdout("\n\n");
 
-            $this->convertMatrixToCke($settings, $field, $chosenEntryType, $newEntryType, $chosenField);
-
-            $this->controller->stdout("\n\n***** IMPORTANT ***** \n", Console::FG_YELLOW, Console::BOLD);
-            $this->controller->stdout("After deploying the amended Project Config, run the following command to ensure content is converted accordingly:\n");
-
-            $command = " > craft ckeditor/convert/matrix $field->handle";
-            if ($chosenEntryType !== null && $newEntryType !== null && $chosenField !== null) {
-                $command .= " --chosenEntryTypeHandle $chosenEntryType->handle --newEntryTypeHandle $newEntryType->handle --chosenFieldHandle $chosenField->handle";
-            }
-            $this->controller->stdout("$command \n", Console::FG_CYAN);
-        }
-
-        $this->controller->stdout("\n ✓ Conversion complete.\n", Console::FG_GREEN);
-
-        return ExitCode::OK;
-    }
-
-    /**
-     * Convert Matrix field to a CKEditor field.
-     *
-     * @param array $settings
-     * @param Matrix $field
-     * @param EntryType|null $chosenEntryType
-     * @param EntryType|null $newEntryType
-     * @param BaseField|null $chosenField
-     * @return void
-     */
-    private function convertMatrixToCke(
-        array $settings,
-        Matrix $field,
-        ?EntryType $chosenEntryType = null,
-        ?EntryType $newEntryType = null,
-        ?BaseField $chosenField = null,
-    ): void {
         $this->controller->stdout("Starting field conversion\n", Console::FG_GREEN);
 
         // get matrix field form PC
         $this->projectConfig = Craft::$app->getProjectConfig();
-        $pcField = $this->projectConfig->get("fields.{$field->uid}");
+        $pcField = $this->projectConfig->get("fields.{$matrixField->uid}");
 
         // change its type
         $pcField['type'] = Field::class;
@@ -143,107 +104,54 @@ class ConvertMatrix extends Action
         $pcField['settings'] = $settings;
 
         // set the entry types
-        $pcField['settings']['entryTypes'] = $field->settings['entryTypes'];
-        if ($chosenEntryType !== null && $newEntryType !== null) {
-            if (($key = array_search($chosenEntryType->uid, $pcField['settings']['entryTypes'])) !== false) {
-                $pcField['settings']['entryTypes'][$key] = $newEntryType->uid;
+        $pcField['settings']['entryTypes'] = $matrixField->settings['entryTypes'];
+        if ($outgoingEntryType !== null && $replacementEntryType !== null) {
+            if (($key = array_search($outgoingEntryType->uid, $pcField['settings']['entryTypes'])) !== false) {
+                $pcField['settings']['entryTypes'][$key] = $replacementEntryType->uid;
             }
         }
 
-        $this->projectConfig->set("fields.{$field->uid}", $pcField);
+        $this->projectConfig->set("fields.{$matrixField->uid}", $pcField);
 
         $this->controller->stdout(" ✓ Finished converting the Matrix field to CKEditor field.\n\n", Console::FG_GREEN);
 
-        /** @var Field $updatedField */
-        $updatedField = Craft::$app->getFields()->getFieldByHandle($field->handle);
-        $this->convertMatrixToCkeContent($updatedField, $chosenEntryType, $newEntryType, $chosenField);
-    }
+        /** @var Field $ckeField */
+        $ckeField = Craft::$app->getFields()->getFieldByHandle($matrixField->handle);
+        $contentMigrator = Craft::$app->getContentMigrator();
+        $migrationName = sprintf('m%s_convert_%s_to_ckeditor', gmdate('ymd_His'), $ckeField->handle);
+        $migrationPath = "$contentMigrator->migrationPath/$migrationName.php";
 
-    /**
-     * Save content of the converted matrix field as a CKEditor field content.
-     *
-     * @param Field $field
-     * @param EntryType|null $chosenEntryType
-     * @param EntryType|null $newEntryType
-     * @param BaseField|null $chosenField
-     * @return void
-     */
-    private function convertMatrixToCkeContent(
-        Field $field,
-        ?EntryType $chosenEntryType = null,
-        ?EntryType $newEntryType = null,
-        ?BaseField $chosenField = null,
-    ): void {
-        $this->controller->stdout("Starting content conversion\n", Console::FG_GREEN);
+        $this->controller->do("Generating content migration", function() use (
+            $ckeField,
+            $outgoingEntryType,
+            $outgoingTextField,
+            $replacementEntryType,
+            $migrationName,
+            $migrationPath,
+        ) {
+            $content = $this->controller->getView()->renderFile(__DIR__ . '/convert-matrix-migration.php.template', [
+                'namespace' => Craft::$app->getContentMigrator()->migrationNamespace,
+                'className' => $migrationName,
+                'ckeFieldUid' => $ckeField->uid,
+                'outgoingEntryTypeUid' => $outgoingEntryType->uid,
+                'outgoingTextFieldUid' => $outgoingTextField->layoutElement->uid,
+                'replacementEntryTypeUid' => $replacementEntryType->uid,
+            ], $this);
+            FileHelper::writeToFile($migrationPath, $content);
+        });
 
-        $entriesService = Craft::$app->getEntries();
-        if ($chosenEntryType === null && $this->controller->chosenEntryTypeHandle !== null) {
-            $chosenEntryType = $entriesService->getEntryTypeByHandle($this->controller->chosenEntryTypeHandle);
-        }
+        $this->controller->stdout(" → Running content migration …\n");
+        $contentMigrator->migrateUp($migrationName);
 
-        if ($newEntryType === null && $this->controller->newEntryTypeHandle !== null) {
-            $newEntryType = $entriesService->getEntryTypeByHandle($this->controller->newEntryTypeHandle);
-        }
+        $this->controller->success(sprintf(<<<EOD
+Field converted to Matrix. Commit `%s`
+and your project config changes, and run `craft up` on other environments
+for the changes to take effect.
+EOD,
+            FileHelper::relativePath($migrationPath)
+        ));
 
-        if ($chosenField === null && $this->controller->chosenFieldHandle !== null) {
-            $chosenField = Craft::$app->getFields()->getFieldByHandle($this->controller->chosenFieldHandle);
-        }
-
-        // get all the nested entries belonging to the field we’re converting
-        $nestedEntries = Entry::find()
-            ->fieldId($field->id)
-            ->drafts(null)
-            ->revisions(null)
-            ->trashed(null)
-            ->status(null)
-            ->all();
-
-        // group them by ownerId
-        $groupedNestedEntries = [];
-        foreach ($nestedEntries as $entry) {
-            $groupedNestedEntries[$entry->ownerId][] = $entry;
-        }
-
-        // iterate through all the nested entries
-        foreach (array_keys($groupedNestedEntries) as $ownerId) {
-            $nestedEntries = $groupedNestedEntries[$ownerId];
-            $owner = $nestedEntries[0]->getOwner();
-
-            // if we have the top-level HTML field defined:
-            if ($chosenEntryType !== null && $newEntryType !== null) {
-                $value = '';
-                // iterate through each nested entry,
-                /** @var Entry $entry */
-                foreach ($nestedEntries as $entry) {
-                    // if the nested entry is the one containing the top-level field,
-                    // get its content and place it before the rest of that entry’s content
-                    // followed by the <craft-entry data-entry-id=\"<nested entry id>\"></craft-entry>;
-                    // also change the entry type to the ID of the duplicate that doesn’t contain that field
-                    if ($entry->type->uid === $chosenEntryType->uid) {
-                        $value .= $entry->getFieldValue($chosenField->handle);
-                        $value .= '<craft-entry data-entry-id="' . $entry->id . '"></craft-entry>';
-                        $entry->setTypeId($newEntryType->id);
-                        Craft::$app->getElements()->saveElement($entry, false);
-                    } else {
-                        // for other nested entries add the <craft-entry data-entry-id=\"<nested entry id>\”></craft-entry>
-                        $value .= '<craft-entry data-entry-id="' . $entry->id . '"></craft-entry>';
-                    }
-                }
-            } else {
-                // populate the CKEditor field with content which is: <craft-entry data-entry-id=\"<nested entry id>\”></craft-entry>
-                $valueIds = array_map(fn(Entry $entry) => $entry->id, $nestedEntries);
-                $value = '';
-                foreach ($valueIds as $id) {
-                    $value .= '<craft-entry data-entry-id="' . $id . '"></craft-entry>';
-                }
-            }
-
-            $owner->setFieldValue($field->handle, $value);
-
-            // save each owner
-            Craft::$app->getElements()->saveElement($owner, false);
-        }
-        $this->controller->stdout(" ✓ Finished converting the Matrix content to CKEditor content.\n", Console::FG_GREEN);
+        return ExitCode::OK;
     }
 
     /**
@@ -255,9 +163,9 @@ class ConvertMatrix extends Action
      */
     private function prepareContentPopulation(Matrix $matrixField): array
     {
-        $chosenEntryType = null;
-        $chosenField = null;
-        $newEntryType = null;
+        $outgoingEntryType = null;
+        $outgoingTextField = null;
+        $replacementEntryType = null;
 
         $entryTypes = array_column($matrixField->getEntryTypes(), null, 'handle');
 
@@ -268,11 +176,11 @@ class ConvertMatrix extends Action
                 array_map(fn(EntryType $entryType) => $entryType->name, $entryTypes)
             );
 
-            $chosenEntryType = $entryTypes[$chosenEntryTypeHandle];
+            $outgoingEntryType = $entryTypes[$chosenEntryTypeHandle];
             // only allow choosing from plainText and CKE type fields
             $fields = array_column(
                 array_filter(
-                    $chosenEntryType->getFieldLayout()->getCustomFields(),
+                    $outgoingEntryType->getFieldLayout()->getCustomFields(),
                     fn(FieldInterface $field) => $field instanceof PlainText || $field instanceof Field
                 ), null, 'handle');
 
@@ -280,7 +188,7 @@ class ConvertMatrix extends Action
                 $this->controller->stdout("\n   ");
                 $this->controller->stdout($this->controller->markdownToAnsi("`$chosenEntryTypeHandle` doesn't contain any Plain Text or CKEditor fields."));
                 $this->controller->stdout("\n   Proceeding with populating the CKEditor field with the entries from the Matrix field.");
-                $chosenEntryType = null;
+                $outgoingEntryType = null;
 
                 return [null, null, null];
             }
@@ -289,49 +197,49 @@ class ConvertMatrix extends Action
                 '   Which field would you like to use as text content of your converted CKEditor field?',
                 array_map(fn(BaseField $field) => $field->name, $fields)
             );
-            $chosenField = $fields[$chosenFieldHandle];
+            $outgoingTextField = $fields[$chosenFieldHandle];
 
             // create a duplicate of the selected entry type without the selected field
             // and use it in ckeditor field’s entry types instead of the “original” entry type;
             // name & handle to be the same as the “original” entry type with a - cke suffix
-            $newEntryType = $this->createReplacementEntryType($chosenEntryType, $chosenField);
+            $replacementEntryType = $this->createReplacementEntryType($outgoingEntryType, $outgoingTextField);
         } else {
             // if you "just" want to nest all content in entries in the CKEditor field
             $this->controller->stdout("\n   Your new CKEditor field will contain all the nested entries that your matrix field has and no copy. You can add text to it after conversion.");
         }
 
-        return [$chosenEntryType, $chosenField, $newEntryType];
+        return [$outgoingEntryType, $outgoingTextField, $replacementEntryType];
     }
 
     /**
      * Duplicate selected entry type, and it's layout, sans the field
      * which is supposed to be used to populate the content of the prosified CKE field.
      *
-     * @param EntryType $chosenEntryType
-     * @param BaseField $chosenField
+     * @param EntryType $outgoingEntryType
+     * @param BaseField $outgoingTextField
      * @return EntryType
      * @throws Exception
      */
-    private function createReplacementEntryType(EntryType $chosenEntryType, BaseField $chosenField): EntryType
+    private function createReplacementEntryType(EntryType $outgoingEntryType, BaseField $outgoingTextField): EntryType
     {
-        $suffix = $this->getReplacementEntryTypeSuffix($chosenEntryType->handle);
+        $suffix = $this->getReplacementEntryTypeSuffix($outgoingEntryType->handle);
 
         // clone and prep entry type for duplication
-        $newEntryType = (clone $chosenEntryType);
-        $newEntryType->id = null;
-        $newEntryType->uid = null;
-        $newEntryType->name .= ' ' . $suffix;
-        $newEntryType->handle .= $suffix;
+        $replacementEntryType = (clone $outgoingEntryType);
+        $replacementEntryType->id = null;
+        $replacementEntryType->uid = null;
+        $replacementEntryType->name .= ' ' . $suffix;
+        $replacementEntryType->handle .= $suffix;
 
         $this->controller->stdout("\n   ");
-        $this->controller->stdout($this->controller->markdownToAnsi("Duplicating `$chosenEntryType->handle` Entry Type without the `$chosenField->handle` field."));
+        $this->controller->stdout($this->controller->markdownToAnsi("Duplicating `$outgoingEntryType->handle` Entry Type without the `$outgoingTextField->handle` field."));
         $this->controller->stdout(PHP_EOL);
         // prep field layout for duplication
-        $config = $newEntryType->getFieldLayout()->getConfig();
+        $config = $replacementEntryType->getFieldLayout()->getConfig();
         foreach ($config['tabs'] as &$tab) {
             $tab['uid'] = null;
             foreach ($tab['elements'] as $j => &$element) {
-                if (isset($element['fieldUid']) && $element['fieldUid'] === $chosenField->uid) {
+                if (isset($element['fieldUid']) && $element['fieldUid'] === $outgoingTextField->uid) {
                     unset($tab['elements'][$j]);
                 } else {
                     $element['uid'] = null;
@@ -344,15 +252,15 @@ class ConvertMatrix extends Action
         $newFieldLayout->type = Entry::class;
 
         // set it on the entry type
-        $newEntryType->setFieldLayout($newFieldLayout);
+        $replacementEntryType->setFieldLayout($newFieldLayout);
 
         // and save
-        if (!Craft::$app->getEntries()->saveEntryType($newEntryType)) {
+        if (!Craft::$app->getEntries()->saveEntryType($replacementEntryType)) {
             throw new Exception("Couldn't duplicate entry type");
         }
 
-        $this->controller->stdout("\n " . $this->controller->markdownToAnsi(" ✓ `$newEntryType->name` Entry Type has been created.\n"));
-        return $newEntryType;
+        $this->controller->stdout("\n " . $this->controller->markdownToAnsi(" ✓ `$replacementEntryType->name` Entry Type has been created.\n"));
+        return $replacementEntryType;
     }
 
     /**
@@ -390,11 +298,11 @@ class ConvertMatrix extends Action
     /**
      * Compile an array of settings to use in the converted CKEditor field.
      *
-     * @param BaseField|null $chosenField
+     * @param BaseField|null $outgoingTextField
      * @return array
      * @throws Exception
      */
-    private function ckeFieldSettings(?BaseField $chosenField = null): array
+    private function ckeFieldSettings(?BaseField $outgoingTextField = null): array
     {
         $settings = [
             'ckeConfig' => null,
@@ -418,15 +326,15 @@ class ConvertMatrix extends Action
         }
 
         // if you selected a top level field to populate the prosified field's content with
-        if ($chosenField instanceof Field) {
+        if ($outgoingTextField instanceof Field) {
             // check if the ckeconfig for this field has "createEntry" toolbar item added
-            $config = array_values(array_filter($ckeConfigs, fn($ckeConfig) => $ckeConfig->uid === $chosenField->ckeConfig))[0];
+            $config = array_values(array_filter($ckeConfigs, fn($ckeConfig) => $ckeConfig->uid === $outgoingTextField->ckeConfig))[0];
             if (in_array('createEntry', $config->toolbar)) {
                 // if yes - just use that config
                 $settings['ckeConfig'] = $config->uid;
             } else {
                 // if no - say that we're duplicating that config and adding "createEntry" feature to it
-                $this->controller->stdout($this->controller->markdownToAnsi("   Field `$chosenField->name` doesn't have the `createEntry` feature enabled.\n"));
+                $this->controller->stdout($this->controller->markdownToAnsi("   Field `$outgoingTextField->name` doesn't have the `createEntry` feature enabled.\n"));
                 $this->controller->stdout($this->controller->markdownToAnsi("   Creating a duplicate of that config with the `createEntry` button added to the toolbar.\n"));
 
                 $newConfig = (clone $config);
