@@ -9,7 +9,9 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\fieldlayoutelements\CustomField;
+use craft\fields\PlainText;
 use craft\helpers\ArrayHelper;
+use yii\helpers\Markdown;
 
 /**
  * Base convert matrix content migration class.
@@ -23,7 +25,8 @@ class BaseConvertMatrixContentMigration extends Migration
     public string $ckeFieldUid;
     public ?string $outgoingEntryTypeUid;
     public ?string $outgoingTextFieldUid;
-    public ?string $replacementEntryTypeUid;
+    public string $markdownFlavor;
+    public bool $preserveTextEntries;
 
     public function safeUp(): bool
     {
@@ -42,7 +45,6 @@ class BaseConvertMatrixContentMigration extends Migration
 
         $outgoingEntryType = null;
         $outgoingTextField = null;
-        $replacementEntryType = null;
 
         $entriesService = Craft::$app->getEntries();
         if ($this->outgoingEntryTypeUid) {
@@ -59,14 +61,6 @@ class BaseConvertMatrixContentMigration extends Migration
                     return false;
                 }
                 $outgoingTextField = $outgoingTextFieldLayoutElement->getField();
-            }
-        }
-
-        if ($this->replacementEntryTypeUid) {
-            $replacementEntryType = $entriesService->getEntryTypeByUid($this->replacementEntryTypeUid);
-            if (!$replacementEntryType) {
-                echo "Invalid entry type UUID: $this->replacementEntryTypeUid";
-                return false;
             }
         }
 
@@ -105,31 +99,29 @@ class BaseConvertMatrixContentMigration extends Migration
 
                 echo sprintf('    > Updating %s %s ("%s") in %s … ', $owner::lowerDisplayName(),  $owner->id, $owner->getUiLabel(), $owner->getSite()->name);
 
-                // if we have the top-level HTML field defined:
-                if ($outgoingEntryType !== null && $replacementEntryType !== null) {
-                    $value = '';
-                    // iterate through each nested entry,
-                    foreach ($nestedEntries as $entry) {
-                        // if the nested entry is the one containing the top-level field,
-                        // get its content and place it before the rest of that entry’s content
-                        // followed by the <craft-entry data-entry-id=\"<nested entry id>\"></craft-entry>;
-                        // also change the entry type to the ID of the duplicate that doesn’t contain that field
-                        if ($entry->type->uid === $outgoingEntryType->uid) {
-                            $value .= $entry->getFieldValue($outgoingTextField->handle);
-                            $value .= sprintf('<craft-entry data-entry-id="%s"></craft-entry>', $entry->id);
-                            $entry->setTypeId($replacementEntryType->id);
-                            $elementsService->saveElement($entry, false);
+                $value = '';
+                // iterate through each nested entry,
+                foreach ($nestedEntries as $entry) {
+                    // if the nested entry is the one containing the top-level field,
+                    // get its content and place it before the rest of that entry’s content
+                    // possibly followed by the <craft-entry data-entry-id=\"<nested entry id>\"></craft-entry>
+                    if ($entry->type->uid === $outgoingEntryType?->uid) {
+                        $textValue = $entry->getFieldValue($outgoingTextField->handle);
+                        if ($this->markdownFlavor !== 'none' && $outgoingTextField instanceof PlainText) {
+                            // Parse it as Markdown
+                            $value .= Markdown::process($textValue, $this->markdownFlavor);
                         } else {
-                            // for other nested entries add the <craft-entry data-entry-id=\"<nested entry id>\”></craft-entry>
-                            $value .= sprintf('<craft-entry data-entry-id="%s"></craft-entry>', $entry->id);
+                            $value .= $textValue;
                         }
-                    }
-                } else {
-                    // populate the CKEditor field with content which is: <craft-entry data-entry-id=\"<nested entry id>\”></craft-entry>
-                    $valueIds = array_map(fn(Entry $entry) => $entry->id, $nestedEntries);
-                    $value = '';
-                    foreach ($valueIds as $id) {
-                        $value .= sprintf('<craft-entry data-entry-id="%s"></craft-entry>', $id);
+
+                        if ($this->preserveTextEntries) {
+                            $value .= sprintf('<craft-entry data-entry-id="%s"></craft-entry>', $entry->id);
+                        } else {
+                            $elementsService->deleteElement($entry);
+                        }
+                    } else {
+                        // for other nested entries add the <craft-entry data-entry-id=\"<nested entry id>\”></craft-entry>
+                        $value .= sprintf('<craft-entry data-entry-id="%s"></craft-entry>', $entry->id);
                     }
                 }
 

@@ -17,7 +17,8 @@ namespace craft\migrations;
 /** @var string $ckeFieldUid */
 /** @var string|null $outgoingEntryTypeUid */
 /** @var string|null $outgoingTextFieldUid */
-/** @var string|null $replacementEntryTypeUid */
+/** @var string $markdownFlavor */
+/** @var bool $preserveTextEntries */
 
 echo "<?php\n";
 ?>
@@ -34,5 +35,6 @@ class <?= $className ?> extends BaseConvertMatrixContentMigration
     public string $ckeFieldUid = '<?= $ckeFieldUid ?>';
     public ?string $outgoingEntryTypeUid = <?= $outgoingEntryTypeUid ? "'$outgoingEntryTypeUid'" : 'null' ?>;
     public ?string $outgoingTextFieldUid = <?= $outgoingTextFieldUid ? "'$outgoingTextFieldUid'" : 'null' ?>;
-    public ?string $replacementEntryTypeUid = <?= $replacementEntryTypeUid ? "'$replacementEntryTypeUid'" : 'null' ?>;
+    public string $markdownFlavor = '<?= $markdownFlavor ?>';
+    public bool $preserveTextEntries = <?= var_export($preserveTextEntries) ?>;
 }
