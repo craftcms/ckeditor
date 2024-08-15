@@ -59,13 +59,13 @@ class ConvertMatrix extends Action
         $matrixField = $fieldsService->getFieldByHandle($fieldHandle);
 
         if (!$matrixField) {
-            $this->controller->stdout("No field with original handle of `$fieldHandle` found.\n", Console::FG_RED);
+            $this->controller->stdout("Invalid field handle: $fieldHandle\n", Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
         if (!$matrixField instanceof Matrix) {
             // otherwise, ensure we're dealing with a matrix field
-            $this->controller->stdout("Field `$fieldHandle` is not a Matrix field.\n", Console::FG_RED);
+            $this->controller->stdout("$matrixField->name is not a Matrix field.\n", Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
