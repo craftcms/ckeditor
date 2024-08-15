@@ -207,7 +207,7 @@ class ConvertRedactor extends Action
                         throw new Exception('`manualConfig` contains invalid JSON.');
                     }
                     $configName = $field['name'] ?? (!empty($field['handle']) ? Inflector::camel2words($field['handle']) : 'Untitled');
-                    $ckeConfig = $this->generateCkeConfig($configName, $redactorConfig, $ckeConfigs, $fieldSettingsByConfig);
+                    $ckeConfig = $this->generateCkeConfig($configName, $redactorConfig, $ckeConfigs, $fieldSettingsByConfig, $field);
                     $this->controller->stdout(PHP_EOL);
                 } else {
                     $basename = ($field['settings']['redactorConfig'] ?? $field['settings']['configFile'] ?? null) ?: 'Default.json';
@@ -347,6 +347,7 @@ class ConvertRedactor extends Action
         array $redactorConfig,
         array &$ckeConfigs,
         array &$fieldSettingsByConfig,
+        ?array $redactorField = null,
     ): string {
         // Make sure the name is unique
         $baseConfigName = $configName;
@@ -667,6 +668,22 @@ class ConvertRedactor extends Action
                     }
                 }
             }
+        }
+
+        // if we added sourceEditing button, then to align with what Redactor allowed,
+        // we need add this predefined htmlSupport.allow config
+        if ($ckeConfig->hasButton('sourceEditing')) {
+            $htmlSupport = [
+                'attributes' => true,
+                'classes' => true,
+                'styles' => true,
+            ];
+
+            if ($redactorField !== null && $redactorField['settings']['removeInlineStyles']) {
+                unset($htmlSupport['styles']);
+            }
+
+            $ckeConfig->options['htmlSupport']['allow'][] = $htmlSupport;
         }
 
         // redactor-link-styles
