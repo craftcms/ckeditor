@@ -1514,6 +1514,9 @@ JS,
      */
     private function _adjustPurifierConfig(HTMLPurifier_Config $purifierConfig): HTMLPurifier_Config
     {
+        /** @var HTMLPurifier_HTMLDefinition|null $def */
+        $def = $purifierConfig->getDefinition('HTML', true);
+
         $ckeConfig = $this->_ckeConfig();
 
         // These will come back as indexed (key => true) arrays
@@ -1537,8 +1540,6 @@ JS,
 
         if (in_array('todoList', $ckeConfig->toolbar)) {
             // Add input[type=checkbox][disabled][checked] to the definition
-            /** @var HTMLPurifier_HTMLDefinition|null $def */
-            $def = $purifierConfig->getDefinition('HTML', true);
             $def?->addElement('input', 'Inline', 'Inline', '', [
                 'type' => 'Enum#checkbox',
                 'disabled' => 'Enum#disabled',
@@ -1547,20 +1548,14 @@ JS,
         }
 
         if (in_array('numberedList', $ckeConfig->toolbar)) {
-            /** @var HTMLPurifier_HTMLDefinition|null $def */
-            $def = $purifierConfig->getDefinition('HTML', true);
             $def?->addAttribute('ol', 'style', 'Text');
         }
 
         if (in_array('bulletedList', $ckeConfig->toolbar)) {
-            /** @var HTMLPurifier_HTMLDefinition|null $def */
-            $def = $purifierConfig->getDefinition('HTML', true);
             $def?->addAttribute('ul', 'style', 'Text');
         }
 
         if (in_array('createEntry', $ckeConfig->toolbar)) {
-            /** @var HTMLPurifier_HTMLDefinition|null $def */
-            $def = $purifierConfig->getDefinition('HTML', true);
             $def?->addElement('craft-entry', 'Inline', 'Inline', '', [
                 'data-entry-id' => 'Number',
             ]);
