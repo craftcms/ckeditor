@@ -18,6 +18,7 @@ This plugin adds a “CKEditor” field type to Craft CMS, which provides a deep
   - [Setup](#setup)
   - [Rendering Nested Entries on the Front End](#rendering-nested-entries-on-the-front-end)
 - [Converting Redactor Fields](#converting-redactor-fields)
+- [Converting Matrix Fields](#converting-matrix-fields)
 - [Adding CKEditor Plugins](#adding-ckeditor-plugins)
 
 ## Requirements
