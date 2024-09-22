@@ -1,5 +1,5 @@
 {
-  "name": "craftcms/ckeditor",
+  "name": "el-jacko/ckeditor",
   "description": "Edit rich text content in Craft CMS using CKEditor.",
   "type": "craft-plugin",
   "keywords": [
