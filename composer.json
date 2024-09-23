@@ -50,6 +50,12 @@
     "handle": "ckeditor",
     "documentationUrl": "https://github.com/craftcms/ckeditor/blob/master/README.md"
   },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/el-jacko/ckeditor"
+    }
+  ],
   "config": {
     "platform": {
       "php": "8.2"
