@@ -30,6 +30,8 @@ export default class ImageEditorUI extends Plugin {
   _registerImageEditorButton() {
     const editor = this.editor;
     const t = editor.t;
+    const command = editor.commands.get('imageEditor');
+
     const componentCreator = () => {
       const buttonView = new ButtonView();
 
@@ -37,6 +39,8 @@ export default class ImageEditorUI extends Plugin {
         label: t('Edit Image'),
         withText: true,
       });
+
+      buttonView.bind('isEnabled').to(command);
 
       // Execute command when a button is clicked.
       this.listenTo(buttonView, 'execute', (evt) => {

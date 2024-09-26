@@ -14,6 +14,22 @@ export default class ImageEditorCommand extends Command {
     const element = this._element();
     const srcInfo = this._srcInfo(element);
     this.isEnabled = !!srcInfo;
+
+    // if the command is still enabled - check permissions too
+    if (this.isEnabled) {
+      let data = {
+        assetId: srcInfo.assetId,
+      };
+
+      Craft.sendActionRequest('POST', 'ckeditor/ckeditor/image-permissions', {
+        data,
+      }).then((response) => {
+        console.log(response.data);
+        if (response.data.editable === false) {
+          this.isEnabled = false;
+        }
+      });
+    }
   }
 
   /**
