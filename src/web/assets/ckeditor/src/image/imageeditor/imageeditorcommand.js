@@ -24,7 +24,6 @@ export default class ImageEditorCommand extends Command {
       Craft.sendActionRequest('POST', 'ckeditor/ckeditor/image-permissions', {
         data,
       }).then((response) => {
-        console.log(response.data);
         if (response.data.editable === false) {
           this.isEnabled = false;
         }
