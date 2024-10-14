@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- The `ckeditor/convert/redactor` command now ensures that it’s being run interactively.
+
 ## 4.2.0 - 2024-08-15
 
 - CKEditor now requires Craft CMS 5.3+.

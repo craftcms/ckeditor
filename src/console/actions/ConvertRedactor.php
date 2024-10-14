@@ -166,6 +166,11 @@ class ConvertRedactor extends Action
      */
     public function run(): int
     {
+        if (!$this->controller->interactive) {
+            $this->controller->stderr("This command must be run interactively.\n");
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
         $this->projectConfig = Craft::$app->getProjectConfig();
 
         // Find Redactor fields
