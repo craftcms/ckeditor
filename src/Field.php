@@ -146,6 +146,14 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     }
 
     /**
+     * @inheritdoc
+     */
+    public static function phpType(): string
+    {
+        return sprintf('%s|null', FieldData::class);
+    }
+
+    /**
      * Returns the nested element manager for a given CKEditor field.
      *
      * @param self $field
