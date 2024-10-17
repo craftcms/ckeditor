@@ -70,6 +70,10 @@ a.ck.ck-button:focus {
   overflow-y: scroll;
 }
 
+.ck-toolbar-dropdown .ck.ck-dropdown__panel-visible {
+  overflow: visible;
+}
+
 .ck.ck-dropdown .ck-button.ck-dropdown__button.ck-on {
   border-bottom-left-radius: var(--ck-border-radius) !important;
   border-bottom-right-radius: var(--ck-border-radius) !important;
