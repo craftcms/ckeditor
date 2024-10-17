@@ -11,6 +11,7 @@ export default class CraftEntriesCommand extends Command {
         ...Object.fromEntries(selection.getAttributes()),
         cardHtml: options.cardHtml,
         entryId: options.entryId,
+        siteId: options.siteId,
       });
 
       // ... and insert it into the document. Put the selection on the inserted element.
