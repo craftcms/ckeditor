@@ -477,6 +477,9 @@ JS,
             'class' => array_filter([
                 $this->showWordCount ? 'ck-with-show-word-count' : null,
             ]),
+            'data' => [
+                'config' => $this->ckeConfig,
+            ],
         ]);
     }
 
