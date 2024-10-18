@@ -50,11 +50,7 @@ a.ck.ck-button:focus {
 }
 
 .ck.ck-editor__editable_inline {
-  padding: calc(var(--m) - 2px) var(--m)
-    calc(
-      var(--m) + var(--ck-powered-by-line-height) +
-        var(--ck-powered-by-padding-vertical)
-    ) !important;
+  padding: calc(var(--m) - 2px) var(--m) !important;
 }
 
 .ck.ck-editor__editable.ck-focused:not(.ck-editor__nested-editable) {
@@ -93,6 +89,10 @@ a.ck.ck-button:focus {
 }
 
 /* content */
+.ck.ck-content ul:last-child, .ck.ck-content ol:last-child {
+  padding-bottom: 0 !important;
+}
+
 .ck.ck-content[dir='ltr'] ul {
   padding-left: 40px;
 }
