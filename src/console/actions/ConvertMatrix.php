@@ -46,7 +46,7 @@ class ConvertMatrix extends Action
     public function run(string $fieldHandle): int
     {
         if (!$this->controller->interactive) {
-            $this->controller->stderr("The fields/merge command must be run interactively.\n");
+            $this->controller->stderr("This command must be run interactively.\n");
             return ExitCode::UNSPECIFIED_ERROR;
         }
 

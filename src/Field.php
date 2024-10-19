@@ -146,6 +146,14 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     }
 
     /**
+     * @inheritdoc
+     */
+    public static function phpType(): string
+    {
+        return sprintf('%s|null', FieldData::class);
+    }
+
+    /**
      * Returns the nested element manager for a given CKEditor field.
      *
      * @param self $field
@@ -696,13 +704,41 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             $value = $value->getRawContent();
         }
 
-        if ($value !== null) {
-            // Redactor to CKEditor syntax for <figure>
-            // (https://github.com/craftcms/ckeditor/issues/96)
-            $value = $this->_normalizeFigures($value);
+        if (!$value) {
+            return null;
         }
 
-        return parent::serializeValue($value, $element);
+        // Redactor to CKEditor syntax for <figure>
+        // (https://github.com/craftcms/ckeditor/issues/96)
+        $value = $this->_normalizeFigures($value);
+
+        // Protect page breaks
+        $this->escapePageBreaks($value);
+        $value = parent::serializeValue($value, $element);
+        return str_replace(
+            '{PAGEBREAK_MARKER}',
+            '<div class="page-break" style="page-break-after:always;"><span style="display:none;">&nbsp;</span></div>',
+            $value,
+        );
+    }
+
+    private function escapePageBreaks(string &$html): void
+    {
+        $offset = 0;
+        $r = '';
+
+        while (($pos = stripos($html, '<div class="page-break"', $offset)) !== false) {
+            $endPos = strpos($html, '</div>', $pos + 23);
+            if ($endPos === false) {
+                break;
+            }
+            $r .= substr($html, $offset, $pos - $offset) . '{PAGEBREAK_MARKER}';
+            $offset = $endPos + 6;
+        }
+
+        if ($offset !== 0) {
+            $html = $r . substr($html, $offset);
+        }
     }
 
     /**
@@ -866,6 +902,8 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
                     ...(!empty($transforms) ? ['transformImage', '|'] : []),
                     'toggleImageCaption',
                     'imageTextAlternative',
+                    '|',
+                    'imageEditor',
                 ],
             ],
             'assetSources' => $this->_assetSources(),
@@ -1003,6 +1041,7 @@ JS,
             ]),
             'data' => [
                 'element-id' => $element?->id,
+                'config' => $this->ckeConfig,
             ],
         ]);
     }

@@ -1,5 +1,13 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Image toolbars now include an “Edit Image” button. ([#253](https://github.com/craftcms/ckeditor/issues/253))
+- The `ckeditor/convert/redactor` command now ensures that it’s being run interactively.
+- CKEditor container divs now have `data-config` attributes, set to the CKEditor config’s handle. ([#284](https://github.com/craftcms/ckeditor/issues/284))
+- Fixed a bug where page breaks were being lost.
+- Fixed a bug where menus within overflown toolbar items weren’t fully visible. ([#286](https://github.com/craftcms/ckeditor/issues/286))
+
 ## 4.2.0 - 2024-08-15
 
 - CKEditor now requires Craft CMS 5.3+.
