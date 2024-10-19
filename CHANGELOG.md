@@ -4,6 +4,7 @@
 
 - The `ckeditor/convert/redactor` command now ensures that it’s being run interactively.
 - Fixed a bug where page breaks were being lost.
+- Fixed a bug where menus within overflown toolbar items weren’t fully visible. ([#286](https://github.com/craftcms/ckeditor/issues/286))
 
 ## 3.9.0 - 2024-08-15
 
