@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 3.10.0 - 2024-10-19
 
 - Image toolbars now include an “Edit Image” button. ([#253](https://github.com/craftcms/ckeditor/issues/253))
 - The `ckeditor/convert/redactor` command now ensures that it’s being run interactively.
