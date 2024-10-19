@@ -1123,6 +1123,7 @@ JS,
                     return Html::tag('craft-entry', options: [
                         'data' => [
                             'entry-id' => $entry->isProvisionalDraft ? $entry->getCanonicalId() : $entry->id,
+                            'site-id' => $entry->siteId,
                             'card-html' => $cardHtml,
                         ],
                     ]);

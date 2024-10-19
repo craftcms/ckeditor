@@ -53,7 +53,7 @@ export default class CraftEntriesEditing extends Plugin {
 
     schema.register('craftEntryModel', {
       inheritAllFrom: '$blockObject',
-      allowAttributes: ['cardHtml', 'entryId'],
+      allowAttributes: ['cardHtml', 'entryId', 'siteId'],
       allowChildren: false,
     });
   }
@@ -73,10 +73,12 @@ export default class CraftEntriesEditing extends Plugin {
       model: (viewElement, {writer: modelWriter}) => {
         const cardHtml = viewElement.getAttribute('data-card-html');
         const entryId = viewElement.getAttribute('data-entry-id');
+        const siteId = viewElement.getAttribute('data-site-id') ?? null;
 
         return modelWriter.createElement('craftEntryModel', {
           cardHtml: cardHtml,
           entryId: entryId,
+          siteId: siteId,
         });
       },
     });
@@ -86,9 +88,11 @@ export default class CraftEntriesEditing extends Plugin {
       model: 'craftEntryModel',
       view: (modelItem, {writer: viewWriter}) => {
         const entryId = modelItem.getAttribute('entryId') ?? null;
+        const siteId = modelItem.getAttribute('siteId') ?? null;
         const cardContainer = viewWriter.createContainerElement('div', {
           class: 'cke-entry-card',
           'data-entry-id': entryId,
+          'data-site-id': siteId,
         });
         addCardHtmlToContainer(modelItem, viewWriter, cardContainer);
 
@@ -102,9 +106,11 @@ export default class CraftEntriesEditing extends Plugin {
       model: 'craftEntryModel',
       view: (modelItem, {writer: viewWriter}) => {
         const entryId = modelItem.getAttribute('entryId') ?? null;
+        const siteId = modelItem.getAttribute('siteId') ?? null;
 
         return viewWriter.createContainerElement('craft-entry', {
           'data-entry-id': entryId,
+          'data-site-id': siteId,
         });
       },
     });
@@ -160,7 +166,7 @@ export default class CraftEntriesEditing extends Plugin {
     }
 
     const entryId = modelItem.getAttribute('entryId') ?? null;
-    const siteId = Craft.siteId;
+    const siteId = modelItem.getAttribute('siteId') ?? null;
 
     try {
       // Let the element editor handle the autosave first, in case the nested entry

@@ -93,8 +93,9 @@ export default class CraftEntriesUI extends Plugin {
         const selection = this.editor.model.document.selection;
         const viewElement = selection.getSelectedElement();
         const entryId = viewElement.getAttribute('entryId');
+        const siteId = viewElement.getAttribute('siteId') ?? null;
 
-        this._showEditEntrySlideout(entryId);
+        this._showEditEntrySlideout(entryId, siteId);
       }
     });
   }
@@ -191,7 +192,9 @@ export default class CraftEntriesUI extends Plugin {
       const selection = this.editor.model.document.selection;
       const viewElement = selection.getSelectedElement();
       const entryId = viewElement.getAttribute('entryId');
-      this._showEditEntrySlideout(entryId);
+      const siteId = viewElement.getAttribute('siteId') ?? null;
+
+      this._showEditEntrySlideout(entryId, siteId);
     });
 
     return button;
@@ -203,9 +206,12 @@ export default class CraftEntriesUI extends Plugin {
    * @param entryId
    * @private
    */
-  _showEditEntrySlideout(entryId) {
+  _showEditEntrySlideout(entryId, siteId) {
     Craft.createElementEditor(this.elementType, {
       elementId: entryId,
+      params: {
+        siteId: siteId,
+      },
     });
   }
 
@@ -259,12 +265,14 @@ export default class CraftEntriesUI extends Plugin {
       draftId: data.element.draftId,
       params: {
         fresh: 1,
+        siteId: data.element.siteId,
       },
     });
 
     slideout.on('submit', (ev) => {
       editor.commands.execute('insertEntry', {
         entryId: ev.data.id,
+        siteId: ev.data.siteId,
       });
     });
   }
