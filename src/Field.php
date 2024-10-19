@@ -902,6 +902,8 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
                     ...(!empty($transforms) ? ['transformImage', '|'] : []),
                     'toggleImageCaption',
                     'imageTextAlternative',
+                    '|',
+                    'imageEditor',
                 ],
             ],
             'assetSources' => $this->_assetSources(),

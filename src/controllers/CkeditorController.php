@@ -171,4 +171,41 @@ class CkeditorController extends Controller
             'newEntryId' => $newEntry->id,
         ]);
     }
+
+    /**
+     * Returns image permissions.
+     *
+     * @return Response
+     * @throws NotFoundHttpException
+     * @throws \yii\base\InvalidConfigException
+     * @throws \yii\web\BadRequestHttpException
+     */
+    public function actionImagePermissions(): Response
+    {
+        $assetId = $this->request->getRequiredBodyParam('assetId');
+
+        $asset = Asset::find()
+            ->id($assetId)
+            ->kind('image')
+            ->one();
+
+        if (!$asset) {
+            throw new NotFoundHttpException('Image not found');
+        }
+
+        $userSession = Craft::$app->getUser();
+        $volume = $asset->getVolume();
+
+        $previewable = Craft::$app->getAssets()->getAssetPreviewHandler($asset) !== null;
+        $editable = (
+            $asset->getSupportsImageEditor() &&
+            $userSession->checkPermission("editImages:$volume->uid") &&
+            ($userSession->getId() == $asset->uploaderId || $userSession->checkPermission("editPeerImages:$volume->uid"))
+        );
+
+        return $this->asJson([
+            'previewable' => $previewable,
+            'editable' => $editable,
+        ]);
+    }
 }

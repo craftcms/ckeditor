@@ -57,6 +57,7 @@ import {WordCount} from '@ckeditor/ckeditor5-word-count';
 import {default as CraftImageInsertUI} from './image/imageinsert/imageinsertui';
 import {default as CraftLinkUI} from './link/linkui';
 import ImageTransform from './image/imagetransform';
+import ImageEditor from './image/imageeditor';
 import {TextPartLanguage} from '@ckeditor/ckeditor5-language';
 import CraftEntries from './entries/entries';
 import CKEditorInspector from '@ckeditor/ckeditor5-inspector';
@@ -116,6 +117,7 @@ const allPlugins = [
   WordCount,
   CraftImageInsertUI,
   ImageTransform,
+  ImageEditor,
   CraftLinkUI,
   CraftEntries,
 ];
@@ -185,6 +187,7 @@ const pluginButtonMap = [
       'ImageStyle',
       'ImageToolbar',
       'ImageTransform',
+      'ImageEditor',
       'LinkImage',
     ],
     buttons: ['insertImage'],
