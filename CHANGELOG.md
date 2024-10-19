@@ -7,6 +7,7 @@
 - CKEditor container divs now have `data-config` attributes, set to the CKEditor config’s handle. ([#284](https://github.com/craftcms/ckeditor/issues/284))
 - Fixed a bug where page breaks were being lost.
 - Fixed a bug where menus within overflown toolbar items weren’t fully visible. ([#286](https://github.com/craftcms/ckeditor/issues/286))
+- Fixed an error that occurred when editing a nested entry, if it didn’t exist in the primary site. ([#295](https://github.com/craftcms/ckeditor/issues/295))
 
 ## 4.2.0 - 2024-08-15
 
