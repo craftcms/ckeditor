@@ -3,6 +3,7 @@
 ## Unreleased
 
 - The `ckeditor/convert/redactor` command now ensures that it’s being run interactively.
+- Fixed a bug where page breaks were being lost.
 
 ## 4.2.0 - 2024-08-15
 
