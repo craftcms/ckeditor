@@ -1039,6 +1039,7 @@ JS,
             ]),
             'data' => [
                 'element-id' => $element?->id,
+                'config' => $this->ckeConfig,
             ],
         ]);
     }
