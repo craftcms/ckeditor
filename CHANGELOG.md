@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Image toolbars now include an “Edit Image” button. ([#253](https://github.com/craftcms/ckeditor/issues/253))
 - The `ckeditor/convert/redactor` command now ensures that it’s being run interactively.
 - CKEditor container divs now have `data-config` attributes, set to the CKEditor config’s handle. ([#284](https://github.com/craftcms/ckeditor/issues/284))
 - Fixed a bug where page breaks were being lost.

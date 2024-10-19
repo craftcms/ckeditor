@@ -342,6 +342,8 @@ class Field extends HtmlField
                     ...(!empty($transforms) ? ['transformImage', '|'] : []),
                     'toggleImageCaption',
                     'imageTextAlternative',
+                    '|',
+                    'imageEditor',
                 ],
             ],
             'assetSources' => $this->_assetSources(),
