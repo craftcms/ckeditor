@@ -7,6 +7,7 @@
 
 namespace craft\ckeditor\console\controllers;
 
+use Composer\Util\Platform;
 use Craft;
 use craft\ckeditor\CkeConfig;
 use craft\ckeditor\CkeConfigs;
@@ -166,6 +167,11 @@ class ConvertController extends Controller
      */
     public function actionRedactor(): int
     {
+        if (!$this->interactive) {
+            $this->stderr("This command must be run interactively.\n");
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
         $this->projectConfig = Craft::$app->getProjectConfig();
 
         // Find Redactor fields
