@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## 4.3.1 - 2024-10-20
+
+- Fixed a bug where sticky toolbars weren’t positioned correctly.
+
 ## 4.3.0 - 2024-10-19
 
 - Image toolbars now include an “Edit Image” button. ([#253](https://github.com/craftcms/ckeditor/issues/253))

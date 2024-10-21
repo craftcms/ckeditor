@@ -918,7 +918,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             ],
             'transforms' => $transforms,
             'ui' => [
-                'viewportOffset' => ['top' => 50],
+                'viewportOffset' => ['top' => 44],
                 'poweredBy' => [
                     'position' => 'inside',
                     'label' => '',
