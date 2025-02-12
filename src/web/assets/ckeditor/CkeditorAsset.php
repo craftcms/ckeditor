@@ -96,8 +96,7 @@ JS, [
         }
 
         $view->registerScriptWithVars(fn($refHandles) => <<<JS
-import {setLocalizedRefHandles} from '@craftcms/ckeditor';
-setLocalizedRefHandles($refHandles);
-JS, [$refHandles], View::POS_END, ['type' => 'module']);
+window.CKE_LOCALIZED_REF_HANDLES = $refHandles;
+JS, [$refHandles], View::POS_HEAD, ['type' => 'module']);
     }
 }

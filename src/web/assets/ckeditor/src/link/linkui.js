@@ -4,6 +4,7 @@
  * @license GPL-3.0-or-later
  */
 
+/* global CKE_LOCALIZED_REF_HANDLES */
 import {
   addListToDropdown,
   Collection,
@@ -15,7 +16,6 @@ import {
   SplitButtonView,
   ViewModel,
 } from 'ckeditor5';
-import {localizedRefHandles} from '../ckeditor5-craftcms.js';
 
 /**
  * These imports aren't ideal but are necessary for now because the main
@@ -51,7 +51,7 @@ export default class CraftLinkUI extends Plugin {
 
     if (Craft.isMultiSite) {
       this._modifyFormViewTemplate();
-      const refHandlesPattern = localizedRefHandles.join('|');
+      const refHandlesPattern = CKE_LOCALIZED_REF_HANDLES.join('|');
       this.localizedRefHandleRE = new RegExp(
         `(#(?:${refHandlesPattern}):\\d+)(?:@(\\d+))?`,
       );

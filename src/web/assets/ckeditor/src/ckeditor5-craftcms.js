@@ -18,12 +18,6 @@ import {ClassicEditor, Heading, SourceEditing} from 'ckeditor5';
 
 export {CraftEntries};
 
-export let localizedRefHandles = [];
-
-export function setLocalizedRefHandles(handles) {
-  localizedRefHandles = handles;
-}
-
 const trackChangesInSourceMode = function (editor) {
   const sourceEditing = editor.plugins.get(SourceEditing);
   const $editorElement = $(editor.ui.view.element);
