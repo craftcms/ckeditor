@@ -8,11 +8,11 @@ final class CkeditorConfig
 {
     private static array $pluginsByPackage = [
         'ckeditor5' => [
+            'Bookmark',
             'Paragraph',
             'SelectAll',
             'Clipboard',
             'Alignment',
-            // 'Anchor',
             'AutoImage',
             'AutoLink',
             'Autoformat',
@@ -81,7 +81,7 @@ final class CkeditorConfig
         'superscript',
         'code',
         'link',
-        // 'anchor',
+        'bookmark',
         'textPartLanguage',
         ['button' => 'fontSize', 'configOption' => 'fontSize'],
         'fontFamily',

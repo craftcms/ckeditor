@@ -14,7 +14,6 @@ import './ckeditor5-craftcms.css';
 import CraftEntries from './entries/entries';
 import CKEditorInspector from '@ckeditor/ckeditor5-inspector';
 import {ClassicEditor, Heading, SourceEditing} from 'ckeditor5';
-// import {Anchor} from '@northernco/ckeditor5-anchor-drupal';
 
 export {CraftEntries};
 

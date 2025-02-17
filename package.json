@@ -6,9 +6,8 @@
     "extends @craftcms/browserslist-config"
   ],
   "devDependencies": {
-    "@ckeditor/ckeditor5-inspector": ">=4.1.0",
-    "@northernco/ckeditor5-anchor-drupal": "^0.5.0",
     "@ckeditor/ckeditor5-dev-translations": "^43.0.1",
+    "@ckeditor/ckeditor5-inspector": ">=4.1.0",
     "ckeditor5": ">=44.0.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.2.10",
