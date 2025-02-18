@@ -965,7 +965,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             'baseConfig' => $baseConfig,
             'ckeConfig' => $ckeConfig,
             'toolbar' => $toolbar,
-            'extraPlugins' => [],
         ]);
         $this->trigger(self::EVENT_MODIFY_CONFIG, $event);
 
@@ -998,8 +997,9 @@ JS;
             $removePlugins->push('ImageTransforms');
         }
 
+        // TODO remove plugins not in toolbar
+
         $plugins = CkeditorConfig::getPluginsByPackage();
-        $plugins['ckeditor5'] = array_merge($plugins['ckeditor5'], $event->extraPlugins);
 
         $plugins = collect($plugins)
             ->mapWithKeys(fn(array $plugins, string $import) => [
@@ -1009,12 +1009,7 @@ JS;
 
         $configPlugins = '[' . $plugins->flatten()->join(',') . ']';
 
-        $imports = $plugins
-            ->reduce(function(Collection $carry, Collection $plugins, string $import) {
-                $carry->push('import { ' . $plugins->join(', ') . ' } from "' . $import . '";');
-                return $carry;
-            }, Collection::empty())
-        ->join("\n");
+        $imports = CkeditorConfig::getImportStatements();
 
         // Add the translation import
         $uiLanguage = BaseCkeditorPackageAsset::uiLanguage();

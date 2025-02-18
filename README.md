@@ -312,20 +312,24 @@ The command will generate a new content migration, which will need to be run on 
 ## Adding CKEditor Plugins
 
 ### First Party plugins
-If you'd like to include any of the [first party packages](https://github.com/ckeditor/ckeditor5/tree/master/packages) from CKEditor, you can add them to the `extraPlugins` property on the `ModifyConfigEvent`.
+If you'd like to include any of the [first party packages](https://github.com/ckeditor/ckeditor5/tree/master/packages) from CKEditor, you can call `CkeditorConfig::registerFirstPartyPackage()` in the `init` function of a custom module.
 
 ```php
-use craft\ckeditor\events\ModifyConfigEvent;
-use craft\ckeditor\Field;
-use yii\base\Event;
+use craft\ckeditor\helpers\CkeditorConfig;
 
-Event::on(
-    Field::class,
-    Field::EVENT_MODIFY_CONFIG,
-    handler: function(ModifyConfigEvent $event) {
-        $event->extraPlugins = ['ImageResize'];
+class Site extends BaseModule
+{
+    public function init(): void
+    {
+        parent::init(); 
+    
+        // Register a package with toolbar items and multiple plugins
+        CkeditorConfig::registerFirstPartyPackage(['SpecialCharacters', 'SpecialCharactersEssentials'], ['specialCharacters']);
+        
+        // Register a package with a single plugin.
+        CkeditorConfig::registerFirstPartyPackage(['ImageResize']);
     }
-);
+}
 ```
 
 ### Custom plugins
