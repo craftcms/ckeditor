@@ -186,6 +186,7 @@ new ToolbarBuilder("{{  toolbarBuilderId }}", "{{ containerId }}", configOptions
 (() => {
   // Register the config options JSON schema
   const jsonSchemaUri = {{ jsonSchemaUri|json_encode|raw }};
+  const schema = JSON.parse(JSON.stringify({{jsonSchema|json_encode|raw}}));
 
   monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
     validate: true,
@@ -193,7 +194,7 @@ new ToolbarBuilder("{{  toolbarBuilderId }}", "{{ containerId }}", configOptions
       {
         uri: jsonSchemaUri,
         fileMatch: [jsonSchemaUri],
-        schema: jsonSchemaUri,
+        schema: schema,
       },
     ],
   });
