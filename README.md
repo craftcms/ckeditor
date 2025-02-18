@@ -372,5 +372,7 @@ class TokensAsset extends BaseCkeditorPackageAsset
 Finally, ensure your asset bundle is registered whenever the core CKEditor asset bundle is. Add the following code to your plugin’s `init()` method:
 
 ```php
-\craft\ckeditor\Plugin::registerCkeditorPackage(TokensAsset::class);
+\craft\ckeditor\Plugin::registerCkeditorPackage(TokensAsset::class, 'tokens.js');
 ```
+
+The second parameter should point to the main entry file for your javascript. In most cases, it will be the same as the only item in you `$js` array.
