@@ -997,13 +997,26 @@ JS;
             $removePlugins->push('ImageTransforms');
         }
 
-        // TODO remove plugins not in toolbar
+        // Avoid loading plugins not included in the toolbar
+        $unusedPlugins = collect(CkeditorConfig::$pluginButtonMap)
+            ->filter(function(array $item) use ($event) {
+                $buttons = $item['buttons'] ?? [];
+
+                return collect($event->toolbar)
+                    ->doesntContain(function(string $toolbarItem) use ($buttons) {
+                        return in_array($toolbarItem, $buttons);
+                    });
+            })
+            ->map(fn(array $item) => $item['plugins'] ?? [])
+            ->flatten();
+
+        $removePlugins->push(...$unusedPlugins->all());
 
         $plugins = CkeditorConfig::getPluginsByPackage();
 
         $plugins = collect($plugins)
-            ->mapWithKeys(fn(array $plugins, string $import) => [
-                $import => collect($plugins)
+            ->mapWithKeys(fn(array $plugins, string $namespace) => [
+                $namespace => collect($plugins)
                     ->reject(fn($plugin) => in_array($plugin, $removePlugins->toArray())),
             ]);
 
@@ -1232,6 +1245,7 @@ JS,
 
     /**
      * Returns if user belongs to a group whose members are allowed to edit source even if they're not admins
+     *
      * @param User $user
      * @return bool
      */

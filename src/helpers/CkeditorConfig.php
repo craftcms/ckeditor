@@ -74,6 +74,81 @@ final class CkeditorConfig
         ],
     ];
 
+    /**
+     * Maps toolbar items to plugins so can only load applicable plugins when we render a field.
+     *
+     * @var array
+     */
+    public static array $pluginButtonMap = [
+        ['plugins' => ['Alignment'], 'buttons' => ['alignment']],
+        ['plugins' => ['Anchor'], 'buttons' => ['anchor']],
+        [
+            'plugins' => [
+                'AutoImage',
+                'CraftImageInsertUI',
+                'Image',
+                'ImageCaption',
+                'ImageStyle',
+                'ImageToolbar',
+                'ImageTransform',
+                'ImageEditor',
+                'LinkImage',
+            ],
+            'buttons' => ['insertImage'],
+        ],
+        [
+            'plugins' => ['AutoLink', 'CraftLinkUI', 'LinkEditing', 'LinkImage'],
+            'buttons' => ['link'],
+        ],
+        ['plugins' => ['BlockQuote'], 'buttons' => ['blockQuote']],
+        ['plugins' => ['Bold'], 'buttons' => ['bold']],
+        ['plugins' => ['Code'], 'buttons' => ['code']],
+        ['plugins' => ['CodeBlock'], 'buttons' => ['codeBlock']],
+        [
+            'plugins' => ['List', 'ListProperties'],
+            'buttons' => ['bulletedList', 'numberedList'],
+        ],
+        [
+            'plugins' => ['Font'],
+            'buttons' => ['fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor'],
+        ],
+        ['plugins' => ['FindAndReplace'], 'buttons' => ['findAndReplace']],
+        ['plugins' => ['Heading'], 'buttons' => ['heading']],
+        ['plugins' => ['HorizontalLine'], 'buttons' => ['horizontalLine']],
+        ['plugins' => ['HtmlEmbed'], 'buttons' => ['htmlEmbed']],
+        [
+            'plugins' => ['Indent', 'IndentBlock'],
+            'buttons' => ['outdent', 'indent'],
+        ],
+        ['plugins' => ['Italic'], 'buttons' => ['italic']],
+        [
+            'plugins' => ['MediaEmbed', 'MediaEmbedToolbar'],
+            'buttons' => ['mediaEmbed'],
+        ],
+        ['plugins' => ['PageBreak'], 'buttons' => ['pageBreak']],
+        ['plugins' => ['RemoveFormat'], 'buttons' => ['removeFormat']],
+        ['plugins' => ['SourceEditing'], 'buttons' => ['sourceEditing']],
+        ['plugins' => ['Strikethrough'], 'buttons' => ['strikethrough']],
+        ['plugins' => ['Style'], 'buttons' => ['style']],
+        ['plugins' => ['Subscript'], 'buttons' => ['subscript']],
+        ['plugins' => ['Superscript'], 'buttons' => ['superscript']],
+        [
+            'plugins' => [
+                'Table',
+                'TableCaption',
+                'TableCellProperties',
+                'TableProperties',
+                'TableToolbar',
+                'TableUI',
+            ],
+            'buttons' => ['insertTable'],
+        ],
+        ['plugins' => ['TextPartLanguage'], 'buttons' => ['textPartLanguage']],
+        ['plugins' => ['TodoList'], 'buttons' => ['todoList']],
+        ['plugins' => ['Underline'], 'buttons' => ['underline']],
+        ['plugins' => ['CraftEntries'], 'buttons' => ['createEntry']],
+    ];
+
     public static array $toolbarItems = [
         ['button' => 'heading', 'configOption' => 'heading'],
         ['button' => 'style', 'configOption' => 'style'],
@@ -123,6 +198,7 @@ final class CkeditorConfig
     public static function registerPackage(string $name, array $config): void
     {
         $plugins = $config['plugins'] ?? [];
+        $toolbarItems = $config['toolbarItems'] ?? [];
 
         if (!isset(self::$pluginsByPackage[$name])) {
             self::$pluginsByPackage[$name] = $plugins;
@@ -130,7 +206,11 @@ final class CkeditorConfig
             self::$pluginsByPackage[$name] = array_merge(self::$pluginsByPackage[$name], $plugins);
         }
 
-        self::$toolbarItems[] = $config['toolbarItems'] ?? [];
+        self::$toolbarItems[] = $toolbarItems;
+        self::$pluginButtonMap[] = [
+            'plugins' => $plugins,
+            'buttons' => $toolbarItems,
+        ];
     }
 
     /**
