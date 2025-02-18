@@ -46,6 +46,8 @@ class CkeditorAsset extends BaseCkeditorPackageAsset
      * @inheritdoc
      */
     public $js = [
+        // Import map shim
+        ['https://ga.jspm.io/npm:es-module-shims@2.0.10/dist/es-module-shims.js', 'async' => true],
         ['ckeditor5-craftcms.js', 'type' => 'module'],
     ];
 
