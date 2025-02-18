@@ -47,12 +47,14 @@ class Plugin extends \craft\base\Plugin
      * [[\craft\ckeditor\web\assets\BaseCkeditorPackageAsset]].
      * @since 3.5.0
      */
-    public static function registerCkeditorPackage(string $name): void
+    public static function registerCkeditorPackage(string $name, string $entry = 'index.js'): void
     {
         self::$ckeditorPackages[$name] = true;
+        self::$ckeditorImports[$name] = $entry;
     }
 
     private static array $ckeditorPackages = [];
+    private static array $ckeditorImports = [];
 
     public string $schemaVersion = '3.0.0.0';
     public bool $hasCpSettings = true;
@@ -74,6 +76,13 @@ class Plugin extends \craft\base\Plugin
 
             $configBundle = $assetManager->getBundle(CkeConfigAsset::class);
             $view->registerJsImport('@craftcms/ckeditor-config', $assetManager->getAssetUrl($configBundle, 'ckeconfig.js'));
+
+            foreach (self::$ckeditorImports as $bundleName => $entry) {
+                $bundle = $assetManager->getBundle($bundleName);
+                if ($bundle instanceof BaseCkeditorPackageAsset) {
+                    $view->registerJsImport($bundle->namespace, $assetManager->getAssetUrl($bundle, $entry, false));
+                }
+            }
         }
 
         Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, function(RegisterComponentTypesEvent $event) {
