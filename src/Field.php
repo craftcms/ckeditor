@@ -1002,6 +1002,11 @@ JS;
             ->filter(function(array $item) use ($event) {
                 $buttons = $item['buttons'] ?? [];
 
+                // If there are no buttons defined, always load it
+                if (empty($buttons)) {
+                    return false;
+                }
+
                 return collect($event->toolbar)
                     ->doesntContain(function(string $toolbarItem) use ($buttons) {
                         return in_array($toolbarItem, $buttons);
