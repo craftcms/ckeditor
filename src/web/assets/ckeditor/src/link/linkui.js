@@ -23,7 +23,6 @@ import {
  *
  * @link https://github.com/ckeditor/ckeditor5/issues/17304#issuecomment-2522746556
  */
-const linkIcon = `<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="m11.077 15 .991-1.416a.75.75 0 1 1 1.229.86l-1.148 1.64a.748.748 0 0 1-.217.206 5.251 5.251 0 0 1-8.503-5.955.741.741 0 0 1 .12-.274l1.147-1.639a.75.75 0 1 1 1.228.86L4.933 10.7l.006.003a3.75 3.75 0 0 0 6.132 4.294l.006.004zm5.494-5.335a.748.748 0 0 1-.12.274l-1.147 1.639a.75.75 0 1 1-1.228-.86l.86-1.23a3.75 3.75 0 0 0-6.144-4.301l-.86 1.229a.75.75 0 0 1-1.229-.86l1.148-1.64a.748.748 0 0 1 .217-.206 5.251 5.251 0 0 1 8.503 5.955zm-4.563-2.532a.75.75 0 0 1 .184 1.045l-3.155 4.505a.75.75 0 1 1-1.229-.86l3.155-4.506a.75.75 0 0 1 1.045-.184z"/></svg>`;
 const LINK_KEYSTROKE = 'Ctrl+K';
 
 export default class CraftLinkUI extends Plugin {
@@ -40,6 +39,11 @@ export default class CraftLinkUI extends Plugin {
     this.siteDropdownView = null;
     this.siteDropdownItemModels = null;
     this.localizedRefHandleRE = null;
+
+    this.linkTypeDropdownView = null;
+    this.linkTypeDropdownItemModels = [];
+    this.elementTypeRefHandleRE = null;
+
     this.editor.config.define('linkOptions', []);
   }
 
@@ -47,77 +51,43 @@ export default class CraftLinkUI extends Plugin {
     const editor = this.editor;
     this._linkUI = editor.plugins.get(LinkUI);
     this._balloon = editor.plugins.get(ContextualBalloon);
-    this._createToolbarLinkButton();
+    const linkOptions = editor.config.get('linkOptions');
+
+    this._modifyFormViewTemplate(linkOptions);
+
+    const refHandlesPattern = CKE_LOCALIZED_REF_HANDLES.join('|');
 
     if (Craft.isMultiSite) {
-      this._modifyFormViewTemplate();
-      const refHandlesPattern = CKE_LOCALIZED_REF_HANDLES.join('|');
       this.localizedRefHandleRE = new RegExp(
         `(#(?:${refHandlesPattern}):\\d+)(?:@(\\d+))?`,
       );
     }
-  }
-
-  _createToolbarLinkButton() {
-    const editor = this.editor;
-    const linkOptions = editor.config.get('linkOptions');
-    if (!linkOptions || !linkOptions.length) {
-      this._linkUI._createToolbarLinkButton();
-      return;
-    }
-    const linkCommand = editor.commands.get('link');
-    const t = editor.t;
-    editor.ui.componentFactory.add('link', (locale) => {
-      const dropdownView = createDropdown(locale, SplitButtonView);
-      const splitButtonView = dropdownView.buttonView;
-      splitButtonView.isEnabled = true;
-      splitButtonView.label = t('Link');
-      splitButtonView.icon = linkIcon;
-      splitButtonView.keystroke = LINK_KEYSTROKE;
-      splitButtonView.tooltip = true;
-      splitButtonView.isToggleable = true;
-      this.listenTo(splitButtonView, 'execute', () =>
-        this._linkUI._showUI(true),
-      );
-      dropdownView.on('execute', (evt) => {
-        if (evt.source.linkOption) {
-          const linkOption = evt.source.linkOption;
-          this._showElementSelectorModal(linkOption);
-        } else {
-          this._linkUI._showUI(true);
-        }
-      });
-      dropdownView.class = 'ck-code-block-dropdown';
-      dropdownView.bind('isEnabled').to(linkCommand, 'isEnabled');
-      splitButtonView.bind('isOn').to(linkCommand, 'value', (value) => !!value);
-      addListToDropdown(dropdownView, () =>
-        this._getLinkListItemDefinitions(linkOptions),
-      );
-      return dropdownView;
-    });
+    this.elementTypeRefHandleRE = new RegExp(
+      `(#((?:${refHandlesPattern})):\\d+)`,
+    );
   }
 
   _getLinkListItemDefinitions(linkOptions) {
-    const itemDefinitions = new Collection();
+    const itemDefinitions = [];
 
     for (const option of linkOptions) {
-      itemDefinitions.add({
-        type: 'button',
-        model: new ViewModel({
+      itemDefinitions.push(
+        new ViewModel({
           label: option.label,
+          handle: option.refHandle,
           linkOption: option,
           withText: true,
         }),
-      });
+      );
     }
 
-    itemDefinitions.add({
-      type: 'button',
-      model: new ViewModel({
-        label: Craft.t('ckeditor', 'Insert link'),
+    itemDefinitions.push(
+      new ViewModel({
+        label: Craft.t('app', 'URL'),
+        handle: 'default',
         withText: true,
       }),
-    });
+    );
 
     return itemDefinitions;
   }
@@ -200,7 +170,7 @@ export default class CraftLinkUI extends Plugin {
     });
   }
 
-  _modifyFormViewTemplate() {
+  _modifyFormViewTemplate(linkOptions) {
     // ensure the form view template has been defined
     if (!this._linkUI.formView) {
       this._linkUI._createViews();
@@ -216,6 +186,105 @@ export default class CraftLinkUI extends Plugin {
       'ck-vertical-form',
     );
 
+    if (linkOptions && linkOptions.length) {
+      this._linkOptionsDropdown(linkOptions, formView, urlInputView, fieldView);
+    }
+
+    if (Craft.isMultiSite) {
+      this._sitesDropdown(formView, urlInputView, fieldView);
+    }
+  }
+
+  _linkOptionsDropdown(linkOptions, formView, urlInputView, fieldView) {
+    // dropdown for link type (asset, category, entry, link & anything else that was registered, like commerce products)
+    this.linkTypeDropdownView = createDropdown(formView.locale);
+
+    this.linkTypeDropdownView.buttonView.set({
+      label: '',
+      withText: true,
+      isVisible: false,
+    });
+
+    this.linkTypeDropdownItemModels = Object.fromEntries(
+      this._getLinkListItemDefinitions(linkOptions).map((item) => [
+        item.handle,
+        item,
+      ]),
+    );
+
+    addListToDropdown(
+      this.linkTypeDropdownView,
+      new Collection([
+        ...this._getLinkListItemDefinitions(linkOptions).map((item) => ({
+          type: 'button',
+          model: this.linkTypeDropdownItemModels[item.handle],
+        })),
+      ]),
+    );
+
+    // once something from the list is selected:
+    this.linkTypeDropdownView.on('execute', (evt) => {
+      // if an element type was selected - we show the modal
+      if (evt.source.linkOption) {
+        this._linkUI._hideUI();
+        const linkOption = evt.source.linkOption;
+        this._showElementSelectorModal(linkOption);
+      } else {
+        // if the default link (URL) was selected,
+        // we want to clear our the input field value, hide sites dropdown and ensure "URL" is selected
+        this._selectLinkTypeDropdownItem('default');
+        fieldView.set('value', '');
+        this.siteDropdownView?.buttonView.set('isVisible', false);
+      }
+    });
+
+    const {children} = formView;
+    const urlInputIdx = children.getIndex(urlInputView);
+    children.add(this.linkTypeDropdownView, urlInputIdx + 1);
+
+    formView._focusables.add(this.linkTypeDropdownView);
+    formView.focusTracker.add(this.linkTypeDropdownView.element);
+
+    this.listenTo(fieldView, 'change:value', () => {
+      this._toggleLinkTypeDropdownView();
+    });
+    this.listenTo(fieldView, 'input', () => {
+      this._toggleLinkTypeDropdownView();
+    });
+  }
+
+  _toggleLinkTypeDropdownView() {
+    const match = this._urlInputValue().match(this.elementTypeRefHandleRE);
+    if (match) {
+      this.linkTypeDropdownView.buttonView.set('isVisible', true);
+      let elementType = match[2];
+      if (
+        elementType &&
+        typeof this.linkTypeDropdownItemModels[elementType] === 'undefined'
+      ) {
+        elementType = null;
+      }
+
+      this._selectLinkTypeDropdownItem(elementType);
+    }
+  }
+
+  _selectLinkTypeDropdownItem(elementType) {
+    const itemModel = this.linkTypeDropdownItemModels[elementType];
+
+    // update the button label
+    const label = elementType
+      ? Craft.t('app', '{name}', {name: itemModel.label})
+      : itemModel.label;
+    this.linkTypeDropdownView.buttonView.set('label', label);
+
+    // update the item states
+    Object.values(this.linkTypeDropdownItemModels).forEach((model) => {
+      model.set('isOn', model.handle === itemModel.handle);
+    });
+  }
+
+  _sitesDropdown(formView, urlInputView, fieldView) {
     this.siteDropdownView = createDropdown(formView.locale);
     this.siteDropdownView.buttonView.set({
       label: '',
@@ -273,7 +342,7 @@ export default class CraftLinkUI extends Plugin {
 
     const {children} = formView;
     const urlInputIdx = children.getIndex(urlInputView);
-    children.add(this.siteDropdownView, urlInputIdx + 1);
+    children.add(this.siteDropdownView, urlInputIdx + 2);
 
     // would be better if the dropdown could be added after the URL input
     // but not currently possible since the rest of the inputs get added via LinkFormView::render()
@@ -292,12 +361,12 @@ export default class CraftLinkUI extends Plugin {
     return this._linkUI.formView.urlInputView.fieldView.element.value;
   }
 
-  _urlInputRefMatch() {
-    return this._urlInputValue().match(this.localizedRefHandleRE);
+  _urlInputRefMatch(regEx) {
+    return this._urlInputValue().match(regEx);
   }
 
   _toggleSiteDropdownView() {
-    const match = this._urlInputRefMatch();
+    const match = this._urlInputRefMatch(this.localizedRefHandleRE);
     if (match) {
       this.siteDropdownView.buttonView.set('isVisible', true);
       let siteId = match[2] ? parseInt(match[2], 10) : null;
@@ -308,8 +377,6 @@ export default class CraftLinkUI extends Plugin {
         siteId = null;
       }
       this._selectSiteDropdownItem(siteId);
-    } else {
-      this.siteDropdownView.buttonView.set('isVisible', false);
     }
   }
 
