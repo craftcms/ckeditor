@@ -1007,6 +1007,11 @@ class uu extends rr {
       params: {
         siteId: E
       },
+      onLoad: () => {
+        m.elementEditor.on("update", () => {
+          Craft.Preview.refresh();
+        });
+      },
       onBeforeSubmit: async () => {
         if (o !== null && Garnish.hasAttr(o, "data-owner-is-canonical") && !u.settings.isUnpublishedDraft) {
           await m.elementEditor.checkForm(!0, !0);
