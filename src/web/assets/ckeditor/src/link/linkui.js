@@ -202,7 +202,7 @@ export default class CraftLinkUI extends Plugin {
     this.linkTypeDropdownView.buttonView.set({
       label: '',
       withText: true,
-      isVisible: false,
+      isVisible: true,
     });
 
     this.linkTypeDropdownItemModels = Object.fromEntries(
@@ -324,7 +324,7 @@ export default class CraftLinkUI extends Plugin {
     );
 
     this.siteDropdownView.on('execute', (evt) => {
-      const match = this._urlInputRefMatch();
+      const match = this._urlInputRefMatch(this.localizedRefHandleRE);
       if (!match) {
         console.warn(
           `No reference tag hash present in URL: ${this._urlInputValue()}`,
