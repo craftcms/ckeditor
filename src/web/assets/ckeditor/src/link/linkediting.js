@@ -55,7 +55,7 @@ export default class CraftLinkEditing extends Plugin {
       conversion.for('downcast').attributeToElement({
         model: this.conversionData[i].model,
         view: (value, {writer}) => {
-          console.log('downcast');
+          //console.log('downcast');
           const linkViewElement = writer.createAttributeElement(
             'a',
             {
@@ -81,7 +81,7 @@ export default class CraftLinkEditing extends Plugin {
         model: {
           key: this.conversionData[i].model,
           value: (viewElement) => {
-            console.log('upcast');
+            //console.log('upcast');
             return viewElement.getAttribute(this.conversionData[i].view);
           },
         },

@@ -205,9 +205,6 @@ export default class CraftLinkUI extends Plugin {
   }
 
   _advancedLinkFields(advancedLinkFields, formView, urlInputView, fieldView) {
-    if (advancedLinkFields.length == 0) {
-      return;
-    }
     const linkCommand = this.editor.commands.get('link');
 
     // let labeledInputViews = [];
@@ -223,8 +220,7 @@ export default class CraftLinkUI extends Plugin {
       }
 
       const {children} = formView;
-      const urlInputIdx = children.getIndex(urlInputView);
-      children.add(labeledInputView, urlInputIdx + 3);
+      children.add(labeledInputView, children.length - 2);
 
       let modelAttribute = advancedField.conversion?.model;
 
@@ -311,8 +307,7 @@ export default class CraftLinkUI extends Plugin {
     });
 
     const {children} = formView;
-    const urlInputIdx = children.getIndex(urlInputView);
-    children.add(this.linkTypeDropdownView, urlInputIdx + 1);
+    children.add(this.linkTypeDropdownView, children.length - 2);
 
     formView._focusables.add(this.linkTypeDropdownView);
     formView.focusTracker.add(this.linkTypeDropdownView.element);
@@ -338,6 +333,9 @@ export default class CraftLinkUI extends Plugin {
       }
 
       this._selectLinkTypeDropdownItem(elementType);
+    } else {
+      // if we're adding a new link - pre-select the default link type - URL
+      this._selectLinkTypeDropdownItem('default');
     }
   }
 
@@ -413,8 +411,7 @@ export default class CraftLinkUI extends Plugin {
     });
 
     const {children} = formView;
-    const urlInputIdx = children.getIndex(urlInputView);
-    children.add(this.siteDropdownView, urlInputIdx + 2);
+    children.add(this.siteDropdownView, children.length - 2);
 
     // would be better if the dropdown could be added after the URL input
     // but not currently possible since the rest of the inputs get added via LinkFormView::render()

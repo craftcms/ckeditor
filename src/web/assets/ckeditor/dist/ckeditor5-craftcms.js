@@ -1104,7 +1104,6 @@ class CraftLinkEditing extends Plugin {
       conversion.for("downcast").attributeToElement({
         model: this.conversionData[i].model,
         view: (value, { writer }) => {
-          console.log("downcast");
           const linkViewElement = writer.createAttributeElement(
             "a",
             {
@@ -1126,7 +1125,6 @@ class CraftLinkEditing extends Plugin {
         model: {
           key: this.conversionData[i].model,
           value: (viewElement) => {
-            console.log("upcast");
             return viewElement.getAttribute(this.conversionData[i].view);
           }
         }
@@ -1394,9 +1392,6 @@ class CraftLinkUI extends Plugin {
   }
   _advancedLinkFields(advancedLinkFields, formView, urlInputView, fieldView) {
     var _a;
-    if (advancedLinkFields.length == 0) {
-      return;
-    }
     const linkCommand = this.editor.commands.get("link");
     for (const advancedField of advancedLinkFields) {
       let labeledInputView = new LabeledFieldView(
@@ -1408,8 +1403,7 @@ class CraftLinkUI extends Plugin {
         labeledInputView.infoText = advancedField.info;
       }
       const { children } = formView;
-      const urlInputIdx = children.getIndex(urlInputView);
-      children.add(labeledInputView, urlInputIdx + 3);
+      children.add(labeledInputView, children.length - 2);
       let modelAttribute = (_a = advancedField.conversion) == null ? void 0 : _a.model;
       if (typeof modelAttribute !== "undefined") {
         formView[modelAttribute] = labeledInputView;
@@ -1475,8 +1469,7 @@ class CraftLinkUI extends Plugin {
       }
     });
     const { children } = formView;
-    const urlInputIdx = children.getIndex(urlInputView);
-    children.add(this.linkTypeDropdownView, urlInputIdx + 1);
+    children.add(this.linkTypeDropdownView, children.length - 2);
     formView._focusables.add(this.linkTypeDropdownView);
     formView.focusTracker.add(this.linkTypeDropdownView.element);
     this.listenTo(fieldView, "change:value", () => {
@@ -1495,6 +1488,8 @@ class CraftLinkUI extends Plugin {
         elementType = null;
       }
       this._selectLinkTypeDropdownItem(elementType);
+    } else {
+      this._selectLinkTypeDropdownItem("default");
     }
   }
   _selectLinkTypeDropdownItem(elementType) {
@@ -1557,8 +1552,7 @@ class CraftLinkUI extends Plugin {
       fieldView.set("value", newUrl);
     });
     const { children } = formView;
-    const urlInputIdx = children.getIndex(urlInputView);
-    children.add(this.siteDropdownView, urlInputIdx + 2);
+    children.add(this.siteDropdownView, children.length - 2);
     formView._focusables.add(this.siteDropdownView);
     formView.focusTracker.add(this.siteDropdownView.element);
     this.listenTo(fieldView, "change:value", () => {
