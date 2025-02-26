@@ -1,4 +1,4 @@
-import { ImageInsertUI, ButtonView, icons, Command, Plugin, ImageUtils, Collection, ViewModel, createDropdown, DropdownButtonView, addListToDropdown, Widget, viewToModelPositionOutsideModelElement, toWidget, DomEventObserver, WidgetToolbarRepository, isWidget, findAttributeRange, LinkUI, ContextualBalloon, Range, LabeledFieldView, createLabeledInputText, ClassicEditor, SourceEditing, Heading } from "ckeditor5";
+import { ImageInsertUI, ButtonView, icons, Command, Plugin, ImageUtils, Collection, ViewModel, createDropdown, DropdownButtonView, addListToDropdown, Widget, viewToModelPositionOutsideModelElement, toWidget, DomEventObserver, WidgetToolbarRepository, isWidget, findAttributeRange, LinkUI, ContextualBalloon, Range, LabeledFieldView, createLabeledInputText, View, ClassicEditor, SourceEditing, Heading } from "ckeditor5";
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -1547,8 +1547,8 @@ class CraftLinkUI extends Plugin {
     var _a;
     const linkCommand = this.editor.commands.get("link");
     for (const advancedField of advancedLinkFields) {
-      let modelAttribute = (_a = advancedField.conversion) == null ? void 0 : _a.model;
-      if (typeof formView[modelAttribute] === "undefined") {
+      let attributeModel = (_a = advancedField.conversion) == null ? void 0 : _a.model;
+      if (attributeModel && typeof formView[attributeModel] === "undefined") {
         let labeledInputView = new LabeledFieldView(
           formView.locale,
           createLabeledInputText
@@ -1561,9 +1561,32 @@ class CraftLinkUI extends Plugin {
         children.add(labeledInputView, children.length - 2);
         formView._focusables.add(labeledInputView.fieldView);
         formView.focusTracker.add(labeledInputView.fieldView.element);
-        formView[modelAttribute] = labeledInputView;
-        formView[modelAttribute].fieldView.bind("value").to(linkCommand, modelAttribute);
-        formView[modelAttribute].fieldView.element.value = linkCommand[modelAttribute] || "";
+        formView[attributeModel] = labeledInputView;
+        formView[attributeModel].fieldView.bind("value").to(linkCommand, attributeModel);
+        formView[attributeModel].fieldView.element.value = linkCommand[attributeModel] || "";
+      }
+      if (advancedField.value === "target") {
+        let linkOpenInNewTabDecorator = formView._manualDecoratorSwitches._items.filter(
+          (item) => item.name === "linkOpenInNewTab"
+        );
+        if (linkOpenInNewTabDecorator.length) {
+          const { children } = formView;
+          const targetDecoratorView = new View();
+          targetDecoratorView.setTemplate({
+            tag: "ul",
+            children: linkOpenInNewTabDecorator.map((switchButton) => ({
+              tag: "li",
+              children: [switchButton],
+              attributes: {
+                class: ["ck", "ck-list__item"]
+              }
+            })),
+            attributes: {
+              class: ["ck", "ck-reset", "ck-list"]
+            }
+          });
+          children.add(targetDecoratorView, children.length - 2);
+        }
       }
     }
   }

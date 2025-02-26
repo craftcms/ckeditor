@@ -691,10 +691,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             [
                 'label' => Craft::t('app', 'Target'),
                 'value' => 'target',
-                'conversion' => [
-                    'model' => 'craftTarget',
-                    'view' => 'target',
-                ],
+                'conversion' => null,
             ],
             [
                 'label' => Craft::t('app', 'Title Text'),
@@ -1031,6 +1028,21 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
                 ],
             ],
         ]);
+
+        if (in_array('target', $this->advancedLinkFields)) {
+            $baseConfig['link'] = [
+                'decorators' => [
+                    'openInNewTab' => [
+                        'mode' => 'manual',
+                        'label' => Craft::t('app', 'Open in new tab'),
+                        'attributes' => [
+                            'target' => '_blank',
+                            'rel' => 'noopener noreferrer',
+                        ],
+                    ],
+                ],
+            ];
+        }
 
         // Give plugins/modules a chance to modify the config
         $event = new ModifyConfigEvent([
@@ -1531,7 +1543,14 @@ JS,
             }
         }
 
-        return $fields;
+        // sort by the order of $this->advancedLinkFields
+        $fields = array_column($fields, null, 'value');
+        $order = array_flip($this->advancedLinkFields);
+        uksort($fields, function($a, $b) use ($order) {
+            return $order[$a] <=> $order[$b];
+        });
+
+        return array_values($fields);
     }
 
     /**

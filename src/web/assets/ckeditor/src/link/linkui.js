@@ -15,6 +15,7 @@ import {
   LinkUI,
   Plugin,
   Range,
+  View,
   ViewModel,
 } from 'ckeditor5';
 
@@ -416,8 +417,8 @@ export default class CraftLinkUI extends Plugin {
     const linkCommand = this.editor.commands.get('link');
 
     for (const advancedField of advancedLinkFields) {
-      let modelAttribute = advancedField.conversion?.model;
-      if (typeof formView[modelAttribute] === 'undefined') {
+      let attributeModel = advancedField.conversion?.model;
+      if (attributeModel && typeof formView[attributeModel] === 'undefined') {
         // create an input text field with the name of advancedField and matching label
         let labeledInputView = new LabeledFieldView(
           formView.locale,
@@ -434,13 +435,40 @@ export default class CraftLinkUI extends Plugin {
         formView._focusables.add(labeledInputView.fieldView);
         formView.focusTracker.add(labeledInputView.fieldView.element);
 
-        formView[modelAttribute] = labeledInputView;
-        formView[modelAttribute].fieldView
+        formView[attributeModel] = labeledInputView;
+        formView[attributeModel].fieldView
           .bind('value')
-          .to(linkCommand, modelAttribute);
+          .to(linkCommand, attributeModel);
 
-        formView[modelAttribute].fieldView.element.value =
-          linkCommand[modelAttribute] || '';
+        formView[attributeModel].fieldView.element.value =
+          linkCommand[attributeModel] || '';
+      }
+      if (advancedField.value === 'target') {
+        let linkOpenInNewTabDecorator =
+          formView._manualDecoratorSwitches._items.filter(
+            (item) => item.name === 'linkOpenInNewTab',
+          );
+
+        if (linkOpenInNewTabDecorator.length) {
+          const {children} = formView;
+
+          // copied from https://github.com/ckeditor/ckeditor5/blob/v44.2.1/packages/ckeditor5-link/src/ui/linkformview.ts#L339-L363
+          const targetDecoratorView = new View();
+          targetDecoratorView.setTemplate({
+            tag: 'ul',
+            children: linkOpenInNewTabDecorator.map((switchButton) => ({
+              tag: 'li',
+              children: [switchButton],
+              attributes: {
+                class: ['ck', 'ck-list__item'],
+              },
+            })),
+            attributes: {
+              class: ['ck', 'ck-reset', 'ck-list'],
+            },
+          });
+          children.add(targetDecoratorView, children.length - 2);
+        }
       }
     }
   }
