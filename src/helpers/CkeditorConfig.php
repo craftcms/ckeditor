@@ -69,7 +69,7 @@ final class CkeditorConfig
             'CraftImageInsertUI',
             'ImageTransform',
             'ImageEditor',
-            'CraftLinkUI',
+            'CraftLink',
             'CraftEntries',
         ],
     ];
@@ -97,7 +97,7 @@ final class CkeditorConfig
             'buttons' => ['insertImage'],
         ],
         [
-            'plugins' => ['AutoLink', 'CraftLinkUI', 'LinkEditing', 'LinkImage'],
+            'plugins' => ['AutoLink', 'CraftLink', 'LinkEditing', 'LinkImage'],
             'buttons' => ['link'],
         ],
         ['plugins' => ['BlockQuote'], 'buttons' => ['blockQuote']],

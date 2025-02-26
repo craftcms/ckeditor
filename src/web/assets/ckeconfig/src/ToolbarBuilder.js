@@ -11,7 +11,7 @@ import {
   create,
   ImageTransform,
   ImageEditor,
-  CraftLinkUI,
+  CraftLink,
   CraftImageInsertUI,
   CraftEntries,
 } from '@craftcms/ckeditor';

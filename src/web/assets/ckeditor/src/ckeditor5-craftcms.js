@@ -5,17 +5,19 @@
  */
 
 export {default as CraftImageInsertUI} from './image/imageinsert/imageinsertui';
-export {default as CraftLinkUI} from './link/linkui';
+//export {default as CraftLinkUI} from './link/linkui';
 export {default as ImageTransform} from './image/imagetransform';
 export {default as ImageEditor} from './image/imageeditor';
 
 import 'ckeditor5/ckeditor5.css';
 import './ckeditor5-craftcms.css';
 import CraftEntries from './entries/entries';
+import CraftLink from './link/link';
 import CKEditorInspector from '@ckeditor/ckeditor5-inspector';
 import {ClassicEditor, Heading, SourceEditing} from 'ckeditor5';
 
 export {CraftEntries};
+export {CraftLink};
 
 const trackChangesInSourceMode = function (editor) {
   const sourceEditing = editor.plugins.get(SourceEditing);

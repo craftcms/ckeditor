@@ -11,24 +11,12 @@ import {
   ContextualBalloon,
   createDropdown,
   createLabeledInputText,
-  createLinkElement,
-  findAttributeRange,
-  InputTextView,
   LabeledFieldView,
   LinkUI,
   Plugin,
   Range,
   ViewModel,
-  ViewElement,
 } from 'ckeditor5';
-
-/**
- * These imports aren't ideal but are necessary for now because the main
- * ckeditor5 package doesn't expose them.
- *
- * @link https://github.com/ckeditor/ckeditor5/issues/17304#issuecomment-2522746556
- */
-const LINK_KEYSTROKE = 'Ctrl+K';
 
 export default class CraftLinkUI extends Plugin {
   static get requires() {
@@ -65,11 +53,6 @@ export default class CraftLinkUI extends Plugin {
       .map((field) => field.conversion ?? null)
       .filter((field) => field);
 
-    this._defineSchema();
-    this._defineConverters();
-    this._adjustLinkCommand();
-    this._adjustUnlinkCommand();
-
     this._modifyFormViewTemplate(linkOptions, advancedLinkFields);
 
     const refHandlesPattern = CKE_LOCALIZED_REF_HANDLES.join('|');
@@ -82,57 +65,6 @@ export default class CraftLinkUI extends Plugin {
     this.elementTypeRefHandleRE = new RegExp(
       `(#((?:${refHandlesPattern})):\\d+)`,
     );
-  }
-
-  _defineSchema() {
-    const schema = this.editor.model.schema;
-
-    let modelAttributes = this.conversionData.map((field) => field.model);
-
-    // Extend the node's schema to accept the advancedLinkFields attributes
-    schema.extend('$text', {
-      allowAttributes: modelAttributes,
-    });
-  }
-
-  _defineConverters() {
-    const conversion = this.editor.conversion;
-
-    for (let i = 0; i < this.conversionData.length; i++) {
-      // model to view (html)
-      conversion.for('downcast').attributeToElement({
-        model: this.conversionData[i].model,
-        view: (value, {writer}) => {
-          const linkViewElement = writer.createAttributeElement(
-            'a',
-            {
-              [this.conversionData[i].view]: value,
-            },
-            {priority: 5},
-          );
-
-          writer.setCustomProperty('link', true, linkViewElement);
-
-          return linkViewElement;
-        },
-      });
-
-      // View (html) to Model
-      conversion.for('upcast').elementToAttribute({
-        view: {
-          name: 'a',
-          attributes: {
-            [this.conversionData[i].view]: true,
-          },
-        },
-        model: {
-          key: this.conversionData[i].model,
-          value: (viewElement) => {
-            return viewElement.getAttribute(this.conversionData[i].view);
-          },
-        },
-      });
-    }
   }
 
   _getLinkListItemDefinitions(linkOptions) {
@@ -276,7 +208,6 @@ export default class CraftLinkUI extends Plugin {
     if (advancedLinkFields.length == 0) {
       return;
     }
-
     const linkCommand = this.editor.commands.get('link');
 
     // let labeledInputViews = [];
@@ -321,7 +252,11 @@ export default class CraftLinkUI extends Plugin {
         linkCommand.once(
           'execute',
           (evt, args) => {
-            if (args.length === 3) {
+            // if there's no extra attrs on the link - add them to the list of args
+            if (args.length < 3) {
+              args.push(values);
+            } else if (args.length === 3) {
+              // if we already have extra args on the link - update the list of args
               Object.assign(args[2], values);
             }
           },
@@ -530,127 +465,5 @@ export default class CraftLinkUI extends Plugin {
     Object.values(this.siteDropdownItemModels).forEach((model) => {
       model.set('isOn', model === itemModel);
     });
-  }
-
-  _adjustLinkCommand() {
-    const editor = this.editor;
-    const linkCommand = editor.commands.get('link');
-    let linking = false;
-
-    linkCommand.on(
-      'execute',
-      (evt, args) => {
-        //console.log('link command 1');
-        if (linking) {
-          linking = false;
-          return;
-        }
-
-        evt.stop();
-        linking = true;
-
-        //console.log('link command2');
-
-        const extraAttributeValues = args[args.length - 1];
-        const {model} = editor;
-        const {selection} = model.document;
-
-        model.change((writer) => {
-          this.editor.execute('link', ...args);
-
-          const firstPosition = selection.getFirstPosition();
-
-          this.conversionData.forEach((item) => {
-            if (selection.isCollapsed) {
-              const node = firstPosition.textNode || firstPosition.nodeBefore;
-
-              if (extraAttributeValues[item.model]) {
-                writer.setAttribute(
-                  item.model,
-                  extraAttributeValues[item.model],
-                  writer.createRangeOn(node),
-                );
-              } else {
-                writer.removeAttribute(item.model, writer.createRangeOn(node));
-              }
-
-              writer.removeSelectionAttribute(item.model);
-            } else {
-              const ranges = model.schema.getValidRanges(
-                selection.getRanges(),
-                item.model,
-              );
-
-              for (const range of ranges) {
-                if (extraAttributeValues[item.model]) {
-                  writer.setAttribute(
-                    item.model,
-                    extraAttributeValues[item.model],
-                    range,
-                  );
-                } else {
-                  writer.removeAttribute(item.model, range);
-                }
-              }
-            }
-          });
-        });
-      },
-      {priority: 'high'},
-    );
-  }
-
-  _adjustUnlinkCommand() {
-    const editor = this.editor;
-    const unlinkCommand = editor.commands.get('unlink');
-    const {model} = editor;
-    const {selection} = model.document;
-    let unlinking = false;
-
-    unlinkCommand.on(
-      'execute',
-      (evt) => {
-        //console.log('unlink exec');
-        if (unlinking) {
-          return;
-        }
-
-        evt.stop();
-
-        model.change(() => {
-          unlinking = true;
-          editor.execute('unlink');
-          unlinking = false;
-
-          // remove extra attributes
-          model.change((writer) => {
-            let ranges;
-
-            this.conversionData.forEach((item) => {
-              if (selection.isCollapsed) {
-                ranges = [
-                  findAttributeRange(
-                    selection.getFirstPosition(),
-                    item.model,
-                    selection.getAttribute(item.model),
-                    model,
-                  ),
-                ];
-              } else {
-                ranges = model.schema.getValidRanges(
-                  selection.getRanges(),
-                  item.model,
-                );
-              }
-
-              for (const range of ranges) {
-                writer.removeAttribute(item.model, range);
-              }
-            });
-          });
-        });
-      },
-      {priority: 'high'},
-    );
   }
 }
