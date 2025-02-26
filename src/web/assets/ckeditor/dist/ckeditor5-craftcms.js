@@ -1106,9 +1106,7 @@ class CraftLinkEditing extends Plugin {
         view: (value, { writer }) => {
           const linkViewElement = writer.createAttributeElement(
             "a",
-            {
-              [this.conversionData[i].view]: value
-            },
+            { [this.conversionData[i].view]: value },
             { priority: 5 }
           );
           writer.setCustomProperty("link", true, linkViewElement);
@@ -1124,7 +1122,7 @@ class CraftLinkEditing extends Plugin {
         },
         model: {
           key: this.conversionData[i].model,
-          value: (viewElement) => {
+          value: (viewElement, conversionApi) => {
             return viewElement.getAttribute(this.conversionData[i].view);
           }
         }
@@ -1145,10 +1143,9 @@ class CraftLinkEditing extends Plugin {
         evt.stop();
         linking = true;
         const extraAttributeValues = args[args.length - 1];
-        const { model } = editor;
-        const { selection } = model.document;
-        model.change((writer) => {
-          this.editor.execute("link", ...args);
+        const selection = editor.model.document.selection;
+        editor.model.change((writer) => {
+          editor.execute("link", ...args);
           const firstPosition = selection.getFirstPosition();
           this.conversionData.forEach((item) => {
             if (selection.isCollapsed) {
@@ -1164,7 +1161,7 @@ class CraftLinkEditing extends Plugin {
               }
               writer.removeSelectionAttribute(item.model);
             } else {
-              const ranges = model.schema.getValidRanges(
+              const ranges = editor.model.schema.getValidRanges(
                 selection.getRanges(),
                 item.model
               );
@@ -1263,7 +1260,6 @@ class CraftLinkUI extends Plugin {
     const linkOptions = editor.config.get("linkOptions");
     const advancedLinkFields = editor.config.get("advancedLinkFields");
     this.conversionData = advancedLinkFields.map((field) => field.conversion ?? null).filter((field) => field);
-    this._modifyFormViewTemplate(linkOptions, advancedLinkFields);
     const refHandlesPattern = CKE_LOCALIZED_REF_HANDLES.join("|");
     if (Craft.isMultiSite) {
       this.localizedRefHandleRE = new RegExp(
@@ -1273,6 +1269,183 @@ class CraftLinkUI extends Plugin {
     this.elementTypeRefHandleRE = new RegExp(
       `(#((?:${refHandlesPattern})):\\d+)`
     );
+    this._modifyFormViewTemplate(linkOptions, advancedLinkFields);
+  }
+  _modifyFormViewTemplate(linkOptions, advancedLinkFields) {
+    if (!this._linkUI.formView) {
+      this._linkUI._createViews();
+    }
+    const { formView } = this._linkUI;
+    const { urlInputView } = formView;
+    const { fieldView } = urlInputView;
+    formView.template.attributes.class.push(
+      "ck-link-form_layout-vertical",
+      "ck-vertical-form"
+    );
+    if (linkOptions && linkOptions.length) {
+      this._linkOptionsDropdown(linkOptions, formView, fieldView);
+    }
+    if (Craft.isMultiSite) {
+      this._sitesDropdown(formView, fieldView);
+    }
+    if (advancedLinkFields && advancedLinkFields.length) {
+      this._advancedLinkFields(advancedLinkFields, formView);
+    }
+  }
+  _urlInputValue() {
+    return this._linkUI.formView.urlInputView.fieldView.element.value;
+  }
+  _urlInputRefMatch(regEx) {
+    return this._urlInputValue().match(regEx);
+  }
+  ////////////////////// Sites Dropdown //////////////////////
+  _sitesDropdown(formView, fieldView) {
+    this.siteDropdownView = createDropdown(formView.locale);
+    this.siteDropdownView.buttonView.set({
+      label: "",
+      withText: true,
+      isVisible: false
+    });
+    this.siteDropdownItemModels = Object.fromEntries(
+      Craft.sites.map((site) => [
+        site.id,
+        new ViewModel({
+          label: site.name,
+          siteId: site.id,
+          withText: true
+        })
+      ])
+    );
+    this.siteDropdownItemModels.current = new ViewModel({
+      label: Craft.t("ckeditor", "Link to the current site"),
+      siteId: null,
+      withText: true
+    });
+    addListToDropdown(
+      this.siteDropdownView,
+      new Collection([
+        ...Craft.sites.map((site) => ({
+          type: "button",
+          model: this.siteDropdownItemModels[site.id]
+        })),
+        {
+          type: "button",
+          model: this.siteDropdownItemModels.current
+        }
+      ])
+    );
+    this.siteDropdownView.on("execute", (evt) => {
+      const match = this._urlInputRefMatch(this.localizedRefHandleRE);
+      if (!match) {
+        console.warn(
+          `No reference tag hash present in URL: ${this._urlInputValue()}`
+        );
+        return;
+      }
+      const { siteId } = evt.source;
+      let ref = match[1];
+      if (siteId) {
+        ref += `@${siteId}`;
+      }
+      const newUrl = this._urlInputValue().replace(match[0], ref);
+      fieldView.set("value", newUrl);
+    });
+    const { children } = formView;
+    children.add(this.siteDropdownView, children.length - 2);
+    formView._focusables.add(this.siteDropdownView);
+    formView.focusTracker.add(this.siteDropdownView.element);
+    this.listenTo(fieldView, "change:value", () => {
+      this._toggleSiteDropdownView();
+    });
+    this.listenTo(fieldView, "input", () => {
+      this._toggleSiteDropdownView();
+    });
+  }
+  _toggleSiteDropdownView() {
+    const match = this._urlInputRefMatch(this.localizedRefHandleRE);
+    if (match) {
+      this.siteDropdownView.buttonView.set("isVisible", true);
+      let siteId = match[2] ? parseInt(match[2], 10) : null;
+      if (siteId && typeof this.siteDropdownItemModels[siteId] === "undefined") {
+        siteId = null;
+      }
+      this._selectSiteDropdownItem(siteId);
+    }
+  }
+  _selectSiteDropdownItem(siteId) {
+    const itemModel = this.siteDropdownItemModels[siteId ?? "current"];
+    const label = siteId ? Craft.t("ckeditor", "Site: {name}", { name: itemModel.label }) : itemModel.label;
+    this.siteDropdownView.buttonView.set("label", label);
+    Object.values(this.siteDropdownItemModels).forEach((model) => {
+      model.set("isOn", model === itemModel);
+    });
+  }
+  ////////////////////// Link Options Dropdown (link types) //////////////////////
+  _linkOptionsDropdown(linkOptions, formView, fieldView) {
+    this.linkTypeDropdownView = createDropdown(formView.locale);
+    this.linkTypeDropdownView.buttonView.set({
+      label: "",
+      withText: true,
+      isVisible: true
+    });
+    this.linkTypeDropdownItemModels = Object.fromEntries(
+      this._getLinkListItemDefinitions(linkOptions).map((item) => [
+        item.handle,
+        item
+      ])
+    );
+    addListToDropdown(
+      this.linkTypeDropdownView,
+      new Collection([
+        ...this._getLinkListItemDefinitions(linkOptions).map((item) => ({
+          type: "button",
+          model: this.linkTypeDropdownItemModels[item.handle]
+        }))
+      ])
+    );
+    this.linkTypeDropdownView.on("execute", (evt) => {
+      var _a;
+      if (evt.source.linkOption) {
+        this._linkUI._hideUI();
+        const linkOption = evt.source.linkOption;
+        this._showElementSelectorModal(linkOption);
+      } else {
+        this._selectLinkTypeDropdownItem("default");
+        fieldView.set("value", "");
+        (_a = this.siteDropdownView) == null ? void 0 : _a.buttonView.set("isVisible", false);
+      }
+    });
+    const { children } = formView;
+    children.add(this.linkTypeDropdownView, children.length - 2);
+    formView._focusables.add(this.linkTypeDropdownView);
+    formView.focusTracker.add(this.linkTypeDropdownView.element);
+    this.listenTo(fieldView, "change:value", () => {
+      this._toggleLinkTypeDropdownView();
+    });
+    this.listenTo(fieldView, "input", () => {
+      this._toggleLinkTypeDropdownView();
+    });
+  }
+  _toggleLinkTypeDropdownView() {
+    const match = this._urlInputValue().match(this.elementTypeRefHandleRE);
+    if (match) {
+      this.linkTypeDropdownView.buttonView.set("isVisible", true);
+      let elementType = match[2];
+      if (elementType && typeof this.linkTypeDropdownItemModels[elementType] === "undefined") {
+        elementType = null;
+      }
+      this._selectLinkTypeDropdownItem(elementType);
+    } else {
+      this._selectLinkTypeDropdownItem("default");
+    }
+  }
+  _selectLinkTypeDropdownItem(elementType) {
+    const itemModel = this.linkTypeDropdownItemModels[elementType];
+    const label = elementType ? Craft.t("app", "{name}", { name: itemModel.label }) : itemModel.label;
+    this.linkTypeDropdownView.buttonView.set("label", label);
+    Object.values(this.linkTypeDropdownItemModels).forEach((model) => {
+      model.set("isOn", model.handle === itemModel.handle);
+    });
   }
   _getLinkListItemDefinitions(linkOptions) {
     const itemDefinitions = [];
@@ -1364,61 +1537,49 @@ class CraftLinkUI extends Plugin {
       closeOtherModals: false
     });
   }
-  _modifyFormViewTemplate(linkOptions, advancedLinkFields) {
-    if (!this._linkUI.formView) {
-      this._linkUI._createViews();
-    }
-    const { formView } = this._linkUI;
-    const { urlInputView } = formView;
-    const { fieldView } = urlInputView;
-    formView.template.attributes.class.push(
-      "ck-link-form_layout-vertical",
-      "ck-vertical-form"
-    );
-    if (linkOptions && linkOptions.length) {
-      this._linkOptionsDropdown(linkOptions, formView, urlInputView, fieldView);
-    }
-    if (Craft.isMultiSite) {
-      this._sitesDropdown(formView, urlInputView, fieldView);
-    }
-    if (advancedLinkFields && advancedLinkFields.length) {
-      this._advancedLinkFields(
-        advancedLinkFields,
-        formView,
-        urlInputView,
-        fieldView
-      );
-    }
+  ////////////////////// Advanced Link Fields //////////////////////
+  _advancedLinkFields(advancedLinkFields, formView) {
+    this._addAdvancedLinkFieldInputs(advancedLinkFields, formView);
+    this._handleAdvancedLinkFieldsFormSubmit(formView);
+    this._trackAdvancedLinkFieldsValueChange();
   }
-  _advancedLinkFields(advancedLinkFields, formView, urlInputView, fieldView) {
+  _addAdvancedLinkFieldInputs(advancedLinkFields, formView) {
     var _a;
     const linkCommand = this.editor.commands.get("link");
     for (const advancedField of advancedLinkFields) {
-      let labeledInputView = new LabeledFieldView(
-        formView.locale,
-        createLabeledInputText
-      );
-      labeledInputView.label = advancedField.label;
-      if (advancedField.info) {
-        labeledInputView.infoText = advancedField.info;
-      }
-      const { children } = formView;
-      children.add(labeledInputView, children.length - 2);
       let modelAttribute = (_a = advancedField.conversion) == null ? void 0 : _a.model;
-      if (typeof modelAttribute !== "undefined") {
+      if (typeof formView[modelAttribute] === "undefined") {
+        let labeledInputView = new LabeledFieldView(
+          formView.locale,
+          createLabeledInputText
+        );
+        labeledInputView.label = advancedField.label;
+        if (advancedField.info) {
+          labeledInputView.infoText = advancedField.info;
+        }
+        const { children } = formView;
+        children.add(labeledInputView, children.length - 2);
+        formView._focusables.add(labeledInputView.fieldView);
+        formView.focusTracker.add(labeledInputView.fieldView.element);
         formView[modelAttribute] = labeledInputView;
         formView[modelAttribute].fieldView.bind("value").to(linkCommand, modelAttribute);
         formView[modelAttribute].fieldView.element.value = linkCommand[modelAttribute] || "";
       }
     }
-    const modelAttributes = this.conversionData.map((field) => field.model);
+  }
+  _handleAdvancedLinkFieldsFormSubmit(formView) {
+    const editor = this.editor;
+    const linkCommand = editor.commands.get("link");
+    const attributeModels = this.conversionData.map((field) => field.model);
     formView.on(
       "submit",
       () => {
-        const values = modelAttributes.reduce((state, modelAttribute) => {
-          state[modelAttribute] = formView[modelAttribute].fieldView.element.value;
-          return state;
-        }, {});
+        let values = {};
+        attributeModels.forEach((attributeModel) => {
+          let value = [];
+          value[attributeModel] = formView[attributeModel].fieldView.element.value;
+          Object.assign(values, value);
+        });
         linkCommand.once(
           "execute",
           (evt, args) => {
@@ -1434,157 +1595,15 @@ class CraftLinkUI extends Plugin {
       { priority: "high" }
     );
   }
-  _linkOptionsDropdown(linkOptions, formView, urlInputView, fieldView) {
-    this.linkTypeDropdownView = createDropdown(formView.locale);
-    this.linkTypeDropdownView.buttonView.set({
-      label: "",
-      withText: true,
-      isVisible: true
-    });
-    this.linkTypeDropdownItemModels = Object.fromEntries(
-      this._getLinkListItemDefinitions(linkOptions).map((item) => [
-        item.handle,
-        item
-      ])
-    );
-    addListToDropdown(
-      this.linkTypeDropdownView,
-      new Collection([
-        ...this._getLinkListItemDefinitions(linkOptions).map((item) => ({
-          type: "button",
-          model: this.linkTypeDropdownItemModels[item.handle]
-        }))
-      ])
-    );
-    this.linkTypeDropdownView.on("execute", (evt) => {
-      var _a;
-      if (evt.source.linkOption) {
-        this._linkUI._hideUI();
-        const linkOption = evt.source.linkOption;
-        this._showElementSelectorModal(linkOption);
-      } else {
-        this._selectLinkTypeDropdownItem("default");
-        fieldView.set("value", "");
-        (_a = this.siteDropdownView) == null ? void 0 : _a.buttonView.set("isVisible", false);
-      }
-    });
-    const { children } = formView;
-    children.add(this.linkTypeDropdownView, children.length - 2);
-    formView._focusables.add(this.linkTypeDropdownView);
-    formView.focusTracker.add(this.linkTypeDropdownView.element);
-    this.listenTo(fieldView, "change:value", () => {
-      this._toggleLinkTypeDropdownView();
-    });
-    this.listenTo(fieldView, "input", () => {
-      this._toggleLinkTypeDropdownView();
-    });
-  }
-  _toggleLinkTypeDropdownView() {
-    const match = this._urlInputValue().match(this.elementTypeRefHandleRE);
-    if (match) {
-      this.linkTypeDropdownView.buttonView.set("isVisible", true);
-      let elementType = match[2];
-      if (elementType && typeof this.linkTypeDropdownItemModels[elementType] === "undefined") {
-        elementType = null;
-      }
-      this._selectLinkTypeDropdownItem(elementType);
-    } else {
-      this._selectLinkTypeDropdownItem("default");
-    }
-  }
-  _selectLinkTypeDropdownItem(elementType) {
-    const itemModel = this.linkTypeDropdownItemModels[elementType];
-    const label = elementType ? Craft.t("app", "{name}", { name: itemModel.label }) : itemModel.label;
-    this.linkTypeDropdownView.buttonView.set("label", label);
-    Object.values(this.linkTypeDropdownItemModels).forEach((model) => {
-      model.set("isOn", model.handle === itemModel.handle);
-    });
-  }
-  _sitesDropdown(formView, urlInputView, fieldView) {
-    this.siteDropdownView = createDropdown(formView.locale);
-    this.siteDropdownView.buttonView.set({
-      label: "",
-      withText: true,
-      isVisible: false
-    });
-    this.siteDropdownItemModels = Object.fromEntries(
-      Craft.sites.map((site) => [
-        site.id,
-        new ViewModel({
-          label: site.name,
-          siteId: site.id,
-          withText: true
-        })
-      ])
-    );
-    this.siteDropdownItemModels.current = new ViewModel({
-      label: Craft.t("ckeditor", "Link to the current site"),
-      siteId: null,
-      withText: true
-    });
-    addListToDropdown(
-      this.siteDropdownView,
-      new Collection([
-        ...Craft.sites.map((site) => ({
-          type: "button",
-          model: this.siteDropdownItemModels[site.id]
-        })),
-        {
-          type: "button",
-          model: this.siteDropdownItemModels.current
-        }
-      ])
-    );
-    this.siteDropdownView.on("execute", (evt) => {
-      const match = this._urlInputRefMatch(this.localizedRefHandleRE);
-      if (!match) {
-        console.warn(
-          `No reference tag hash present in URL: ${this._urlInputValue()}`
-        );
-        return;
-      }
-      const { siteId } = evt.source;
-      let ref = match[1];
-      if (siteId) {
-        ref += `@${siteId}`;
-      }
-      const newUrl = this._urlInputValue().replace(match[0], ref);
-      fieldView.set("value", newUrl);
-    });
-    const { children } = formView;
-    children.add(this.siteDropdownView, children.length - 2);
-    formView._focusables.add(this.siteDropdownView);
-    formView.focusTracker.add(this.siteDropdownView.element);
-    this.listenTo(fieldView, "change:value", () => {
-      this._toggleSiteDropdownView();
-    });
-    this.listenTo(fieldView, "input", () => {
-      this._toggleSiteDropdownView();
-    });
-  }
-  _urlInputValue() {
-    return this._linkUI.formView.urlInputView.fieldView.element.value;
-  }
-  _urlInputRefMatch(regEx) {
-    return this._urlInputValue().match(regEx);
-  }
-  _toggleSiteDropdownView() {
-    const match = this._urlInputRefMatch(this.localizedRefHandleRE);
-    if (match) {
-      this.siteDropdownView.buttonView.set("isVisible", true);
-      let siteId = match[2] ? parseInt(match[2], 10) : null;
-      if (siteId && typeof this.siteDropdownItemModels[siteId] === "undefined") {
-        siteId = null;
-      }
-      this._selectSiteDropdownItem(siteId);
-    }
-  }
-  _selectSiteDropdownItem(siteId) {
-    const itemModel = this.siteDropdownItemModels[siteId ?? "current"];
-    const label = siteId ? Craft.t("ckeditor", "Site: {name}", { name: itemModel.label }) : itemModel.label;
-    this.siteDropdownView.buttonView.set("label", label);
-    Object.values(this.siteDropdownItemModels).forEach((model) => {
-      model.set("isOn", model === itemModel);
+  _trackAdvancedLinkFieldsValueChange() {
+    const editor = this.editor;
+    const linkCommand = editor.commands.get("link");
+    const selection = editor.model.document.selection;
+    this.conversionData.forEach((item) => {
+      linkCommand.set(item.model, null);
+      editor.model.document.on("change", () => {
+        linkCommand[item.model] = selection.getAttribute(item.model);
+      });
     });
   }
 }

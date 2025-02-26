@@ -55,12 +55,9 @@ export default class CraftLinkEditing extends Plugin {
       conversion.for('downcast').attributeToElement({
         model: this.conversionData[i].model,
         view: (value, {writer}) => {
-          //console.log('downcast');
           const linkViewElement = writer.createAttributeElement(
             'a',
-            {
-              [this.conversionData[i].view]: value,
-            },
+            {[this.conversionData[i].view]: value},
             {priority: 5},
           );
 
@@ -80,8 +77,7 @@ export default class CraftLinkEditing extends Plugin {
         },
         model: {
           key: this.conversionData[i].model,
-          value: (viewElement) => {
-            //console.log('upcast');
+          value: (viewElement, conversionApi) => {
             return viewElement.getAttribute(this.conversionData[i].view);
           },
         },
@@ -97,7 +93,6 @@ export default class CraftLinkEditing extends Plugin {
     linkCommand.on(
       'execute',
       (evt, args) => {
-        // console.log('link command 1');
         if (linking) {
           linking = false;
           return;
@@ -106,13 +101,11 @@ export default class CraftLinkEditing extends Plugin {
         evt.stop();
         linking = true;
 
-        //console.log('link command2');
         const extraAttributeValues = args[args.length - 1];
-        const {model} = editor;
-        const {selection} = model.document;
+        const selection = editor.model.document.selection;
 
-        model.change((writer) => {
-          this.editor.execute('link', ...args);
+        editor.model.change((writer) => {
+          editor.execute('link', ...args);
 
           const firstPosition = selection.getFirstPosition();
 
@@ -131,7 +124,7 @@ export default class CraftLinkEditing extends Plugin {
 
               writer.removeSelectionAttribute(item.model);
             } else {
-              const ranges = model.schema.getValidRanges(
+              const ranges = editor.model.schema.getValidRanges(
                 selection.getRanges(),
                 item.model,
               );
@@ -165,7 +158,6 @@ export default class CraftLinkEditing extends Plugin {
     unlinkCommand.on(
       'execute',
       (evt) => {
-        //console.log('unlink exec');
         if (unlinking) {
           return;
         }
