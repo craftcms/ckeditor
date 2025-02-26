@@ -433,6 +433,11 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
      * @since 4.0.0
      */
     public ?string $createButtonLabel = null;
+    /**
+     * @var array|null The advanced link options available when adding a link
+     * @since 5.0.0
+     */
+    public ?array $advancedLinkFields = [];
 
     /**
      * @var EntryType[] The field’s available entry types
@@ -667,7 +672,73 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
                 ],
             ], $transformOptions),
             'defaultCreateButtonLabel' => $this->defaultCreateButtonLabel(),
+            'advanceLinkOptions' => $this->getAdvanceLinkOptions(),
         ]);
+    }
+
+    protected function getAdvanceLinkOptions(): array
+    {
+        return [
+            [
+                'label' => Craft::t('app', 'URL Suffix'),
+                'value' => 'urlSuffix',
+                'info' => Craft::t('app', 'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.', [
+                    'ex1' => '`?p1=foo&p2=bar`',
+                    'ex2' => '`#anchor`',
+                ]),
+                'conversion' => null,
+            ],
+            [
+                'label' => Craft::t('app', 'Target'),
+                'value' => 'target',
+                'conversion' => [
+                    'model' => 'craftTarget',
+                    'view' => 'target',
+                ],
+            ],
+            [
+                'label' => Craft::t('app', 'Title Text'),
+                'value' => 'title',
+                'conversion' => [
+                    'model' => 'craftTitle',
+                    'view' => 'title',
+                ],
+            ],
+            [
+                'label' => Craft::t('app', 'Class Name'),
+                'value' => 'class',
+                'info' => 'Separate multiple values with spaces.',
+                'conversion' => [
+                    'model' => 'craftClass',
+                    'view' => 'class',
+                ],
+            ],
+            [
+                'label' => Craft::t('app', 'ID'),
+                'value' => 'id',
+                'conversion' => [
+                    'model' => 'craftId',
+                    'view' => 'id',
+                ],
+            ],
+            [
+                'label' => Craft::t('app', 'Relation (rel)'),
+                'value' => 'rel',
+                'info' => 'Separate multiple values with spaces.',
+                'conversion' => [
+                    'model' => 'craftRel',
+                    'view' => 'rel',
+                ],
+            ],
+            [
+                'label' => Craft::t('app', 'ARIA Label'),
+                'value' => 'ariaLabel',
+                'conversion' => [
+                    'model' => 'craftAriaLabel',
+                    'view' => 'aria-label',
+                ],
+            ],
+        ];
     }
 
     /**
@@ -943,6 +1014,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             'assetSources' => $this->_assetSources(),
             'assetSelectionCriteria' => $this->_assetSelectionCriteria(),
             'linkOptions' => $this->_linkOptions($element),
+            'advancedLinkFields' => $this->_advancedLinkFields(),
             'table' => [
                 'contentToolbar' => [
                     'tableRow',
@@ -1446,6 +1518,22 @@ JS,
         return new CkeConfig();
     }
 
+    private function _advancedLinkFields(): array
+    {
+        if (empty($this->advancedLinkFields)) {
+            return [];
+        }
+
+        $fields = [];
+        foreach ($this->getAdvanceLinkOptions() as $option) {
+            if (in_array($option['value'], $this->advancedLinkFields)) {
+                $fields[] = $option;
+            }
+        }
+
+        return $fields;
+    }
+
     /**
      * Returns the link options available to the field.
      *
@@ -1468,7 +1556,7 @@ JS,
 
         if (!empty($sectionSources)) {
             $linkOptions[] = [
-                'label' => Craft::t('ckeditor', 'Link to an entry'),
+                'label' => Entry::displayName(),
                 'elementType' => Entry::class,
                 'refHandle' => Entry::refHandle(),
                 'sources' => $sectionSources,
@@ -1478,7 +1566,7 @@ JS,
 
         if (!empty($categorySources)) {
             $linkOptions[] = [
-                'label' => Craft::t('ckeditor', 'Link to a category'),
+                'label' => Category::displayName(),
                 'elementType' => Category::class,
                 'refHandle' => Category::refHandle(),
                 'sources' => $categorySources,
@@ -1488,7 +1576,7 @@ JS,
 
         if (!empty($volumeSources)) {
             $linkOptions[] = [
-                'label' => Craft::t('ckeditor', 'Link to an asset'),
+                'label' => Asset::displayName(),
                 'elementType' => Asset::class,
                 'refHandle' => Asset::refHandle(),
                 'sources' => $volumeSources,
@@ -1743,6 +1831,10 @@ JS,
                 'data-entry-id' => 'Number',
             ]);
         }
+
+        // TODO: adjust for $advancedLinkFields
+//        if ($this->advancedLinkFields) {
+//        }
 
         return $purifierConfig;
     }
