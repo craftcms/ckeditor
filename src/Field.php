@@ -1851,9 +1851,11 @@ JS,
             ]);
         }
 
-        // TODO: adjust for $advancedLinkFields
-//        if ($this->advancedLinkFields) {
-//        }
+        if (!empty($this->advancedLinkFields)) {
+            if (in_array('ariaLabel', $this->advancedLinkFields)) {
+                $def?->addAttribute('a', 'aria-label', 'Text');
+            }
+        }
 
         return $purifierConfig;
     }
