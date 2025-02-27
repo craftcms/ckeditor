@@ -451,18 +451,21 @@ export default class CraftLinkUI extends Plugin {
 
         if (linkOpenInNewTabDecorator.length) {
           const {children} = formView;
+          linkOpenInNewTabDecorator = linkOpenInNewTabDecorator[0];
 
           // copied from https://github.com/ckeditor/ckeditor5/blob/v44.2.1/packages/ckeditor5-link/src/ui/linkformview.ts#L339-L363
           const targetDecoratorView = new View();
           targetDecoratorView.setTemplate({
             tag: 'ul',
-            children: linkOpenInNewTabDecorator.map((switchButton) => ({
-              tag: 'li',
-              children: [switchButton],
-              attributes: {
-                class: ['ck', 'ck-list__item'],
+            children: [
+              {
+                tag: 'li',
+                children: [linkOpenInNewTabDecorator],
+                attributes: {
+                  class: ['ck', 'ck-list__item'],
+                },
               },
-            })),
+            ],
             attributes: {
               class: ['ck', 'ck-reset', 'ck-list'],
             },
