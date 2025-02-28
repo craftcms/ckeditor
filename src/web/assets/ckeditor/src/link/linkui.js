@@ -38,6 +38,8 @@ export default class CraftLinkUI extends Plugin {
     this.linkTypeDropdownItemModels = [];
     this.elementTypeRefHandleRE = null;
 
+    this.urlWithRefHandleRE = null;
+
     this.conversionData = [];
 
     this.editor.config.define('linkOptions', []);
@@ -64,6 +66,10 @@ export default class CraftLinkUI extends Plugin {
     }
     this.elementTypeRefHandleRE = new RegExp(
       `(#((?:${refHandlesPattern})):\\d+)`,
+    );
+
+    this.urlWithRefHandleRE = new RegExp(
+      `(.+)(#(?:${refHandlesPattern}):\\d+)(?:@(\\d+))?`,
     );
 
     this._modifyFormViewTemplate(linkOptions, advancedLinkFields);
@@ -419,21 +425,11 @@ export default class CraftLinkUI extends Plugin {
     for (const advancedField of advancedLinkFields) {
       let attributeModel = advancedField.conversion?.model;
       if (attributeModel && typeof formView[attributeModel] === 'undefined') {
-        // create an input text field with the name of advancedField and matching label
-        let labeledInputView = new LabeledFieldView(
-          formView.locale,
-          createLabeledInputText,
+        let labeledInputView = this._createLabeledField(
+          formView,
+          advancedField.label,
+          advancedField.info,
         );
-        labeledInputView.label = advancedField.label;
-        if (advancedField.info) {
-          labeledInputView.infoText = advancedField.info;
-        }
-
-        const {children} = formView;
-        children.add(labeledInputView, children.length - 2);
-
-        formView._focusables.add(labeledInputView.fieldView);
-        formView.focusTracker.add(labeledInputView.fieldView.element);
 
         formView[attributeModel] = labeledInputView;
         formView[attributeModel].fieldView
@@ -442,8 +438,51 @@ export default class CraftLinkUI extends Plugin {
 
         formView[attributeModel].fieldView.element.value =
           linkCommand[attributeModel] || '';
-      }
-      if (advancedField.value === 'target') {
+      } else if (advancedField.value === 'urlSuffix') {
+        let labeledInputView = this._createLabeledField(
+          formView,
+          advancedField.label,
+          advancedField.info,
+        );
+
+        // when you focus out of the urlSuffix field, update the main URL input field value with urlSuffix
+        this.listenTo(
+          labeledInputView.fieldView,
+          'change:isFocused',
+          (evt, name, value, oldValue) => {
+            if (value !== oldValue && !value) {
+              let urlSuffix = evt.source.element.value;
+
+              const match = this._urlInputRefMatch(this.urlWithRefHandleRE);
+              if (match) {
+                // match[1] is the whole URL that shows before the {refTag}
+                let url = new URL(match[1]);
+                let search = url.search;
+                let hash = url.hash;
+                let baseUrl = match[1].replace(hash, '').replace(search, '');
+
+                const newUrl = this._urlInputValue().replace(
+                  match[1],
+                  baseUrl + urlSuffix,
+                );
+                formView.urlInputView.fieldView.set('value', newUrl);
+              }
+            }
+          },
+        );
+
+        // update the URL Suffix form field when main URL field is loaded
+        this.listenTo(formView.urlInputView.fieldView, 'change:value', () => {
+          console.log('a');
+          this._toggleUrlSuffixInputView(labeledInputView);
+        });
+
+        // update the URL Suffix form field when main URL field value changes (on type)
+        this.listenTo(formView.urlInputView.fieldView, 'input', () => {
+          console.log('b');
+          this._toggleUrlSuffixInputView(labeledInputView);
+        });
+      } else if (advancedField.value === 'target') {
         let linkOpenInNewTabDecorator =
           formView._manualDecoratorSwitches._items.filter(
             (item) => item.name === 'linkOpenInNewTab',
@@ -475,6 +514,39 @@ export default class CraftLinkUI extends Plugin {
       }
     }
   }
+
+  _createLabeledField(formView, label, info) {
+    // create an input text field with the name of advancedField and matching label
+    let labeledInputView = new LabeledFieldView(
+      formView.locale,
+      createLabeledInputText,
+    );
+    labeledInputView.label = label;
+    if (info) {
+      labeledInputView.infoText = info;
+    }
+
+    const {children} = formView;
+    children.add(labeledInputView, children.length - 2);
+
+    formView._focusables.add(labeledInputView.fieldView);
+    formView.focusTracker.add(labeledInputView.fieldView.element);
+
+    return labeledInputView;
+  }
+
+  _toggleUrlSuffixInputView(labeledInputView) {
+    const match = this._urlInputRefMatch(this.urlWithRefHandleRE);
+    if (match) {
+      // match[1] is the whole URL that shows before the {refTag}
+      let url = new URL(match[1]);
+      let search = url.search;
+      let hash = url.hash;
+
+      labeledInputView.fieldView.set('value', search + hash);
+    }
+  }
+
   _handleAdvancedLinkFieldsFormSubmit(formView) {
     const editor = this.editor;
     const linkCommand = editor.commands.get('link');
