@@ -473,13 +473,11 @@ export default class CraftLinkUI extends Plugin {
 
         // update the URL Suffix form field when main URL field is loaded
         this.listenTo(formView.urlInputView.fieldView, 'change:value', () => {
-          console.log('a');
           this._toggleUrlSuffixInputView(labeledInputView);
         });
 
         // update the URL Suffix form field when main URL field value changes (on type)
         this.listenTo(formView.urlInputView.fieldView, 'input', () => {
-          console.log('b');
           this._toggleUrlSuffixInputView(labeledInputView);
         });
       } else if (advancedField.value === 'target') {
