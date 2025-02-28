@@ -1852,6 +1852,12 @@ JS,
         }
 
         if (!empty($this->advancedLinkFields)) {
+            if (in_array('rel', $this->advancedLinkFields)) {
+                $allowedRels = $purifierConfig->get('Attr.AllowedRel');
+                // allow any rel values
+                $allowedRels['*'] = true;
+                $purifierConfig->set('Attr.AllowedRel', array_keys($allowedRels));
+            }
             if (in_array('ariaLabel', $this->advancedLinkFields)) {
                 $def?->addAttribute('a', 'aria-label', 'Text');
             }
