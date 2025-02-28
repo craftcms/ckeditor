@@ -757,17 +757,10 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     {
         $entriesService = Craft::$app->getEntries();
 
-        $this->_entryTypes = array_values(array_filter(array_map(function(EntryType|string|int $entryType) use ($entriesService) {
-            if (is_numeric($entryType)) {
-                $entryType = $entriesService->getEntryTypeById($entryType);
-            } elseif (is_string($entryType)) {
-                $entryTypeUid = $entryType;
-                $entryType = $entriesService->getEntryTypeByUid($entryTypeUid);
-            } elseif (!$entryType instanceof EntryType) {
-                throw new InvalidArgumentException('Invalid entry type');
-            }
-            return $entryType;
-        }, $entryTypes)));
+        $this->_entryTypes = array_values(array_filter(array_map(
+            fn($entryType) => $entriesService->getEntryType($entryType),
+            $entryTypes,
+        )));
     }
 
     /**
@@ -792,7 +785,10 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             $settings['removeNbsp'],
         );
 
-        $settings['entryTypes'] = array_map(fn(EntryType $entryType) => $entryType->uid, $this->_entryTypes);
+        $settings['entryTypes'] = array_map(
+            fn(EntryType $entryType) => $entryType->getUsageConfig(),
+            $this->getEntryTypes(),
+        );
 
         return $settings;
     }
@@ -1086,6 +1082,11 @@ JS;
             ->filter(function(array $item) use ($event) {
                 $buttons = $item['buttons'] ?? [];
 
+                // If there are no buttons defined, always load it
+                if (empty($buttons)) {
+                    return false;
+                }
+
                 return collect($event->toolbar)
                     ->doesntContain(function(string $toolbarItem) use ($buttons) {
                         return in_array($toolbarItem, $buttons);
@@ -1337,6 +1338,10 @@ JS,
     {
         if ($this->sourceEditingGroups === '*') {
             return true;
+        }
+
+        if ($this->sourceEditingGroups === null) {
+            return false;
         }
 
         $sourceEditingGroups = array_flip($this->sourceEditingGroups);

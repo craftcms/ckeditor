@@ -246,6 +246,11 @@ export default class CraftEntriesUI extends Plugin {
       params: {
         siteId: siteId,
       },
+      onLoad: () => {
+        slideout.elementEditor.on('update', () => {
+          Craft.Preview.refresh();
+        });
+      },
       onBeforeSubmit: async () => {
         // If the nested element is primarily owned by the canonical entry being edited,
         // then ensure we're working with a draft and save the nested entry changes to the draft

@@ -146,15 +146,20 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
         $entryIds = $entryChunks->map(fn(Entry $chunk) => $chunk->entryId)->all();
 
         if (!empty($entryIds)) {
-            $entries = EntryElement::find()
+            $query = EntryElement::find()
                 ->id($entryIds)
                 ->siteId($this->siteId)
                 ->status(null)
                 ->drafts(null)
                 ->revisions(null)
                 ->trashed(null)
-                ->indexBy('id')
-                ->all();
+                ->indexBy('id');
+
+            if (Craft::$app->getRequest()->getIsPreview()) {
+                $query->withProvisionalDrafts();
+            }
+
+            $entries = $query->all();
         } else {
             $entries = [];
         }

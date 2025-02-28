@@ -817,6 +817,11 @@ class fu extends Bn {
       params: {
         siteId: b
       },
+      onLoad: () => {
+        m.elementEditor.on("update", () => {
+          Craft.Preview.refresh();
+        });
+      },
       onBeforeSubmit: async () => {
         if (o !== null && Garnish.hasAttr(o, "data-owner-is-canonical") && !c.settings.isUnpublishedDraft) {
           await m.elementEditor.checkForm(!0, !0);
