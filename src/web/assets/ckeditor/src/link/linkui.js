@@ -18,6 +18,7 @@ import {
   View,
   ViewModel,
 } from 'ckeditor5';
+import CraftLinkElementView from './linkelementview.js';
 
 export default class CraftLinkUI extends Plugin {
   static get requires() {
@@ -33,6 +34,8 @@ export default class CraftLinkUI extends Plugin {
     this.siteDropdownView = null;
     this.siteDropdownItemModels = null;
     this.localizedRefHandleRE = null;
+
+    this.linkTypeWrapperView = null;
 
     this.linkTypeDropdownView = null;
     this.linkTypeDropdownItemModels = [];
@@ -92,7 +95,7 @@ export default class CraftLinkUI extends Plugin {
     );
 
     if (linkOptions && linkOptions.length) {
-      this._linkOptionsDropdown(linkOptions, formView, fieldView);
+      this._linkOptionsDropdown(linkOptions, formView);
     }
 
     if (Craft.isMultiSite) {
@@ -217,7 +220,10 @@ export default class CraftLinkUI extends Plugin {
 
   ////////////////////// Link Options Dropdown (link types) //////////////////////
 
-  _linkOptionsDropdown(linkOptions, formView, fieldView) {
+  _linkOptionsDropdown(linkOptions, formView) {
+    const {urlInputView} = formView;
+    const {fieldView} = urlInputView;
+
     // dropdown for link type (asset, category, entry, link & anything else that was registered, like commerce products)
     this.linkTypeDropdownView = createDropdown(formView.locale);
 
@@ -248,26 +254,33 @@ export default class CraftLinkUI extends Plugin {
     this.linkTypeDropdownView.on('execute', (evt) => {
       // if an element type was selected - we show the modal
       if (evt.source.linkOption) {
-        this._linkUI._hideUI();
         const linkOption = evt.source.linkOption;
-        this._showElementSelectorModal(linkOption);
+        this._selectLinkTypeDropdownItem(linkOption.refHandle);
+        this._showLinkTypeForm(linkOption, formView);
       } else {
         // if the default link (URL) was selected,
         // we want to clear our the input field value, hide sites dropdown and ensure "URL" is selected
         this._selectLinkTypeDropdownItem('default');
-        fieldView.set('value', '');
+        this._showLinkTypeForm('default', formView);
+        //fieldView.set('value', '');
         this.siteDropdownView?.buttonView.set('isVisible', false);
       }
     });
-
-    const {children} = formView;
-    children.add(this.linkTypeDropdownView, children.length - 2);
 
     formView._focusables.add(this.linkTypeDropdownView);
     formView.focusTracker.add(this.linkTypeDropdownView.element);
 
     this.listenTo(fieldView, 'change:value', () => {
       this._toggleLinkTypeDropdownView();
+      const match = this._urlInputValue().match(this.elementTypeRefHandleRE);
+      if (match) {
+        this._showLinkTypeForm(
+          this.linkTypeDropdownItemModels[match[2]].linkOption,
+          formView,
+        );
+      } else {
+        this._showLinkTypeForm('default', formView);
+      }
     });
     this.listenTo(fieldView, 'input', () => {
       this._toggleLinkTypeDropdownView();
@@ -331,6 +344,44 @@ export default class CraftLinkUI extends Plugin {
     );
 
     return itemDefinitions;
+  }
+
+  _showLinkTypeForm(linkOption, formView) {
+    let linkUi = this;
+    let inputView = null;
+
+    if (linkOption === 'default') {
+      inputView = formView.urlInputView;
+      inputView.template.attributes.class.push('link-input', 'flex-grow');
+    } else {
+      inputView = new CraftLinkElementView(formView.locale, {
+        value: this._urlInputValue(),
+        linkUi: linkUi,
+      });
+      inputView.on('render', function (ev) {
+        inputView.element.addEventListener('click', function (ev) {
+          linkUi._linkUI._hideUI();
+          linkUi._showElementSelectorModal(linkOption);
+        });
+      });
+    }
+
+    const {children} = formView;
+    const {urlInputView} = formView;
+    if (this.linkTypeWrapperView !== null) {
+      children.remove(this.linkTypeWrapperView);
+    } else {
+      children.remove(urlInputView);
+    }
+    this.linkTypeWrapperView = new View();
+    this.linkTypeWrapperView.setTemplate({
+      tag: 'div',
+      children: [this.linkTypeDropdownView, inputView],
+      attributes: {
+        class: ['ck', 'link-type-group', 'flex', 'flex-nowrap'],
+      },
+    });
+    children.add(this.linkTypeWrapperView, 0);
   }
 
   _showElementSelectorModal(linkOption) {
