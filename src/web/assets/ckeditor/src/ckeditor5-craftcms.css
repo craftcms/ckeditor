@@ -183,3 +183,26 @@ of the editor despite being `display: inline`
   vertical-align: middle;
   margin-inline-end: 0.125em;
 }
+
+/* link ui */
+.link-type-group {
+  container-type: inline-size;
+}
+
+.link-type-group .elementselect {
+  margin-block: var(--ck-spacing-large) var(--ck-spacing-small);
+  margin-inline: var(--ck-spacing-large);
+}
+
+.ck.ck-link-form_layout-vertical {
+  min-width: 24em;
+}
+
+.ck.ck-button.btn.dashed {
+  background-color: transparent;
+  border: 1px dashed var(--medium-hairline-color);
+}
+
+.menu {
+  z-index: calc(var(--ck-z-panel) + 1);
+}

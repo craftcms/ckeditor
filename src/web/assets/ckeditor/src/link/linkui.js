@@ -31,9 +31,9 @@ export default class CraftLinkUI extends Plugin {
 
   constructor() {
     super(...arguments);
-    this.siteDropdownView = null;
-    this.siteDropdownItemModels = null;
-    this.localizedRefHandleRE = null;
+    // this.siteDropdownView = null;
+    // this.siteDropdownItemModels = null;
+    // this.localizedRefHandleRE = null;
 
     this.linkTypeWrapperView = null;
 
@@ -62,17 +62,18 @@ export default class CraftLinkUI extends Plugin {
 
     const refHandlesPattern = CKE_LOCALIZED_REF_HANDLES.join('|');
 
-    if (Craft.isMultiSite) {
-      this.localizedRefHandleRE = new RegExp(
-        `(#(?:${refHandlesPattern}):\\d+)(?:@(\\d+))?`,
-      );
-    }
+    // if (Craft.isMultiSite) {
+    //   this.localizedRefHandleRE = new RegExp(
+    //     `(#(?:${refHandlesPattern}):\\d+)(?:@(\\d+))?`,
+    //   );
+    // }
+
     this.elementTypeRefHandleRE = new RegExp(
       `(#((?:${refHandlesPattern})):\\d+)`,
     );
 
     this.urlWithRefHandleRE = new RegExp(
-      `(.+)(#(?:${refHandlesPattern}):\\d+)(?:@(\\d+))?`,
+      `(.+)(#((?:${refHandlesPattern})):(\\d+))(?:@(\\d+))?`,
     );
 
     this._modifyFormViewTemplate(linkOptions, advancedLinkFields);
@@ -98,9 +99,9 @@ export default class CraftLinkUI extends Plugin {
       this._linkOptionsDropdown(linkOptions, formView);
     }
 
-    if (Craft.isMultiSite) {
-      this._sitesDropdown(formView, fieldView);
-    }
+    // if (Craft.isMultiSite) {
+    //   this._sitesDropdown(formView, fieldView);
+    // }
 
     if (advancedLinkFields && advancedLinkFields.length) {
       this._advancedLinkFields(advancedLinkFields, formView);
@@ -116,7 +117,7 @@ export default class CraftLinkUI extends Plugin {
   }
 
   ////////////////////// Sites Dropdown //////////////////////
-  _sitesDropdown(formView, fieldView) {
+  /*  _sitesDropdown(formView, fieldView) {
     this.siteDropdownView = createDropdown(formView.locale);
     this.siteDropdownView.buttonView.set({
       label: '',
@@ -216,7 +217,7 @@ export default class CraftLinkUI extends Plugin {
     Object.values(this.siteDropdownItemModels).forEach((model) => {
       model.set('isOn', model === itemModel);
     });
-  }
+  }*/
 
   ////////////////////// Link Options Dropdown (link types) //////////////////////
 
@@ -263,7 +264,7 @@ export default class CraftLinkUI extends Plugin {
         this._selectLinkTypeDropdownItem('default');
         this._showLinkTypeForm('default', formView);
         //fieldView.set('value', '');
-        this.siteDropdownView?.buttonView.set('isVisible', false);
+        //this.siteDropdownView?.buttonView.set('isVisible', false);
       }
     });
 
@@ -272,10 +273,10 @@ export default class CraftLinkUI extends Plugin {
 
     this.listenTo(fieldView, 'change:value', () => {
       this._toggleLinkTypeDropdownView();
-      const match = this._urlInputValue().match(this.elementTypeRefHandleRE);
-      if (match) {
+      const elementType = this._getLinkElementType();
+      if (elementType) {
         this._showLinkTypeForm(
-          this.linkTypeDropdownItemModels[match[2]].linkOption,
+          this.linkTypeDropdownItemModels[elementType].linkOption,
           formView,
         );
       } else {
@@ -287,18 +288,51 @@ export default class CraftLinkUI extends Plugin {
     });
   }
 
-  _toggleLinkTypeDropdownView() {
+  _getLinkElementType() {
+    let elementType = null;
+
     const match = this._urlInputValue().match(this.elementTypeRefHandleRE);
+
     if (match) {
-      this.linkTypeDropdownView.buttonView.set('isVisible', true);
-      let elementType = match[2];
+      elementType = match[2];
       if (
         elementType &&
         typeof this.linkTypeDropdownItemModels[elementType] === 'undefined'
       ) {
         elementType = null;
       }
+    }
 
+    return elementType;
+  }
+
+  _getLinkElementId() {
+    let elementId = null;
+
+    const match = this._urlInputRefMatch(this.urlWithRefHandleRE);
+    if (match) {
+      elementId = match[4] ? parseInt(match[4], 10) : null;
+    }
+
+    return elementId;
+  }
+
+  _getLinkSiteId() {
+    let siteId = null;
+
+    const match = this._urlInputRefMatch(this.urlWithRefHandleRE);
+    if (match) {
+      siteId = match[5] ? parseInt(match[5], 10) : null;
+    }
+
+    return siteId;
+  }
+
+  _toggleLinkTypeDropdownView() {
+    let elementType = this._getLinkElementType();
+
+    if (elementType) {
+      this.linkTypeDropdownView.buttonView.set('isVisible', true);
       this._selectLinkTypeDropdownItem(elementType);
     } else {
       // if we're adding a new link - pre-select the default link type - URL
@@ -354,15 +388,13 @@ export default class CraftLinkUI extends Plugin {
       inputView = formView.urlInputView;
       inputView.template.attributes.class.push('link-input', 'flex-grow');
     } else {
+      let siteId = this._getLinkSiteId();
+      let elementId = this._getLinkElementId();
       inputView = new CraftLinkElementView(formView.locale, {
-        value: this._urlInputValue(),
+        editor: this.editor,
         linkUi: linkUi,
-      });
-      inputView.on('render', function (ev) {
-        inputView.element.addEventListener('click', function (ev) {
-          linkUi._linkUI._hideUI();
-          linkUi._showElementSelectorModal(linkOption);
-        });
+        linkOption: linkOption,
+        value: this._urlInputValue(),
       });
     }
 
@@ -420,7 +452,8 @@ export default class CraftLinkUI extends Plugin {
           const element = elements[0];
           const url = `${element.url}#${linkOption.refHandle}:${element.id}@${element.siteId}`;
           editor.editing.view.focus();
-          if (!isCollapsed && range) {
+
+          if (!selection.isCollapsed && range) {
             // Restore the previous range
             model.change((writer) => {
               writer.setSelection(range);
