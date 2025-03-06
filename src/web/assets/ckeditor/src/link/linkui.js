@@ -19,6 +19,7 @@ import {
   ViewModel,
 } from 'ckeditor5';
 import CraftLinkElementView from './linkelementview.js';
+import CraftLinkAdvancedView from './linkadvancedview.js';
 
 export default class CraftLinkUI extends Plugin {
   static get requires() {
@@ -381,7 +382,6 @@ export default class CraftLinkUI extends Plugin {
   }
 
   _showLinkTypeForm(linkOption, formView) {
-    let linkUi = this;
     let inputView = null;
 
     if (linkOption === 'default') {
@@ -392,7 +392,7 @@ export default class CraftLinkUI extends Plugin {
       let elementId = this._getLinkElementId();
       inputView = new CraftLinkElementView(formView.locale, {
         editor: this.editor,
-        linkUi: linkUi,
+        linkUi: this,
         linkOption: linkOption,
         value: this._urlInputValue(),
       });
@@ -505,11 +505,19 @@ export default class CraftLinkUI extends Plugin {
 
   _addAdvancedLinkFieldInputs(advancedLinkFields, formView) {
     const linkCommand = this.editor.commands.get('link');
+    const {children} = formView;
+
+    const advancedView = new CraftLinkAdvancedView(formView.locale, {
+      editor: this.editor,
+      linkUi: this,
+      advancedLinkFields: advancedLinkFields,
+    });
 
     for (const advancedField of advancedLinkFields) {
       let attributeModel = advancedField.conversion?.model;
       if (attributeModel && typeof formView[attributeModel] === 'undefined') {
         let labeledInputView = this._createLabeledField(
+          advancedView,
           formView,
           advancedField.label,
           advancedField.info,
@@ -524,6 +532,7 @@ export default class CraftLinkUI extends Plugin {
           linkCommand[attributeModel] || '';
       } else if (advancedField.value === 'urlSuffix') {
         let labeledInputView = this._createLabeledField(
+          advancedView,
           formView,
           advancedField.label,
           advancedField.info,
@@ -591,13 +600,18 @@ export default class CraftLinkUI extends Plugin {
               class: ['ck', 'ck-reset', 'ck-list'],
             },
           });
-          children.add(targetDecoratorView, children.length - 2);
+
+          advancedView.advancedChildren.add(targetDecoratorView);
+          // advancedView._focusables.add(targetDecoratorView.fieldView);
+          // advancedView.focusTracker.add(targetDecoratorView.fieldView.element);
         }
       }
     }
+
+    children.add(advancedView, 1);
   }
 
-  _createLabeledField(formView, label, info) {
+  _createLabeledField(advancedView, formView, label, info) {
     // create an input text field with the name of advancedField and matching label
     let labeledInputView = new LabeledFieldView(
       formView.locale,
@@ -608,11 +622,9 @@ export default class CraftLinkUI extends Plugin {
       labeledInputView.infoText = info;
     }
 
-    const {children} = formView;
-    children.add(labeledInputView, children.length - 2);
-
-    formView._focusables.add(labeledInputView.fieldView);
-    formView.focusTracker.add(labeledInputView.fieldView.element);
+    advancedView.advancedChildren.add(labeledInputView);
+    // advancedView._focusables.add(labeledInputView.fieldView);
+    // advancedView.focusTracker.add(labeledInputView.fieldView.element);
 
     return labeledInputView;
   }
