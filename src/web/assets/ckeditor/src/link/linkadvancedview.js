@@ -6,7 +6,6 @@ export default class CraftLinkAdvancedView extends View {
 
     const bind = this.bindTemplate;
 
-    this.set('isFocused', false);
     this.set('label', Craft.t('app', 'Advanced'));
 
     this.editor = options.editor;
@@ -20,13 +19,7 @@ export default class CraftLinkAdvancedView extends View {
     this.setTemplate({
       tag: 'details',
       attributes: {
-        class: [
-          'ck',
-          'ck-form__details',
-          'link-type-advanced',
-          bind.if('isFocused', 'ck-form__details--focused'),
-          bind.to('class'),
-        ],
+        class: ['ck', 'ck-form__details', 'link-type-advanced'],
       },
       children: this.children,
     });

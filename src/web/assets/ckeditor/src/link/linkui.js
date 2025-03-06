@@ -609,6 +609,8 @@ export default class CraftLinkUI extends Plugin {
     }
 
     children.add(advancedView, 1);
+    formView._focusables.add(advancedView);
+    formView.focusTracker.add(advancedView.element);
   }
 
   _createLabeledField(advancedView, formView, label, info) {
@@ -623,6 +625,8 @@ export default class CraftLinkUI extends Plugin {
     }
 
     advancedView.advancedChildren.add(labeledInputView);
+    formView._focusables.add(labeledInputView.fieldView);
+    formView.focusTracker.add(labeledInputView.fieldView.element);
     // advancedView._focusables.add(labeledInputView.fieldView);
     // advancedView.focusTracker.add(labeledInputView.fieldView.element);
 
