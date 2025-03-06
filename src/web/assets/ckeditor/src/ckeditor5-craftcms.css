@@ -206,3 +206,7 @@ of the editor despite being `display: inline`
 .menu {
   z-index: calc(var(--ck-z-panel) + 1);
 }
+
+.ck.link-type-advanced {
+  margin-inline: var(--ck-spacing-standard);
+}

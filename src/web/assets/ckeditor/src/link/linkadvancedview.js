@@ -23,6 +23,7 @@ export default class CraftLinkAdvancedView extends View {
         class: [
           'ck',
           'ck-form__details',
+          'link-type-advanced',
           bind.if('isFocused', 'ck-form__details--focused'),
           bind.to('class'),
         ],
