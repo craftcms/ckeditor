@@ -692,6 +692,8 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
                 'label' => Craft::t('app', 'Open in new tab?'),
                 'value' => 'target',
                 'conversion' => [
+                    'type' => 'bool',
+                    'value' => '_blank',
                     'model' => 'craftTarget',
                     'view' => 'target',
                 ],
@@ -700,6 +702,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
                 'label' => Craft::t('app', 'Title Text'),
                 'value' => 'title',
                 'conversion' => [
+                    'type' => 'string',
                     'model' => 'craftTitle',
                     'view' => 'title',
                 ],
@@ -709,6 +712,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
                 'value' => 'class',
                 'info' => 'Separate multiple values with spaces.',
                 'conversion' => [
+                    'type' => 'string',
                     'model' => 'craftClass',
                     'view' => 'class',
                 ],
@@ -717,6 +721,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
                 'label' => Craft::t('app', 'ID'),
                 'value' => 'id',
                 'conversion' => [
+                    'type' => 'string',
                     'model' => 'craftId',
                     'view' => 'id',
                 ],
@@ -726,6 +731,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
                 'value' => 'rel',
                 'info' => 'Separate multiple values with spaces.',
                 'conversion' => [
+                    'type' => 'string',
                     'model' => 'craftRel',
                     'view' => 'rel',
                 ],
@@ -734,8 +740,19 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
                 'label' => Craft::t('app', 'ARIA Label'),
                 'value' => 'ariaLabel',
                 'conversion' => [
+                    'type' => 'string',
                     'model' => 'craftAriaLabel',
                     'view' => 'aria-label',
+                ],
+            ],
+            [
+                'label' => Craft::t('app', 'Download'),
+                'value' => 'download',
+                'conversion' => [
+                    'type' => 'bool',
+                    'value' => 'download',
+                    'model' => 'craftDownload',
+                    'view' => 'download',
                 ],
             ],
         ];

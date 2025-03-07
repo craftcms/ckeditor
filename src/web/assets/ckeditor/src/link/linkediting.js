@@ -57,12 +57,7 @@ export default class CraftLinkEditing extends Plugin {
         view: (value, {writer}) => {
           const linkViewElement = writer.createAttributeElement(
             'a',
-            {
-              [this.conversionData[i].view]:
-                this.conversionData[i].model == 'craftTarget'
-                  ? '_blank'
-                  : value,
-            },
+            {[this.conversionData[i].view]: value},
             {priority: 5},
           );
 

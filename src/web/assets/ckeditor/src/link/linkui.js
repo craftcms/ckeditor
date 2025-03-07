@@ -516,68 +516,69 @@ export default class CraftLinkUI extends Plugin {
 
     for (const advancedField of advancedLinkFields) {
       let attributeModel = advancedField.conversion?.model;
-      if (advancedField.value === 'target') {
-        const switchButtonView = new SwitchButtonView();
+      if (attributeModel && typeof formView[attributeModel] === 'undefined') {
+        if (advancedField.conversion.type === 'bool') {
+          const switchButtonView = new SwitchButtonView();
 
-        switchButtonView.set({
-          withText: true,
-          label: advancedField.label,
-          isToggleable: true,
-        });
-
-        if (advancedField.info) {
-          switchButtonView.tooltip = advancedField.info;
-        }
-
-        advancedView.advancedChildren.add(switchButtonView);
-        formView._focusables.add(switchButtonView);
-        formView.focusTracker.add(switchButtonView.element);
-
-        formView[attributeModel] = switchButtonView;
-
-        formView[attributeModel]
-          .bind('isOn')
-          .to(linkCommand, attributeModel, (commandValue) => {
-            if (commandValue === undefined) {
-              // set the initial toggle value to off after the page reload
-              formView[attributeModel].element.value = '';
-              return false;
-            } else {
-              // set the initial toggle value to 'on' after the page reload
-              formView[attributeModel].element.value = 'on';
-              return true;
-            }
+          switchButtonView.set({
+            withText: true,
+            label: advancedField.label,
+            isToggleable: true,
           });
 
-        // this makes the switch toggle
-        switchButtonView.on('execute', () => {
-          if (!switchButtonView.isOn) {
-            switchButtonView.isOn = true;
-            formView[attributeModel].element.value = 'on';
-          } else {
-            switchButtonView.isOn = false;
-            formView[attributeModel].element.value = '';
+          if (advancedField.info) {
+            switchButtonView.tooltip = advancedField.info;
           }
-        });
-      } else if (
-        attributeModel &&
-        typeof formView[attributeModel] === 'undefined'
-      ) {
-        let labeledInputView = this._createLabeledField(
-          advancedView,
-          formView,
-          advancedField.label,
-          advancedField.info,
-        );
 
-        formView[attributeModel] = labeledInputView;
+          advancedView.advancedChildren.add(switchButtonView);
+          formView._focusables.add(switchButtonView);
+          formView.focusTracker.add(switchButtonView.element);
 
-        formView[attributeModel].fieldView
-          .bind('value')
-          .to(linkCommand, attributeModel);
+          formView[attributeModel] = switchButtonView;
 
-        formView[attributeModel].fieldView.element.value =
-          linkCommand[attributeModel] || '';
+          formView[attributeModel]
+            .bind('isOn')
+            .to(linkCommand, attributeModel, (commandValue) => {
+              if (commandValue === undefined) {
+                // set the initial toggle value to off after the page reload
+                formView[attributeModel].element.value = '';
+                return false;
+              } else {
+                // set the initial toggle value to on after the page reload
+                formView[attributeModel].element.value =
+                  advancedField.conversion.value;
+                return true;
+              }
+            });
+
+          // this makes the switch toggle
+          switchButtonView.on('execute', () => {
+            if (!switchButtonView.isOn) {
+              switchButtonView.isOn = true;
+              formView[attributeModel].element.value =
+                advancedField.conversion.value;
+            } else {
+              switchButtonView.isOn = false;
+              formView[attributeModel].element.value = '';
+            }
+          });
+        } else {
+          let labeledInputView = this._createLabeledField(
+            advancedView,
+            formView,
+            advancedField.label,
+            advancedField.info,
+          );
+
+          formView[attributeModel] = labeledInputView;
+
+          formView[attributeModel].fieldView
+            .bind('value')
+            .to(linkCommand, attributeModel);
+
+          formView[attributeModel].fieldView.element.value =
+            linkCommand[attributeModel] || '';
+        }
       } else if (advancedField.value === 'urlSuffix') {
         let labeledInputView = this._createLabeledField(
           advancedView,
@@ -662,20 +663,18 @@ export default class CraftLinkUI extends Plugin {
   _handleAdvancedLinkFieldsFormSubmit(formView) {
     const editor = this.editor;
     const linkCommand = editor.commands.get('link');
-    const attributeModels = this.conversionData.map((field) => field.model);
 
     formView.on(
       'submit',
       () => {
         let values = {};
 
-        attributeModels.forEach((attributeModel) => {
+        this.conversionData.forEach((field) => {
           let value = [];
-          if (attributeModel === 'craftTarget') {
-            value[attributeModel] = formView[attributeModel].element.value;
+          if (field.type === 'bool') {
+            value[field.model] = formView[field.model].element.value;
           } else {
-            value[attributeModel] =
-              formView[attributeModel].fieldView.element.value;
+            value[field.model] = formView[field.model].fieldView.element.value;
           }
           Object.assign(values, value);
         });
