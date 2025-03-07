@@ -38,6 +38,7 @@ export default class CraftLinkUI extends Plugin {
     // this.localizedRefHandleRE = null;
 
     this.linkTypeWrapperView = null;
+    this.advancedView = null;
 
     this.linkTypeDropdownView = null;
     this.linkTypeDropdownItemModels = [];
@@ -79,6 +80,43 @@ export default class CraftLinkUI extends Plugin {
     );
 
     this._modifyFormViewTemplate(linkOptions, advancedLinkFields);
+
+    this._balloon.on(
+      'set:visibleView',
+      (evt, propertyName, newValue, oldValue) => {
+        const formView = this._linkUI.formView;
+        if (newValue === oldValue || newValue !== formView) {
+          return;
+        }
+
+        // get all the form view items in the right focus order
+        let i = 0;
+        // this takes care of the linkTypeDropdownView and the urlInputView or element selector/card
+        this.linkTypeWrapperView._unboundChildren._items.forEach((item) => {
+          if (formView._focusables.has(item)) {
+            formView._focusables.remove(item);
+          }
+          formView.focusTracker.remove(item.element);
+
+          formView._focusables.add(item, i);
+          formView.focusTracker.add(item.element, i);
+          i++;
+        });
+
+        // this takes care of the advanced link field toggle ("Advanced")
+        // the items inside the toggle are controlled from linkadvancedview.onToggle()
+        if (formView._focusables.has(this.advancedView)) {
+          formView._focusables.remove(this.advancedView);
+        }
+        formView.focusTracker.remove(this.advancedView);
+
+        formView._focusables.add(this.advancedView, i);
+        formView.focusTracker.add(this.advancedView.element, i);
+
+        // this makes sure the link type dropdown is focused when the balloon opens
+        this.linkTypeDropdownView.buttonView.focus();
+      },
+    );
   }
 
   _modifyFormViewTemplate(linkOptions, advancedLinkFields) {
@@ -268,9 +306,6 @@ export default class CraftLinkUI extends Plugin {
       }
     });
 
-    formView._focusables.add(this.linkTypeDropdownView, 0);
-    formView.focusTracker.add(this.linkTypeDropdownView.element, 0);
-
     this.listenTo(fieldView, 'change:value', () => {
       this._toggleLinkTypeDropdownView();
       const elementType = this._getLinkElementType();
@@ -384,6 +419,7 @@ export default class CraftLinkUI extends Plugin {
     let inputView = null;
     const {children} = formView;
     const {urlInputView} = formView;
+    const {fieldView} = urlInputView;
 
     // a selection was made in the link type dropdown
     if (this.linkTypeWrapperView !== null) {
@@ -515,15 +551,13 @@ export default class CraftLinkUI extends Plugin {
     const linkCommand = this.editor.commands.get('link');
     const {children} = formView;
 
-    const advancedView = new CraftLinkAdvancedView(formView.locale, {
+    this.advancedView = new CraftLinkAdvancedView(formView.locale, {
       editor: this.editor,
       linkUi: this,
       advancedLinkFields: advancedLinkFields,
     });
 
-    children.add(advancedView, 1);
-    formView._focusables.add(advancedView, 1);
-    formView.focusTracker.add(advancedView, 1);
+    children.add(this.advancedView, 1);
 
     for (const advancedField of advancedLinkFields) {
       let attributeModel = advancedField.conversion?.model;
@@ -541,7 +575,7 @@ export default class CraftLinkUI extends Plugin {
             switchButtonView.tooltip = advancedField.info;
           }
 
-          advancedView.advancedChildren.add(switchButtonView);
+          this.advancedView.advancedChildren.add(switchButtonView);
 
           formView[attributeModel] = switchButtonView;
 
@@ -573,7 +607,6 @@ export default class CraftLinkUI extends Plugin {
           });
         } else {
           let labeledInputView = this._addLabeledField(
-            advancedView,
             formView,
             advancedField.label,
             advancedField.info,
@@ -590,7 +623,6 @@ export default class CraftLinkUI extends Plugin {
         }
       } else if (advancedField.value === 'urlSuffix') {
         let labeledInputView = this._addLabeledField(
-          advancedView,
           formView,
           advancedField.label,
           advancedField.info,
@@ -635,7 +667,7 @@ export default class CraftLinkUI extends Plugin {
     }
   }
 
-  _addLabeledField(advancedView, formView, label, info) {
+  _addLabeledField(formView, label, info) {
     // create an input text field with the name of advancedField and matching label
     let labeledInputView = new LabeledFieldView(
       formView.locale,
@@ -646,7 +678,7 @@ export default class CraftLinkUI extends Plugin {
       labeledInputView.infoText = info;
     }
 
-    advancedView.advancedChildren.add(labeledInputView);
+    this.advancedView.advancedChildren.add(labeledInputView);
 
     return labeledInputView;
   }

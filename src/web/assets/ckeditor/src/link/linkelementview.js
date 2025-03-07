@@ -40,9 +40,15 @@ export default class CraftLinkElementView extends View {
       tag: 'div',
       attributes: {
         class: ['elementselect'],
+        tabindex: 0,
       },
       children: [this.button],
     });
+  }
+
+  // this is needed so that the '.elementselect' gets the focus
+  focus() {
+    this.element.focus();
   }
 
   render() {
