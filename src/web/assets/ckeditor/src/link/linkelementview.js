@@ -8,21 +8,21 @@ export default class CraftLinkElementView extends View {
 
     this.set('isFocused', false);
 
-    this.editor = options.editor;
     this.linkUi = options.linkUi;
-    const {formView} = this.linkUi._linkUI;
+    this.editor = this.linkUi.editor;
     this.elementId = this.linkUi._getLinkElementId();
     this.siteId = this.linkUi._getLinkSiteId();
     this.linkOption = options.linkOption;
-    const elementType = this.linkUi._getLinkElementType();
+    const elementRefHandle = this.linkUi._getLinkElementRefHandle();
     this.button = null;
 
-    if (elementType) {
-      const itemModel = this.linkUi.linkTypeDropdownItemModels[elementType];
+    if (elementRefHandle) {
+      const itemModel =
+        this.linkUi.linkTypeDropdownItemModels[elementRefHandle];
       if (
         this.linkUi.linkTypeDropdownView.buttonView.label == itemModel.label
       ) {
-        this.button = 'loading...';
+        this.button = Craft.t('app', 'Loading');
       }
     }
 
@@ -74,7 +74,7 @@ export default class CraftLinkElementView extends View {
         data: {
           elements: [
             {
-              type: 'craft\\elements\\Entry',
+              type: linkOption.elementType,
               id: this.elementId,
               siteId: this.siteId,
               instances: [
@@ -117,6 +117,7 @@ export default class CraftLinkElementView extends View {
           ];
 
           Craft.addActionsToChip($element, actions);
+          //Craft.cp.elementThumbLoader.load($element);
         })
         .catch((e) => {
           Craft.cp.displayError(e?.response?.data?.message);

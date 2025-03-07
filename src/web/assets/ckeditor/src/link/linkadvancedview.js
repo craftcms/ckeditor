@@ -8,9 +8,8 @@ export default class CraftLinkAdvancedView extends View {
 
     this.set('label', Craft.t('app', 'Advanced'));
 
-    this.editor = options.editor;
     this.linkUi = options.linkUi;
-    this.advancedLinkFields = options.advancedLinkFields;
+    this.editor = this.linkUi.editor;
     this.children = this.createCollection();
     this.advancedChildren = this.createCollection();
 
