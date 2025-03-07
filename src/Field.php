@@ -689,9 +689,12 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
                 'conversion' => null,
             ],
             [
-                'label' => Craft::t('app', 'Target'),
+                'label' => Craft::t('app', 'Open in new tab?'),
                 'value' => 'target',
-                'conversion' => null,
+                'conversion' => [
+                    'model' => 'craftTarget',
+                    'view' => 'target',
+                ],
             ],
             [
                 'label' => Craft::t('app', 'Title Text'),
@@ -1024,21 +1027,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
                 ],
             ],
         ]);
-
-        if (in_array('target', $this->advancedLinkFields)) {
-            $baseConfig['link'] = [
-                'decorators' => [
-                    'openInNewTab' => [
-                        'mode' => 'manual',
-                        'label' => Craft::t('app', 'Open in new tab'),
-                        'attributes' => [
-                            'target' => '_blank',
-                            'rel' => 'noopener noreferrer',
-                        ],
-                    ],
-                ],
-            ];
-        }
 
         // Give plugins/modules a chance to modify the config
         $event = new ModifyConfigEvent([
@@ -1865,6 +1853,13 @@ JS,
             }
             if (in_array('ariaLabel', $this->advancedLinkFields)) {
                 $def?->addAttribute('a', 'aria-label', 'Text');
+            }
+            // This is needed so that the noopener and noreferrer rel attributes
+            // are not added by default on save when you turn on target="_blank".
+            // This then messes with the ability to add rel attributes independently.
+            if (in_array('target', $this->advancedLinkFields)) {
+                $purifierConfig->set('HTML.TargetNoopener', false);
+                $purifierConfig->set('HTML.TargetNoreferrer', false);
             }
         }
 

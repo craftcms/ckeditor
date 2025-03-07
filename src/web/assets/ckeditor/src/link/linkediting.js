@@ -57,7 +57,12 @@ export default class CraftLinkEditing extends Plugin {
         view: (value, {writer}) => {
           const linkViewElement = writer.createAttributeElement(
             'a',
-            {[this.conversionData[i].view]: value},
+            {
+              [this.conversionData[i].view]:
+                this.conversionData[i].model == 'craftTarget'
+                  ? '_blank'
+                  : value,
+            },
             {priority: 5},
           );
 
@@ -68,12 +73,10 @@ export default class CraftLinkEditing extends Plugin {
       });
 
       // converts data view to a model
-      conversion.for('upcast').elementToAttribute({
+      conversion.for('upcast').attributeToAttribute({
         view: {
           name: 'a',
-          attributes: {
-            [this.conversionData[i].view]: true,
-          },
+          key: this.conversionData[i].view,
         },
         model: {
           key: this.conversionData[i].model,

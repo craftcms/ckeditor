@@ -15,6 +15,7 @@ import {
   LinkUI,
   Plugin,
   Range,
+  SwitchButtonView,
   View,
   ViewModel,
 } from 'ckeditor5';
@@ -515,7 +516,53 @@ export default class CraftLinkUI extends Plugin {
 
     for (const advancedField of advancedLinkFields) {
       let attributeModel = advancedField.conversion?.model;
-      if (attributeModel && typeof formView[attributeModel] === 'undefined') {
+      if (advancedField.value === 'target') {
+        const switchButtonView = new SwitchButtonView();
+
+        switchButtonView.set({
+          withText: true,
+          label: advancedField.label,
+          isToggleable: true,
+        });
+
+        if (advancedField.info) {
+          switchButtonView.tooltip = advancedField.info;
+        }
+
+        advancedView.advancedChildren.add(switchButtonView);
+        formView._focusables.add(switchButtonView);
+        formView.focusTracker.add(switchButtonView.element);
+
+        formView[attributeModel] = switchButtonView;
+
+        formView[attributeModel]
+          .bind('isOn')
+          .to(linkCommand, attributeModel, (commandValue) => {
+            if (commandValue === undefined) {
+              // set the initial toggle value to off after the page reload
+              formView[attributeModel].element.value = '';
+              return false;
+            } else {
+              // set the initial toggle value to 'on' after the page reload
+              formView[attributeModel].element.value = 'on';
+              return true;
+            }
+          });
+
+        // this makes the switch toggle
+        switchButtonView.on('execute', () => {
+          if (!switchButtonView.isOn) {
+            switchButtonView.isOn = true;
+            formView[attributeModel].element.value = 'on';
+          } else {
+            switchButtonView.isOn = false;
+            formView[attributeModel].element.value = '';
+          }
+        });
+      } else if (
+        attributeModel &&
+        typeof formView[attributeModel] === 'undefined'
+      ) {
         let labeledInputView = this._createLabeledField(
           advancedView,
           formView,
@@ -524,6 +571,7 @@ export default class CraftLinkUI extends Plugin {
         );
 
         formView[attributeModel] = labeledInputView;
+
         formView[attributeModel].fieldView
           .bind('value')
           .to(linkCommand, attributeModel);
@@ -573,38 +621,6 @@ export default class CraftLinkUI extends Plugin {
         this.listenTo(formView.urlInputView.fieldView, 'input', () => {
           this._toggleUrlSuffixInputView(labeledInputView);
         });
-      } else if (advancedField.value === 'target') {
-        let linkOpenInNewTabDecorator =
-          formView._manualDecoratorSwitches._items.filter(
-            (item) => item.name === 'linkOpenInNewTab',
-          );
-
-        if (linkOpenInNewTabDecorator.length) {
-          const {children} = formView;
-          linkOpenInNewTabDecorator = linkOpenInNewTabDecorator[0];
-
-          // copied from https://github.com/ckeditor/ckeditor5/blob/v44.2.1/packages/ckeditor5-link/src/ui/linkformview.ts#L339-L363
-          const targetDecoratorView = new View();
-          targetDecoratorView.setTemplate({
-            tag: 'ul',
-            children: [
-              {
-                tag: 'li',
-                children: [linkOpenInNewTabDecorator],
-                attributes: {
-                  class: ['ck', 'ck-list__item'],
-                },
-              },
-            ],
-            attributes: {
-              class: ['ck', 'ck-reset', 'ck-list'],
-            },
-          });
-
-          advancedView.advancedChildren.add(targetDecoratorView);
-          // advancedView._focusables.add(targetDecoratorView.fieldView);
-          // advancedView.focusTracker.add(targetDecoratorView.fieldView.element);
-        }
       }
     }
 
@@ -627,8 +643,6 @@ export default class CraftLinkUI extends Plugin {
     advancedView.advancedChildren.add(labeledInputView);
     formView._focusables.add(labeledInputView.fieldView);
     formView.focusTracker.add(labeledInputView.fieldView.element);
-    // advancedView._focusables.add(labeledInputView.fieldView);
-    // advancedView.focusTracker.add(labeledInputView.fieldView.element);
 
     return labeledInputView;
   }
@@ -657,8 +671,12 @@ export default class CraftLinkUI extends Plugin {
 
         attributeModels.forEach((attributeModel) => {
           let value = [];
-          value[attributeModel] =
-            formView[attributeModel].fieldView.element.value;
+          if (attributeModel === 'craftTarget') {
+            value[attributeModel] = formView[attributeModel].element.value;
+          } else {
+            value[attributeModel] =
+              formView[attributeModel].fieldView.element.value;
+          }
           Object.assign(values, value);
         });
 
