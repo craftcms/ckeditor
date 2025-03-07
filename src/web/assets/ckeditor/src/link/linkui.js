@@ -531,8 +531,6 @@ export default class CraftLinkUI extends Plugin {
           }
 
           advancedView.advancedChildren.add(switchButtonView);
-          formView._focusables.add(switchButtonView);
-          formView.focusTracker.add(switchButtonView.element);
 
           formView[attributeModel] = switchButtonView;
 
@@ -563,7 +561,7 @@ export default class CraftLinkUI extends Plugin {
             }
           });
         } else {
-          let labeledInputView = this._createLabeledField(
+          let labeledInputView = this._addLabeledField(
             advancedView,
             formView,
             advancedField.label,
@@ -580,7 +578,7 @@ export default class CraftLinkUI extends Plugin {
             linkCommand[attributeModel] || '';
         }
       } else if (advancedField.value === 'urlSuffix') {
-        let labeledInputView = this._createLabeledField(
+        let labeledInputView = this._addLabeledField(
           advancedView,
           formView,
           advancedField.label,
@@ -626,11 +624,11 @@ export default class CraftLinkUI extends Plugin {
     }
 
     children.add(advancedView, 1);
-    formView._focusables.add(advancedView);
-    formView.focusTracker.add(advancedView.element);
+    formView._focusables.add(advancedView, 1);
+    formView.focusTracker.add(advancedView, 1);
   }
 
-  _createLabeledField(advancedView, formView, label, info) {
+  _addLabeledField(advancedView, formView, label, info) {
     // create an input text field with the name of advancedField and matching label
     let labeledInputView = new LabeledFieldView(
       formView.locale,
@@ -642,8 +640,6 @@ export default class CraftLinkUI extends Plugin {
     }
 
     advancedView.advancedChildren.add(labeledInputView);
-    formView._focusables.add(labeledInputView.fieldView);
-    formView.focusTracker.add(labeledInputView.fieldView.element);
 
     return labeledInputView;
   }

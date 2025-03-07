@@ -47,4 +47,36 @@ export default class CraftLinkAdvancedView extends View {
     });
     this.children.add(this.advancedFieldsContainer);
   }
+
+  // this is needed so that the "Advanced" summary is focused when you tab into the details container
+  focus() {
+    this.summary.element.focus();
+  }
+
+  render() {
+    super.render();
+
+    // this is needed to control the focus order
+    this.element.addEventListener('toggle', this.onToggle.bind(this));
+  }
+
+  // this is needed to control the focus order
+  onToggle(evt) {
+    const {formView} = this.linkUi._linkUI;
+    if (evt.target.open) {
+      // get tab index position of the details.link-type-advanced container
+      const advancedIndex = formView._focusables.getIndex(this);
+      // and now inject the fields that we just revealed into the focus order
+      this.advancedChildren._items.forEach((advancedChild, i) => {
+        formView._focusables.add(advancedChild, advancedIndex + i + 1);
+        formView.focusTracker.add(advancedChild.element, advancedIndex + i + 1);
+      });
+    } else {
+      // and now that the fields are hidden, remove them from the focus order
+      this.advancedChildren._items.forEach((advancedChild, i) => {
+        formView._focusables.remove(advancedChild);
+        formView.focusTracker.remove(advancedChild.element);
+      });
+    }
+  }
 }
