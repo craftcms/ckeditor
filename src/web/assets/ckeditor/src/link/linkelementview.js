@@ -4,13 +4,6 @@ export default class CraftLinkElementView extends View {
   constructor(locale, options = {}) {
     super(locale);
 
-    this.editor = null;
-    (this._linkUI = null), (this.linkUi = null);
-    this.elementId = null;
-    this.siteId = null;
-    this.linkOption = null;
-    this.button = null;
-
     const bind = this.bindTemplate;
 
     this.set('isFocused', false);

@@ -265,13 +265,11 @@ export default class CraftLinkUI extends Plugin {
         // we want to clear our the input field value, hide sites dropdown and ensure "URL" is selected
         this._selectLinkTypeDropdownItem('default');
         this._showLinkTypeForm('default', formView);
-        //fieldView.set('value', '');
-        //this.siteDropdownView?.buttonView.set('isVisible', false);
       }
     });
 
-    formView._focusables.add(this.linkTypeDropdownView);
-    formView.focusTracker.add(this.linkTypeDropdownView.element);
+    formView._focusables.add(this.linkTypeDropdownView, 0);
+    formView.focusTracker.add(this.linkTypeDropdownView.element, 0);
 
     this.listenTo(fieldView, 'change:value', () => {
       this._toggleLinkTypeDropdownView();
@@ -384,11 +382,25 @@ export default class CraftLinkUI extends Plugin {
 
   _showLinkTypeForm(linkOption, formView) {
     let inputView = null;
+    const {children} = formView;
+    const {urlInputView} = formView;
 
+    // a selection was made in the link type dropdown
+    if (this.linkTypeWrapperView !== null) {
+      // an element was previously selected, so we have to remove the previous link type form
+      children.remove(this.linkTypeWrapperView);
+    } else {
+      // a default URL type was previously selected, so we have to remove the default url input
+      children.remove(urlInputView);
+    }
+
+    // if default URL was selected, we need to give it extra classes
     if (linkOption === 'default') {
-      inputView = formView.urlInputView;
+      inputView = urlInputView;
       inputView.template.attributes.class.push('link-input', 'flex-grow');
     } else {
+      // otherwise we need to create the Element view,
+      // which will be either the button to choose an element or an element card
       let siteId = this._getLinkSiteId();
       let elementId = this._getLinkElementId();
       inputView = new CraftLinkElementView(formView.locale, {
@@ -399,13 +411,7 @@ export default class CraftLinkUI extends Plugin {
       });
     }
 
-    const {children} = formView;
-    const {urlInputView} = formView;
-    if (this.linkTypeWrapperView !== null) {
-      children.remove(this.linkTypeWrapperView);
-    } else {
-      children.remove(urlInputView);
-    }
+    // and now we can construct the container that has the link type dropdown and the corresponding input field
     this.linkTypeWrapperView = new View();
     this.linkTypeWrapperView.setTemplate({
       tag: 'div',
@@ -414,6 +420,7 @@ export default class CraftLinkUI extends Plugin {
         class: ['ck', 'link-type-group', 'flex', 'flex-nowrap'],
       },
     });
+
     children.add(this.linkTypeWrapperView, 0);
   }
 
@@ -513,6 +520,10 @@ export default class CraftLinkUI extends Plugin {
       linkUi: this,
       advancedLinkFields: advancedLinkFields,
     });
+
+    children.add(advancedView, 1);
+    formView._focusables.add(advancedView, 1);
+    formView.focusTracker.add(advancedView, 1);
 
     for (const advancedField of advancedLinkFields) {
       let attributeModel = advancedField.conversion?.model;
@@ -622,10 +633,6 @@ export default class CraftLinkUI extends Plugin {
         });
       }
     }
-
-    children.add(advancedView, 1);
-    formView._focusables.add(advancedView, 1);
-    formView.focusTracker.add(advancedView, 1);
   }
 
   _addLabeledField(advancedView, formView, label, info) {
