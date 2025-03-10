@@ -577,8 +577,8 @@ export default class CraftLinkUI extends Plugin {
             isToggleable: true,
           });
 
-          if (advancedField.info) {
-            switchButtonView.tooltip = advancedField.info;
+          if (advancedField.tooltip) {
+            switchButtonView.tooltip = advancedField.tooltip;
           }
 
           this.advancedView.advancedChildren.add(switchButtonView);
@@ -674,8 +674,8 @@ export default class CraftLinkUI extends Plugin {
       createLabeledInputText,
     );
     labeledInputView.label = advancedField.label;
-    if (advancedField.info) {
-      labeledInputView.infoText = advancedField.info;
+    if (advancedField.tooltip) {
+      labeledInputView.infoText = advancedField.tooltip;
     }
 
     this.advancedView.advancedChildren.add(labeledInputView);

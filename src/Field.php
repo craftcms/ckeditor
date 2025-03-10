@@ -682,7 +682,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             [
                 'label' => Craft::t('app', 'URL Suffix'),
                 'value' => 'urlSuffix',
-                'info' => Craft::t('app', 'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.', [
+                'tooltip' => Craft::t('app', 'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.', [
                     'ex1' => '`?p1=foo&p2=bar`',
                     'ex2' => '`#anchor`',
                 ]),
@@ -710,7 +710,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             [
                 'label' => Craft::t('app', 'Class Name'),
                 'value' => 'class',
-                'info' => 'Separate multiple values with spaces.',
+                'tooltip' => 'Separate multiple values with spaces.',
                 'conversion' => [
                     'type' => 'string',
                     'model' => 'craftClass',
@@ -729,7 +729,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             [
                 'label' => Craft::t('app', 'Relation (rel)'),
                 'value' => 'rel',
-                'info' => 'Separate multiple values with spaces.',
+                'tooltip' => 'Separate multiple values with spaces.',
                 'conversion' => [
                     'type' => 'string',
                     'model' => 'craftRel',
@@ -1540,6 +1540,12 @@ JS,
         return new CkeConfig();
     }
 
+    /**
+     * Returns an array of selected advanced link fields that the field should show to the author.
+     * The fields are returned in the order defined in the field's settings.
+     *
+     * @return array
+     */
     private function _advancedLinkFields(): array
     {
         if (empty($this->advancedLinkFields)) {
@@ -1858,6 +1864,7 @@ JS,
         if (in_array('createEntry', $ckeConfig->toolbar)) {
             $def?->addElement('craft-entry', 'Inline', 'Inline', '', [
                 'data-entry-id' => 'Number',
+                'data-site-id' => 'Number',
             ]);
         }
 
@@ -1868,16 +1875,19 @@ JS,
                 $allowedRels['*'] = true;
                 $purifierConfig->set('Attr.AllowedRel', array_keys($allowedRels));
             }
+
             if (in_array('ariaLabel', $this->advancedLinkFields)) {
                 $def?->addAttribute('a', 'aria-label', 'Text');
             }
+
+            // TODO: this is breaking all the other adjustments, but we really need this
             // This is needed so that the noopener and noreferrer rel attributes
             // are not added by default on save when you turn on target="_blank".
             // This then messes with the ability to add rel attributes independently.
-            if (in_array('target', $this->advancedLinkFields)) {
-                $purifierConfig->set('HTML.TargetNoopener', false);
-                $purifierConfig->set('HTML.TargetNoreferrer', false);
-            }
+//            if (in_array('target', $this->advancedLinkFields)) {
+//                $purifierConfig->set('HTML.TargetNoopener', false);
+//                $purifierConfig->set('HTML.TargetNoreferrer', false);
+//            }
         }
 
         return $purifierConfig;
