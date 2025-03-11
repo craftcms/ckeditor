@@ -1432,7 +1432,7 @@ class bu extends Bn {
             withText: !0,
             label: c.label,
             isToggleable: !0
-          }), c.info && (_.tooltip = c.info), this.advancedView.advancedChildren.add(_), b[o] = _, b[o].bind("isOn").to(M, o, (m) => m === void 0 ? (b[o].element.value = "", !1) : (b[o].element.value = c.conversion.value, !0)), _.on("execute", () => {
+          }), c.tooltip && (_.tooltip = c.tooltip), this.advancedView.advancedChildren.add(_), b[o] = _, b[o].bind("isOn").to(M, o, (m) => m === void 0 ? (b[o].element.value = "", !1) : (b[o].element.value = c.conversion.value, !0)), _.on("execute", () => {
             _.isOn ? (_.isOn = !1, b[o].element.value = "") : (_.isOn = !0, b[o].element.value = c.conversion.value);
           });
         } else {
@@ -1472,7 +1472,7 @@ class bu extends Bn {
       b.locale,
       eu
     );
-    return a.label = M.label, M.info && (a.infoText = M.info), this.advancedView.advancedChildren.add(a), a;
+    return a.label = M.label, M.tooltip && (a.infoText = M.tooltip), this.advancedView.advancedChildren.add(a), a;
   }
   _toggleUrlSuffixInputView(M) {
     const b = this._urlInputRefMatch(this.urlWithRefHandleRE);
