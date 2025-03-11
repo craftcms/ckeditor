@@ -1820,9 +1820,6 @@ JS,
      */
     private function _adjustPurifierConfig(HTMLPurifier_Config $purifierConfig): HTMLPurifier_Config
     {
-        /** @var HTMLPurifier_HTMLDefinition|null $def */
-        $def = $purifierConfig->getDefinition('HTML', true);
-
         $ckeConfig = $this->_ckeConfig();
 
         // These will come back as indexed (key => true) arrays
@@ -1843,6 +1840,33 @@ JS,
         }
         $purifierConfig->set('Attr.AllowedFrameTargets', array_keys($allowedTargets));
         $purifierConfig->set('Attr.AllowedRel', array_keys($allowedRels));
+
+        // advanced link fields
+        if (!empty($this->advancedLinkFields)) {
+            if (in_array('rel', $this->advancedLinkFields)) {
+                $allowedRels = $purifierConfig->get('Attr.AllowedRel');
+                // allow any rel values
+                $allowedRels['*'] = true;
+                $purifierConfig->set('Attr.AllowedRel', array_keys($allowedRels));
+            }
+
+            // This is needed so that the noopener and noreferrer rel attributes
+            // are not added by default on save when you turn on target="_blank".
+            // This then messes with the ability to add rel attributes independently.
+            if (in_array('target', $this->advancedLinkFields)) {
+                $purifierConfig->set('HTML.TargetNoopener', false);
+                $purifierConfig->set('HTML.TargetNoreferrer', false);
+            }
+        }
+
+        // we have to get the HTML definition AFTER setting HTML.TargetNoopener, HTML.TargetNoreferrer
+        // otherwise none of the adjustments below will work!
+        /** @var HTMLPurifier_HTMLDefinition|null $def */
+        $def = $purifierConfig->getDefinition('HTML', true);
+
+        if (!empty($this->advancedLinkFields) && in_array('ariaLabel', $this->advancedLinkFields)) {
+            $def?->addAttribute('a', 'aria-label', 'Text');
+        }
 
         if (in_array('todoList', $ckeConfig->toolbar)) {
             // Add input[type=checkbox][disabled][checked] to the definition
@@ -1866,28 +1890,6 @@ JS,
                 'data-entry-id' => 'Number',
                 'data-site-id' => 'Number',
             ]);
-        }
-
-        if (!empty($this->advancedLinkFields)) {
-            if (in_array('rel', $this->advancedLinkFields)) {
-                $allowedRels = $purifierConfig->get('Attr.AllowedRel');
-                // allow any rel values
-                $allowedRels['*'] = true;
-                $purifierConfig->set('Attr.AllowedRel', array_keys($allowedRels));
-            }
-
-            if (in_array('ariaLabel', $this->advancedLinkFields)) {
-                $def?->addAttribute('a', 'aria-label', 'Text');
-            }
-
-            // TODO: this is breaking all the other adjustments, but we really need this
-            // This is needed so that the noopener and noreferrer rel attributes
-            // are not added by default on save when you turn on target="_blank".
-            // This then messes with the ability to add rel attributes independently.
-//            if (in_array('target', $this->advancedLinkFields)) {
-//                $purifierConfig->set('HTML.TargetNoopener', false);
-//                $purifierConfig->set('HTML.TargetNoreferrer', false);
-//            }
         }
 
         return $purifierConfig;
