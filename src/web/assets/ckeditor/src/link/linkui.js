@@ -475,6 +475,7 @@ export default class CraftLinkUI extends Plugin {
     const selection = model.document.selection;
     const isCollapsed = selection.isCollapsed;
     const range = selection.getFirstRange();
+    const currentLinkElement = this._linkUI._getSelectedLinkElement();
 
     const onCancel = () => {
       editor.editing.view.focus();
@@ -488,7 +489,7 @@ export default class CraftLinkUI extends Plugin {
     };
 
     // When there's no link under the selection, go straight to the editing UI.
-    if (!this._linkUI._getSelectedLinkElement()) {
+    if (!currentLinkElement) {
       // Show visual selection on a text without a link when the contextual balloon is displayed.
       // See https://github.com/ckeditor/ckeditor5/issues/4721.
       this._linkUI._showFakeVisualSelection();
@@ -506,7 +507,7 @@ export default class CraftLinkUI extends Plugin {
           const url = `${element.url}#${linkOption.refHandle}:${element.id}@${element.siteId}`;
           editor.editing.view.focus();
 
-          if (!isCollapsed && range) {
+          if ((!isCollapsed || currentLinkElement) && range) {
             // Restore the previous range
             model.change((writer) => {
               writer.setSelection(range);
@@ -535,7 +536,9 @@ export default class CraftLinkUI extends Plugin {
           this._linkUI._hideFakeVisualSelection();
           setTimeout(() => {
             editor.editing.view.focus();
-            this._linkUI._showUI(true);
+            if (!currentLinkElement) {
+              this._linkUI._showUI(true);
+            }
           }, 100);
         } else {
           onCancel();
