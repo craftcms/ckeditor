@@ -54,8 +54,8 @@ export default class CraftLinkElementView extends View {
   render() {
     super.render();
 
-    const _linkUI = this.linkUi._linkUI;
     const linkUi = this.linkUi;
+    const _linkUI = linkUi._linkUI;
     const linkOption = this.linkOption;
 
     this.element.addEventListener('click', function (ev) {

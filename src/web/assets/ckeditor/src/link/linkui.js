@@ -106,15 +106,17 @@ export default class CraftLinkUI extends Plugin {
             i++;
           });
 
-          // this takes care of the advanced link field toggle ("Advanced")
-          // the items inside the toggle are controlled from linkadvancedview.onToggle()
-          if (formView._focusables.has(this.advancedView)) {
-            formView._focusables.remove(this.advancedView);
-          }
-          formView.focusTracker.remove(this.advancedView);
+          if (this.advancedView !== null) {
+            // this takes care of the advanced link field toggle ("Advanced")
+            // the items inside the toggle are controlled from linkadvancedview.onToggle()
+            if (formView._focusables.has(this.advancedView)) {
+              formView._focusables.remove(this.advancedView);
+            }
+            formView.focusTracker.remove(this.advancedView);
 
-          formView._focusables.add(this.advancedView, i);
-          formView.focusTracker.add(this.advancedView.element, i);
+            formView._focusables.add(this.advancedView, i);
+            formView.focusTracker.add(this.advancedView.element, i);
+          }
 
           // this makes sure the link type dropdown is focused when the balloon opens
           this.linkTypeDropdownView.buttonView.focus();
@@ -504,7 +506,7 @@ export default class CraftLinkUI extends Plugin {
           const url = `${element.url}#${linkOption.refHandle}:${element.id}@${element.siteId}`;
           editor.editing.view.focus();
 
-          if (!selection.isCollapsed && range) {
+          if (!isCollapsed && range) {
             // Restore the previous range
             model.change((writer) => {
               writer.setSelection(range);
