@@ -658,13 +658,13 @@ export default class CraftLinkUI extends Plugin {
         );
 
         // update the URL Suffix form field when main URL field is loaded
-        this.listenTo(formView.urlInputView.fieldView, 'change:value', () => {
-          this._toggleUrlSuffixInputView(labeledInputView);
+        this.listenTo(formView.urlInputView.fieldView, 'change:value', (ev) => {
+          this._toggleUrlSuffixInputView(labeledInputView, ev.source.isEmpty);
         });
 
         // update the URL Suffix form field when main URL field value changes (on type)
-        this.listenTo(formView.urlInputView.fieldView, 'input', () => {
-          this._toggleUrlSuffixInputView(labeledInputView);
+        this.listenTo(formView.urlInputView.fieldView, 'input', (ev) => {
+          this._toggleUrlSuffixInputView(labeledInputView, ev.source.isEmpty);
         });
       }
     }
@@ -688,15 +688,19 @@ export default class CraftLinkUI extends Plugin {
     return labeledInputView;
   }
 
-  _toggleUrlSuffixInputView(labeledInputView) {
-    const match = this._urlInputRefMatch(this.urlWithRefHandleRE);
-    if (match) {
-      // match[1] is the whole URL that shows before the {refTag}
-      let url = new URL(match[1]);
-      let search = url.search;
-      let hash = url.hash;
+  _toggleUrlSuffixInputView(labeledInputView, isEmpty) {
+    if (isEmpty) {
+      labeledInputView.fieldView.set('value', '');
+    } else {
+      const match = this._urlInputRefMatch(this.urlWithRefHandleRE);
+      if (match) {
+        // match[1] is the whole URL that shows before the {refTag}
+        let url = new URL(match[1]);
+        let search = url.search;
+        let hash = url.hash;
 
-      labeledInputView.fieldView.set('value', search + hash);
+        labeledInputView.fieldView.set('value', search + hash);
+      }
     }
   }
 

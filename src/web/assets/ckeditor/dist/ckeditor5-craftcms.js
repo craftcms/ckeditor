@@ -1458,10 +1458,10 @@ class bu extends Bn {
               }
             }
           }
-        ), this.listenTo(b.urlInputView.fieldView, "change:value", () => {
-          this._toggleUrlSuffixInputView(_);
-        }), this.listenTo(b.urlInputView.fieldView, "input", () => {
-          this._toggleUrlSuffixInputView(_);
+        ), this.listenTo(b.urlInputView.fieldView, "change:value", (m) => {
+          this._toggleUrlSuffixInputView(_, m.source.isEmpty);
+        }), this.listenTo(b.urlInputView.fieldView, "input", (m) => {
+          this._toggleUrlSuffixInputView(_, m.source.isEmpty);
         });
       }
     }
@@ -1474,11 +1474,15 @@ class bu extends Bn {
     );
     return a.label = M.label, M.tooltip && (a.infoText = M.tooltip), this.advancedView.advancedChildren.add(a), a;
   }
-  _toggleUrlSuffixInputView(M) {
-    const b = this._urlInputRefMatch(this.urlWithRefHandleRE);
-    if (b) {
-      let a = new URL(b[1]), u = a.search, c = a.hash;
-      M.fieldView.set("value", u + c);
+  _toggleUrlSuffixInputView(M, b) {
+    if (b)
+      M.fieldView.set("value", "");
+    else {
+      const a = this._urlInputRefMatch(this.urlWithRefHandleRE);
+      if (a) {
+        let u = new URL(a[1]), c = u.search, o = u.hash;
+        M.fieldView.set("value", c + o);
+      }
     }
   }
   _handleAdvancedLinkFieldsFormSubmit() {
