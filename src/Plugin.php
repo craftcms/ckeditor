@@ -125,8 +125,8 @@ class Plugin extends \craft\base\Plugin
         $entryManagers = [];
         $customFields = $element->getFieldLayout()?->getCustomFields() ?? [];
         foreach ($customFields as $field) {
-            if ($field instanceof Field && !isset($entryManagers[$field->id])) {
-                $entryManagers[$field->id] = Field::entryManager($field);
+            if ($field instanceof Field && !isset($entryManagers[$field->layoutElement->uid])) {
+                $entryManagers[$field->layoutElement->uid] = Field::entryManager($field);
             }
         }
         return array_values($entryManagers);

@@ -162,8 +162,8 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
      */
     public static function entryManager(self $field): NestedElementManager
     {
-        if (!isset(self::$entryManagers[$field->id])) {
-            self::$entryManagers[$field->id] = $entryManager = new NestedElementManager(
+        if (!isset(self::$entryManagers[$field->layoutElement->uid])) {
+            self::$entryManagers[$field->layoutElement->uid] = $entryManager = new NestedElementManager(
                 Entry::class,
                 fn(ElementInterface $owner) => self::createEntryQuery($owner, $field),
                 [
@@ -253,7 +253,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             );
         }
 
-        return self::$entryManagers[$field->id];
+        return self::$entryManagers[$field->layoutElement->uid];
     }
 
     private static function fieldInstances(ElementInterface $element, self $field): array
