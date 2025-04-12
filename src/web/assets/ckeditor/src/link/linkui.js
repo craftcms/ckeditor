@@ -4,19 +4,28 @@
  * @license GPL-3.0-or-later
  */
 
-import {Plugin} from 'ckeditor5/src/core';
-import {Collection} from 'ckeditor5/src/utils';
+/* global CKE_LOCALIZED_REF_HANDLES */
 import {
-  ViewModel,
-  ContextualBalloon,
-  SplitButtonView,
-  createDropdown,
   addListToDropdown,
-} from 'ckeditor5/src/ui';
-import linkIcon from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
-import {LinkUI} from '@ckeditor/ckeditor5-link';
-import {LINK_KEYSTROKE} from '@ckeditor/ckeditor5-link/src/utils';
-import {Range} from 'ckeditor5/src/engine';
+  Collection,
+  ContextualBalloon,
+  createDropdown,
+  LinkUI,
+  Plugin,
+  Range,
+  SplitButtonView,
+  ViewModel,
+} from 'ckeditor5';
+
+/**
+ * These imports aren't ideal but are necessary for now because the main
+ * ckeditor5 package doesn't expose them.
+ *
+ * @link https://github.com/ckeditor/ckeditor5/issues/17304#issuecomment-2522746556
+ */
+const linkIcon = `<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="m11.077 15 .991-1.416a.75.75 0 1 1 1.229.86l-1.148 1.64a.748.748 0 0 1-.217.206 5.251 5.251 0 0 1-8.503-5.955.741.741 0 0 1 .12-.274l1.147-1.639a.75.75 0 1 1 1.228.86L4.933 10.7l.006.003a3.75 3.75 0 0 0 6.132 4.294l.006.004zm5.494-5.335a.748.748 0 0 1-.12.274l-1.147 1.639a.75.75 0 1 1-1.228-.86l.86-1.23a3.75 3.75 0 0 0-6.144-4.301l-.86 1.229a.75.75 0 0 1-1.229-.86l1.148-1.64a.748.748 0 0 1 .217-.206 5.251 5.251 0 0 1 8.503 5.955zm-4.563-2.532a.75.75 0 0 1 .184 1.045l-3.155 4.505a.75.75 0 1 1-1.229-.86l3.155-4.506a.75.75 0 0 1 1.045-.184z"/></svg>`;
+const LINK_KEYSTROKE = 'Ctrl+K';
+
 export default class CraftLinkUI extends Plugin {
   static get requires() {
     return [LinkUI];
@@ -42,8 +51,7 @@ export default class CraftLinkUI extends Plugin {
 
     if (Craft.isMultiSite) {
       this._modifyFormViewTemplate();
-      const refHandlesPattern =
-        CKEditor5.craftcms.localizedRefHandles.join('|');
+      const refHandlesPattern = CKE_LOCALIZED_REF_HANDLES.join('|');
       this.localizedRefHandleRE = new RegExp(
         `(#(?:${refHandlesPattern}):\\d+)(?:@(\\d+))?`,
       );

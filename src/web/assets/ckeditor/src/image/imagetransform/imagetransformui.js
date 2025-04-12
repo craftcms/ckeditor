@@ -4,14 +4,15 @@
  * @license GPL-3.0-or-later
  */
 
-import {Plugin, icons} from 'ckeditor5/src/core';
 import {
-  DropdownButtonView,
-  ViewModel,
-  createDropdown,
   addListToDropdown,
-} from 'ckeditor5/src/ui';
-import {Collection} from 'ckeditor5/src/utils';
+  Collection,
+  createDropdown,
+  DropdownButtonView,
+  icons,
+  Plugin,
+  ViewModel,
+} from 'ckeditor5';
 import ImageTransformEditing from './imagetransformediting';
 
 const RESIZE_ICON = icons.objectSizeMedium;

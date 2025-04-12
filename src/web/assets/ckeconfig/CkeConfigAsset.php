@@ -33,13 +33,13 @@ class CkeConfigAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'ckeconfig.js',
+        ['ckeconfig.js', 'type' => 'module'],
     ];
 
     /**
      * @inheritdoc
      */
     public $css = [
-        'css/ckeconfig.css',
+        'ckeditor.css',
     ];
 }

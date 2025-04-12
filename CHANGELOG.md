@@ -2,6 +2,12 @@
 
 ## Unreleased (5.0)
 
+> [!IMPORTANT]
+> Third party CKEditor plugins are now registered as modules. See [#363](https://github.com/craftcms/ckeditor/pull/363) for details on how to update existing Craft plugins.
+
+- Added `craft\ckeditor\helpers\CkeditorConfig`. ([#363](https://github.com/craftcms/ckeditor/pull/363))
+- Added `craft\ckeditor\web\assets\BaseCkeditorPackageAsset::$namespace`. ([#363](https://github.com/craftcms/ckeditor/pull/363))
+
 ## 4.6.0 - 2025-02-18
 
 - Added the ability to override entry type names and handles for CKEditor fields. ([#369](https://github.com/craftcms/ckeditor/discussions/369))

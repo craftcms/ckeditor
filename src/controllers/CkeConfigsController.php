@@ -9,16 +9,15 @@ namespace craft\ckeditor\controllers;
 
 use Craft;
 use craft\ckeditor\CkeConfig;
+use craft\ckeditor\helpers\CkeditorConfig;
 use craft\ckeditor\helpers\CkeditorConfigSchema;
 use craft\ckeditor\Plugin;
 use craft\ckeditor\web\assets\ckeconfig\CkeConfigAsset;
-use craft\helpers\Cp;
 use craft\helpers\StringHelper;
 use craft\web\assets\admintable\AdminTableAsset;
 use craft\web\Controller;
 use craft\web\CpScreenResponseBehavior;
 use yii\base\InvalidArgumentException;
-use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -30,25 +29,13 @@ use yii\web\Response;
  */
 class CkeConfigsController extends Controller
 {
-    private bool $readOnly;
-
     public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
             return false;
         }
 
-        $viewActions = ['index', 'edit'];
-        if (in_array($action->id, $viewActions)) {
-            // Some actions require admin but not allowAdminChanges
-            $this->requireAdmin(false);
-        } else {
-            // All other actions require an admin & allowAdminChanges
-            $this->requireAdmin();
-        }
-
-        $this->readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
-
+        $this->requireAdmin();
         return true;
     }
 
@@ -60,16 +47,11 @@ class CkeConfigsController extends Controller
 
         return $this->renderTemplate('ckeditor/cke-configs/_index', [
             'ckeConfigs' => $ckeConfigs,
-            'readOnly' => $this->readOnly,
         ]);
     }
 
     public function actionEdit(?CkeConfig $ckeConfig = null, ?string $uid = null): Response
     {
-        if ($ckeConfig === null && $uid === null && $this->readOnly) {
-            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
-        }
-
         if (!$ckeConfig) {
             if ($uid !== null) {
                 try {
@@ -91,58 +73,37 @@ class CkeConfigsController extends Controller
         }
 
         $response = $this->asCpScreen()
+            ->editUrl($ckeConfig->uid ? "settings/ckeditor/$ckeConfig->uid" : null)
+            ->action('ckeditor/cke-configs/save')
             ->addCrumb(Craft::t('app', 'Settings'), 'settings')
             ->addCrumb(Craft::t('ckeditor', 'CKEditor Configs'), 'settings/ckeditor')
-            ->title($title);
-
-        if (!$this->readOnly) {
-            $response
-                ->editUrl($ckeConfig->uid ? "settings/ckeditor/$ckeConfig->uid" : null)
-                ->action('ckeditor/cke-configs/save')
-                ->redirectUrl('settings/ckeditor')
-                ->addAltAction(Craft::t('app', 'Save and continue editing'), [
-                    'redirect' => 'settings/ckeditor/{uid}',
-                    'shortcut' => true,
-                    'retainScroll' => true,
-                ]);
-        } else {
-            $response->noticeHtml(Cp::readOnlyNoticeHtml());
-        }
-
-        $response
+            ->title($title)
+            ->redirectUrl('settings/ckeditor')
+            ->addAltAction(Craft::t('app', 'Save and continue editing'), [
+                'redirect' => 'settings/ckeditor/{uid}',
+                'shortcut' => true,
+                'retainScroll' => true,
+            ])
             ->prepareScreen(function(Response $response, $containerId) use ($ckeConfig) {
+                $this->view->registerAssetBundle(CkeConfigAsset::class);
+
                 $jsonSchemaUri = sprintf('https://craft-code-editor.com/%s', $this->view->namespaceInputId('config-options-json'));
+
                 /** @var Response|CpScreenResponseBehavior $response */
                 $response->contentTemplate('ckeditor/cke-configs/_edit.twig', [
+                    'importStatements' => CkeditorConfig::getImportStatements(),
+                    'toolbarBuilderId' => $this->view->namespaceInputId('toolbar-builder'),
+                    'configOptionsId' => $this->view->namespaceInputId('config-options'),
+                    'containerId' => $containerId,
+                    'toolbarItems' => CkeditorConfig::normalizeToolbarItems(CkeditorConfig::$toolbarItems),
+                    'plugins' => CkeditorConfig::getAllPlugins(),
                     'ckeConfig' => $ckeConfig,
                     'jsonSchema' => CkeditorConfigSchema::create(),
                     'jsonSchemaUri' => $jsonSchemaUri,
-                    'readOnly' => $this->readOnly,
                 ]);
-
-                $this->view->registerAssetBundle(CkeConfigAsset::class);
-                $this->view->registerJsWithVars(
-                    fn(
-                        $toolbarBuilderId,
-                        $configOptionsId,
-                        $containerId,
-                        $jsonSchemaUri,
-                    ) => <<<JS
-(() => {
-const configOptions = new CKEditor5.craftcms.ConfigOptions($configOptionsId, $jsonSchemaUri);
-new CKEditor5.craftcms.ToolbarBuilder($toolbarBuilderId, $containerId, configOptions);
-})();
-JS,
-                    [
-                        $this->view->namespaceInputId('toolbar-builder'),
-                        $this->view->namespaceInputId('config-options'),
-                        $containerId,
-                        $jsonSchemaUri,
-                    ],
-                );
             });
 
-        if ($ckeConfig->uid && !$this->readOnly) {
+        if ($ckeConfig->uid) {
             $response->addAltAction(Craft::t('ckeditor', 'Save as a new config'), [
                 'action' => 'ckeditor/cke-configs/save',
                 'params' => ['uid' => ''],

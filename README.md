@@ -311,17 +311,34 @@ The command will generate a new content migration, which will need to be run on 
 
 ## Adding CKEditor Plugins
 
-Craft CMS plugins can register additional CKEditor plugins to extend its functionality.
+### First Party plugins
+If you'd like to include any of the [first party packages](https://github.com/ckeditor/ckeditor5/tree/master/packages) from CKEditor, you can call `CkeditorConfig::registerFirstPartyPackage()` in the `init` function of a custom module.
 
-The first step is to create a [DLL-compatible](https://ckeditor.com/docs/ckeditor5/latest/installation/advanced/alternative-setups/dll-builds.html) package which provides the CKEditor plugin(s) you wish to add.
+```php
+use craft\ckeditor\helpers\CkeditorConfig;
 
-- If you’re including one of CKEditor’s [first-party packages](https://github.com/ckeditor/ckeditor5/tree/master/packages), it will already include a `build` directory with a DLL-compatible package inside it.
-- If you’re creating a custom CKEditor plugin, use [CKEditor’s package generator](https://ckeditor.com/docs/ckeditor5/latest/framework/plugins/package-generator/using-package-generator.html) to scaffold it, and run its [`dll:build` command](https://ckeditor.com/docs/ckeditor5/latest/framework/plugins/package-generator/javascript-package.html#dllbuild) to create a DLL-compatible package.
+class Site extends BaseModule
+{
+    public function init(): void
+    {
+        parent::init(); 
+    
+        // Register a package with toolbar items and multiple plugins
+        CkeditorConfig::registerFirstPartyPackage(['SpecialCharacters', 'SpecialCharactersEssentials'], ['specialCharacters']);
+        
+        // Register a package with a single plugin.
+        CkeditorConfig::registerFirstPartyPackage(['ImageResize']);
+    }
+}
+```
+
+### Custom plugins
+- If you’re creating a custom CKEditor plugin, use [CKEditor’s package generator](https://ckeditor.com/docs/ckeditor5/latest/framework/plugins/package-generator/using-package-generator.html) to scaffold it.
 
 > [!TIP]  
-> Check out CKEditor’s [Implementing an inline widget](https://ckeditor.com/docs/ckeditor5/latest/framework/tutorials/implementing-an-inline-widget.html) tutorial for an in-depth look at how to create a custom CKEditor plugin.
+> Check out CKEditor’s [Creating a basic plugin](https://ckeditor.com/docs/ckeditor5/latest/framework/tutorials/creating-simple-plugin-timestamp.html) tutorial for an in-depth look at how to create a custom CKEditor plugin.
 
-Once the CKEditor package is in place in your Craft plugin, create an [asset bundle](https://craftcms.com/docs/4.x/extend/asset-bundles.html) which extends [`BaseCkeditorPackageAsset`](src/web/assets/BaseCkeditorPackageAsset.php). The asset bundle defines the package’s build directory, filename, a list of CKEditor plugin names provided by the package, and any toolbar items that should be made available via the plugin.
+Once the CKEditor package is in place in your Craft plugin, create an [asset bundle](https://craftcms.com/docs/4.x/extend/asset-bundles.html) which extends [`BaseCkeditorPackageAsset`](src/web/assets/BaseCkeditorPackageAsset.php). The asset bundle defines the package’s build directory, filename, namespace, a list of CKEditor plugin names provided by the package, and any toolbar items that should be made available via the plugin.
 
 For example, here’s an asset bundle which defines a “Tokens” plugin:
 
@@ -335,9 +352,11 @@ use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
 class TokensAsset extends BaseCkeditorPackageAsset
 {
     public $sourcePath = __DIR__ . '/build';
+    
+    public string $namespace = '@craftcms/ckeditor5-tokens';
 
     public $js = [
-        'tokens.js',
+        ['tokens.js', 'type' => 'module']
     ];
 
     public array $pluginNames = [
@@ -353,5 +372,7 @@ class TokensAsset extends BaseCkeditorPackageAsset
 Finally, ensure your asset bundle is registered whenever the core CKEditor asset bundle is. Add the following code to your plugin’s `init()` method:
 
 ```php
-\craft\ckeditor\Plugin::registerCkeditorPackage(TokensAsset::class);
+\craft\ckeditor\Plugin::registerCkeditorPackage(TokensAsset::class, 'tokens.js');
 ```
+
+The second parameter should point to the main entry file for your javascript. In most cases, it will be the same as the only item in you `$js` array.

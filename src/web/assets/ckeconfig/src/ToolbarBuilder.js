@@ -4,16 +4,24 @@
  * @license GPL-3.0-or-later
  */
 
-/** global: CKEditor5, Garnish */
+/* global Garnish, $ */
 import './ckeconfig.css';
-import $ from 'jquery';
+import * as CKEditor5 from 'ckeditor5';
+import {
+  create,
+  ImageTransform,
+  ImageEditor,
+  CraftLinkUI,
+  CraftImageInsertUI,
+  CraftEntries,
+} from '@craftcms/ckeditor';
 
 export default Garnish.Base.extend({
   $sourceContainer: null,
   $targetContainer: null,
   $input: null,
   value: null,
-  components: null,
+  components: {},
   drag: null,
   $items: null,
   draggingSourceItem: null,
@@ -23,10 +31,15 @@ export default Garnish.Base.extend({
   closestItem: null,
   readOnly: false,
 
-  init: function (id, containerId, configOptions, namespace) {
-    this.$sourceContainer = $(`#${id} .ckeditor-tb--source .ck-toolbar__items`);
-    this.$targetContainer = $(`#${id} .ckeditor-tb--target .ck-toolbar__items`);
-    this.$input = $(`#${id} input`);
+  init: function (id, containerId, configOptions, plugins = []) {
+    this.$container = $(`#${id}`);
+    this.$sourceContainer = this.$container.find(
+      '.ckeditor-tb--source .ck-toolbar__items',
+    );
+    this.$targetContainer = this.$container.find(
+      '.ckeditor-tb--target .ck-toolbar__items',
+    );
+    this.$input = this.$container.find('input');
     this.value = JSON.parse(this.$input.val());
     this.readOnly = $(`#${id}`).hasClass('disabled');
 
@@ -34,21 +47,20 @@ export default Garnish.Base.extend({
     const editorElement = document.createElement('DIV');
     editorContainer.appendChild(editorElement);
 
-    CKEditor5.craftcms
-      .create(editorElement, {
-        linkOptions: [{elementType: 'craft\\elements\\Asset'}],
-        assetSources: ['*'],
-        entryTypeOptions: [{label: 'fake', value: 'fake'}],
-      })
+    create(editorElement, {
+      linkOptions: [{elementType: 'craft\\elements\\Asset'}],
+      assetSources: ['*'],
+      entryTypeOptions: [{label: 'fake', value: 'fake'}],
+      plugins,
+    })
       .then((editor) => {
         const cf = editor.ui.componentFactory;
-        const names = Array.from(cf.names());
-        this.components = {};
-        for (const name of names) {
+
+        for (const name of cf.names()) {
           this.components[name] = cf.create(name);
         }
 
-        const items = CKEditor5.craftcms.toolbarItems;
+        const items = JSON.parse(this.$container.attr('data-available-items'));
 
         // Flatten any groups that are only partially selected
         for (let i = 0; i < items.length; i++) {
@@ -251,7 +263,8 @@ export default Garnish.Base.extend({
           $item.data('sourceItem', sourceItems[key]);
           this.$items = this.$items.add($item);
         }
-      });
+      })
+      .catch(console.error);
   },
 
   renderSeparator: function () {

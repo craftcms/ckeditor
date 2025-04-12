@@ -45,7 +45,7 @@
   data: {'error-key': 'toolbar'},
 } %}
   {% block input %}
-    <div id="toolbar-builder" class="ckeditor-tb pane{{ readOnly ? ' disabled' : '' }}">
+    <div id="toolbar-builder" class="ckeditor-tb pane{{ readOnly ? ' disabled' : '' }}" data-available-items="{{ toolbarItems|json_encode|e('html_attr') }}">
       <div class="ck ck-reset_all">
         <div class="ckeditor-tb--items ckeditor-tb--source ck ck-reset ck-editor ck-rounded-corners">
           <div class="ck ck-toolbar">
@@ -172,21 +172,21 @@
         }),
         baseCodeEditorOptions,
       ) }}
-      {% endtag %}
+    {% endtag %}
   {% endblock %}
 {% endembed %}
 
-{% js %}
+{% script with {type: 'module'} %}
+import {ConfigOptions, ToolbarBuilder} from '@craftcms/ckeditor-config';
+{{ importStatements|raw }}
+
+const configOptions = new ConfigOptions("{{ configOptionsId }}", "{{ jsonSchemaUri }}");
+new ToolbarBuilder("{{  toolbarBuilderId }}", "{{ containerId }}", configOptions, [{{ plugins | join(',') }}]);
+
 (() => {
   // Register the config options JSON schema
   const jsonSchemaUri = {{ jsonSchemaUri|json_encode|raw }};
-  const schema = JSON.parse(
-    JSON.stringify({{ jsonSchema|json_encode|raw }})
-      .replace(
-        new RegExp(Craft.escapeRegex(JSON.stringify('__PLUGIN_LIST__')), 'g'),
-        JSON.stringify(CKEditor5.craftcms.pluginNames())
-      )
-  );
+  const schema = JSON.parse(JSON.stringify({{jsonSchema|json_encode|raw}}));
 
   monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
     validate: true,
@@ -199,7 +199,7 @@
     ],
   });
 })()
-{% endjs %}
+{% endscript %}
 
 {{ codeEditor.textareaField(
   {

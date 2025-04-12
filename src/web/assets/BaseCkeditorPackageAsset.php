@@ -8,8 +8,8 @@
 namespace craft\ckeditor\web\assets;
 
 use Craft;
+use craft\ckeditor\helpers\CkeditorConfig;
 use craft\web\AssetBundle;
-use craft\web\View;
 
 /**
  * Base asset bundle class for DLL-compatible CKEditor packages.
@@ -33,6 +33,7 @@ abstract class BaseCkeditorPackageAsset extends AssetBundle
     {
         return match (Craft::$app->language) {
             'nb', 'nn' => 'no', // https://github.com/craftcms/ckeditor/issues/113
+            'en-US' => 'en',
             default => strtolower(Craft::$app->language),
         };
     }
@@ -67,9 +68,16 @@ abstract class BaseCkeditorPackageAsset extends AssetBundle
     public array $toolbarItems = [];
 
     /**
+     * @var string namespace to be used for the JavaScript import map.
+     *
+     * It's recommended to use a format of `@{author}/ckeditor5-{handle}`
+     */
+    public string $namespace;
+
+    /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->includeTranslation();
@@ -78,18 +86,15 @@ abstract class BaseCkeditorPackageAsset extends AssetBundle
     /**
      * Registers the plugins and toolbar items provided by this package with `CKEditor5.craftcms.registerPackage()`.
      *
-     * @param View $view
      * @since 3.5.0
      */
-    public function registerPackage(View $view): void
+    public function registerPackage(): void
     {
-        if (!empty($this->pluginNames) || !empty($this->toolbarItems)) {
-            $view->registerJsWithVars(fn($package) => "CKEditor5.craftcms.registerPackage($package);", [
-                [
-                    'pluginNames' => $this->pluginNames,
-                    'toolbarItems' => $this->toolbarItems,
-                ],
-            ], View::POS_END);
+        if (!empty($this->pluginNames || !empty($this->toolbarItems))) {
+            CkeditorConfig::registerPackage($this->namespace, [
+                'plugins' => $this->pluginNames,
+                'toolbarItems' => $this->toolbarItems,
+            ]);
         }
     }
 

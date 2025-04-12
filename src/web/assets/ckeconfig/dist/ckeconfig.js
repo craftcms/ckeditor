@@ -1,3 +1,436 @@
-/*! For license information please see ckeconfig.js.LICENSE.txt */
-(function(){var __webpack_modules__={150:function(__unused_webpack_module,__webpack_exports__,__webpack_require__){"use strict";var _ckeconfig_css__WEBPACK_IMPORTED_MODULE_0__=__webpack_require__(778),_ckeconfig_css__WEBPACK_IMPORTED_MODULE_0___default=__webpack_require__.n(_ckeconfig_css__WEBPACK_IMPORTED_MODULE_0__),jquery__WEBPACK_IMPORTED_MODULE_1__=__webpack_require__(311),jquery__WEBPACK_IMPORTED_MODULE_1___default=__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_1__);function _slicedToArray(e,t){return _arrayWithHoles(e)||_iterableToArrayLimit(e,t)||_unsupportedIterableToArray(e,t)||_nonIterableRest()}function _nonIterableRest(){throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}function _iterableToArrayLimit(e,t){var n=null==e?null:"undefined"!=typeof Symbol&&e[Symbol.iterator]||e["@@iterator"];if(null!=n){var r,o,i,a,s=[],u=!0,l=!1;try{if(i=(n=n.call(e)).next,0===t){if(Object(n)!==n)return;u=!1}else for(;!(u=(r=i.call(n)).done)&&(s.push(r.value),s.length!==t);u=!0);}catch(e){l=!0,o=e}finally{try{if(!u&&null!=n.return&&(a=n.return(),Object(a)!==a))return}finally{if(l)throw o}}return s}}function _arrayWithHoles(e){if(Array.isArray(e))return e}function _createForOfIteratorHelper(e,t){var n="undefined"!=typeof Symbol&&e[Symbol.iterator]||e["@@iterator"];if(!n){if(Array.isArray(e)||(n=_unsupportedIterableToArray(e))||t&&e&&"number"==typeof e.length){n&&(e=n);var r=0,o=function(){};return{s:o,n:function(){return r>=e.length?{done:!0}:{done:!1,value:e[r++]}},e:function(e){throw e},f:o}}throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}var i,a=!0,s=!1;return{s:function(){n=n.call(e)},n:function(){var e=n.next();return a=e.done,e},e:function(e){s=!0,i=e},f:function(){try{a||null==n.return||n.return()}finally{if(s)throw i}}}}function _unsupportedIterableToArray(e,t){if(e){if("string"==typeof e)return _arrayLikeToArray(e,t);var n=Object.prototype.toString.call(e).slice(8,-1);return"Object"===n&&e.constructor&&(n=e.constructor.name),"Map"===n||"Set"===n?Array.from(e):"Arguments"===n||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)?_arrayLikeToArray(e,t):void 0}}function _arrayLikeToArray(e,t){(null==t||t>e.length)&&(t=e.length);for(var n=0,r=new Array(t);n<t;n++)r[n]=e[n];return r}__webpack_exports__.Z=Garnish.Base.extend({jsonSchemaUri:null,language:null,$container:null,$jsonContainer:null,$jsContainer:null,jsonEditor:null,jsEditor:null,defaults:null,init:function init(id,jsonSchemaUri){var _this=this;this.jsonSchemaUri=jsonSchemaUri,this.$container=jquery__WEBPACK_IMPORTED_MODULE_1___default()("#".concat(id)),this.$jsonContainer=jquery__WEBPACK_IMPORTED_MODULE_1___default()("#".concat(id,"-json-container")),this.$jsContainer=jquery__WEBPACK_IMPORTED_MODULE_1___default()("#".concat(id,"-js-container")),this.jsonEditor=window.monacoEditorInstances["".concat(id,"-json")],this.jsEditor=window.monacoEditorInstances["".concat(id,"-js")];var $languagePicker=this.$container.children(".btngroup");this.$jsonContainer.hasClass("hidden")?this.language="js":this.language="json",this.defaults={};var lastJsValue=null;new Craft.Listbox($languagePicker,{onChange:function(e){switch(_this.language=e.data("language"),_this.language){case"json":if(lastJsValue=_this.jsEditor.getModel().getValue(),_this.jsContainsFunctions(lastJsValue)&&!confirm(Craft.t("ckeditor","Your JavaScript config contains functions. If you switch to JSON, they will be lost. Would you like to continue?"))){$languagePicker.data("listbox").$options.not('[data-language="json"]').trigger("click");break}_this.$jsonContainer.removeClass("hidden"),_this.$jsContainer.addClass("hidden");var t=_this.js2json(lastJsValue);lastJsValue=null,_this.jsonEditor.getModel().setValue(t||"{\n  \n}"),_this.jsEditor.getModel().setValue("");break;case"js":var n;_this.$jsonContainer.addClass("hidden"),_this.$jsContainer.removeClass("hidden"),null!==lastJsValue?(n=lastJsValue,lastJsValue=null):n=_this.json2js(_this.jsonEditor.getModel().getValue()),_this.jsEditor.getModel().setValue(n||"return {\n  \n}"),_this.jsonEditor.getModel().setValue("")}}}),this.jsonEditor.onDidPaste((function(ev){var pastedContent=_this.jsonEditor.getModel().getValueInRange(ev.range),config;try{eval("config = {".concat(pastedContent,"}"))}catch(e){return}var json=JSON.stringify(config,null,2),trimmed=Craft.trim(json.substring(1,json.length-1));trimmed&&_this.jsonEditor.executeEdits("",[{range:ev.range,text:trimmed}])}))},getConfig:function(){var e;if("json"===this.language)e=Craft.trim(this.jsonEditor.getModel().getValue())||"{}";else{var t=Craft.trim(this.jsEditor.getModel().getValue());if(!1===(e=t?this.js2json(t):"{}"))return!1}try{var n=JSON.parse(e);return!!jquery__WEBPACK_IMPORTED_MODULE_1___default().isPlainObject(n)&&n}catch(e){return!1}},setConfig:function(e){var t=this.config2json(e);if("json"===this.language)this.jsonEditor.getModel().setValue(t);else{var n=this.json2js(t);this.jsEditor.getModel().setValue(n||"return {\n  \n}")}},addSetting:function(e){var t=this.getConfig();t&&void 0===t[e]&&(void 0===this.defaults[e]&&(this.populateDefault(e),void 0===this.defaults[e])||(t[e]=this.defaults[e],this.setConfig(t)))},removeSetting:function(e){var t=this.getConfig();t&&void 0!==t[e]&&(this.defaults[e]=t[e],delete t[e],this.setConfig(t))},populateDefault:function(e){var t,n=this;try{t=window.monaco.languages.json.jsonDefaults.diagnosticsOptions.schemas.find((function(e){return e.uri===n.jsonSchemaUri})).schema}catch(e){return void console.warn("Couldn’t get config options JSON schema.",e)}if(t.$defs&&t.$defs.EditorConfig&&t.$defs.EditorConfig.properties){if(t.$defs.EditorConfig.properties[e]){var r=t.$defs.EditorConfig.properties[e];if(r.default)this.defaults[e]=r.default;else if(r.$ref){var o=r.$ref.match(/^#\/\$defs\/(\w+)/);if(o){var i=o[1];t.$defs[i]&&t.$defs[i].default&&(this.defaults[e]=t.$defs[i].default)}}}}else console.warn("Config options JSON schema is missing $defs.EditorConfig.properties")},replacer:function(e,t){return"function"==typeof t?"__HAS__FUNCTION__":t},jsContainsFunctions:function(e){var t=this.getValidJsonConfig(e);return!1===t||!!JSON.stringify(t,this.replacer,2).match(/__HAS__FUNCTION__/)},config2json:function(e){var t=JSON.stringify(e,null,2);return"{}"===t&&(t="{\n  \n}"),t},getValidJsonConfig:function getValidJsonConfig(js){var m=(js||"").match(/return\s*(\{[\w\W]*})/),config;if(!m)return!1;try{eval("config = ".concat(m[1],";"))}catch(e){return!1}return config},js2json:function(e){var t=this.getValidJsonConfig(e);return!1!==t&&this.config2json(t)},json2js:function(e){var t;try{t=JSON.parse(e)}catch(e){return!1}if(!jquery__WEBPACK_IMPORTED_MODULE_1___default().isPlainObject(t))return!1;var n=this.jsify(t,"");return"{\n}"===n&&(n="{\n  \n}"),"return ".concat(n)},jsify:function(e,t){var n;if(jquery__WEBPACK_IMPORTED_MODULE_1___default().isArray(e)){n="[\n";var r,o=_createForOfIteratorHelper(e);try{for(o.s();!(r=o.n()).done;){var i=r.value;n+="".concat(t,"  ").concat(this.jsify(i,t+"  "),",\n")}}catch(e){o.e(e)}finally{o.f()}n+="".concat(t,"]")}else if(jquery__WEBPACK_IMPORTED_MODULE_1___default().isPlainObject(e)){n="{\n";for(var a=0,s=Object.entries(e);a<s.length;a++){var u=_slicedToArray(s[a],2),l=u[0],c=u[1];n+="".concat(t,"  ").concat(l,": ").concat(this.jsify(c,t+"  "),",\n")}n+="".concat(t,"}")}else n="string"!=typeof e||e.match(/[\r\n']/)?JSON.stringify(e):"'".concat(e,"'");return n}})},880:function(){},778:function(e,t,n){var r=n(880);r.__esModule&&(r=r.default),"string"==typeof r&&(r=[[e.id,r,""]]),r.locals&&(e.exports=r.locals),(0,n(673).Z)("4690113c",r,!0,{})},673:function(e,t,n){"use strict";function r(e,t){for(var n=[],r={},o=0;o<t.length;o++){var i=t[o],a=i[0],s={id:e+":"+o,css:i[1],media:i[2],sourceMap:i[3]};r[a]?r[a].parts.push(s):n.push(r[a]={id:a,parts:[s]})}return n}n.d(t,{Z:function(){return p}});var o="undefined"!=typeof document;if("undefined"!=typeof DEBUG&&DEBUG&&!o)throw new Error("vue-style-loader cannot be used in a non-browser environment. Use { target: 'node' } in your Webpack config to indicate a server-rendering environment.");var i={},a=o&&(document.head||document.getElementsByTagName("head")[0]),s=null,u=0,l=!1,c=function(){},d=null,f="data-vue-ssr-id",_="undefined"!=typeof navigator&&/msie [6-9]\b/.test(navigator.userAgent.toLowerCase());function p(e,t,n,o){l=n,d=o||{};var a=r(e,t);return h(a),function(t){for(var n=[],o=0;o<a.length;o++){var s=a[o];(u=i[s.id]).refs--,n.push(u)}for(t?h(a=r(e,t)):a=[],o=0;o<n.length;o++){var u;if(0===(u=n[o]).refs){for(var l=0;l<u.parts.length;l++)u.parts[l]();delete i[u.id]}}}}function h(e){for(var t=0;t<e.length;t++){var n=e[t],r=i[n.id];if(r){r.refs++;for(var o=0;o<r.parts.length;o++)r.parts[o](n.parts[o]);for(;o<n.parts.length;o++)r.parts.push(m(n.parts[o]));r.parts.length>n.parts.length&&(r.parts.length=n.parts.length)}else{var a=[];for(o=0;o<n.parts.length;o++)a.push(m(n.parts[o]));i[n.id]={id:n.id,refs:1,parts:a}}}}function g(){var e=document.createElement("style");return e.type="text/css",a.appendChild(e),e}function m(e){var t,n,r=document.querySelector("style["+f+'~="'+e.id+'"]');if(r){if(l)return c;r.parentNode.removeChild(r)}if(_){var o=u++;r=s||(s=g()),t=b.bind(null,r,o,!1),n=b.bind(null,r,o,!0)}else r=g(),t=C.bind(null,r),n=function(){r.parentNode.removeChild(r)};return t(e),function(r){if(r){if(r.css===e.css&&r.media===e.media&&r.sourceMap===e.sourceMap)return;t(e=r)}else n()}}var v,y=(v=[],function(e,t){return v[e]=t,v.filter(Boolean).join("\n")});function b(e,t,n,r){var o=n?"":r.css;if(e.styleSheet)e.styleSheet.cssText=y(t,o);else{var i=document.createTextNode(o),a=e.childNodes;a[t]&&e.removeChild(a[t]),a.length?e.insertBefore(i,a[t]):e.appendChild(i)}}function C(e,t){var n=t.css,r=t.media,o=t.sourceMap;if(r&&e.setAttribute("media",r),d.ssrId&&e.setAttribute(f,t.id),o&&(n+="\n/*# sourceURL="+o.sources[0]+" */",n+="\n/*# sourceMappingURL=data:application/json;base64,"+btoa(unescape(encodeURIComponent(JSON.stringify(o))))+" */"),e.styleSheet)e.styleSheet.cssText=n;else{for(;e.firstChild;)e.removeChild(e.firstChild);e.appendChild(document.createTextNode(n))}}},311:function(e){"use strict";e.exports=jQuery}},__webpack_module_cache__={};function __webpack_require__(e){var t=__webpack_module_cache__[e];if(void 0!==t)return t.exports;var n=__webpack_module_cache__[e]={id:e,exports:{}};return __webpack_modules__[e](n,n.exports,__webpack_require__),n.exports}__webpack_require__.n=function(e){var t=e&&e.__esModule?function(){return e.default}:function(){return e};return __webpack_require__.d(t,{a:t}),t},__webpack_require__.d=function(e,t){for(var n in t)__webpack_require__.o(t,n)&&!__webpack_require__.o(e,n)&&Object.defineProperty(e,n,{enumerable:!0,get:t[n]})},__webpack_require__.o=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)};var __webpack_exports__={};!function(){"use strict";__webpack_require__(778);var e=__webpack_require__(311),t=__webpack_require__.n(e);function n(e){return n="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e},n(e)}function r(e){return function(e){if(Array.isArray(e))return a(e)}(e)||function(e){if("undefined"!=typeof Symbol&&null!=e[Symbol.iterator]||null!=e["@@iterator"])return Array.from(e)}(e)||i(e)||function(){throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}()}function o(e,t){var n="undefined"!=typeof Symbol&&e[Symbol.iterator]||e["@@iterator"];if(!n){if(Array.isArray(e)||(n=i(e))||t&&e&&"number"==typeof e.length){n&&(e=n);var r=0,o=function(){};return{s:o,n:function(){return r>=e.length?{done:!0}:{done:!1,value:e[r++]}},e:function(e){throw e},f:o}}throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}var a,s=!0,u=!1;return{s:function(){n=n.call(e)},n:function(){var e=n.next();return s=e.done,e},e:function(e){u=!0,a=e},f:function(){try{s||null==n.return||n.return()}finally{if(u)throw a}}}}function i(e,t){if(e){if("string"==typeof e)return a(e,t);var n=Object.prototype.toString.call(e).slice(8,-1);return"Object"===n&&e.constructor&&(n=e.constructor.name),"Map"===n||"Set"===n?Array.from(e):"Arguments"===n||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)?a(e,t):void 0}}function a(e,t){(null==t||t>e.length)&&(t=e.length);for(var n=0,r=new Array(t);n<t;n++)r[n]=e[n];return r}function s(e,t,r){return(t=function(e){var t=function(e,t){if("object"!==n(e)||null===e)return e;var r=e[Symbol.toPrimitive];if(void 0!==r){var o=r.call(e,"string");if("object"!==n(o))return o;throw new TypeError("@@toPrimitive must return a primitive value.")}return String(e)}(e);return"symbol"===n(t)?t:String(t)}(t))in e?Object.defineProperty(e,t,{value:r,enumerable:!0,configurable:!0,writable:!0}):e[t]=r,e}var u=Garnish.Base.extend({$sourceContainer:null,$targetContainer:null,$input:null,value:null,components:null,drag:null,$items:null,draggingSourceItem:null,draggingSeparator:null,$insertion:null,showingInsertion:!1,closestItem:null,readOnly:!1,init:function(e,n,i,a){var u=this;this.$sourceContainer=t()("#".concat(e," .ckeditor-tb--source .ck-toolbar__items")),this.$targetContainer=t()("#".concat(e," .ckeditor-tb--target .ck-toolbar__items")),this.$input=t()("#".concat(e," input")),this.value=JSON.parse(this.$input.val()),this.readOnly=t()("#".concat(e)).hasClass("disabled");var l=document.createElement("DIV"),c=document.createElement("DIV");l.appendChild(c),CKEditor5.craftcms.create(c,{linkOptions:[{elementType:"craft\\elements\\Asset"}],assetSources:["*"],entryTypeOptions:[{label:"fake",value:"fake"}]}).then((function(e){var n=e.ui.componentFactory,a=Array.from(n.names());u.components={};for(var l=0,c=a;l<c.length;l++){var d=c[l];u.components[d]=n.create(d)}for(var f=CKEditor5.craftcms.toolbarItems,_=function(e){var t=f[e];if(t.length>1){var n=u.value.findIndex((function(e){return t.some((function(t){return t.button===e}))}));if(-1!==n)for(var o=0;o<t.length;o++)if(u.value[n+o]!==t[o].button){f.splice.apply(f,[e,1].concat(r(t.map((function(e){return[e]}))))),e+=t.length-1;break}}p=e},p=0;p<f.length;p++)_(p);u.readOnly?u.drag=t()():u.drag=new Garnish.DragDrop({dropTargets:u.$targetContainer,helper:function(e){var n=t()('<div class="offset-drag-helper ck ck-reset_all ck-editor ck-rounded-corners"/>'),r=t()('<div class="ck ck-toolbar"/>').appendTo(n);return e.appendTo(r),n},moveHelperToCursor:!0,onDragStart:function(){Garnish.$bod.addClass("dragging");var e=u.drag.$draggee;if(u.draggingSourceItem=t().contains(u.$sourceContainer[0],e[0]),u.draggingSeparator=e.hasClass("ckeditor-tb--separator"),u.$insertion=t()('<div class="ckeditor-tb--insertion"/>').css({width:e.outerWidth()}),u.draggingSourceItem)if(u.draggingSeparator)e.css("visibility","");else{var n="ltr"===Craft.orientation?"margin-right":"margin-left",r=-1*e.outerWidth();e.stop().velocity(s({},n,r),200,(function(){e.addClass("hidden")}))}else e.addClass("hidden"),u.$insertion.insertBefore(e),u.showingInsertion=!0;u.setMidpoints()},onDrag:function(){u.checkForNewClosestItem()},onDragStop:function(){Garnish.$bod.removeClass("dragging");var e=u.drag.$draggee;if(u.checkForNewClosestItem(),u.showingInsertion)if(u.draggingSourceItem){var n;if(u.draggingSeparator)n=u.renderSeparator();else{var a=e.data("componentNames");n=u.renderComponentGroup(a);var l,c=o(a);try{var d=function(){var e=l.value,t=f.flat().find((function(t){return t.button===e}));t&&t.configOption&&i.addSetting(t.configOption)};for(c.s();!(l=c.n()).done;)d()}catch(e){c.e(e)}finally{c.f()}}n.data("sourceItem",e[0]),n.css("visibility","hidden"),u.$insertion.replaceWith(n),u.drag.$draggee=n}else u.$insertion.replaceWith(e),e.removeClass("hidden");else{if(!u.draggingSourceItem){var _=t()(e.data("sourceItem"));if(e.remove(),u.drag.$draggee=e=_,!u.draggingSeparator){var p,h=o(_.data("componentNames"));try{var g=function(){var e=p.value,t=f.flat().find((function(t){return t.button===e}));t&&t.configOption&&i.removeSetting(t.configOption)};for(h.s();!(p=h.n()).done;)g()}catch(e){h.e(e)}finally{h.f()}}}if(!u.draggingSeparator){e.removeClass("hidden");var m="ltr"===Craft.orientation?"margin-right":"margin-left",v=e.css(m);e.css(m,"");var y=e.css(m);e.css(m,v),e.stop().velocity(s({},m,y),200,(function(){e.css(m,"")}))}}u.drag.returnHelpersToDraggees(),u.$items=u.$targetContainer.children(),u.value=[];var b,C=o(u.$items.toArray());try{for(C.s();!(b=C.n()).done;){var j,w=b.value,E=t()(w);E.hasClass("ckeditor-tb--separator")?u.value.push("|"):(j=u.value).push.apply(j,r(E.data("componentNames")))}}catch(e){C.e(e)}finally{C.f()}u.$input.val(JSON.stringify(u.value))}});var h,g={},m=o(f);try{for(m.s();!(h=m.n()).done;){var v=h.value,y=u.renderComponentGroup(v);y&&(y.appendTo(u.$sourceContainer),g[v.map((function(e){return e.button})).join(",")]=y[0],u.value.includes(v[0].button)&&y.addClass("hidden"))}}catch(e){m.e(e)}finally{m.f()}g["|"]=u.renderSeparator().appendTo(u.$sourceContainer)[0],u.$items=t()();for(var b=function(e){var t,n,r=u.value[e];if("|"===r)t=u.renderSeparator().appendTo(u.$targetContainer),n="|";else{var o=f.find((function(e){return e.some((function(e){return e.button===r}))}));if(!o)return C=e,0;if(!(t=u.renderComponentGroup(o)))return C=e,0;t.appendTo(u.$targetContainer),n=o.map((function(e){return e.button})).join(","),e+=o.length-1}t.data("sourceItem",g[n]),u.$items=u.$items.add(t),C=e},C=0;C<u.value.length;C++)b(C)}))},renderSeparator:function(){var e=t()('<div class="ckeditor-tb--item ckeditor-tb--separator" data-cke-tooltip-text="Separator"><span class="ck ck-toolbar__separator"/></div>');return this.readOnly?this.drag.add(e):this.drag.addItems(e),e},renderComponentGroup:function(e){var n,r=[],i=[],a=o(e=e.map((function(e){return"string"==typeof e?e:e.button})));try{for(a.s();!(n=a.n()).done;){var s=n.value,u=void 0;try{u=this.renderComponent(s)}catch(e){console.warn(e);continue}r.push(u);var l=(u.is("[data-cke-tooltip-text]")?u:u.find("[data-cke-tooltip-text]")).attr("data-cke-tooltip-text");i.push(l?l.replace(/ \(.*\)$/,""):"".concat(s[0].toUpperCase()).concat(s.slice(1)))}}catch(e){a.e(e)}finally{a.f()}if(!r.length)return!1;var c=t()('<div class="ckeditor-tb--item"/>').append(r);return c.attr("data-cke-tooltip-text",i.join(", ")),c.data("componentNames",e),this.readOnly?this.drag.add(c):this.drag.addItems(c),c},renderComponent:function(e){var n=this.components[e];if(!n)throw"Missing component: ".concat(e);n.isRendered||n.render();var r=t()(n.element.outerHTML);return r.data("componentName",e),r},getClosestItem:function(){var e=this;if(!Garnish.hitTest(this.drag.mouseX,this.drag.mouseY,this.$targetContainer))return!1;if(!this.$items.length)return null;var n=this.$items.toArray();this.showingInsertion&&n.push(this.$insertion[0]);var o=n.map((function(n){var r=t().data(n,"midpoint");return Garnish.getDist(r.left,r.top,e.drag.mouseX,e.drag.mouseY)})),i=Math.min.apply(Math,r(o));return n[o.indexOf(i)]},checkForNewClosestItem:function(){var e=this.getClosestItem();!1!==e?e!==this.$insertion[0]&&(e?this.drag.mouseX<t().data(e,"midpoint").left?this.$insertion.insertBefore(e):this.$insertion.insertAfter(e):this.$insertion.appendTo(this.$targetContainer),this.showingInsertion=!0,this.setMidpoints()):this.showingInsertion&&(this.$insertion.remove(),this.showingInsertion=!1)},setMidpoints:function(){var e=this.$items.toArray();this.showingInsertion&&e.push(this.$insertion[0]);var n,r=o(e);try{for(r.s();!(n=r.n()).done;){var i=n.value,a=t()(i),s=a.offset(),u=s.left+a.outerWidth()/2,l=s.top+a.outerHeight()/2;a.data("midpoint",{left:u,top:l})}}catch(e){r.e(e)}finally{r.f()}}}),l=__webpack_require__(150);window.CKEditor5.craftcms.ToolbarBuilder=u,window.CKEditor5.craftcms.ConfigOptions=l.Z}()})();
-//# sourceMappingURL=ckeconfig.js.map
+import "ckeditor5";
+import { create } from "@craftcms/ckeditor";
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license GPL-3.0-or-later
+ */
+const ToolbarBuilder = Garnish.Base.extend({
+  $sourceContainer: null,
+  $targetContainer: null,
+  $input: null,
+  value: null,
+  components: {},
+  drag: null,
+  $items: null,
+  draggingSourceItem: null,
+  draggingSeparator: null,
+  $insertion: null,
+  showingInsertion: !1,
+  closestItem: null,
+  readOnly: !1,
+  init: function(t, e, s, r = []) {
+    this.$container = $(`#${t}`), this.$sourceContainer = this.$container.find(
+      ".ckeditor-tb--source .ck-toolbar__items"
+    ), this.$targetContainer = this.$container.find(
+      ".ckeditor-tb--target .ck-toolbar__items"
+    ), this.$input = this.$container.find("input"), this.value = JSON.parse(this.$input.val()), this.readOnly = $(`#${t}`).hasClass("disabled");
+    const a = document.createElement("DIV"), c = document.createElement("DIV");
+    a.appendChild(c), create(c, {
+      linkOptions: [{ elementType: "craft\\elements\\Asset" }],
+      assetSources: ["*"],
+      entryTypeOptions: [{ label: "fake", value: "fake" }],
+      plugins: r
+    }).then((u) => {
+      const g = u.ui.componentFactory;
+      for (const n of g.names())
+        this.components[n] = g.create(n);
+      const f = JSON.parse(this.$container.attr("data-available-items"));
+      for (let n = 0; n < f.length; n++) {
+        const i = f[n];
+        if (i.length > 1) {
+          const o = this.value.findIndex(
+            (l) => i.some((d) => d.button === l)
+          );
+          if (o !== -1) {
+            for (let l = 0; l < i.length; l++)
+              if (this.value[o + l] !== i[l].button) {
+                f.splice(n, 1, ...i.map((d) => [d])), n += i.length - 1;
+                break;
+              }
+          }
+        }
+      }
+      this.readOnly ? this.drag = $() : this.drag = new Garnish.DragDrop({
+        dropTargets: this.$targetContainer,
+        helper: (n) => {
+          const i = $(
+            '<div class="offset-drag-helper ck ck-reset_all ck-editor ck-rounded-corners"/>'
+          ), o = $(
+            '<div class="ck ck-toolbar"/>'
+          ).appendTo(i);
+          return n.appendTo(o), i;
+        },
+        moveHelperToCursor: !0,
+        onDragStart: () => {
+          Garnish.$bod.addClass("dragging");
+          const n = this.drag.$draggee;
+          if (this.draggingSourceItem = $.contains(
+            this.$sourceContainer[0],
+            n[0]
+          ), this.draggingSeparator = n.hasClass(
+            "ckeditor-tb--separator"
+          ), this.$insertion = $('<div class="ckeditor-tb--insertion"/>').css({
+            width: n.outerWidth()
+          }), this.draggingSourceItem)
+            if (this.draggingSeparator)
+              n.css("visibility", "");
+            else {
+              const i = Craft.orientation === "ltr" ? "margin-right" : "margin-left", o = -1 * n.outerWidth();
+              n.stop().velocity({ [i]: o }, 200, () => {
+                n.addClass("hidden");
+              });
+            }
+          else
+            n.addClass("hidden"), this.$insertion.insertBefore(n), this.showingInsertion = !0;
+          this.setMidpoints();
+        },
+        onDrag: () => {
+          this.checkForNewClosestItem();
+        },
+        onDragStop: () => {
+          Garnish.$bod.removeClass("dragging");
+          let n = this.drag.$draggee;
+          if (this.checkForNewClosestItem(), this.showingInsertion)
+            if (this.draggingSourceItem) {
+              let i;
+              if (this.draggingSeparator)
+                i = this.renderSeparator();
+              else {
+                const o = n.data("componentNames");
+                i = this.renderComponentGroup(o);
+                for (const l of o) {
+                  const d = f.flat().find(({ button: h }) => h === l);
+                  d && d.configOption && s.addSetting(d.configOption);
+                }
+              }
+              i.data("sourceItem", n[0]), i.css("visibility", "hidden"), this.$insertion.replaceWith(i), this.drag.$draggee = i;
+            } else
+              this.$insertion.replaceWith(n), n.removeClass("hidden");
+          else {
+            if (!this.draggingSourceItem) {
+              const i = $(n.data("sourceItem"));
+              if (n.remove(), this.drag.$draggee = n = i, !this.draggingSeparator)
+                for (const o of i.data("componentNames")) {
+                  const l = f.flat().find(({ button: d }) => d === o);
+                  l && l.configOption && s.removeSetting(l.configOption);
+                }
+            }
+            if (!this.draggingSeparator) {
+              n.removeClass("hidden");
+              const i = Craft.orientation === "ltr" ? "margin-right" : "margin-left", o = n.css(i);
+              n.css(i, "");
+              const l = n.css(i);
+              n.css(i, o), n.stop().velocity({ [i]: l }, 200, () => {
+                n.css(i, "");
+              });
+            }
+          }
+          this.drag.returnHelpersToDraggees(), this.$items = this.$targetContainer.children(), this.value = [];
+          for (const i of this.$items.toArray()) {
+            const o = $(i);
+            o.hasClass("ckeditor-tb--separator") ? this.value.push("|") : this.value.push(...o.data("componentNames"));
+          }
+          this.$input.val(JSON.stringify(this.value));
+        }
+      });
+      const p = {};
+      for (let n of f) {
+        const i = this.renderComponentGroup(n);
+        i && (i.appendTo(this.$sourceContainer), p[n.map((o) => o.button).join(",")] = i[0], this.value.includes(n[0].button) && i.addClass("hidden"));
+      }
+      p["|"] = this.renderSeparator().appendTo(
+        this.$sourceContainer
+      )[0], this.$items = $();
+      for (let n = 0; n < this.value.length; n++) {
+        const i = this.value[n];
+        let o, l;
+        if (i === "|")
+          o = this.renderSeparator().appendTo(this.$targetContainer), l = "|";
+        else {
+          const d = f.find(
+            (h) => h.some((j) => j.button === i)
+          );
+          if (!d || (o = this.renderComponentGroup(d), !o))
+            continue;
+          o.appendTo(this.$targetContainer), l = d.map((h) => h.button).join(","), n += d.length - 1;
+        }
+        o.data("sourceItem", p[l]), this.$items = this.$items.add(o);
+      }
+    }).catch(console.error);
+  },
+  renderSeparator: function() {
+    const t = $(
+      '<div class="ckeditor-tb--item ckeditor-tb--separator" data-cke-tooltip-text="Separator"><span class="ck ck-toolbar__separator"/></div>'
+    );
+    return this.readOnly ? this.drag.add(t) : this.drag.addItems(t), t;
+  },
+  renderComponentGroup: function(t) {
+    t = t.map(
+      (a) => typeof a == "string" ? a : a.button
+    );
+    const e = [], s = [];
+    for (const a of t) {
+      let c;
+      try {
+        c = this.renderComponent(a);
+      } catch (g) {
+        console.warn(g);
+        continue;
+      }
+      e.push(c);
+      const u = (c.is("[data-cke-tooltip-text]") ? c : c.find("[data-cke-tooltip-text]")).attr("data-cke-tooltip-text");
+      s.push(
+        u ? u.replace(/ \(.*\)$/, "") : `${a[0].toUpperCase()}${a.slice(1)}`
+      );
+    }
+    if (!e.length)
+      return !1;
+    const r = $('<div class="ckeditor-tb--item"/>').append(e);
+    return r.attr("data-cke-tooltip-text", s.join(", ")), r.data("componentNames", t), this.readOnly ? this.drag.add(r) : this.drag.addItems(r), r;
+  },
+  renderComponent: function(t) {
+    const e = this.components[t];
+    if (!e)
+      throw `Missing component: ${t}`;
+    e.isRendered || e.render();
+    const s = $(e.element.outerHTML);
+    return s.data("componentName", t), s;
+  },
+  getClosestItem: function() {
+    if (!Garnish.hitTest(
+      this.drag.mouseX,
+      this.drag.mouseY,
+      this.$targetContainer
+    ))
+      return !1;
+    if (!this.$items.length)
+      return null;
+    const t = this.$items.toArray();
+    this.showingInsertion && t.push(this.$insertion[0]);
+    const e = t.map((a) => {
+      const c = $.data(a, "midpoint");
+      return Garnish.getDist(
+        c.left,
+        c.top,
+        this.drag.mouseX,
+        this.drag.mouseY
+      );
+    }), s = Math.min(...e), r = e.indexOf(s);
+    return t[r];
+  },
+  checkForNewClosestItem: function() {
+    const t = this.getClosestItem();
+    if (t === !1) {
+      this.showingInsertion && (this.$insertion.remove(), this.showingInsertion = !1);
+      return;
+    }
+    t !== this.$insertion[0] && (t ? this.drag.mouseX < $.data(t, "midpoint").left ? this.$insertion.insertBefore(t) : this.$insertion.insertAfter(t) : this.$insertion.appendTo(this.$targetContainer), this.showingInsertion = !0, this.setMidpoints());
+  },
+  setMidpoints: function() {
+    const t = this.$items.toArray();
+    this.showingInsertion && t.push(this.$insertion[0]);
+    for (const e of t) {
+      const s = $(e), r = s.offset(), a = r.left + s.outerWidth() / 2, c = r.top + s.outerHeight() / 2;
+      s.data("midpoint", { left: a, top: c });
+    }
+  }
+});
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license GPL-3.0-or-later
+ */
+const ConfigOptions = Garnish.Base.extend({
+  jsonSchemaUri: null,
+  language: null,
+  $container: null,
+  $jsonContainer: null,
+  $jsContainer: null,
+  jsonEditor: null,
+  jsEditor: null,
+  defaults: null,
+  init: function(id, jsonSchemaUri) {
+    this.jsonSchemaUri = jsonSchemaUri, this.$container = $(`#${id}`), this.$jsonContainer = $(`#${id}-json-container`), this.$jsContainer = $(`#${id}-js-container`), this.jsonEditor = window.monacoEditorInstances[`${id}-json`], this.jsEditor = window.monacoEditorInstances[`${id}-js`];
+    const $languagePicker = this.$container.children(".btngroup");
+    this.$jsonContainer.hasClass("hidden") ? this.language = "js" : this.language = "json", this.defaults = {};
+    let lastJsValue = null;
+    new Craft.Listbox($languagePicker, {
+      onChange: (t) => {
+        switch (this.language = t.data("language"), this.language) {
+          case "json":
+            if (lastJsValue = this.jsEditor.getModel().getValue(), this.jsContainsFunctions(lastJsValue) && !confirm(
+              Craft.t(
+                "ckeditor",
+                "Your JavaScript config contains functions. If you switch to JSON, they will be lost. Would you like to continue?"
+              )
+            )) {
+              $languagePicker.data("listbox").$options.not('[data-language="json"]').trigger("click");
+              break;
+            }
+            this.$jsonContainer.removeClass("hidden"), this.$jsContainer.addClass("hidden");
+            const e = this.js2json(lastJsValue);
+            lastJsValue = null, this.jsonEditor.getModel().setValue(e || `{
+  
+}`), this.jsEditor.getModel().setValue("");
+            break;
+          case "js":
+            this.$jsonContainer.addClass("hidden"), this.$jsContainer.removeClass("hidden");
+            let s;
+            lastJsValue !== null ? (s = lastJsValue, lastJsValue = null) : s = this.json2js(this.jsonEditor.getModel().getValue()), this.jsEditor.getModel().setValue(s || `return {
+  
+}`), this.jsonEditor.getModel().setValue("");
+            break;
+        }
+      }
+    }), this.jsonEditor.onDidPaste((ev) => {
+      const pastedContent = this.jsonEditor.getModel().getValueInRange(ev.range);
+      let config;
+      try {
+        eval(`config = {${pastedContent}}`);
+      } catch (t) {
+        return;
+      }
+      const json = JSON.stringify(config, null, 2), trimmed = Craft.trim(json.substring(1, json.length - 1));
+      trimmed && this.jsonEditor.executeEdits("", [
+        {
+          range: ev.range,
+          text: trimmed
+        }
+      ]);
+    });
+  },
+  getConfig: function() {
+    let t;
+    if (this.language === "json")
+      t = Craft.trim(this.jsonEditor.getModel().getValue()) || "{}";
+    else {
+      const e = Craft.trim(this.jsEditor.getModel().getValue());
+      if (t = e ? this.js2json(e) : "{}", t === !1)
+        return !1;
+    }
+    try {
+      const e = JSON.parse(t);
+      return $.isPlainObject(e) ? e : !1;
+    } catch {
+      return !1;
+    }
+  },
+  setConfig: function(t) {
+    const e = this.config2json(t);
+    if (this.language === "json")
+      this.jsonEditor.getModel().setValue(e);
+    else {
+      const s = this.json2js(e);
+      this.jsEditor.getModel().setValue(s || `return {
+  
+}`);
+    }
+  },
+  addSetting: function(t) {
+    const e = this.getConfig();
+    e && (typeof e[t] < "u" || typeof this.defaults[t] > "u" && (this.populateDefault(t), typeof this.defaults[t] > "u") || (e[t] = this.defaults[t], this.setConfig(e)));
+  },
+  removeSetting: function(t) {
+    const e = this.getConfig();
+    e && (typeof e[t] > "u" || (this.defaults[t] = e[t], delete e[t], this.setConfig(e)));
+  },
+  populateDefault: function(t) {
+    let e;
+    try {
+      e = window.monaco.languages.json.jsonDefaults.diagnosticsOptions.schemas.find(
+        (c) => c.uri === this.jsonSchemaUri
+      ).schema;
+    } catch (c) {
+      console.warn("Couldn’t get config options JSON schema.", c);
+      return;
+    }
+    if (!e.$defs || !e.$defs.EditorConfig || !e.$defs.EditorConfig.properties) {
+      console.warn(
+        "Config options JSON schema is missing $defs.EditorConfig.properties"
+      );
+      return;
+    }
+    if (!e.$defs.EditorConfig.properties[t])
+      return;
+    const s = e.$defs.EditorConfig.properties[t];
+    if (s.default) {
+      this.defaults[t] = s.default;
+      return;
+    }
+    if (!s.$ref)
+      return;
+    const r = s.$ref.match(/^#\/\$defs\/(\w+)/);
+    if (!r)
+      return;
+    const a = r[1];
+    !e.$defs[a] || !e.$defs[a].default || (this.defaults[t] = e.$defs[a].default);
+  },
+  replacer: function(t, e) {
+    return typeof e == "function" ? "__HAS__FUNCTION__" : e;
+  },
+  jsContainsFunctions: function(t) {
+    let e = this.getValidJsonConfig(t);
+    return !!(e === !1 || JSON.stringify(e, this.replacer, 2).match(/__HAS__FUNCTION__/));
+  },
+  config2json: function(t) {
+    let e = JSON.stringify(t, null, 2);
+    return e === "{}" && (e = `{
+  
+}`), e;
+  },
+  getValidJsonConfig: function(js) {
+    const m = (js || "").match(/return\s*(\{[\w\W]*})/);
+    if (!m)
+      return !1;
+    let config;
+    try {
+      eval(`config = ${m[1]};`);
+    } catch (t) {
+      return !1;
+    }
+    return config;
+  },
+  js2json: function(t) {
+    let e = this.getValidJsonConfig(t);
+    return e === !1 ? !1 : this.config2json(e);
+  },
+  json2js: function(t) {
+    let e;
+    try {
+      e = JSON.parse(t);
+    } catch {
+      return !1;
+    }
+    if (!$.isPlainObject(e))
+      return !1;
+    let s = this.jsify(e, "");
+    return s === `{
+}` && (s = `{
+  
+}`), `return ${s}`;
+  },
+  jsify: function(t, e) {
+    let s;
+    if ($.isArray(t)) {
+      s = `[
+`;
+      for (const r of t)
+        s += `${e}  ${this.jsify(r, e + "  ")},
+`;
+      s += `${e}]`;
+    } else if ($.isPlainObject(t)) {
+      s = `{
+`;
+      for (const [r, a] of Object.entries(t))
+        s += `${e}  ${r}: ${this.jsify(a, e + "  ")},
+`;
+      s += `${e}}`;
+    } else typeof t == "string" && !t.match(/[\r\n']/) ? s = `'${t}'` : s = JSON.stringify(t);
+    return s;
+  }
+});
+export {
+  ConfigOptions,
+  ToolbarBuilder
+};

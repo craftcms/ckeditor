@@ -4,8 +4,7 @@
  * @license GPL-3.0-or-later
  */
 
-import {Plugin, icons} from 'ckeditor5/src/core';
-import {ButtonView} from 'ckeditor5/src/ui';
+import {ButtonView, Plugin} from 'ckeditor5';
 import ImageEditorEditing from './imageeditorediting';
 
 export default class ImageEditorUI extends Plugin {

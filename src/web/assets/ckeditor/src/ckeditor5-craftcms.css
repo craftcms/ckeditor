@@ -1,7 +1,7 @@
 /* CSS variables */
 :root {
   --ck-border-radius: var(--small-border-radius) !important;
-  --ck-color-base-border: hsl(212, 25%, 50%, 0.25) !important;
+  --ck-color-base-border: hsl(212deg 25% 50% / 25%) !important;
   --ck-color-button-default-active-background: var(
     --ui-control-active-bg-color
   ) !important;
@@ -10,8 +10,7 @@
   ) !important;
   --ck-color-split-button-hover-border: transparent !important;
   --ck-color-split-button-hover-background: hsl(
-    var(--gray-400-hsl),
-    0.1
+    var(--gray-400-hsl) 0.1
   ) !important;
   --ck-color-button-on-active-background: var(
     --ui-control-active-bg-color
@@ -21,17 +20,17 @@
   --ck-color-button-on-hover-background: var(
     --ui-control-active-bg-color
   ) !important;
-  --ck-color-focus-border: hsl(var(--dark-focus-hsl)) !important;
-  --ck-color-focus-outer-shadow: hsl(var(--dark-focus-hsl), 0.5) !important;
+  --ck-focus-outer-shadow: var(--focus-ring) !important;
+  --ck-focus-ring: 1px solid var(--ck-color-base-border) !important;
   --ck-color-list-button-on-background-focus: var(--dark-sel-color) !important;
   --ck-color-list-button-on-background: var(--dark-sel-color) !important;
   --ck-color-shadow-drop-active: var(--ck-color-shadow-drop) !important;
-  --ck-color-shadow-drop: hsl(210, 24%, 16%, 0.2) !important;
+  --ck-color-shadow-drop: hsl(210deg 24% 16% / 20%) !important;
   --ck-color-text: var(--text-color) !important;
   --ck-color-toolbar-border: var(--ck-color-base-border) !important;
   --ck-drop-shadow-active: var(--ck-drop-shadow) !important;
-  --ck-drop-shadow: 0 0 0 1px hsl(210, 24%, 16%, 0.1),
-    0 5px 20px hsl(210, 24%, 16%, 0.25) !important;
+  --ck-drop-shadow: 0 0 0 1px hsl(210deg 24% 16% / 10%),
+    0 5px 20px hsl(210deg 24% 16% / 25%) !important;
   --ck-spacing-unit: 0.69em !important;
   --ck-powered-by-line-height: 8px;
   --ck-powered-by-padding-vertical: 0px;
@@ -39,7 +38,7 @@
 }
 
 .ck.ck-sticky-panel .ck-sticky-panel__content_sticky .ck.ck-toolbar {
-  border-top-width: 0;
+  border-block-start-width: 0;
 }
 
 .ck.ck-button:active,
@@ -50,7 +49,8 @@ a.ck.ck-button:focus {
 }
 
 .ck.ck-editor__editable_inline {
-  padding: calc(var(--m) - 2px) var(--m) !important;
+  padding-block: calc(var(--m) - 2px) !important;
+  padding-inline: var(--m) !important;
 }
 
 .ck.ck-editor__editable.ck-focused:not(.ck-editor__nested-editable) {
@@ -71,8 +71,8 @@ a.ck.ck-button:focus {
 }
 
 .ck.ck-dropdown .ck-button.ck-dropdown__button.ck-on {
-  border-bottom-left-radius: var(--ck-border-radius) !important;
-  border-bottom-right-radius: var(--ck-border-radius) !important;
+  border-end-start-radius: var(--ck-border-radius) !important;
+  border-end-end-radius: var(--ck-border-radius) !important;
 }
 
 .ck.ck-dropdown__panel.ck-dropdown__panel_se,
@@ -89,26 +89,26 @@ a.ck.ck-button:focus {
   .ck-list
   .ck-list__item:first-child
   .ck-button {
-  border-top-left-radius: var(--ck-border-radius) !important;
+  border-start-start-radius: var(--ck-border-radius) !important;
 }
 
 /* content */
 .ck.ck-content ul:last-child,
 .ck.ck-content ol:last-child {
-  padding-bottom: 0 !important;
+  padding-block-end: 0 !important;
 }
 
 .ck.ck-content[dir='ltr'] ul {
-  padding-left: 40px;
+  padding-inline-start: 40px;
 }
 
 .ck.ck-content[dir='rtl'] ul {
-  padding-right: 40px;
+  padding-inline-end: 40px;
 }
 
 /* code blocks */
 .ck.ck-editor__editable pre[data-language]::after {
-  top: 0 !important;
+  inset-block-start: 0 !important;
   text-shadow: none;
   border-radius: 0 0 var(--ck-border-radius) var(--ck-border-radius);
 }
@@ -116,8 +116,8 @@ a.ck.ck-button:focus {
 /* vertical panel dropdowns */
 .ck.ck-link-form_layout-vertical .ck.ck-dropdown {
   display: block;
-  margin: var(--ck-spacing-large) var(--ck-spacing-large)
-    var(--ck-spacing-small);
+  margin-block: var(--ck-spacing-large) var(--ck-spacing-small);
+  margin-inline: var(--ck-spacing-large);
 }
 
 .ck.ck-link-form_layout-vertical
@@ -137,16 +137,18 @@ a.ck.ck-button:focus {
 }
 
 .ck-word-count {
-  padding: var(--s) var(--m);
+  padding-block: var(--s);
+  padding-inline: var(--m);
   border: solid var(--ck-color-base-border);
   border-width: 0 1px 1px;
-  border-bottom-left-radius: var(--ck-border-radius);
-  border-bottom-right-radius: var(--ck-border-radius);
+  border-end-start-radius: var(--ck-border-radius);
+  border-end-end-radius: var(--ck-border-radius);
   background: var(--ck-color-base-background);
 }
 
 .cke-entry-card {
-  margin: 0.9em auto; /* same as images */
+  margin-block: 0.9em;
+  margin-inline: auto; /* same as images */
   border-radius: var(--large-border-radius);
 }
 
@@ -162,11 +164,22 @@ a.ck.ck-button:focus {
 .so-body .ck.ck-toolbar-dropdown > .ck-dropdown__panel {
   width: 100%;
 }
+
 /* end fix */
 
 /* patch in https://github.com/ckeditor/ckeditor5/pull/15795 */
 .ck.ck-editor__editable_inline > :last-child,
 .ck.ck-editor__editable_inline
   > :has(+ .ck-fake-selection-container:last-child) {
-  margin-bottom: var(--ck-spacing-large);
+  margin-block-end: var(--ck-spacing-large);
+}
+
+/*
+I Couldn't track down why this is necessary, but without it bookmark markers take up the full-width
+of the editor despite being `display: inline`
+ */
+.ck.ck-content .ck-bookmark {
+  display: inline-block;
+  vertical-align: middle;
+  margin-inline-end: 0.125em;
 }

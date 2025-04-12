@@ -433,7 +433,7 @@ final class CkeditorConfigSchema
             'PluginList' => [
                 'title' => 'List of plugin names',
                 'type' => 'array',
-                'items' => ['enum' => '__PLUGIN_LIST__'],
+                'items' => ['enum' => CkeditorConfig::getAllPlugins()],
             ],
             'PropertyPatterns' => [
                 'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_engine_view_matcher-PropertyPatterns.html',

@@ -1,9 +1,9 @@
-import {Plugin} from 'ckeditor5/src/core';
 import {
-  Widget,
+  Plugin,
   toWidget,
   viewToModelPositionOutsideModelElement,
-} from 'ckeditor5/src/widget';
+  Widget,
+} from 'ckeditor5';
 import CraftEntriesCommand from './entriescommand';
 
 export default class CraftEntriesEditing extends Plugin {

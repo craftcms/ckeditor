@@ -4,8 +4,7 @@
  * @license GPL-3.0-or-later
  */
 
-import {Plugin} from 'ckeditor5/src/core';
-import ImageUtils from '@ckeditor/ckeditor5-image/src/imageutils';
+import {ImageUtils, Plugin} from 'ckeditor5';
 import ImageEditorCommand from './imageeditorcommand';
 
 export default class ImageEditorEditing extends Plugin {

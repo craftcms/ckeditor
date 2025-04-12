@@ -10,6 +10,7 @@ namespace craft\ckeditor;
 use Craft;
 use craft\base\Element;
 use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
+use craft\ckeditor\web\assets\ckeconfig\CkeConfigAsset;
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
 use craft\elements\NestedElementManager;
 use craft\events\AssetBundleEvent;
@@ -46,12 +47,14 @@ class Plugin extends \craft\base\Plugin
      * [[\craft\ckeditor\web\assets\BaseCkeditorPackageAsset]].
      * @since 3.5.0
      */
-    public static function registerCkeditorPackage(string $name): void
+    public static function registerCkeditorPackage(string $name, string $entry = 'index.js'): void
     {
         self::$ckeditorPackages[$name] = true;
+        self::$ckeditorImports[$name] = $entry;
     }
 
     private static array $ckeditorPackages = [];
+    private static array $ckeditorImports = [];
 
     public string $schemaVersion = '3.0.0.0';
     public bool $hasCpSettings = true;
@@ -60,6 +63,27 @@ class Plugin extends \craft\base\Plugin
     public function init()
     {
         parent::init();
+
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            $view = Craft::$app->getView();
+            $assetManager = $view->getAssetManager();
+
+            $ckBundle = $assetManager->getBundle(CkeditorAsset::class);
+            $view->registerJsImport('ckeditor5', $assetManager->getAssetUrl($ckBundle, 'lib/ckeditor5.js', false));
+            $view->registerJsImport('ckeditor5/', $assetManager->getAssetUrl($ckBundle, 'lib/', false));
+            $view->registerJsImport('ckeditor5/translations/', $assetManager->getAssetUrl($ckBundle, 'lib/translations/', false));
+            $view->registerJsImport('@craftcms/ckeditor', $assetManager->getAssetUrl($ckBundle, 'ckeditor5-craftcms.js', false));
+
+            $configBundle = $assetManager->getBundle(CkeConfigAsset::class);
+            $view->registerJsImport('@craftcms/ckeditor-config', $assetManager->getAssetUrl($configBundle, 'ckeconfig.js'));
+
+            foreach (self::$ckeditorImports as $bundleName => $entry) {
+                $bundle = $assetManager->getBundle($bundleName);
+                if ($bundle instanceof BaseCkeditorPackageAsset) {
+                    $view->registerJsImport($bundle->namespace, $assetManager->getAssetUrl($bundle, $entry, false));
+                }
+            }
+        }
 
         Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, function(RegisterComponentTypesEvent $event) {
             $event->types[] = Field::class;
@@ -84,7 +108,7 @@ class Plugin extends \craft\base\Plugin
                 foreach (array_keys(self::$ckeditorPackages) as $name) {
                     $bundle = $view->registerAssetBundle($name);
                     if ($bundle instanceof BaseCkeditorPackageAsset) {
-                        $bundle->registerPackage($view);
+                        $bundle->registerPackage();
                     }
                 }
             }
