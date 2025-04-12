@@ -1,9 +1,20 @@
 <?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license GPL-3.0-or-later
+ */
 
 namespace craft\ckeditor\helpers;
 
 use Illuminate\Support\Collection;
 
+/**
+ * CKEditor Config Helper.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 5.0.0
+ */
 final class CkeditorConfig
 {
     /**
