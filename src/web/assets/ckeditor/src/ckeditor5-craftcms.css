@@ -20,8 +20,8 @@
   --ck-color-button-on-hover-background: var(
     --ui-control-active-bg-color
   ) !important;
-  --ck-color-focus-border: hsl(var(--dark-focus-hsl)) !important;
-  --ck-color-focus-outer-shadow: hsl(var(--dark-focus-hsl) 0.5) !important;
+  --ck-focus-outer-shadow: var(--focus-ring) !important;
+  --ck-focus-ring: 1px solid var(--ck-color-base-border) !important;
   --ck-color-list-button-on-background-focus: var(--dark-sel-color) !important;
   --ck-color-list-button-on-background: var(--dark-sel-color) !important;
   --ck-color-shadow-drop-active: var(--ck-color-shadow-drop) !important;
