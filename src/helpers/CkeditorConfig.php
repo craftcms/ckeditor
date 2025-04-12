@@ -7,6 +7,7 @@
 
 namespace craft\ckeditor\helpers;
 
+use Craft;
 use Illuminate\Support\Collection;
 
 /**
@@ -319,5 +320,91 @@ final class CkeditorConfig
         return collect($items)
             ->map(fn($item) => self::normalizeToolbarItem($item))
             ->toArray();
+    }
+
+    /**
+     * Returns the available advanced link
+     * @return array[]
+     */
+    public static function advanceLinkOptions(): array
+    {
+        return [
+            [
+                'label' => Craft::t('app', 'URL Suffix'),
+                'value' => 'urlSuffix',
+                'tooltip' => Craft::t('app', 'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.', [
+                    'ex1' => '`?p1=foo&p2=bar`',
+                    'ex2' => '`#anchor`',
+                ]),
+                'conversion' => null,
+            ],
+            [
+                'label' => Craft::t('app', 'Open in new tab?'),
+                'value' => 'target',
+                'conversion' => [
+                    'type' => 'bool',
+                    'value' => '_blank',
+                    'model' => 'craftTarget',
+                    'view' => 'target',
+                ],
+            ],
+            [
+                'label' => Craft::t('app', 'Title Text'),
+                'value' => 'title',
+                'conversion' => [
+                    'type' => 'string',
+                    'model' => 'craftTitle',
+                    'view' => 'title',
+                ],
+            ],
+            [
+                'label' => Craft::t('app', 'Class Name'),
+                'value' => 'class',
+                'tooltip' => 'Separate multiple values with spaces.',
+                'conversion' => [
+                    'type' => 'string',
+                    'model' => 'craftClass',
+                    'view' => 'class',
+                ],
+            ],
+            [
+                'label' => Craft::t('app', 'ID'),
+                'value' => 'id',
+                'conversion' => [
+                    'type' => 'string',
+                    'model' => 'craftId',
+                    'view' => 'id',
+                ],
+            ],
+            [
+                'label' => Craft::t('app', 'Relation (rel)'),
+                'value' => 'rel',
+                'tooltip' => 'Separate multiple values with spaces.',
+                'conversion' => [
+                    'type' => 'string',
+                    'model' => 'craftRel',
+                    'view' => 'rel',
+                ],
+            ],
+            [
+                'label' => Craft::t('app', 'ARIA Label'),
+                'value' => 'ariaLabel',
+                'conversion' => [
+                    'type' => 'string',
+                    'model' => 'craftAriaLabel',
+                    'view' => 'aria-label',
+                ],
+            ],
+            [
+                'label' => Craft::t('app', 'Download'),
+                'value' => 'download',
+                'conversion' => [
+                    'type' => 'bool',
+                    'value' => 'download',
+                    'model' => 'craftDownload',
+                    'view' => 'download',
+                ],
+            ],
+        ];
     }
 }

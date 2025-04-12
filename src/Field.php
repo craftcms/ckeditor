@@ -433,11 +433,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
      * @since 4.0.0
      */
     public ?string $createButtonLabel = null;
-    /**
-     * @var array|null The advanced link options available when adding a link
-     * @since 5.0.0
-     */
-    public ?array $advancedLinkFields = [];
 
     /**
      * @var EntryType[] The field’s available entry types
@@ -672,90 +667,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
                 ],
             ], $transformOptions),
             'defaultCreateButtonLabel' => $this->defaultCreateButtonLabel(),
-            'advanceLinkOptions' => $this->getAdvanceLinkOptions(),
         ]);
-    }
-
-    protected function getAdvanceLinkOptions(): array
-    {
-        return [
-            [
-                'label' => Craft::t('app', 'URL Suffix'),
-                'value' => 'urlSuffix',
-                'tooltip' => Craft::t('app', 'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.', [
-                    'ex1' => '`?p1=foo&p2=bar`',
-                    'ex2' => '`#anchor`',
-                ]),
-                'conversion' => null,
-            ],
-            [
-                'label' => Craft::t('app', 'Open in new tab?'),
-                'value' => 'target',
-                'conversion' => [
-                    'type' => 'bool',
-                    'value' => '_blank',
-                    'model' => 'craftTarget',
-                    'view' => 'target',
-                ],
-            ],
-            [
-                'label' => Craft::t('app', 'Title Text'),
-                'value' => 'title',
-                'conversion' => [
-                    'type' => 'string',
-                    'model' => 'craftTitle',
-                    'view' => 'title',
-                ],
-            ],
-            [
-                'label' => Craft::t('app', 'Class Name'),
-                'value' => 'class',
-                'tooltip' => 'Separate multiple values with spaces.',
-                'conversion' => [
-                    'type' => 'string',
-                    'model' => 'craftClass',
-                    'view' => 'class',
-                ],
-            ],
-            [
-                'label' => Craft::t('app', 'ID'),
-                'value' => 'id',
-                'conversion' => [
-                    'type' => 'string',
-                    'model' => 'craftId',
-                    'view' => 'id',
-                ],
-            ],
-            [
-                'label' => Craft::t('app', 'Relation (rel)'),
-                'value' => 'rel',
-                'tooltip' => 'Separate multiple values with spaces.',
-                'conversion' => [
-                    'type' => 'string',
-                    'model' => 'craftRel',
-                    'view' => 'rel',
-                ],
-            ],
-            [
-                'label' => Craft::t('app', 'ARIA Label'),
-                'value' => 'ariaLabel',
-                'conversion' => [
-                    'type' => 'string',
-                    'model' => 'craftAriaLabel',
-                    'view' => 'aria-label',
-                ],
-            ],
-            [
-                'label' => Craft::t('app', 'Download'),
-                'value' => 'download',
-                'conversion' => [
-                    'type' => 'bool',
-                    'value' => 'download',
-                    'model' => 'craftDownload',
-                    'view' => 'download',
-                ],
-            ],
-        ];
     }
 
     /**
@@ -1027,7 +939,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             'assetSources' => $this->_assetSources(),
             'assetSelectionCriteria' => $this->_assetSelectionCriteria(),
             'linkOptions' => $this->_linkOptions($element),
-            'advancedLinkFields' => $this->_advancedLinkFields(),
+            'advancedLinkFields' => $this->_advancedLinkFields($ckeConfig),
             'table' => [
                 'contentToolbar' => [
                     'tableRow',
@@ -1544,24 +1456,25 @@ JS,
      * Returns an array of selected advanced link fields that the field should show to the author.
      * The fields are returned in the order defined in the field's settings.
      *
+     * @param CkeConfig $ckeConfig
      * @return array
      */
-    private function _advancedLinkFields(): array
+    private function _advancedLinkFields(CkeConfig $ckeConfig): array
     {
-        if (empty($this->advancedLinkFields)) {
+        if (empty($ckeConfig->advancedLinkFields)) {
             return [];
         }
 
         $fields = [];
-        foreach ($this->getAdvanceLinkOptions() as $option) {
-            if (in_array($option['value'], $this->advancedLinkFields)) {
+        foreach (CkeditorConfig::advanceLinkOptions() as $option) {
+            if (in_array($option['value'], $ckeConfig->advancedLinkFields)) {
                 $fields[] = $option;
             }
         }
 
-        // sort by the order of $this->advancedLinkFields
+        // sort by the order of $ckeConfig->advancedLinkFields
         $fields = array_column($fields, null, 'value');
-        $order = array_flip($this->advancedLinkFields);
+        $order = array_flip($ckeConfig->advancedLinkFields);
         uksort($fields, function($a, $b) use ($order) {
             return $order[$a] <=> $order[$b];
         });
@@ -1842,8 +1755,8 @@ JS,
         $purifierConfig->set('Attr.AllowedRel', array_keys($allowedRels));
 
         // advanced link fields
-        if (!empty($this->advancedLinkFields)) {
-            if (in_array('rel', $this->advancedLinkFields)) {
+        if (!empty($ckeConfig->advancedLinkFields)) {
+            if (in_array('rel', $ckeConfig->advancedLinkFields)) {
                 $allowedRels = $purifierConfig->get('Attr.AllowedRel');
                 // allow any rel values
                 $allowedRels['*'] = true;
@@ -1853,7 +1766,7 @@ JS,
             // This is needed so that the noopener and noreferrer rel attributes
             // are not added by default on save when you turn on target="_blank".
             // This then messes with the ability to add rel attributes independently.
-            if (in_array('target', $this->advancedLinkFields)) {
+            if (in_array('target', $ckeConfig->advancedLinkFields)) {
                 $purifierConfig->set('HTML.TargetNoopener', false);
                 $purifierConfig->set('HTML.TargetNoreferrer', false);
             }
@@ -1864,7 +1777,7 @@ JS,
         /** @var HTMLPurifier_HTMLDefinition|null $def */
         $def = $purifierConfig->getDefinition('HTML', true);
 
-        if (!empty($this->advancedLinkFields) && in_array('ariaLabel', $this->advancedLinkFields)) {
+        if (!empty($ckeConfig->advancedLinkFields) && in_array('ariaLabel', $ckeConfig->advancedLinkFields)) {
             $def?->addAttribute('a', 'aria-label', 'Text');
         }
 
