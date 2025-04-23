@@ -29,8 +29,8 @@
   --ck-color-text: var(--text-color) !important;
   --ck-color-toolbar-border: var(--ck-color-base-border) !important;
   --ck-drop-shadow-active: var(--ck-drop-shadow) !important;
-  --ck-drop-shadow: 0 0 0 1px hsl(210deg 24% 16% / 10%),
-    0 5px 20px hsl(210deg 24% 16% / 25%) !important;
+  --ck-drop-shadow:
+    0 0 0 1px hsl(210deg 24% 16% / 10%), 0 5px 20px hsl(210deg 24% 16% / 25%) !important;
   --ck-spacing-unit: 0.69em !important;
   --ck-powered-by-line-height: 8px;
   --ck-powered-by-padding-vertical: 0px;
@@ -39,13 +39,6 @@
 
 .ck.ck-sticky-panel .ck-sticky-panel__content_sticky .ck.ck-toolbar {
   border-block-start-width: 0;
-}
-
-.ck.ck-button:active,
-.ck.ck-button:focus,
-a.ck.ck-button:active,
-a.ck.ck-button:focus {
-  box-shadow: none !important;
 }
 
 .ck.ck-editor__editable_inline {
@@ -116,8 +109,7 @@ a.ck.ck-button:focus {
 /* vertical panel dropdowns */
 .ck.ck-link-form_layout-vertical .ck.ck-dropdown {
   display: block;
-  margin-block: var(--ck-spacing-large) var(--ck-spacing-small);
-  margin-inline: var(--ck-spacing-large);
+  min-width: 50%;
 }
 
 .ck.ck-link-form_layout-vertical
@@ -185,13 +177,17 @@ of the editor despite being `display: inline`
 }
 
 /* link ui */
-.link-type-group {
-  container-type: inline-size;
+.link-type-group .ck.ck-labeled-field-view {
+  width: 100%;
 }
 
-.link-type-group .elementselect {
-  margin-block: var(--ck-spacing-large) var(--ck-spacing-small);
-  margin-inline: var(--ck-spacing-large);
+.link-type-group.ck.ck-form__row {
+  justify-content: start;
+}
+
+.link-type-group.ck.ck-form__row .ck.ck-labeled-field-view {
+  margin-inline-start: 0;
+  margin-block-start: var(--ck-spacing-small);
 }
 
 .ck.ck-link-form_layout-vertical {
@@ -208,5 +204,18 @@ of the editor despite being `display: inline`
 }
 
 .ck.link-type-advanced {
-  margin-inline: var(--ck-spacing-standard);
+  padding: var(--ck-spacing-standard) var(--ck-spacing-large) 0;
+}
+
+.ck.link-type-advanced .pane.hairline {
+  border: 0;
+  padding: 0 var(--ck-spacing-large);
+}
+
+.ck.link-type-advanced .ck.ck-labeled-field-view {
+  margin-block: var(--ck-spacing-large);
+}
+
+.ck.link-type-advanced .pane.hairline .ck.ck-button {
+  padding: 0 !important;
 }

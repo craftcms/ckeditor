@@ -46,7 +46,7 @@ export default class CraftLinkElementView extends View {
     });
   }
 
-  // this is needed so that the '.elementselect' gets the focus
+  // this is needed so that the '.elementselect' is focusable
   focus() {
     this.element.focus();
   }
@@ -90,34 +90,40 @@ export default class CraftLinkElementView extends View {
         },
       })
         .then((response) => {
-          this.element.innerHTML = response.data.elements[this.elementId][0];
-          Craft.appendHeadHtml(response.data.headHtml);
-          Craft.appendBodyHtml(response.data.bodyHtml);
+          if (Object.keys(response.data.elements).length > 0) {
+            this.element.innerHTML = response.data.elements[this.elementId][0];
+            Craft.appendHeadHtml(response.data.headHtml);
+            Craft.appendBodyHtml(response.data.bodyHtml);
 
-          let $element = this.element.firstChild;
-          // this class is needed so that CKE doesn't mess with the styles we already have
-          $element.classList.add('ck-reset_all-excluded');
+            let $element = this.element.firstChild;
+            // this class is needed so that CKE doesn't mess with the styles we already have
+            $element.classList.add('ck-reset_all-excluded');
 
-          const actions = [
-            {
-              icon: 'arrows-rotate',
-              label: Craft.t('app', 'Replace'),
-              callback: () => {
-                this.linkUi._showElementSelectorModal(this.linkOption);
+            const actions = [
+              {
+                icon: 'arrows-rotate',
+                label: Craft.t('app', 'Replace'),
+                callback: () => {
+                  this.linkUi._showElementSelectorModal(this.linkOption);
+                },
               },
-            },
-            {
-              icon: 'remove',
-              label: Craft.t('app', 'Remove'),
-              callback: () => {
-                const unlinkCommand = this.editor.commands.get('unlink');
-                unlinkCommand.execute();
+              {
+                icon: 'remove',
+                label: Craft.t('app', 'Remove'),
+                callback: () => {
+                  const unlinkCommand = this.editor.commands.get('unlink');
+                  unlinkCommand.execute();
+                },
               },
-            },
-          ];
+            ];
 
-          Craft.addActionsToChip($element, actions);
-          //Craft.cp.elementThumbLoader.load($element);
+            Craft.addActionsToChip($element, actions);
+            //Craft.cp.elementThumbLoader.load($element);
+
+            // reshuffle focus?
+            const formView = _linkUI.formView;
+            linkUi._alignFocus(formView);
+          }
         })
         .catch((e) => {
           Craft.cp.displayError(e?.response?.data?.message);

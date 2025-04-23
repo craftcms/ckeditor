@@ -9,13 +9,13 @@ import {
   Collection,
   createDropdown,
   DropdownButtonView,
-  icons,
+  IconObjectSizeMedium,
   Plugin,
   ViewModel,
 } from 'ckeditor5';
 import ImageTransformEditing from './imagetransformediting';
 
-const RESIZE_ICON = icons.objectSizeMedium;
+const RESIZE_ICON = IconObjectSizeMedium;
 
 export default class ImageTransformUI extends Plugin {
   static get requires() {

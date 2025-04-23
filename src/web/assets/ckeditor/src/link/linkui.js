@@ -91,38 +91,39 @@ export default class CraftLinkUI extends Plugin {
           return;
         }
 
-        // get all the form view items in the right focus order
-        let i = 0;
-        if (this.linkTypeWrapperView) {
-          // this takes care of the linkTypeDropdownView and the urlInputView or element selector/card
-          this.linkTypeWrapperView._unboundChildren._items.forEach((item) => {
-            if (formView._focusables.has(item)) {
-              formView._focusables.remove(item);
-            }
-            formView.focusTracker.remove(item.element);
-
-            formView._focusables.add(item, i);
-            formView.focusTracker.add(item.element, i);
-            i++;
-          });
-
-          if (this.advancedView !== null) {
-            // this takes care of the advanced link field toggle ("Advanced")
-            // the items inside the toggle are controlled from linkadvancedview.onToggle()
-            if (formView._focusables.has(this.advancedView)) {
-              formView._focusables.remove(this.advancedView);
-            }
-            formView.focusTracker.remove(this.advancedView);
-
-            formView._focusables.add(this.advancedView, i);
-            formView.focusTracker.add(this.advancedView.element, i);
-          }
-
-          // this makes sure the link type dropdown is focused when the balloon opens
-          this.linkTypeDropdownView.buttonView.focus();
-        }
+        this._alignFocus(formView);
       },
     );
+  }
+
+  _alignFocus(formView) {
+    // get all the form view items in the right focus order
+    let i = 0;
+    if (this.linkTypeWrapperView) {
+      // this takes care of the linkTypeDropdownView and the urlInputView or element selector/card
+      this.linkTypeWrapperView._unboundChildren._items.forEach((item) => {
+        if (formView._focusables.has(item)) {
+          formView._focusables.remove(item);
+        }
+        formView.focusTracker.remove(item.element);
+
+        formView._focusables.add(item, i);
+        formView.focusTracker.add(item.element, i);
+        i++;
+      });
+
+      if (this.advancedView !== null) {
+        // this takes care of the advanced link field toggle ("Advanced")
+        // the items inside the toggle are controlled from linkadvancedview.onToggle()
+        if (formView._focusables.has(this.advancedView)) {
+          formView._focusables.remove(this.advancedView);
+        }
+        formView.focusTracker.remove(this.advancedView);
+
+        formView._focusables.add(this.advancedView, i);
+        formView.focusTracker.add(this.advancedView.element, i);
+      }
+    }
   }
 
   _modifyFormViewTemplate() {
@@ -132,8 +133,6 @@ export default class CraftLinkUI extends Plugin {
     }
 
     const {formView} = this._linkUI;
-    // const {urlInputView} = formView;
-    // const {fieldView} = urlInputView;
 
     // ensure the form view is vertical
     formView.template.attributes.class.push(
@@ -429,21 +428,20 @@ export default class CraftLinkUI extends Plugin {
     const {formView} = this._linkUI;
     const {children} = formView;
     const {urlInputView} = formView;
-    const {fieldView} = urlInputView;
+    const {displayedTextInputView} = formView;
+
+    // set focus on the "displayed text" input
+    displayedTextInputView.focus();
 
     // a selection was made in the link type dropdown
     if (this.linkTypeWrapperView !== null) {
-      // an element was previously selected, so we have to remove the previous link type form
+      // so we have to remove the previous link type form
       children.remove(this.linkTypeWrapperView);
-    } else {
-      // a default URL type was previously selected, so we have to remove the default url input
-      children.remove(urlInputView);
     }
 
     // if default URL was selected, we need to give it extra classes
     if (linkOption === 'default') {
       inputView = urlInputView;
-      inputView.template.attributes.class.push('link-input', 'flex-grow');
     } else {
       // otherwise we need to create the Element view,
       // which will be either the button to choose an element or an element card
@@ -462,11 +460,17 @@ export default class CraftLinkUI extends Plugin {
       tag: 'div',
       children: [this.linkTypeDropdownView, inputView],
       attributes: {
-        class: ['ck', 'link-type-group', 'flex', 'flex-nowrap'],
+        class: [
+          'ck',
+          'ck-form__row',
+          'ck-form__row_large-top-padding',
+          'link-type-group',
+          'flex',
+        ],
       },
     });
 
-    children.add(this.linkTypeWrapperView, 0);
+    children.add(this.linkTypeWrapperView, 2);
   }
 
   _showElementSelectorModal(linkOption) {
@@ -568,7 +572,7 @@ export default class CraftLinkUI extends Plugin {
       linkUi: this,
     });
 
-    children.add(this.advancedView, 1);
+    children.add(this.advancedView, 3);
 
     for (const advancedField of this.advancedLinkFields) {
       let attributeModel = advancedField.conversion?.model;
@@ -728,11 +732,11 @@ export default class CraftLinkUI extends Plugin {
           'execute',
           (evt, args) => {
             // if there's no extra attrs on the link - add them to the list of args
-            if (args.length < 3) {
-              args.push(values);
-            } else if (args.length === 3) {
+            if (args.length === 4) {
               // if we already have extra args on the link - update the list of args
-              Object.assign(args[2], values);
+              Object.assign(args[3], values);
+            } else {
+              args.push(values);
             }
           },
           {priority: 'highest'},

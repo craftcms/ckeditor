@@ -93,7 +93,6 @@ final class CkeditorConfig
      */
     public static array $pluginButtonMap = [
         ['plugins' => ['Alignment'], 'buttons' => ['alignment']],
-        ['plugins' => ['Anchor'], 'buttons' => ['anchor']],
         [
             'plugins' => [
                 'AutoImage',
@@ -114,6 +113,7 @@ final class CkeditorConfig
         ],
         ['plugins' => ['BlockQuote'], 'buttons' => ['blockQuote']],
         ['plugins' => ['Bold'], 'buttons' => ['bold']],
+        ['plugins' => ['Bookmark'], 'buttons' => ['bookmark']],
         ['plugins' => ['Code'], 'buttons' => ['code']],
         ['plugins' => ['CodeBlock'], 'buttons' => ['codeBlock']],
         [
