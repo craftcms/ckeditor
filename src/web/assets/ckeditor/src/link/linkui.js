@@ -401,15 +401,22 @@ export default class CraftLinkUI extends Plugin {
               writer.setSelection(range);
             });
             const linkCommand = editor.commands.get('link');
-            linkCommand.execute(url);
+
+            // get all the advanced link fields and pass them to the link command
+            let values = this._getAdvancedFieldValues();
+            linkCommand.execute(url, values);
           } else {
             model.change((writer) => {
+              // get all the advanced link fields and pass them along with linkHref
+              let values = this._getAdvancedFieldValues();
+
               writer.insertText(
                 element.label,
                 {
                   linkHref: url,
                 },
                 selection.getFirstPosition(),
+                values,
               );
               if (range instanceof Range) {
                 try {
@@ -646,26 +653,16 @@ export default class CraftLinkUI extends Plugin {
     formView.on(
       'submit',
       () => {
-        let values = {};
-
-        this.conversionData.forEach((field) => {
-          let value = [];
-          if (field.type === 'bool') {
-            value[field.model] = formView[field.model].element.value;
-          } else {
-            value[field.model] = formView[field.model].fieldView.element.value;
-          }
-          Object.assign(values, value);
-        });
+        let values = this._getAdvancedFieldValues();
 
         linkCommand.once(
           'execute',
           (evt, args) => {
-            // if there's no extra attrs on the link - add them to the list of args
             if (args.length === 4) {
               // if we already have extra args on the link - update the list of args
               Object.assign(args[3], values);
             } else {
+              // if there's no extra attrs on the link - add them to the list of args
               args.push(values);
             }
           },
@@ -688,5 +685,22 @@ export default class CraftLinkUI extends Plugin {
         linkCommand[item.model] = selection.getAttribute(item.model);
       });
     });
+  }
+
+  _getAdvancedFieldValues() {
+    const {formView} = this._linkUI;
+    let values = {};
+
+    this.conversionData.forEach((field) => {
+      let value = [];
+      if (field.type === 'bool') {
+        value[field.model] = formView[field.model].element.value;
+      } else {
+        value[field.model] = formView[field.model].fieldView.element.value;
+      }
+      Object.assign(values, value);
+    });
+
+    return values;
   }
 }
