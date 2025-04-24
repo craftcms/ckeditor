@@ -642,18 +642,39 @@ export default class CraftLinkUI extends Plugin {
           (evt, name, value, oldValue) => {
             if (value !== oldValue && !value) {
               let urlSuffix = evt.source.element.value;
+              let inputValue = null;
 
               const match = this._urlInputRefMatch(this.urlWithRefHandleRE);
               if (match) {
                 // match[1] is the whole URL that shows before the {refTag}
-                let url = new URL(match[1]);
+                inputValue = match[1];
+              } else {
+                // if no match found then it's a "regular" link, e.g. https://craftcms.com or a relative one e.g. /my-page
+                inputValue = this._urlInputValue();
+              }
+
+              // check if it's a "valid" absolute URL, if yes - proceed as with the matches,
+              // if not still extract query params and anchor
+              try {
+                let url = new URL(inputValue);
                 let search = url.search;
                 let hash = url.hash;
-                let baseUrl = match[1].replace(hash, '').replace(search, '');
+                let baseUrl = inputValue.replace(hash, '').replace(search, '');
 
                 const newUrl = this._urlInputValue().replace(
-                  match[1],
+                  inputValue,
                   baseUrl + urlSuffix,
+                );
+                formView.urlInputView.fieldView.set('value', newUrl);
+              } catch (e) {
+                // it might be a relative URL, and we still need to proceed
+                // get the path, query params and anchor
+                let [base, hash] = inputValue.split('#');
+                let [path, search] = base.split('?');
+
+                const newUrl = this._urlInputValue().replace(
+                  inputValue,
+                  path + urlSuffix,
                 );
                 formView.urlInputView.fieldView.set('value', newUrl);
               }
@@ -666,10 +687,14 @@ export default class CraftLinkUI extends Plugin {
           this._toggleUrlSuffixInputView(labeledInputView, ev.source.isEmpty);
         });
 
-        // update the URL Suffix form field when main URL field value changes (on type)
-        this.listenTo(formView.urlInputView.fieldView, 'input', (ev) => {
-          this._toggleUrlSuffixInputView(labeledInputView, ev.source.isEmpty);
-        });
+        // update the URL Suffix form field when main URL field is focused into and out of
+        this.listenTo(
+          formView.urlInputView.fieldView,
+          'change:isFocused',
+          (ev) => {
+            this._toggleUrlSuffixInputView(labeledInputView, ev.source.isEmpty);
+          },
+        );
       }
     }
   }
@@ -697,11 +722,32 @@ export default class CraftLinkUI extends Plugin {
       labeledInputView.fieldView.set('value', '');
     } else {
       const match = this._urlInputRefMatch(this.urlWithRefHandleRE);
+      let inputValue = null;
+
       if (match) {
         // match[1] is the whole URL that shows before the {refTag}
-        let url = new URL(match[1]);
+        inputValue = match[1];
+      } else {
+        // if no match found then it's a "regular" link, e.g. https://craftcms.com or a relative one e.g. /my-page
+        inputValue = this._urlInputValue();
+      }
+
+      // check if it's a "valid" absolute URL, if yes - proceed as with the matches,
+      // if not still extract query params and anchor
+      try {
+        let url = new URL(inputValue);
         let search = url.search;
         let hash = url.hash;
+
+        labeledInputView.fieldView.set('value', search + hash);
+      } catch (e) {
+        // it might be a relative URL, and we still need to proceed
+        // get the path, query params and anchor
+        let [base, hash] = inputValue.split('#');
+        let [path, search] = base.split('?');
+
+        hash = hash ? '#' + hash : '';
+        search = search ? '?' + search : '';
 
         labeledInputView.fieldView.set('value', search + hash);
       }

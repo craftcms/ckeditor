@@ -39,7 +39,8 @@ export default class CraftLinkElementView extends View {
     this.setTemplate({
       tag: 'div',
       attributes: {
-        class: ['elementselect'],
+        // ck-reset_all-excluded class is needed so that CKE doesn't mess with the styles we already have
+        class: ['elementselect', 'ck-reset_all-excluded'],
         tabindex: 0,
       },
       children: [this.button],
@@ -96,8 +97,6 @@ export default class CraftLinkElementView extends View {
             Craft.appendBodyHtml(response.data.bodyHtml);
 
             let $element = this.element.firstChild;
-            // this class is needed so that CKE doesn't mess with the styles we already have
-            $element.classList.add('ck-reset_all-excluded');
 
             const actions = [
               {
