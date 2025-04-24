@@ -33,9 +33,6 @@ export default class CraftLinkUI extends Plugin {
 
   constructor() {
     super(...arguments);
-    // this.siteDropdownView = null;
-    // this.siteDropdownItemModels = null;
-    // this.localizedRefHandleRE = null;
 
     this.linkTypeWrapperView = null;
     this.advancedView = null;
@@ -66,12 +63,6 @@ export default class CraftLinkUI extends Plugin {
       .filter((field) => field);
 
     const refHandlesPattern = CKE_LOCALIZED_REF_HANDLES.join('|');
-
-    // if (Craft.isMultiSite) {
-    //   this.localizedRefHandleRE = new RegExp(
-    //     `(#(?:${refHandlesPattern}):\\d+)(?:@(\\d+))?`,
-    //   );
-    // }
 
     this.elementTypeRefHandleRE = new RegExp(
       `(#((?:${refHandlesPattern})):\\d+)`,
@@ -144,10 +135,6 @@ export default class CraftLinkUI extends Plugin {
       this._linkOptionsDropdown();
     }
 
-    // if (Craft.isMultiSite) {
-    //   this._sitesDropdown(formView, fieldView);
-    // }
-
     if (this.advancedLinkFields && this.advancedLinkFields.length) {
       this._advancedLinkFields();
     }
@@ -160,109 +147,6 @@ export default class CraftLinkUI extends Plugin {
   _urlInputRefMatch(regEx) {
     return this._urlInputValue().match(regEx);
   }
-
-  ////////////////////// Sites Dropdown //////////////////////
-  /*  _sitesDropdown(formView, fieldView) {
-    this.siteDropdownView = createDropdown(formView.locale);
-    this.siteDropdownView.buttonView.set({
-      label: '',
-      withText: true,
-      isVisible: false,
-    });
-
-    this.siteDropdownItemModels = Object.fromEntries(
-      Craft.sites.map((site) => [
-        site.id,
-        new ViewModel({
-          label: site.name,
-          siteId: site.id,
-          withText: true,
-        }),
-      ]),
-    );
-
-    this.siteDropdownItemModels.current = new ViewModel({
-      label: Craft.t('ckeditor', 'Link to the current site'),
-      siteId: null,
-      withText: true,
-    });
-
-    addListToDropdown(
-      this.siteDropdownView,
-      new Collection([
-        ...Craft.sites.map((site) => ({
-          type: 'button',
-          model: this.siteDropdownItemModels[site.id],
-        })),
-        {
-          type: 'button',
-          model: this.siteDropdownItemModels.current,
-        },
-      ]),
-    );
-
-    this.siteDropdownView.on('execute', (evt) => {
-      const match = this._urlInputRefMatch(this.localizedRefHandleRE);
-      if (!match) {
-        console.warn(
-          `No reference tag hash present in URL: ${this._urlInputValue()}`,
-        );
-        return;
-      }
-      const {siteId} = evt.source;
-      let ref = match[1];
-      if (siteId) {
-        ref += `@${siteId}`;
-      }
-      const newUrl = this._urlInputValue().replace(match[0], ref);
-      fieldView.set('value', newUrl);
-    });
-
-    const {children} = formView;
-    children.add(this.siteDropdownView, children.length - 2);
-
-    // would be better if the dropdown could be added after the URL input
-    // but not currently possible since the rest of the inputs get added via LinkFormView::render()
-    formView._focusables.add(this.siteDropdownView);
-    formView.focusTracker.add(this.siteDropdownView.element);
-
-    this.listenTo(fieldView, 'change:value', () => {
-      this._toggleSiteDropdownView();
-    });
-    this.listenTo(fieldView, 'input', () => {
-      this._toggleSiteDropdownView();
-    });
-  }
-
-  _toggleSiteDropdownView() {
-    const match = this._urlInputRefMatch(this.localizedRefHandleRE);
-    if (match) {
-      this.siteDropdownView.buttonView.set('isVisible', true);
-      let siteId = match[2] ? parseInt(match[2], 10) : null;
-      if (
-        siteId &&
-        typeof this.siteDropdownItemModels[siteId] === 'undefined'
-      ) {
-        siteId = null;
-      }
-      this._selectSiteDropdownItem(siteId);
-    }
-  }
-
-  _selectSiteDropdownItem(siteId) {
-    const itemModel = this.siteDropdownItemModels[siteId ?? 'current'];
-
-    // update the button label
-    const label = siteId
-      ? Craft.t('ckeditor', 'Site: {name}', {name: itemModel.label})
-      : itemModel.label;
-    this.siteDropdownView.buttonView.set('label', label);
-
-    // update the item states
-    Object.values(this.siteDropdownItemModels).forEach((model) => {
-      model.set('isOn', model === itemModel);
-    });
-  }*/
 
   ////////////////////// Link Options Dropdown (link types) //////////////////////
 
