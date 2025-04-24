@@ -46,6 +46,17 @@ final class CkeditorConfigSchema
                     'options' => ['left', 'right'],
                 ],
             ],
+            'BookmarkConfig' => [
+                'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_bookmark_bookmarkconfig-BookmarkConfig.html',
+                'properties' => [
+                    'enableNonEmptyAnchorConversion' => ['type' => 'boolean'],
+                    'toolbar' => [
+                        'type' => 'array',
+                        'items' => ['type' => 'string'],
+                    ],
+                ],
+                'required' => ['color'],
+            ],
             'ClassList' => [
                 'title' => 'Class name or list of class names',
                 'anyOf' => [
@@ -99,6 +110,7 @@ final class CkeditorConfigSchema
                 'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html',
                 'properties' => [
                     'alignment' => ['interface' => 'AlignmentConfig'],
+                    'bookmark' => ['interface' => 'BookmarkConfig'],
                     'codeBlock' => ['interface' => 'CodeBlockConfig'],
                     'fontBackgroundColor' => ['interface' => 'FontColorConfig'],
                     'fontColor' => ['interface' => 'FontColorConfig'],
