@@ -77,17 +77,21 @@ export default class CraftLinkUI extends Plugin {
     this._balloon.on(
       'set:visibleView',
       (evt, propertyName, newValue, oldValue) => {
-        const formView = this._linkUI.formView;
+        const {formView} = this._linkUI;
         if (newValue === oldValue || newValue !== formView) {
           return;
         }
 
-        this._alignFocus(formView);
+        this._alignFocus();
       },
     );
   }
 
-  _alignFocus(formView) {
+  /**
+   * Reset focus order of the extra fields we're adding to the link form view
+   */
+  _alignFocus() {
+    const {formView} = this._linkUI;
     // get all the form view items in the right focus order
     let i = 0;
     if (this.linkTypeWrapperView) {
@@ -117,6 +121,9 @@ export default class CraftLinkUI extends Plugin {
     }
   }
 
+  /**
+   * Add all our custom fields (for element linking and advanced fields) to the link form view.
+   */
   _modifyFormViewTemplate() {
     // ensure the form view template has been defined
     if (!this._linkUI.formView) {
@@ -140,16 +147,25 @@ export default class CraftLinkUI extends Plugin {
     }
   }
 
+  /**
+   * Get the value of the "default" URL input field.
+   */
   _urlInputValue() {
     return this._linkUI.formView.urlInputView.fieldView.element.value;
   }
 
+  /**
+   * Returns whether the "default" URL input field value matched given regular expression.
+   */
   _urlInputRefMatch(regEx) {
     return this._urlInputValue().match(regEx);
   }
 
   ////////////////////// Link Options Dropdown (link types) //////////////////////
 
+  /**
+   * Create a link type dropdown.
+   */
   _linkOptionsDropdown() {
     const {formView} = this._linkUI;
     const {urlInputView} = formView;
@@ -178,6 +194,12 @@ export default class CraftLinkUI extends Plugin {
       ]),
     );
 
+    // if the default URL field is empty, initialise showing link type form,
+    // so that the linkTypeWrapperView gets initialised, and we can control the focus order from the beginning
+    if (fieldView.isEmpty) {
+      this._showLinkTypeForm('default');
+    }
+
     // once something from the list is selected:
     this.linkTypeDropdownView.on('execute', (evt) => {
       // if an element type was selected - we show the modal
@@ -193,12 +215,7 @@ export default class CraftLinkUI extends Plugin {
       }
     });
 
-    // if the default URL field is empty, initialise showing link type form,
-    // so that the linkTypeWrapperView gets initialised and we can control the focus order from the beginning
-    if (fieldView.isEmpty) {
-      this._showLinkTypeForm('default');
-    }
-
+    // react when the default URL field value changes
     this.listenTo(fieldView, 'change:value', () => {
       this._toggleLinkTypeDropdownView();
       const elementRefHandle = this._getLinkElementRefHandle();
@@ -210,11 +227,16 @@ export default class CraftLinkUI extends Plugin {
         this._showLinkTypeForm('default');
       }
     });
+
+    // react when the default URL field value changes
     this.listenTo(fieldView, 'input', () => {
       this._toggleLinkTypeDropdownView();
     });
   }
 
+  /**
+   * Get the refHandle from the URL field value.
+   */
   _getLinkElementRefHandle() {
     let elementRefHandle = null;
 
@@ -233,6 +255,9 @@ export default class CraftLinkUI extends Plugin {
     return elementRefHandle;
   }
 
+  /**
+   * Get element ID from the URL field value.
+   */
   _getLinkElementId() {
     let elementId = null;
 
@@ -244,6 +269,9 @@ export default class CraftLinkUI extends Plugin {
     return elementId;
   }
 
+  /**
+   * Get site ID from the URL field value.
+   */
   _getLinkSiteId() {
     let siteId = null;
 
@@ -255,6 +283,9 @@ export default class CraftLinkUI extends Plugin {
     return siteId;
   }
 
+  /**
+   * Toggle between element link and default URL link fields.
+   */
   _toggleLinkTypeDropdownView() {
     let elementRefHandle = this._getLinkElementRefHandle();
 
@@ -267,6 +298,9 @@ export default class CraftLinkUI extends Plugin {
     }
   }
 
+  /**
+   * Select link type from the dropdown.
+   */
   _selectLinkTypeDropdownItem(elementRefHandle) {
     const itemModel = this.linkTypeDropdownItemModels[elementRefHandle];
 
@@ -282,6 +316,9 @@ export default class CraftLinkUI extends Plugin {
     });
   }
 
+  /**
+   * Get a list of all the options that should be shown in the link type dropdown.
+   */
   _getLinkListItemDefinitions() {
     const itemDefinitions = [];
 
@@ -307,6 +344,9 @@ export default class CraftLinkUI extends Plugin {
     return itemDefinitions;
   }
 
+  /**
+   * Place the link type fields in the form.
+   */
   _showLinkTypeForm(linkOption) {
     let inputView = null;
     const {formView} = this._linkUI;
@@ -357,6 +397,9 @@ export default class CraftLinkUI extends Plugin {
     children.add(this.linkTypeWrapperView, 2);
   }
 
+  /**
+   * Show element selector modal for given element type (link option).
+   */
   _showElementSelectorModal(linkOption) {
     const editor = this.editor;
     const model = editor.model;
@@ -448,12 +491,18 @@ export default class CraftLinkUI extends Plugin {
 
   ////////////////////// Advanced Link Fields //////////////////////
 
+  /**
+   * Set up advanced link field.
+   */
   _advancedLinkFields() {
     this._addAdvancedLinkFieldInputs();
     this._handleAdvancedLinkFieldsFormSubmit();
     this._trackAdvancedLinkFieldsValueChange();
   }
 
+  /**
+   * Create advanced link field inputs and add them to the link form view.
+   */
   _addAdvancedLinkFieldInputs() {
     const linkCommand = this.editor.commands.get('link');
     const {formView} = this._linkUI;
@@ -590,6 +639,9 @@ export default class CraftLinkUI extends Plugin {
     }
   }
 
+  /**
+   * Create a labeled field for given advanced field.
+   */
   _addLabeledField(advancedField) {
     const {formView} = this._linkUI;
 
@@ -608,6 +660,11 @@ export default class CraftLinkUI extends Plugin {
     return labeledInputView;
   }
 
+  /**
+   * Populate URL suffix advanced field with content.
+   * e.g. if a query string was added directly to the default URL input field,
+   * ensure the value is also showing in the URL Suffix advanced field.
+   */
   _toggleUrlSuffixInputView(labeledInputView, isEmpty) {
     if (isEmpty) {
       labeledInputView.fieldView.set('value', '');
@@ -645,6 +702,9 @@ export default class CraftLinkUI extends Plugin {
     }
   }
 
+  /**
+   * When link form is submitted, pass the advanced field values the link command.
+   */
   _handleAdvancedLinkFieldsFormSubmit() {
     const editor = this.editor;
     const linkCommand = editor.commands.get('link');
@@ -673,6 +733,9 @@ export default class CraftLinkUI extends Plugin {
     );
   }
 
+  /**
+   * Update the link command when the advanced field value changes.
+   */
   _trackAdvancedLinkFieldsValueChange() {
     const editor = this.editor;
     const linkCommand = editor.commands.get('link');
@@ -687,6 +750,9 @@ export default class CraftLinkUI extends Plugin {
     });
   }
 
+  /**
+   * Get the values of all the advanced fields.
+   */
   _getAdvancedFieldValues() {
     const {formView} = this._linkUI;
     let values = {};

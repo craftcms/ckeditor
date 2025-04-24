@@ -119,9 +119,8 @@ export default class CraftLinkElementView extends View {
             Craft.addActionsToChip($element, actions);
             //Craft.cp.elementThumbLoader.load($element);
 
-            // reshuffle focus?
-            const formView = _linkUI.formView;
-            linkUi._alignFocus(formView);
+            // reshuffle focus
+            linkUi._alignFocus();
           }
         })
         .catch((e) => {
