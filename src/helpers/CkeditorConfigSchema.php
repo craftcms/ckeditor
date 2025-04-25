@@ -55,7 +55,6 @@ final class CkeditorConfigSchema
                         'items' => ['type' => 'string'],
                     ],
                 ],
-                'required' => ['color'],
             ],
             'ClassList' => [
                 'title' => 'Class name or list of class names',
