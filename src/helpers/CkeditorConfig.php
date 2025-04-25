@@ -41,6 +41,7 @@ final class CkeditorConfig
             'Essentials',
             'FindAndReplace',
             'Font',
+            'Fullscreen',
             'GeneralHtmlSupport',
             'Heading',
             'HorizontalLine',
@@ -124,6 +125,7 @@ final class CkeditorConfig
             'buttons' => ['fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor'],
         ],
         ['plugins' => ['FindAndReplace'], 'buttons' => ['findAndReplace']],
+        ['plugins' => ['Fullscreen'], 'buttons' => ['fullscreen']],
         ['plugins' => ['Heading'], 'buttons' => ['heading']],
         ['plugins' => ['HorizontalLine'], 'buttons' => ['horizontalLine']],
         ['plugins' => ['HtmlEmbed'], 'buttons' => ['htmlEmbed']],
@@ -196,6 +198,7 @@ final class CkeditorConfig
         ['undo', 'redo'],
         'sourceEditing',
         'createEntry',
+        ['button' => 'fullscreen', 'configOption' => 'fullscreen'],
     ];
 
 

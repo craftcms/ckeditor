@@ -4,7 +4,7 @@
  * @license GPL-3.0-or-later
  */
 
-import {ButtonView, icons, ImageInsertUI} from 'ckeditor5';
+import {ButtonView, IconImage, ImageInsertUI} from 'ckeditor5';
 
 export default class CraftImageInsertUI extends ImageInsertUI {
   static get pluginName() {
@@ -39,7 +39,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     const button = new ButtonView(locale);
     button.isEnabled = true;
     button.label = t('Insert image');
-    button.icon = icons.image;
+    button.icon = IconImage;
     button.tooltip = true;
     const insertImageCommand = editor.commands.get('insertImage');
     button.bind('isEnabled').to(insertImageCommand);
