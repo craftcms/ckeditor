@@ -4,18 +4,18 @@
  * @license GPL-3.0-or-later
  */
 
+import {IconObjectSizeMedium} from 'ckeditor5/src/icons';
 import {
   addListToDropdown,
   Collection,
   createDropdown,
   DropdownButtonView,
-  icons,
   Plugin,
   ViewModel,
 } from 'ckeditor5';
 import ImageTransformEditing from './imagetransformediting';
 
-const RESIZE_ICON = icons.objectSizeMedium;
+const RESIZE_ICON = IconObjectSizeMedium;
 
 export default class ImageTransformUI extends Plugin {
   static get requires() {

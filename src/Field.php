@@ -499,7 +499,13 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         if ($this->wordLimit) {
             $rules[] = [
                 function(ElementInterface $element) {
-                    $value = strip_tags((string)$element->getFieldValue($this->handle));
+                    $value = html_entity_decode((string)$element->getFieldValue($this->handle));
+                    $value = preg_replace(
+                        ['/<br>/', '/></'],
+                        [' ', '/> </'],
+                        $value
+                    );
+                    $value = strip_tags($value);
                     if (
                         // regex copied from the WordCount plugin, for consistency
                         preg_match_all('/(?:[\p{L}\p{N}]+\S?)+/u', $value, $matches) &&
@@ -789,6 +795,8 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             'attributes' => [
                 'class' => array_filter([$isRevision ? 'cke-entry-card' : null]),
             ],
+            'hyperlink' => false,
+            'showEditButton' => false,
         ]);
     }
 
@@ -1035,6 +1043,7 @@ $uiTranslationImport
 import {create} from '@craftcms/ckeditor';
 
 (($) => {
+  let instance;
   const config = Object.assign({
     translations: [coreTranslations],
     language: $languageJs,
@@ -1045,7 +1054,7 @@ import {create} from '@craftcms/ckeditor';
     },
     removePlugins: []
   });
-  
+
   const extraRemovePlugins = [];
   if ($showWordCountJs) {
     if (typeof config.wordCount === 'undefined') {
@@ -1083,7 +1092,7 @@ import {create} from '@craftcms/ckeditor';
   if (extraRemovePlugins.length) {
     config.removePlugins.push(...extraRemovePlugins);
   }
-  create($idJs, config);
+  instance = create($idJs, config);
 })(jQuery);
 JS,
             [

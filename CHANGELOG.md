@@ -8,6 +8,22 @@
 - Added `craft\ckeditor\helpers\CkeditorConfig`. ([#363](https://github.com/craftcms/ckeditor/pull/363))
 - Added `craft\ckeditor\web\assets\BaseCkeditorPackageAsset::$namespace`. ([#363](https://github.com/craftcms/ckeditor/pull/363))
 
+## Unreleased
+
+- The “Anchors” CKEditor plugin has been replaced with CKEditor’s new built-in [Bookmarks](https://ckeditor.com/docs/ckeditor5/latest/features/bookmarks.html) plugin. ([#397](https://github.com/craftcms/ckeditor/pull/397))
+- Updated to CKEditor 5 45.0.0. ([#397](https://github.com/craftcms/ckeditor/pull/397))
+
+- Improved the styling of CKEditor fields. ([craftcms/cms#17164](https://github.com/craftcms/cms/discussions/17164))
+
+## 4.7.0 - 2025-04-21
+
+- Nested entry cards no longer have edit buttons within their toolbars, or hyperlink their titles. ([#387](https://github.com/craftcms/ckeditor/pull/387))
+- JavaScript-based CKEditor configs can now access the CKEditor instance via an `instance` variable. ([#385](https://github.com/craftcms/ckeditor/pull/385))
+- Fixed a bug where expanded toolbar menus could be masked by a subsequent CKEditor field’s toolbar. ([#376](https://github.com/craftcms/ckeditor/issues/376))
+- Fixed a bug where back-end word limit validation wasn’t handling multiple words separated only by HTML tags properly. ([#383](https://github.com/craftcms/ckeditor/pull/383))
+- Fixed a bug where focus wasn’t getting handled properly when closing nested entry slideouts. ([#388](https://github.com/craftcms/ckeditor/issues/388))
+- Fixed a bug where CKEditor fields were inheriting the text color from Matrix field blocks. ([#390](https://github.com/craftcms/ckeditor/issues/390))
+
 ## 4.6.0 - 2025-02-18
 
 - Added the ability to override entry type names and handles for CKEditor fields. ([#369](https://github.com/craftcms/ckeditor/discussions/369))

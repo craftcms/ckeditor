@@ -376,3 +376,48 @@ Finally, ensure your asset bundle is registered whenever the core CKEditor asset
 ```
 
 The second parameter should point to the main entry file for your javascript. In most cases, it will be the same as the only item in you `$js` array.
+
+## Front-end use
+
+If you wish to use CKEditor on the front end, the safest option is to [bring your own CKE build](https://ckeditor.com/docs/ckeditor5/latest/getting-started/installation/self-hosted/quick-start.html). Craft’s bundle (while technically allowed under the GPL3 license) is not suitable for front-end use, due to its control panel-dependent functionality. Simple [configurations](#configuration) defined via the control panel _can_ be used piecemeal in your initializer:
+
+```twig
+{# Load from the CDN, or a custom bundle... #}
+<link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/44.3.0/ckeditor5.css" />
+<script src="https://cdn.ckeditor.com/ckeditor5/44.3.0/ckeditor5.umd.js"></script>
+
+{# Load the field definition via the field and CKEditor APIs: #}
+{% set field = craft.app.fields.getFieldByHandle('primer') %}
+{% set plugin = craft.app.plugins.getPlugin('ckeditor') %}
+
+{# Grab the config object using the field’s settings: #}
+{% set config = plugin.ckeConfigs.getByUid(field.ckeConfig) %}
+
+<div id="editor">
+    {{ entry.myCkEditorField }}
+</div>
+
+<script>
+    // Select any required plugins from the distribution:
+    const {
+        ClassicEditor,
+        Essentials,
+        Bold,
+        Italic,
+        Font,
+        Paragraph
+    } = CKEDITOR;
+
+    ClassicEditor
+        .create(document.querySelector('#editor'), {
+            licenseKey: '<YOUR_LICENSE_KEY>',
+            plugins: [Essentials, Bold, Italic, Font, Paragraph],
+            // Configure dynamically from settings:
+            toolbar: {{ config.toolbar|json_encode|raw }},
+        })
+        .then()
+        .catch();
+</script>
+```
+
+You may need to build up the top-level config object from `conifg.options`, `config.headingLevels`, and so on to get a complete, functional editor—be mindful that configurations may rely on plugins that are only available in the control panel! Refer to [`craft\ckeditor\Field::inputHtml()`](src/Field.php) for additional steps the CKEditor plugin when normalizing configuration, for control panel editor instances.

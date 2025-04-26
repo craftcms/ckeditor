@@ -35,6 +35,8 @@
   --ck-powered-by-line-height: 8px;
   --ck-powered-by-padding-vertical: 0px;
   --ck-powered-by-padding-horizontal: 0px;
+  --ck-color-base-background: var(--input-bg) !important;
+  --ck-color-toolbar-background: var(--white) !important;
 }
 
 .ck.ck-sticky-panel .ck-sticky-panel__content_sticky .ck.ck-toolbar {
@@ -93,6 +95,10 @@ a.ck.ck-button:focus {
 }
 
 /* content */
+.ck.ck-content {
+  color: var(--text-color);
+}
+
 .ck.ck-content ul:last-child,
 .ck.ck-content ol:last-child {
   padding-block-end: 0 !important;
@@ -165,6 +171,9 @@ a.ck.ck-button:focus {
   width: 100%;
 }
 
+.so-body .ck.ck-editor .ck-editor__top .ck-sticky-panel .ck-toolbar {
+  z-index: auto;
+}
 /* end fix */
 
 /* patch in https://github.com/ckeditor/ckeditor5/pull/15795 */
