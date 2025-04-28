@@ -5,7 +5,6 @@
  */
 
 export {default as CraftImageInsertUI} from './image/imageinsert/imageinsertui';
-//export {default as CraftLinkUI} from './link/linkui';
 export {default as ImageTransform} from './image/imagetransform';
 export {default as ImageEditor} from './image/imageeditor';
 
