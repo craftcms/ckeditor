@@ -60,9 +60,12 @@ export default class CraftLinkElementView extends View {
     const linkOption = this.linkOption;
 
     this.element.addEventListener('click', function (ev) {
-      // trigger element selector modal but only if we clicked on the "Choose" button,
+      // trigger element selector modal but only if the element contains the "Choose" button,
       // which will always have the ck-button__label class
-      if (ev.target.classList.contains('ck-button__label')) {
+      if (
+        this.children[0].classList.contains('add') ||
+        ev.target.classList.contains('ck-button__label')
+      ) {
         _linkUI._hideUI();
         linkUi._showElementSelectorModal(linkOption);
       }
