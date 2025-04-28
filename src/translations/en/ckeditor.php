@@ -2,6 +2,7 @@
 
 return [
     'Advanced' => 'Advanced',
+    'Advanced Link Fields' => 'Advanced Link Fields',
     'Available Transforms' => 'Available Transforms',
     'CKEditor Config' => 'CKEditor Config',
     'CKEditor Configs' => 'CKEditor Configs',
@@ -32,6 +33,7 @@ return [
     'Link to an asset' => 'Link to an asset',
     'Link to an entry' => 'Link to an entry',
     'Link to the current site' => 'Link to the current site',
+    'Links' => 'Links',
     'No transform' => 'No transform',
     'Purify HTML' => 'Purify HTML',
     'Removes any potentially-malicious code on save, by running the submitted data through {link}.' => 'Removes any potentially-malicious code on save, by running the submitted data through {link}.',

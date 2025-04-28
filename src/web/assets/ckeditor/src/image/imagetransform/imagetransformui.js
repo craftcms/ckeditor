@@ -4,12 +4,12 @@
  * @license GPL-3.0-or-later
  */
 
-import {IconObjectSizeMedium} from 'ckeditor5/src/icons';
 import {
   addListToDropdown,
   Collection,
   createDropdown,
   DropdownButtonView,
+  IconObjectSizeMedium,
   Plugin,
   ViewModel,
 } from 'ckeditor5';

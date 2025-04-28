@@ -87,6 +87,16 @@
   disabled: readOnly,
 }) }}
 
+{{ forms.checkboxSelectField({
+  label: 'Advanced Link Fields'|t('ckeditor'),
+  id: 'advanced-link-fields',
+  name: 'advancedLinkFields',
+  showAllOption: false,
+  options: advanceLinkOptions,
+  values: ckeConfig.advancedLinkFields,
+  sortable: true,
+}) }}
+
 {% embed '_includes/forms/field.twig' with {
   label: 'Config Options'|t('ckeditor'),
   instructions: 'Define custom [config options]({link}) which should be merged with the default config.'|t('ckeditor', {

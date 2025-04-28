@@ -53,6 +53,12 @@ class CkeConfig extends Model implements Chippable, Actionable
     public array|false $headingLevels = [1, 2, 3, 4, 5, 6];
 
     /**
+     * @var array|null The advanced link options available when adding a link
+     * @since 5.0.0
+     */
+    public ?array $advancedLinkFields = [];
+
+    /**
      * @var array|null Additional CKEditor config options
      * @since 3.1.0
      */

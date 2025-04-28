@@ -947,6 +947,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             'assetSources' => $this->_assetSources(),
             'assetSelectionCriteria' => $this->_assetSelectionCriteria(),
             'linkOptions' => $this->_linkOptions($element),
+            'advancedLinkFields' => $this->_advancedLinkFields($ckeConfig),
             'table' => [
                 'contentToolbar' => [
                     'tableRow',
@@ -1461,6 +1462,36 @@ JS,
     }
 
     /**
+     * Returns an array of selected advanced link fields that the field should show to the author.
+     * The fields are returned in the order defined in the field's settings.
+     *
+     * @param CkeConfig $ckeConfig
+     * @return array
+     */
+    private function _advancedLinkFields(CkeConfig $ckeConfig): array
+    {
+        if (empty($ckeConfig->advancedLinkFields)) {
+            return [];
+        }
+
+        $fields = [];
+        foreach (CkeditorConfig::advanceLinkOptions() as $option) {
+            if (in_array($option['value'], $ckeConfig->advancedLinkFields)) {
+                $fields[] = $option;
+            }
+        }
+
+        // sort by the order of $ckeConfig->advancedLinkFields
+        $fields = array_column($fields, null, 'value');
+        $order = array_flip($ckeConfig->advancedLinkFields);
+        uksort($fields, function($a, $b) use ($order) {
+            return $order[$a] <=> $order[$b];
+        });
+
+        return array_values($fields);
+    }
+
+    /**
      * Returns the link options available to the field.
      *
      * Each link option is represented by an array with the following keys:
@@ -1482,7 +1513,7 @@ JS,
 
         if (!empty($sectionSources)) {
             $linkOptions[] = [
-                'label' => Craft::t('ckeditor', 'Link to an entry'),
+                'label' => Entry::displayName(),
                 'elementType' => Entry::class,
                 'refHandle' => Entry::refHandle(),
                 'sources' => $sectionSources,
@@ -1492,7 +1523,7 @@ JS,
 
         if (!empty($categorySources)) {
             $linkOptions[] = [
-                'label' => Craft::t('ckeditor', 'Link to a category'),
+                'label' => Category::displayName(),
                 'elementType' => Category::class,
                 'refHandle' => Category::refHandle(),
                 'sources' => $categorySources,
@@ -1502,7 +1533,7 @@ JS,
 
         if (!empty($volumeSources)) {
             $linkOptions[] = [
-                'label' => Craft::t('ckeditor', 'Link to an asset'),
+                'label' => Asset::displayName(),
                 'elementType' => Asset::class,
                 'refHandle' => Asset::refHandle(),
                 'sources' => $volumeSources,
@@ -1711,9 +1742,6 @@ JS,
      */
     private function _adjustPurifierConfig(HTMLPurifier_Config $purifierConfig): HTMLPurifier_Config
     {
-        /** @var HTMLPurifier_HTMLDefinition|null $def */
-        $def = $purifierConfig->getDefinition('HTML', true);
-
         $ckeConfig = $this->_ckeConfig();
 
         // These will come back as indexed (key => true) arrays
@@ -1735,6 +1763,33 @@ JS,
         $purifierConfig->set('Attr.AllowedFrameTargets', array_keys($allowedTargets));
         $purifierConfig->set('Attr.AllowedRel', array_keys($allowedRels));
 
+        // advanced link fields
+        if (!empty($ckeConfig->advancedLinkFields)) {
+            if (in_array('rel', $ckeConfig->advancedLinkFields)) {
+                $allowedRels = $purifierConfig->get('Attr.AllowedRel');
+                // allow any rel values
+                $allowedRels['*'] = true;
+                $purifierConfig->set('Attr.AllowedRel', array_keys($allowedRels));
+            }
+
+            // This is needed so that the noopener and noreferrer rel attributes
+            // are not added by default on save when you turn on target="_blank".
+            // This then messes with the ability to add rel attributes independently.
+            if (in_array('target', $ckeConfig->advancedLinkFields)) {
+                $purifierConfig->set('HTML.TargetNoopener', false);
+                $purifierConfig->set('HTML.TargetNoreferrer', false);
+            }
+        }
+
+        // we have to get the HTML definition AFTER setting HTML.TargetNoopener, HTML.TargetNoreferrer
+        // otherwise none of the adjustments below will work!
+        /** @var HTMLPurifier_HTMLDefinition|null $def */
+        $def = $purifierConfig->getDefinition('HTML', true);
+
+        if (!empty($ckeConfig->advancedLinkFields) && in_array('ariaLabel', $ckeConfig->advancedLinkFields)) {
+            $def?->addAttribute('a', 'aria-label', 'Text');
+        }
+
         if (in_array('todoList', $ckeConfig->toolbar)) {
             // Add input[type=checkbox][disabled][checked] to the definition
             $def?->addElement('input', 'Inline', 'Inline', '', [
@@ -1755,6 +1810,7 @@ JS,
         if (in_array('createEntry', $ckeConfig->toolbar)) {
             $def?->addElement('craft-entry', 'Inline', 'Inline', '', [
                 'data-entry-id' => 'Number',
+                'data-site-id' => 'Number',
             ]);
         }
 
