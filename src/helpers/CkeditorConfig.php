@@ -324,7 +324,9 @@ final class CkeditorConfig
 
     /**
      * Returns the available advanced link
+     *
      * @return array[]
+     * @since 5.0.0
      */
     public static function advanceLinkOptions(): array
     {
