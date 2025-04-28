@@ -473,10 +473,7 @@ export default class CraftLinkUI extends Plugin {
 
           this._linkUI._hideFakeVisualSelection();
           setTimeout(() => {
-            editor.editing.view.focus();
-            if (!currentLinkElement) {
-              this._linkUI._showUI(true);
-            }
+            this._linkUI._showUI(true);
           }, 100);
         } else {
           onCancel();

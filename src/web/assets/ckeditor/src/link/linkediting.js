@@ -119,8 +119,6 @@ export default class CraftLinkEditing extends Plugin {
               } else {
                 writer.removeAttribute(item.model, writer.createRangeOn(node));
               }
-
-              writer.removeSelectionAttribute(item.model);
             } else {
               const ranges = editor.model.schema.getValidRanges(
                 selection.getRanges(),
