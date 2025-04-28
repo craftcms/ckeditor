@@ -10,17 +10,33 @@
   createAction: 'ckeditor/cke-configs/edit',
 }) }}
 
-{{ forms.textField({
-  id: 'word-limit',
-  name: 'wordLimit',
-  label: 'Word Limit'|t('ckeditor'),
-  value: field.wordLimit,
-  type: 'number',
-  min: 0,
-  step: 1,
-  size: 5,
-  errors: field.getErrors('wordLimit'),
-}) }}
+{% embed '_includes/forms/field' with {
+  label: 'Field Limit'|t('app'),
+  instructions: "The maximum number of words or characters the field is allowed to have."|t('ckeditor'),
+  id: 'field-limit',
+  errors: field.getErrors(field.wordLimit ? 'wordLimit' : 'characterLimit')
+} %}
+  {% import "_includes/forms" as forms %}
+  {% block input %}
+    <div class="flex">
+      {{ forms.text({
+        id: 'fieldLimit',
+        name: 'fieldLimit',
+        value: field.wordLimit ?? field.characterLimit,
+        size: 3,
+      }) }}
+      {{ forms.select({
+        id: 'limitUnit',
+        name: 'limitUnit',
+        options: [
+          { value: 'words', label: 'Words'|t('ckeditor') },
+          { value: 'chars', label: 'Characters'|t('app') },
+        ],
+        value: field.characterLimit ? 'chars' : 'words'
+      }) }}
+    </div>
+  {% endblock %}
+{% endembed %}
 
 {{ forms.lightswitchField({
   id: 'show-word-count',

@@ -100,6 +100,7 @@ class CkeConfigsController extends Controller
                     'ckeConfig' => $ckeConfig,
                     'jsonSchema' => CkeditorConfigSchema::create(),
                     'jsonSchemaUri' => $jsonSchemaUri,
+                    'advanceLinkOptions' => CkeditorConfig::advanceLinkOptions(),
                 ]);
             });
 
@@ -130,6 +131,7 @@ class CkeConfigsController extends Controller
             'name' => $this->request->getBodyParam('name'),
             'toolbar' => $this->request->getBodyParam('toolbar'),
             'headingLevels' => $headingLevels,
+            'advancedLinkFields' => $this->request->getBodyParam('advancedLinkFields') ?: null,
             'json' => $this->request->getBodyParam('json'),
             'js' => $this->request->getBodyParam('js'),
             'css' => $this->request->getBodyParam('css'),

@@ -236,6 +236,7 @@ export default class CraftEntriesUI extends Plugin {
    */
   _showEditEntrySlideout(entryId, siteId, modelElement) {
     const editor = this.editor;
+    const model = editor.model;
     const elementEditor = this.getElementEditor();
 
     let $element = this._getCardElement(entryId);
@@ -299,6 +300,19 @@ export default class CraftEntriesUI extends Plugin {
         }
       },
     });
+
+    // set position on the card we just edited and set focus
+    slideout.on('beforeClose', () => {
+      model.change((writer) => {
+        writer.setSelection(writer.createPositionAfter(modelElement));
+        editor.editing.view.focus();
+      });
+    });
+
+    // return focus to the editor
+    slideout.on('close', () => {
+      editor.editing.view.focus();
+    });
   }
 
   /**
@@ -309,6 +323,9 @@ export default class CraftEntriesUI extends Plugin {
    */
   async _showCreateEntrySlideout(entryTypeId) {
     const editor = this.editor;
+    const model = editor.model;
+    const selection = model.document.selection;
+    const range = selection.getFirstRange();
     const nestedElementAttributes = editor.config.get(
       'nestedElementAttributes',
     );
@@ -350,13 +367,29 @@ export default class CraftEntriesUI extends Plugin {
         fresh: 1,
         siteId: data.element.siteId,
       },
+      onSubmit: (ev) => {
+        editor.commands.execute('insertEntry', {
+          entryId: ev.data.id,
+          siteId: ev.data.siteId,
+        });
+      },
     });
 
-    slideout.on('submit', (ev) => {
-      editor.commands.execute('insertEntry', {
-        entryId: ev.data.id,
-        siteId: ev.data.siteId,
+    // set position on before the card we just created and set focus
+    slideout.on('beforeClose', () => {
+      // nullify the trigger element, so the focus is not returned to the "New entry" button in the toolbar
+      slideout.$triggerElement = null;
+      // set position
+      model.change((writer) => {
+        writer.setSelection(
+          writer.createPositionAt(
+            editor.model.document.getRoot(),
+            range.end.path[0],
+          ),
+        );
       });
+      // set focus
+      editor.editing.view.focus();
     });
   }
 }

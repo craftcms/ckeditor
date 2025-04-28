@@ -30,22 +30,17 @@
   --ck-color-toolbar-border: var(--ck-color-base-border) !important;
   --ck-drop-shadow-active: var(--ck-drop-shadow) !important;
   --ck-drop-shadow:
-    0 0 0 1px hsl(210deg 24% 16% / 10%), 0 5px 20px hsl(210deg 24% 16% / 25%) !important;
+    0 0 0 1px hsl(210, 24%, 16%, 0.1), 0 5px 20px hsl(210, 24%, 16%, 0.25) !important;
   --ck-spacing-unit: 0.69em !important;
   --ck-powered-by-line-height: 8px;
   --ck-powered-by-padding-vertical: 0px;
   --ck-powered-by-padding-horizontal: 0px;
+  --ck-color-base-background: var(--input-bg) !important;
+  --ck-color-toolbar-background: var(--white) !important;
 }
 
 .ck.ck-sticky-panel .ck-sticky-panel__content_sticky .ck.ck-toolbar {
   border-block-start-width: 0;
-}
-
-.ck.ck-button:active,
-.ck.ck-button:focus,
-a.ck.ck-button:active,
-a.ck.ck-button:focus {
-  box-shadow: none !important;
 }
 
 .ck.ck-editor__editable_inline {
@@ -93,6 +88,10 @@ a.ck.ck-button:focus {
 }
 
 /* content */
+.ck.ck-content {
+  color: var(--text-color);
+}
+
 .ck.ck-content ul:last-child,
 .ck.ck-content ol:last-child {
   padding-block-end: 0 !important;
@@ -116,8 +115,7 @@ a.ck.ck-button:focus {
 /* vertical panel dropdowns */
 .ck.ck-link-form_layout-vertical .ck.ck-dropdown {
   display: block;
-  margin-block: var(--ck-spacing-large) var(--ck-spacing-small);
-  margin-inline: var(--ck-spacing-large);
+  min-width: 50%;
 }
 
 .ck.ck-link-form_layout-vertical
@@ -165,6 +163,9 @@ a.ck.ck-button:focus {
   width: 100%;
 }
 
+.so-body .ck.ck-editor .ck-editor__top .ck-sticky-panel .ck-toolbar {
+  z-index: auto;
+}
 /* end fix */
 
 /* patch in https://github.com/ckeditor/ckeditor5/pull/15795 */
@@ -190,6 +191,51 @@ body.ck-fullscreen .slideout-shade {
     var(--ck-z-fullscreen) + 1000
   ); /* +1000 because of .ck.ck-balloon-panel z-index */
 }
+
 body.ck-fullscreen .slideout-container {
   z-index: calc(var(--ck-z-fullscreen) + 1000);
+}
+
+/* link ui */
+.link-type-group .ck.ck-labeled-field-view {
+  width: 100%;
+}
+
+.link-type-group.ck.ck-form__row {
+  justify-content: start;
+}
+
+.link-type-group.ck.ck-form__row .ck.ck-labeled-field-view {
+  margin-inline-start: 0;
+  margin-block-start: var(--ck-spacing-small);
+}
+
+.ck.ck-link-form_layout-vertical {
+  min-width: 24em;
+}
+
+.ck.ck-button.btn.dashed {
+  background-color: transparent;
+  border: 1px dashed var(--medium-hairline-color);
+}
+
+.menu {
+  z-index: calc(var(--ck-z-panel) + 1);
+}
+
+.ck.link-type-advanced {
+  padding: var(--ck-spacing-standard) var(--ck-spacing-large) 0;
+}
+
+.ck.link-type-advanced .pane.hairline {
+  border: 0;
+  padding: 0 var(--ck-spacing-large);
+}
+
+.ck.link-type-advanced .ck.ck-labeled-field-view {
+  margin-block: var(--ck-spacing-large);
+}
+
+.ck.link-type-advanced .pane.hairline .ck.ck-button {
+  padding: 0 !important;
 }

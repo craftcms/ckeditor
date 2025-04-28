@@ -387,6 +387,12 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     public ?int $wordLimit = null;
 
     /**
+     * @var int|null The total number of characters allowed.
+     * @since 4.8.0
+     */
+    public ?int $characterLimit = null;
+
+    /**
      * @var bool Whether the word count should be shown below the field.
      * @since 3.2.0
      */
@@ -460,6 +466,15 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             $config['sourceEditingGroups'] = null;
         }
 
+        if (isset($config['limitUnit'], $config['fieldLimit'])) {
+            if ($config['limitUnit'] === 'chars') {
+                $config['characterLimit'] = (int)$config['fieldLimit'] ?: null;
+            } else {
+                $config['wordLimit'] = (int)$config['fieldLimit'] ?: null;
+            }
+            unset($config['limitUnit'], $config['fieldLimit']);
+        }
+
         if (isset($config['entryTypes']) && $config['entryTypes'] === '') {
             $config['entryTypes'] = [];
         }
@@ -477,6 +492,9 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         if ($this->wordLimit === 0) {
             $this->wordLimit = null;
         }
+        if ($this->characterLimit === 0) {
+            $this->characterLimit = null;
+        }
     }
 
     /**
@@ -486,6 +504,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     {
         return array_merge(parent::defineRules(), [
             ['wordLimit', 'number', 'min' => 1],
+            ['characterLimit', 'number', 'min' => 1],
         ]);
     }
 
@@ -496,10 +515,31 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     {
         $rules = [];
 
-        if ($this->wordLimit) {
+        if ($this->characterLimit) {
             $rules[] = [
                 function(ElementInterface $element) {
                     $value = strip_tags((string)$element->getFieldValue($this->handle));
+                    if (strlen($value) > $this->characterLimit) {
+                        $element->addError(
+                            "field:$this->handle",
+                            Craft::t('ckeditor', '{field} should contain at most {max, number} {max, plural, one{character} other{characters}}.', [
+                                'field' => Craft::t('site', $this->name),
+                                'max' => $this->characterLimit,
+                            ]),
+                        );
+                    }
+                },
+            ];
+        } elseif ($this->wordLimit) {
+            $rules[] = [
+                function(ElementInterface $element) {
+                    $value = html_entity_decode((string)$element->getFieldValue($this->handle));
+                    $value = preg_replace(
+                        ['/<br>/', '/></'],
+                        [' ', '/> </'],
+                        $value
+                    );
+                    $value = strip_tags($value);
                     if (
                         // regex copied from the WordCount plugin, for consistency
                         preg_match_all('/(?:[\p{L}\p{N}]+\S?)+/u', $value, $matches) &&
@@ -789,6 +829,8 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             'attributes' => [
                 'class' => array_filter([$isRevision ? 'cke-entry-card' : null]),
             ],
+            'hyperlink' => false,
+            'showEditButton' => false,
         ]);
     }
 
@@ -939,6 +981,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             'assetSources' => $this->_assetSources(),
             'assetSelectionCriteria' => $this->_assetSelectionCriteria(),
             'linkOptions' => $this->_linkOptions($element),
+            'advancedLinkFields' => $this->_advancedLinkFields($ckeConfig),
             'table' => [
                 'contentToolbar' => [
                     'tableRow',
@@ -1029,12 +1072,13 @@ JS;
         $uiLanguage = BaseCkeditorPackageAsset::uiLanguage();
         $uiTranslationImport = "import coreTranslations from 'ckeditor5/translations/$uiLanguage.js';";
 
-        $view->registerScriptWithVars(fn($baseConfigJs, $toolbarJs, $languageJs, $showWordCountJs, $wordLimitJs) => <<<JS
+        $view->registerScriptWithVars(fn($baseConfigJs, $toolbarJs, $languageJs, $showWordCountJs, $wordLimitJs, $characterLimitJs) => <<<JS
 $imports
 $uiTranslationImport
 import {create} from '@craftcms/ckeditor';
 
 (($) => {
+  let instance;
   const config = Object.assign({
     translations: [coreTranslations],
     language: $languageJs,
@@ -1045,7 +1089,7 @@ import {create} from '@craftcms/ckeditor';
     },
     removePlugins: []
   });
-  
+
   const extraRemovePlugins = [];
   if ($showWordCountJs) {
     if (typeof config.wordCount === 'undefined') {
@@ -1075,6 +1119,15 @@ import {create} from '@craftcms/ckeditor';
           container.removeClass('error warning');
         }
       }
+      if ($characterLimitJs) {
+        if (stats.characters > $characterLimitJs) {
+          container.addClass('error');
+        } else if (stats.characters >= Math.floor($characterLimitJs * .9)) {
+          container.addClass('warning');
+        } else {
+          container.removeClass('error warning');
+        }
+      }
       onUpdate(stats);
     };
   } else {
@@ -1083,7 +1136,7 @@ import {create} from '@craftcms/ckeditor';
   if (extraRemovePlugins.length) {
     config.removePlugins.push(...extraRemovePlugins);
   }
-  create($idJs, config);
+  instance = create($idJs, config);
 })(jQuery);
 JS,
             [
@@ -1096,6 +1149,7 @@ JS,
                 ],
                 $this->showWordCount,
                 $this->wordLimit ?: 0,
+                $this->characterLimit ?: 0,
             ],
             View::POS_END,
             ['type' => 'module']
@@ -1452,6 +1506,36 @@ JS,
     }
 
     /**
+     * Returns an array of selected advanced link fields that the field should show to the author.
+     * The fields are returned in the order defined in the field's settings.
+     *
+     * @param CkeConfig $ckeConfig
+     * @return array
+     */
+    private function _advancedLinkFields(CkeConfig $ckeConfig): array
+    {
+        if (empty($ckeConfig->advancedLinkFields)) {
+            return [];
+        }
+
+        $fields = [];
+        foreach (CkeditorConfig::advanceLinkOptions() as $option) {
+            if (in_array($option['value'], $ckeConfig->advancedLinkFields)) {
+                $fields[] = $option;
+            }
+        }
+
+        // sort by the order of $ckeConfig->advancedLinkFields
+        $fields = array_column($fields, null, 'value');
+        $order = array_flip($ckeConfig->advancedLinkFields);
+        uksort($fields, function($a, $b) use ($order) {
+            return $order[$a] <=> $order[$b];
+        });
+
+        return array_values($fields);
+    }
+
+    /**
      * Returns the link options available to the field.
      *
      * Each link option is represented by an array with the following keys:
@@ -1473,7 +1557,7 @@ JS,
 
         if (!empty($sectionSources)) {
             $linkOptions[] = [
-                'label' => Craft::t('ckeditor', 'Link to an entry'),
+                'label' => Entry::displayName(),
                 'elementType' => Entry::class,
                 'refHandle' => Entry::refHandle(),
                 'sources' => $sectionSources,
@@ -1483,7 +1567,7 @@ JS,
 
         if (!empty($categorySources)) {
             $linkOptions[] = [
-                'label' => Craft::t('ckeditor', 'Link to a category'),
+                'label' => Category::displayName(),
                 'elementType' => Category::class,
                 'refHandle' => Category::refHandle(),
                 'sources' => $categorySources,
@@ -1493,7 +1577,7 @@ JS,
 
         if (!empty($volumeSources)) {
             $linkOptions[] = [
-                'label' => Craft::t('ckeditor', 'Link to an asset'),
+                'label' => Asset::displayName(),
                 'elementType' => Asset::class,
                 'refHandle' => Asset::refHandle(),
                 'sources' => $volumeSources,
@@ -1702,9 +1786,6 @@ JS,
      */
     private function _adjustPurifierConfig(HTMLPurifier_Config $purifierConfig): HTMLPurifier_Config
     {
-        /** @var HTMLPurifier_HTMLDefinition|null $def */
-        $def = $purifierConfig->getDefinition('HTML', true);
-
         $ckeConfig = $this->_ckeConfig();
 
         // These will come back as indexed (key => true) arrays
@@ -1726,6 +1807,33 @@ JS,
         $purifierConfig->set('Attr.AllowedFrameTargets', array_keys($allowedTargets));
         $purifierConfig->set('Attr.AllowedRel', array_keys($allowedRels));
 
+        // advanced link fields
+        if (!empty($ckeConfig->advancedLinkFields)) {
+            if (in_array('rel', $ckeConfig->advancedLinkFields)) {
+                $allowedRels = $purifierConfig->get('Attr.AllowedRel');
+                // allow any rel values
+                $allowedRels['*'] = true;
+                $purifierConfig->set('Attr.AllowedRel', array_keys($allowedRels));
+            }
+
+            // This is needed so that the noopener and noreferrer rel attributes
+            // are not added by default on save when you turn on target="_blank".
+            // This then messes with the ability to add rel attributes independently.
+            if (in_array('target', $ckeConfig->advancedLinkFields)) {
+                $purifierConfig->set('HTML.TargetNoopener', false);
+                $purifierConfig->set('HTML.TargetNoreferrer', false);
+            }
+        }
+
+        // we have to get the HTML definition AFTER setting HTML.TargetNoopener, HTML.TargetNoreferrer
+        // otherwise none of the adjustments below will work!
+        /** @var HTMLPurifier_HTMLDefinition|null $def */
+        $def = $purifierConfig->getDefinition('HTML', true);
+
+        if (!empty($ckeConfig->advancedLinkFields) && in_array('ariaLabel', $ckeConfig->advancedLinkFields)) {
+            $def?->addAttribute('a', 'aria-label', 'Text');
+        }
+
         if (in_array('todoList', $ckeConfig->toolbar)) {
             // Add input[type=checkbox][disabled][checked] to the definition
             $def?->addElement('input', 'Inline', 'Inline', '', [
@@ -1746,6 +1854,7 @@ JS,
         if (in_array('createEntry', $ckeConfig->toolbar)) {
             $def?->addElement('craft-entry', 'Inline', 'Inline', '', [
                 'data-entry-id' => 'Number',
+                'data-site-id' => 'Number',
             ]);
         }
 

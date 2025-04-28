@@ -53,6 +53,12 @@ class CkeConfig extends Model implements Chippable, Actionable
     public array|false $headingLevels = [1, 2, 3, 4, 5, 6];
 
     /**
+     * @var array|null The advanced link options available when adding a link
+     * @since 5.0.0
+     */
+    public ?array $advancedLinkFields = [];
+
+    /**
      * @var array|null Additional CKEditor config options
      * @since 3.1.0
      */
@@ -78,6 +84,14 @@ class CkeConfig extends Model implements Chippable, Actionable
 
     public function __construct($config = [])
     {
+        if (isset($config['toolbar']) && is_array($config['toolbar'])) {
+            // anchor → bookmark
+            $key = array_search('anchor', $config['toolbar']);
+            if ($key !== false) {
+                $config['toolbar'][$key] = 'bookmark';
+            }
+        }
+
         if (!array_key_exists('options', $config)) {
             // Only use `json` or `js`, not both
             if (!empty($config['json'])) {
