@@ -30,7 +30,7 @@
   --ck-color-toolbar-border: var(--ck-color-base-border) !important;
   --ck-drop-shadow-active: var(--ck-drop-shadow) !important;
   --ck-drop-shadow:
-    0 0 0 1px hsl(210deg 24% 16% / 10%), 0 5px 20px hsl(210deg 24% 16% / 25%) !important;
+    0 0 0 1px hsl(210, 24%, 16%, 0.1), 0 5px 20px hsl(210, 24%, 16%, 0.25) !important;
   --ck-spacing-unit: 0.69em !important;
   --ck-powered-by-line-height: 8px;
   --ck-powered-by-padding-vertical: 0px;
