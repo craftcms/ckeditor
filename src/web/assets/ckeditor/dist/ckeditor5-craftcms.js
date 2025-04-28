@@ -975,7 +975,7 @@ class mu extends Bn {
                 v.model,
                 o[v.model],
                 m.createRangeOn(y)
-              ) : m.removeAttribute(v.model, m.createRangeOn(y)), m.removeSelectionAttribute(v.model);
+              ) : m.removeAttribute(v.model, m.createRangeOn(y));
             } else {
               const y = A.model.schema.getValidRanges(
                 x.getRanges(),
@@ -1055,7 +1055,7 @@ class gu extends bi {
     super.render();
     const A = this.linkUi, g = A._linkUI, i = this.linkOption;
     this.element.addEventListener("click", function(u) {
-      u.target.classList.contains("ck-button__label") && (g._hideUI(), A._showElementSelectorModal(i));
+      (this.children[0].classList.contains("add") || u.target.classList.contains("ck-button__label")) && (g._hideUI(), A._showElementSelectorModal(i));
     }), this.element.children.length == 0 && Craft.sendActionRequest("POST", "app/render-elements", {
       data: {
         elements: [
@@ -1376,7 +1376,7 @@ class yu extends Bn {
                 }
             });
           this._linkUI._hideFakeVisualSelection(), setTimeout(() => {
-            g.editing.view.focus(), x || this._linkUI._showUI(!0);
+            this._linkUI._showUI(!0);
           }, 100);
         } else
           m();
