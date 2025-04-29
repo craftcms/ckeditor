@@ -20,6 +20,7 @@
 - The “Anchors” CKEditor plugin has been replaced with CKEditor’s new built-in [Bookmarks](https://ckeditor.com/docs/ckeditor5/latest/features/bookmarks.html) plugin. ([#397](https://github.com/craftcms/ckeditor/pull/397))
 - Updated to CKEditor 5 45.0.0. ([#397](https://github.com/craftcms/ckeditor/pull/397))
 - Added `craft\ckeditor\Field::$characterLimit`.
+- Fixed a bug where it wasn’t easily possible to drag a toolbar button to the last position in the toolbar, if that meant wrapping the buttons to a new row.
 
 ## 4.7.0 - 2025-04-21
 

@@ -107,6 +107,7 @@ export default Garnish.Base.extend({
               );
               this.$insertion = $('<div class="ckeditor-tb--insertion"/>').css({
                 width: $draggee.outerWidth(),
+                height: $draggee.outerHeight(),
               });
               if (this.draggingSourceItem) {
                 if (this.draggingSeparator) {

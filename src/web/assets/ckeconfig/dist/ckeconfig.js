@@ -71,7 +71,8 @@ const ToolbarBuilder = Garnish.Base.extend({
           ), this.draggingSeparator = n.hasClass(
             "ckeditor-tb--separator"
           ), this.$insertion = $('<div class="ckeditor-tb--insertion"/>').css({
-            width: n.outerWidth()
+            width: n.outerWidth(),
+            height: n.outerHeight()
           }), this.draggingSourceItem)
             if (this.draggingSeparator)
               n.css("visibility", "");
