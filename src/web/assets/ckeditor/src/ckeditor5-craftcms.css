@@ -48,7 +48,9 @@
   padding-inline: var(--m) !important;
 }
 
-.ck.ck-editor__editable.ck-focused:not(.ck-editor__nested-editable) {
+/* don't apply the focus ring in fullscreen */
+.ck-editor__main
+  > .ck.ck-editor__editable.ck-focused:not(.ck-editor__nested-editable) {
   box-shadow: var(--ck-focus-outer-shadow) !important;
 }
 
@@ -183,6 +185,17 @@ of the editor despite being `display: inline`
   display: inline-block;
   vertical-align: middle;
   margin-inline-end: 0.125em;
+}
+
+/* ck fullscreen */
+body.ck-fullscreen .slideout-shade {
+  z-index: calc(
+    var(--ck-z-fullscreen) + 1000
+  ); /* +1000 because of .ck.ck-balloon-panel z-index */
+}
+
+body.ck-fullscreen .slideout-container {
+  z-index: calc(var(--ck-z-fullscreen) + 1000);
 }
 
 /* link ui */
