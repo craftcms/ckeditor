@@ -48,7 +48,9 @@
   padding-inline: var(--m) !important;
 }
 
-.ck.ck-editor__editable.ck-focused:not(.ck-editor__nested-editable) {
+/* don't apply the focus ring in fullscreen */
+.ck-editor__main
+  > .ck.ck-editor__editable.ck-focused:not(.ck-editor__nested-editable) {
   box-shadow: var(--ck-focus-outer-shadow) !important;
 }
 
