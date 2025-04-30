@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7480a2cbda5ed4e4df6626d4a2ecfab3",
+    "content-hash": "e390ace889471e8e0d50bb18e0dc426a",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -458,22 +458,24 @@
         },
         {
             "name": "craftcms/html-field",
-            "version": "3.3.0",
+            "version": "3.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/craftcms/html-field.git",
-                "reference": "aeb5f149fc4e46aeacae40c5ff3d5f1f9d7818b0"
+                "reference": "3f23569c94d64e9054e3402447e03bd3c4c7b181"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/html-field/zipball/aeb5f149fc4e46aeacae40c5ff3d5f1f9d7818b0",
-                "reference": "aeb5f149fc4e46aeacae40c5ff3d5f1f9d7818b0",
+                "url": "https://api.github.com/repos/craftcms/html-field/zipball/3f23569c94d64e9054e3402447e03bd3c4c7b181",
+                "reference": "3f23569c94d64e9054e3402447e03bd3c4c7b181",
                 "shasum": ""
             },
             "require": {
                 "craftcms/cms": "^5.5.0",
                 "league/html-to-markdown": "^5.1",
-                "php": "^8.2"
+                "php": "^8.2",
+                "symfony/css-selector": "^6.0|^7.0",
+                "symfony/dom-crawler": "^6.0|^7.0"
             },
             "require-dev": {
                 "craftcms/ecs": "dev-main",
@@ -504,7 +506,7 @@
                 "rss": "https://github.com/craftcms/html-field/commits/main.atom",
                 "source": "https://github.com/craftcms/html-field"
             },
-            "time": "2025-04-28T21:48:36+00:00"
+            "time": "2025-04-30T16:54:07+00:00"
         },
         {
             "name": "craftcms/plugin-installer",

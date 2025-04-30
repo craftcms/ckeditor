@@ -15,11 +15,19 @@
 
 ## Unreleased
 
-- Added the “Field Limit” setting, which can be set to a character limit or word limit. ([#384](https://github.com/craftcms/ckeditor/pull/384))
+- Added the “Field Limit” field setting, which can be set to a character limit or word limit. ([#384](https://github.com/craftcms/ckeditor/pull/384))
+- Added the “GraphQL Mode” field setting. ([#403](https://github.com/craftcms/ckeditor/pull/403))
 - Improved the styling of CKEditor fields. ([craftcms/cms#17164](https://github.com/craftcms/cms/discussions/17164))
 - The “Anchors” CKEditor plugin has been replaced with CKEditor’s new built-in [Bookmarks](https://ckeditor.com/docs/ckeditor5/latest/features/bookmarks.html) plugin. ([#397](https://github.com/craftcms/ckeditor/pull/397))
 - Updated to CKEditor 5 45.0.0. ([#397](https://github.com/craftcms/ckeditor/pull/397))
 - Added `craft\ckeditor\Field::$characterLimit`.
+- Added `craft\ckeditor\Field::$fullGraphqlData`.
+- Added `craft\ckeditor\data\FieldData::getEntries()`.
+- Added `craft\ckeditor\data\Markup::getMarkdown()`.
+- Added `craft\ckeditor\data\Markup::getPlainText()`.
+- Added `craft\ckeditor\gql\CkeditorData`.
+- Added `craft\ckeditor\gql\CkeditorMarkup`.
+- Added `craft\ckeditor\gql\Generator`.
 - Fixed a bug where it wasn’t easily possible to drag a toolbar button to the last position in the toolbar, if that meant wrapping the buttons to a new row.
 
 ## 4.7.0 - 2025-04-21

@@ -167,4 +167,17 @@
       value: field.purifierConfig
     }) }}
   </div>
+
+  {% if craft.app.config.general.enableGql %}
+    {{ forms.selectField({
+      label: 'GraphQL Mode'|t('app'),
+      id: 'graphql-mode',
+      name: 'graphqlMode',
+      options: [
+        {label: 'Full data'|t('app'), value: 'full'},
+        {label: 'Raw content only'|t('ckeditor'), value: 'raw'},
+      ],
+      value: field.fullGraphqlData ? 'full' : 'raw',
+    }) }}
+  {% endif %}
 </div>
