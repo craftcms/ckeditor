@@ -401,6 +401,12 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     public bool $showWordCount = false;
 
     /**
+     * @var bool Whether `<oembed>` tags should be parsed and replaced with the provider’s embed code.
+     * @since 4.9.0
+     */
+    public bool $parseEmbeds = false;
+
+    /**
      * @var string|array|null The volumes that should be available for image selection.
      * @since 1.2.0
      */
@@ -437,16 +443,17 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     public bool $showUnpermittedFiles = false;
 
     /**
-     * @var string|null The “New entry” button label.
-     * @since 4.0.0
-     */
-    public ?string $createButtonLabel = null;
-
-    /**
      * @var bool Whether GraphQL values should be returned as objects with `content`, `chunks`, etc., sub-fields.
      * @since 4.8.0
      */
     public bool $fullGraphqlData = true;
+
+    /**
+     * @var string|null The “New entry” button label.
+     * @since 4.0.0
+     * @deprecated in 4.8.0
+     */
+    public ?string $createButtonLabel = null;
 
     /**
      * @var EntryType[] The field’s available entry types
@@ -594,7 +601,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
      */
     public function settingsAttributes(): array
     {
-        $attributes = parent::settingsAttributes();
+        $attributes = ArrayHelper::without(parent::settingsAttributes(), 'createButtonLabel');
         $attributes[] = 'entryTypes';
         return $attributes;
     }
@@ -735,7 +742,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
                     'value' => null,
                 ],
             ], $transformOptions),
-            'defaultCreateButtonLabel' => $this->defaultCreateButtonLabel(),
         ]);
     }
 
@@ -929,7 +935,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
      */
     protected function createFieldData(string $content, ?int $siteId): HtmlFieldData
     {
-        return new FieldData($content, $siteId);
+        return new FieldData($content, $siteId, $this);
     }
 
     /**
@@ -973,7 +979,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             'accessibleFieldName' => $this->_accessibleFieldName($element),
             'describedBy' => $this->_describedBy($view),
             'entryTypeOptions' => $this->_getEntryTypeOptions(),
-            'createButtonLabel' => $this->createButtonLabel(),
             'findAndReplace' => [
                 'uiType' => 'dropdown',
             ],
@@ -1392,6 +1397,7 @@ JS,
         $entryTypeOptions = array_map(
             fn(EntryType $entryType) => [
                 'icon' => $entryType->icon ? Cp::iconSvg($entryType->icon) : null,
+                'color' => $entryType->getColor()?->value,
                 'label' => Craft::t('site', $entryType->name),
                 'value' => $entryType->id,
             ],
@@ -1399,21 +1405,6 @@ JS,
         );
 
         return $entryTypeOptions;
-    }
-
-    private function createButtonLabel(): string
-    {
-        if (isset($this->createButtonLabel)) {
-            return Craft::t('site', $this->createButtonLabel);
-        }
-        return $this->defaultCreateButtonLabel();
-    }
-
-    private function defaultCreateButtonLabel(): string
-    {
-        return Craft::t('app', 'New {type}', [
-            'type' => Entry::lowerDisplayName(),
-        ]);
     }
 
     /**

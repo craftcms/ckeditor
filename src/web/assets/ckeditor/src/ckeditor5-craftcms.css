@@ -146,11 +146,17 @@
   background: var(--ck-color-base-background);
 }
 
+/* nested entries */
 .cke-entry-card {
   margin-block: 0.9em;
   margin-inline: auto; /* same as images */
   border-radius: var(--large-border-radius);
 }
+
+.ck-toolbar .entry-type-buttons .icon {
+  color: var(--icon-color);
+}
+/* end nested entries
 
 /* start fix for https://github.com/craftcms/ckeditor/issues/345 */
 .so-body .ck-toolbar_grouping {

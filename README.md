@@ -157,16 +157,7 @@ CKEditor fields use [HTML Purifier](http://htmlpurifier.org) to ensure that no m
 
 You can create custom HTML Purifier configs that will be available to your CKEditor fields. They should be created as JSON files in your `config/htmlpurifier/` folder.
 
-Use this as a starting point, which is the default config that CKEditor fields use if no custom HTML Purifier config is selected:
-
-```json
-{
-  "Attr.AllowedFrameTargets": [
-    "_blank"
-  ],
-  "Attr.EnableID": true
-}
-```
+The [Default config](https://github.com/craftcms/craft/blob/HEAD/config/htmlpurifier/Default.json) defined by the the [craftcms/craft](https://github.com/craftcms/craft) starter project should be used as a starting point.
 
 See the [HTML Purifier documentation](http://htmlpurifier.org/live/configdoc/plain.html) for a list of available config options.
 
@@ -191,9 +182,15 @@ Event::on(
 
 ### Embedding Media
 
-CKEditor 5 stores references to embedded media embeds using `oembed` tags. Craft CMS configures HTML Purifier to support these tags, however you will need to ensure that the `URI.SafeIframeRegexp` HTML Purifier setting is set to allow any domains you wish to embed content from. 
+CKEditor 5 stores references to embedded media embeds using `oembed` tags. Craft CMS configures HTML Purifier to support these tags, however you will need to ensure that the `URI.SafeIframeRegexp` HTML Purifier setting is set to allow any domains you wish to embed content from.
 
-See CKEditor’s [media embed documentation](https://ckeditor.com/docs/ckeditor5/latest/features/media-embed.html#displaying-embedded-media-on-your-website) for examples of how to show the embedded media on your front end.
+```json
+{
+  "URI.SafeIframeRegexp": "%^(https?:)?//(www\\.youtube\\.com/|youtu\\.be|player\\.vimeo\\.com/)%"
+}
+```
+
+To automatically replace `oembed` tags with the media provider’s embed HTML, enable the field’s “Parse embeds” setting. Alternatively, see CKEditor’s [media embed documentation](https://ckeditor.com/docs/ckeditor5/latest/features/media-embed.html#displaying-embedded-media-on-your-website) for examples of how to show the embedded media on your front end.
 
 ## Longform Content with Nested Entries
 

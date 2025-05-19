@@ -9,6 +9,7 @@ import {
   WidgetToolbarRepository,
 } from 'ckeditor5';
 import {DoubleClickObserver} from '../observers/domevent';
+import CraftEntryTypesButtonView from './entrytypesbuttonview.js';
 
 export default class CraftEntriesUI extends Plugin {
   /**
@@ -29,9 +30,7 @@ export default class CraftEntriesUI extends Plugin {
    * @inheritDoc
    */
   init() {
-    this.editor.ui.componentFactory.add('createEntry', (locale) => {
-      return this._createToolbarEntriesButton(locale);
-    });
+    this._createToolbarEntriesButtons();
 
     this.editor.ui.componentFactory.add('editEntryBtn', (locale) => {
       return this._createEditEntryBtn(locale);
@@ -108,58 +107,36 @@ export default class CraftEntriesUI extends Plugin {
   }
 
   /**
-   * Creates a toolbar button that allows for an entry to be inserted into the editor
+   * Creates toolbar buttons that allow for an entry of given type to be inserted into the editor
    *
-   * @param locale
    * @private
    */
-  _createToolbarEntriesButton(locale) {
+  _createToolbarEntriesButtons() {
     const editor = this.editor;
     const entryTypeOptions = editor.config.get('entryTypeOptions');
-    const insertEntryCommand = editor.commands.get('insertEntry');
 
     if (!entryTypeOptions || !entryTypeOptions.length) {
       return;
     }
 
-    const dropdownView = createDropdown(locale);
-    dropdownView.buttonView.set({
-      label:
-        editor.config.get('createButtonLabel') ||
-        Craft.t('app', 'New {type}', {
-          type: Craft.t('app', 'entry'),
+    this.editor.ui.componentFactory.add(
+      'createEntry',
+      (locale) =>
+        new CraftEntryTypesButtonView(locale, {
+          entriesUi: this,
+          entryTypeOptions: entryTypeOptions,
         }),
-      tooltip: true,
-      withText: true,
-      //commandValue: null,
-    });
-
-    dropdownView.bind('isEnabled').to(insertEntryCommand);
-    addListToDropdown(
-      dropdownView,
-      () =>
-        this._getDropdownItemsDefinitions(entryTypeOptions, insertEntryCommand),
-      {
-        ariaLabel: Craft.t('ckeditor', 'Entry types list'),
-      },
     );
-    // Execute command when an item from the dropdown is selected.
-    this.listenTo(dropdownView, 'execute', (evt) => {
-      this._showCreateEntrySlideout(evt.source.commandValue);
-    });
-
-    return dropdownView;
   }
 
   /**
    * Creates a list of entry type options that go into the insert entry button
    *
    * @param options
-   * @param command
    * @returns {Collection<Record<string, any>>}
    * @private
    */
-  _getDropdownItemsDefinitions(options, command) {
+  _getEntryTypeButtonsCollection(options) {
     const itemDefinitions = new Collection();
     options.map((option) => {
       const definition = {
@@ -168,6 +145,7 @@ export default class CraftEntriesUI extends Plugin {
           commandValue: option.value, //entry type id
           label: option.label || option.value,
           icon: option.icon,
+          color: option.color,
           withText: true,
         }),
       };

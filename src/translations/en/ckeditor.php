@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'Add nested content' => 'Add nested content',
     'Advanced' => 'Advanced',
     'Advanced Link Fields' => 'Advanced Link Fields',
     'Available Transforms' => 'Available Transforms',
@@ -42,6 +43,7 @@ return [
     'Site: {name}' => 'Site: {name}',
     'The default transform that should be applied when inserting an image.' => 'The default transform that should be applied when inserting an image.',
     'The maximum number of words or characters the field is allowed to have.' => 'The maximum number of words or characters the field is allowed to have.',
+    'The text tooltip for the entry creation button.' => 'The text tooltip for the entry creation button.',
     'The transforms that should be available when inserting images.' => 'The transforms that should be available when inserting images.',
     'The type of column this field should get in the database.' => 'The type of column this field should get in the database.',
     'This field doesn’t allow nested entries.' => 'This field doesn’t allow nested entries.',
@@ -55,4 +57,5 @@ return [
     '{attribute} isn’t valid JSON.' => '{attribute} isn’t valid JSON.',
     '{field} should contain at most {max, number} {max, plural, one{character} other{characters}}.' => '{field} should contain at most {max, number} {max, plural, one{character} other{characters}}.',
     '{field} should contain at most {max, number} {max, plural, one{word} other{words}}.' => '{field} should contain at most {max, number} {max, plural, one{word} other{words}}.',
+    '“+” Button Tooltip' => '“+” Button Tooltip',
 ];
