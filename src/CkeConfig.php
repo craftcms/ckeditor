@@ -11,7 +11,12 @@ use Craft;
 use craft\base\Actionable;
 use craft\base\Chippable;
 use craft\base\Model;
+use craft\elements\Entry;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\Json;
+use craft\models\EntryType;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 use yii\validators\Validator;
@@ -82,6 +87,26 @@ class CkeConfig extends Model implements Chippable, Actionable
      */
     public ?string $css = null;
 
+    /**
+     * @var EntryType[] The field’s available entry types
+     * @see getEntryTypes()
+     * @see setEntryTypes()
+     */
+    private array $_entryTypes = [];
+
+    /**
+     * @var string|null The “New entry” button label.
+     * @since 5.0.0
+     */
+    public ?string $createButtonLabel = null;
+
+    /**
+     * @var array
+     * @see getEntryTypesToolbar()
+     * @see setEntryTypesToolbar()
+     */
+    private array $_entryTypesToolbar = [];
+
     public function __construct($config = [])
     {
         if (isset($config['toolbar']) && is_array($config['toolbar'])) {
@@ -116,6 +141,14 @@ class CkeConfig extends Model implements Chippable, Actionable
             if ($config['css'] === '') {
                 unset($config['css']);
             }
+        }
+
+        if (isset($config['entryTypes']) && $config['entryTypes'] === '') {
+            $config['entryTypes'] = [];
+        }
+
+        if (isset($config['entryTypesToolbar']) && $config['entryTypesToolbar'] === '') {
+            $config['entryTypesToolbar'] = [];
         }
 
         unset($config['listPlugin']);
@@ -306,5 +339,111 @@ JS, [
                 'when' => fn() => isset($this->_json),
             ],
         ];
+    }
+
+    /**
+     * Returns the available entry types.
+     *
+     * @return EntryType[]
+     */
+    public function getEntryTypes(): array
+    {
+        return $this->_entryTypes;
+    }
+
+    /**
+     * Sets the available entry types.
+     *
+     * @param array<int|string|EntryType> $entryTypes The entry types, or their IDs or UUIDs
+     */
+    public function setEntryTypes(array $entryTypes): void
+    {
+        $entriesService = Craft::$app->getEntries();
+
+        $this->_entryTypes = array_values(array_filter(array_map(
+            fn($entryType) => $entriesService->getEntryType($entryType),
+            $entryTypes,
+        )));
+    }
+
+    /**
+     * Returns entry type options in form of an array with 'label' and 'value' keys for each option.
+     *
+     * @return array
+     */
+    public function getEntryTypeOptions(): array
+    {
+        $entryTypes = $this->getEntryTypes();
+        $entryTypesToolbar = $this->getEntryTypesToolbar();
+        $entryTypeOptions = [];
+        foreach ($entryTypesToolbar as $item) {
+            /** @var EntryType $entryType */
+            $entryType = array_values(array_filter($entryTypes, function($entryType) use ($item) {
+                return $entryType->uid === $item['uid'];
+            }));
+
+            if (empty($entryType)) {
+                continue;
+            }
+
+            $entryType = $entryType[0];
+
+            $entryTypeOptions[] = [
+                'color' => $entryType->getColor()?->value,
+                'expanded' => $item['expanded'] ?? false,
+                'icon' => $entryType->icon ? Cp::iconSvg($entryType->icon) : null,
+                'label' => Craft::t('site', $entryType->name),
+                'value' => $entryType->id,
+                'withColor' => $item['withColor'] ?? true,
+                'withIcon' => $item['withIcon'] ?? true,
+                'withText' => $item['withText'] ?? true,
+            ];
+        }
+
+        return $entryTypeOptions;
+    }
+
+    public function createButtonLabel(): string
+    {
+        if (isset($this->createButtonLabel)) {
+            return Craft::t('site', $this->createButtonLabel);
+        }
+        return $this->defaultCreateButtonLabel();
+    }
+
+    public function defaultCreateButtonLabel(): string
+    {
+        return Craft::t('app', 'New {type}', [
+            'type' => Entry::lowerDisplayName(),
+        ]);
+    }
+
+    public function getEntryTypesToolbar(): array
+    {
+        return $this->_entryTypesToolbar;
+    }
+
+    public function setEntryTypesToolbar(mixed $config): void
+    {
+        if (is_string($config)) {
+            $config = Json::decode($config);
+        }
+
+        if (!empty($config)) {
+            foreach ($config as &$item) {
+                if (isset($item['id'])) {
+                    // find ET by ID
+                    $entryType = Craft::$app->getEntries()->getEntryTypeById($item['id']);
+
+                    if (!$entryType) {
+                        throw new InvalidArgumentException("Invalid Entry Type ID: {$item['id']}");
+                    }
+
+                    unset($item['id']);
+                    $item['uid'] = $entryType->uid;
+                }
+            }
+        }
+        $this->_entryTypesToolbar = $config;
     }
 }

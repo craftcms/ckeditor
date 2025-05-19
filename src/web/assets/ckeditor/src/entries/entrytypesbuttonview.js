@@ -28,26 +28,45 @@ export default class CraftEntryTypesButtonView extends View {
       .forEach((item, index) => {
         let button = new ButtonView();
 
-        if (item.model.icon) {
-          let classes = ['btn', 'icon', 'cp-icon', 'ck-reset_all-excluded'];
+        if (item.model.expanded) {
+          let btnConfig = {
+            commandValue: item.model.commandValue, //entry type id
+            label: item.model.label,
+            withText: item.model.withText,
+            tooltip: Craft.t('app', 'New {type}', {
+              type: item.model.label,
+            }),
+          };
+
+          let classes = ['btn', 'ck-reset_all-excluded'];
+
+          if (item.model.icon) {
+            classes.push(['icon']);
+          }
+
+          if (item.model.icon && item.model.withIcon && !item.model.withText) {
+            classes.push(['cp-icon']);
+          }
 
           if (item.model.color) {
             classes.push([item.model.color]);
           }
 
-          button.set({
-            commandValue: item.model.commandValue, //entry type id
-            label: item.model.label,
-            icon: item.model.icon,
-            withText: false,
-            tooltip: Craft.t('app', 'New {type}', {
-              type: item.model.label,
-            }),
-            class: classes.join(' '),
-          });
+          btnConfig.class = classes.join(' ');
 
+          if (item.model.withIcon) {
+            btnConfig.icon = item.model.icon;
+          }
+
+          button.set(btnConfig);
           buttons.add(button);
         } else {
+          if (item.model.color && item.model.withColor) {
+            if (!item.model.class) {
+              item.model.class = '';
+            }
+            item.model.class += 'icon ' + item.model.color;
+          }
           textButtons.add(item);
         }
 

@@ -8,6 +8,8 @@
 namespace craft\ckeditor;
 
 use Craft;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
+use craft\models\EntryType;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 
@@ -70,6 +72,12 @@ class CkeConfigs extends Component
             'options' => $ckeConfig->options,
             'js' => $ckeConfig->js,
             'css' => $ckeConfig->css,
+            'entryTypes' => array_map(
+                fn(EntryType $entryType) => $entryType->getUsageConfig(),
+                $ckeConfig->getEntryTypes(),
+            ),
+            'entryTypesToolbar' => $ckeConfig->getEntryTypesToolbar(),
+            'createButtonLabel' => $ckeConfig->createButtonLabel,
         ], fn($item) => $item !== null));
 
         return true;

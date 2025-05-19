@@ -143,10 +143,13 @@ export default class CraftEntriesUI extends Plugin {
         type: 'button',
         model: new ViewModel({
           commandValue: option.value, //entry type id
-          label: option.label || option.value,
-          icon: option.icon,
           color: option.color,
-          withText: true,
+          expanded: option.expanded,
+          icon: option.icon,
+          label: option.label || option.value,
+          withColor: option.withColor,
+          withIcon: option.withIcon,
+          withText: option.expanded ? option.withText : true, // items in a dropdown should always have text
         }),
       };
       itemDefinitions.add(definition);

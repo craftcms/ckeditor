@@ -93,6 +93,7 @@ class CkeConfigsController extends Controller
                 $response->contentTemplate('ckeditor/cke-configs/_edit.twig', [
                     'importStatements' => CkeditorConfig::getImportStatements(),
                     'toolbarBuilderId' => $this->view->namespaceInputId('toolbar-builder'),
+                    'entryTypesToolbarBuilderId' => $this->view->namespaceInputId('entry-types-toolbar-builder'),
                     'configOptionsId' => $this->view->namespaceInputId('config-options'),
                     'containerId' => $containerId,
                     'toolbarItems' => CkeditorConfig::normalizeToolbarItems(CkeditorConfig::$toolbarItems),
@@ -101,6 +102,9 @@ class CkeConfigsController extends Controller
                     'jsonSchema' => CkeditorConfigSchema::create(),
                     'jsonSchemaUri' => $jsonSchemaUri,
                     'advanceLinkOptions' => CkeditorConfig::advanceLinkOptions(),
+                    'defaultCreateButtonLabel' => $ckeConfig->defaultCreateButtonLabel(),
+                    'entryTypes' => $ckeConfig->getEntryTypes(),
+                    'entryTypesToolbar' => $ckeConfig->getEntryTypesToolbar(),
                 ]);
             });
 
@@ -135,6 +139,9 @@ class CkeConfigsController extends Controller
             'json' => $this->request->getBodyParam('json'),
             'js' => $this->request->getBodyParam('js'),
             'css' => $this->request->getBodyParam('css'),
+            'entryTypes' => $this->request->getBodyParam('entryTypes'),
+            'entryTypesToolbar' => $this->request->getBodyParam('entryTypesToolbar') ?: null,
+            'createButtonLabel' => $this->request->getBodyParam('createButtonLabel'),
         ]);
 
         if (!Plugin::getInstance()->getCkeConfigs()->save($ckeConfig)) {
