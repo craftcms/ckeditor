@@ -81,20 +81,11 @@
 } %}
   {% block input %}
     <div id="entry-types-toolbar-builder">
-      <textarea name="entryTypesToolbar">{{ ckeConfig.entryTypesToolbar|json_encode }}</textarea>
-
+      <div class="visual" style="width: 100%; min-height: 50px; border: 1px solid red;"></div>
+      <input type="text" style="width: 100%;" name="entryTypesToolbar" value="{{ ckeConfig.entryTypesToolbar|json_encode }}"/>
     </div>
   {% endblock %}
 {% endembed %}
-{#{{ forms.textareaField({
-  label: 'Entry Types Toolbar'|t('app'),
-  instructions: ''|t('app'),
-  id: 'entry-types-toolbar-builder',
-  name: 'entryTypesToolbar[]',
-  values: ckeConfig.getEntryTypesToolbar(),
-  errors: ckeConfig.getErrors('entryTypesToolbar'),
-  data: {'error-key': 'entryTypesToolbar'},
-}) }}#}
 
 {{ forms.entryTypeSelectField({
   label: 'Entry Types'|t('app'),

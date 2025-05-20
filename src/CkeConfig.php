@@ -147,7 +147,7 @@ class CkeConfig extends Model implements Chippable, Actionable
             $config['entryTypes'] = [];
         }
 
-        if (isset($config['entryTypesToolbar']) && $config['entryTypesToolbar'] === '') {
+        if (!isset($config['entryTypesToolbar']) || $config['entryTypesToolbar'] == null) {
             $config['entryTypesToolbar'] = [];
         }
 
@@ -420,7 +420,23 @@ JS, [
 
     public function getEntryTypesToolbar(): array
     {
-        return $this->_entryTypesToolbar;
+        $items = [];
+        foreach ($this->_entryTypesToolbar as $item) {
+            // find ET by ID
+            $entryType = Craft::$app->getEntries()->getEntryTypeByUid($item['uid']);
+
+//            if (!$entryType) {
+//                throw new InvalidArgumentException("Invalid Entry Type UID: {$item['uid']}");
+//            }
+
+            if ($entryType) {
+                $item['id'] = $entryType->id;
+            }
+
+            $items[] = $item;
+        }
+
+        return $items;
     }
 
     public function setEntryTypesToolbar(mixed $config): void
