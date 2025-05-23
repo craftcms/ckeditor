@@ -609,56 +609,6 @@ const ConfigOptions = Garnish.Base.extend({
     return js2;
   }
 });
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license GPL-3.0-or-later
- */
-const EntryTypesToolbarBuilder = Garnish.Base.extend({
-  entryTypes: [],
-  entryTypesToolbar: [],
-  entryTypesComponent: [],
-  selectedComponentIds: [],
-  init: function(id2, entryTypes, entryTypesToolbar) {
-    this.$container = $(`#${id2}`);
-    this.entryTypes = entryTypes;
-    this.entryTypesToolbar = entryTypesToolbar;
-    let $entryTypesContainer = this.$container.closest("form").find('[data-attribute="entry-types"]');
-    let $entryTypesField = $entryTypesContainer.find(".componentselect").first();
-    this.entryTypesComponent = $entryTypesField.data("componentSelect");
-    console.log(this.entryTypesComponent);
-    this.selectedComponentIds = this.entryTypesComponent.getSelectedComponentIds();
-    this.entryTypesComponent.on("change", () => {
-      this.handleEntryTypesChange();
-    });
-  },
-  handleEntryTypesChange: function() {
-    this.entryTypesComponent.getComponents();
-    let newSelectedComponentIds = this.entryTypesComponent.getSelectedComponentIds();
-    if (newSelectedComponentIds.length < this.selectedComponentIds.length) {
-      const removedComponentId = this.selectedComponentIds.filter(
-        (value) => !newSelectedComponentIds.includes(value)
-      )[0];
-      this.entryTypesToolbar = this.entryTypesToolbar.filter(
-        (item) => item.id != removedComponentId
-      );
-      this.$container.find("textarea").val(JSON.stringify(this.entryTypesToolbar));
-    } else {
-      const newComponentId = newSelectedComponentIds.filter(
-        (value) => !this.selectedComponentIds.includes(value)
-      )[0];
-      this.entryTypesToolbar.push({
-        expanded: false,
-        id: newComponentId,
-        withColor: true,
-        withIcon: true,
-        withText: true
-      });
-      this.$container.find("textarea").val(JSON.stringify(this.entryTypesToolbar));
-    }
-    this.selectedComponentIds = this.entryTypesComponent.getSelectedComponentIds();
-  }
-});
 const CkeEntryTypeSelectInput = Craft.EntryTypeSelectInput.extend(
   {
     init: function(settings = {}) {
@@ -671,13 +621,13 @@ const CkeEntryTypeSelectInput = Craft.EntryTypeSelectInput.extend(
       let config2 = JSON.parse($input.val());
       let $actionBtn = $component.find(".action-btn");
       let disclosureMenu = $actionBtn.disclosureMenu().data("disclosureMenu");
-      let expandBtn, collapseBtn;
+      let expandBtn, collapseBtn, withColorBtn, withoutColorBtn, withIconBtn, withoutIconBtn, withTextBtn, withoutTextBtn;
       expandBtn = disclosureMenu.addItem({
         icon: async () => await Craft.ui.icon("eye"),
         label: Craft.t("ckeditor", "Expand to a separate button"),
         callback: () => {
           config2.expanded = true;
-          this.updateConfig($input, config2);
+          this.applyConfigChange($component, $input, config2);
         }
       });
       collapseBtn = disclosureMenu.addItem({
@@ -685,14 +635,95 @@ const CkeEntryTypeSelectInput = Craft.EntryTypeSelectInput.extend(
         label: Craft.t("ckeditor", "Collapse to a dropdown"),
         callback: () => {
           config2.expanded = false;
-          this.updateConfig($input, config2);
+          this.applyConfigChange($component, $input, config2);
+        }
+      });
+      withColorBtn = disclosureMenu.addItem({
+        icon: async () => await Craft.ui.icon("brush"),
+        label: Craft.t("ckeditor", "Show with color"),
+        callback: () => {
+          config2.withColor = true;
+          this.applyConfigChange($component, $input, config2);
+        }
+      });
+      withoutColorBtn = disclosureMenu.addItem({
+        icon: async () => await Craft.ui.icon("xmark"),
+        label: Craft.t("ckeditor", "Show without color"),
+        callback: () => {
+          config2.withColor = false;
+          this.applyConfigChange($component, $input, config2);
+        }
+      });
+      withIconBtn = disclosureMenu.addItem({
+        icon: async () => await Craft.ui.icon("image"),
+        label: Craft.t("ckeditor", "Show with icon"),
+        callback: () => {
+          config2.withIcon = true;
+          this.applyConfigChange($component, $input, config2);
+        }
+      });
+      withoutIconBtn = disclosureMenu.addItem({
+        icon: async () => await Craft.ui.icon("xmark"),
+        label: Craft.t("ckeditor", "Show without icon"),
+        callback: () => {
+          config2.withIcon = false;
+          this.applyConfigChange($component, $input, config2);
+        }
+      });
+      withTextBtn = disclosureMenu.addItem({
+        icon: async () => await Craft.ui.icon("t"),
+        label: Craft.t("ckeditor", "Show with text"),
+        callback: () => {
+          config2.withText = true;
+          this.applyConfigChange($component, $input, config2);
+        }
+      });
+      withoutTextBtn = disclosureMenu.addItem({
+        icon: async () => await Craft.ui.icon("xmark"),
+        label: Craft.t("ckeditor", "Show without text"),
+        callback: () => {
+          config2.withText = false;
+          this.applyConfigChange($component, $input, config2);
         }
       });
       disclosureMenu.on("show", () => {
         disclosureMenu.toggleItem(expandBtn, !config2.expanded);
         disclosureMenu.toggleItem(collapseBtn, config2.expanded);
+        disclosureMenu.toggleItem(withColorBtn, !config2.withColor);
+        disclosureMenu.toggleItem(withoutColorBtn, config2.withColor);
+        disclosureMenu.toggleItem(withIconBtn, !config2.withIcon);
+        disclosureMenu.toggleItem(withoutIconBtn, config2.withIcon);
+        disclosureMenu.toggleItem(withTextBtn, !config2.withText);
+        disclosureMenu.toggleItem(withoutTextBtn, config2.withText);
       });
       this.base($component);
+    },
+    async applyConfigChange($component, $input, config2) {
+      this.applyIndicators($component, config2).then(() => {
+        this.updateConfig($input, config2);
+      });
+    },
+    async applyIndicators($component, config2) {
+      var _a, _b;
+      let data;
+      try {
+        const response = await Craft.sendActionRequest(
+          "POST",
+          "ckeditor/cke-configs/apply-entry-type-indicators",
+          {
+            data: {
+              config: config2
+            }
+          }
+        );
+        data = response.data;
+      } catch (e) {
+        Craft.cp.displayError((_b = (_a = e == null ? void 0 : e.response) == null ? void 0 : _a.data) == null ? void 0 : _b.message);
+        throw e;
+      }
+      const $oldIndicators = $component.find(".indicators");
+      const $newIndicators = $(data.chip).find(".indicators");
+      $oldIndicators.replaceWith($newIndicators);
     },
     updateConfig: function($input, config2) {
       $input.val(JSON.stringify(config2));
@@ -707,6 +738,5 @@ const CkeEntryTypeSelectInput = Craft.EntryTypeSelectInput.extend(
 export {
   CkeEntryTypeSelectInput,
   ConfigOptions,
-  EntryTypesToolbarBuilder,
   ToolbarBuilder
 };

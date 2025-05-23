@@ -946,6 +946,7 @@ class CraftEntriesUI extends Plugin {
   _createToolbarEntriesButtons() {
     const editor = this.editor;
     const entryTypeOptions = editor.config.get("entryTypeOptions");
+    console.log(entryTypeOptions);
     if (!entryTypeOptions || !entryTypeOptions.length) {
       return;
     }

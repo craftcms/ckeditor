@@ -8,16 +8,7 @@
 namespace craft\ckeditor\models;
 
 use Craft;
-use craft\base\Actionable;
-use craft\base\Chippable;
-use craft\base\Colorable;
-use craft\base\CpEditable;
-use craft\base\FieldLayoutProviderInterface;
-use craft\base\GqlInlineFragmentInterface;
-use craft\base\Iconic;
-use craft\base\Indicative;
 use craft\behaviors\FieldLayoutBehavior;
-use craft\helpers\Inflector;
 use craft\models\EntryType as CraftEntryType;
 
 /**
@@ -73,5 +64,31 @@ class EntryType extends CraftEntryType
         }
 
         return $indicators;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUsageConfig(): array
+    {
+        $config = parent::getUsageConfig();
+
+        if (isset($this->expanded)) {
+            $config['expanded'] = $this->expanded;
+        }
+
+        if (isset($this->withColor)) {
+            $config['withColor'] = $this->withColor;
+        }
+
+        if (isset($this->withIcon)) {
+            $config['withIcon'] = $this->withIcon;
+        }
+
+        if (isset($this->withText)) {
+            $config['withText'] = $this->withText;
+        }
+
+        return $config;
     }
 }

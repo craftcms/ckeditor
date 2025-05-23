@@ -6,5 +6,4 @@
 
 export {default as ToolbarBuilder} from './ToolbarBuilder.js';
 export {default as ConfigOptions} from './ConfigOptions.js';
-export {default as EntryTypesToolbarBuilder} from './EntryTypesToolbarBuilder.js';
 export {default as CkeEntryTypeSelectInput} from './CkeEntryTypeSelectInput.js';

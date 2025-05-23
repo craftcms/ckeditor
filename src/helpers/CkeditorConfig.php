@@ -8,6 +8,7 @@
 namespace craft\ckeditor\helpers;
 
 use Craft;
+use craft\ckeditor\models\EntryType as CkeEntryType;
 use Illuminate\Support\Collection;
 
 /**
@@ -411,5 +412,13 @@ final class CkeditorConfig
                 ],
             ],
         ];
+    }
+
+    public static function getCkeEntryType(array $config): CkeEntryType
+    {
+        $craftEntryType = Craft::$app->getEntries()->getEntryType($config);
+        $properties = $config + get_object_vars($craftEntryType);
+
+        return new CkeEntryType($properties);
     }
 }

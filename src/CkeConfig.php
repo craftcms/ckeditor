@@ -11,13 +11,11 @@ use Craft;
 use craft\base\Actionable;
 use craft\base\Chippable;
 use craft\base\Model;
+use craft\ckeditor\helpers\CkeditorConfig;
+use craft\ckeditor\models\EntryType as CkeEntryType;
 use craft\elements\Entry;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Json;
-use craft\ckeditor\models\EntryType as CkeEntryType;
-use craft\models\EntryType;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 use yii\validators\Validator;
@@ -95,19 +93,6 @@ class CkeConfig extends Model implements Chippable, Actionable
      */
     private array $_entryTypes = [];
 
-    /**
-     * @var string|null The “New entry” button label.
-     * @since 5.0.0
-     */
-    public ?string $createButtonLabel = null;
-
-    /**
-     * @var array
-     * @see getEntryTypesToolbar()
-     * @see setEntryTypesToolbar()
-     */
-    private array $_entryTypesToolbar = [];
-
     public function __construct($config = [])
     {
         if (isset($config['toolbar']) && is_array($config['toolbar'])) {
@@ -146,10 +131,6 @@ class CkeConfig extends Model implements Chippable, Actionable
 
         if (isset($config['entryTypes']) && $config['entryTypes'] === '') {
             $config['entryTypes'] = [];
-        }
-
-        if (!isset($config['entryTypesToolbar']) || $config['entryTypesToolbar'] == null) {
-            $config['entryTypesToolbar'] = [];
         }
 
         unset($config['listPlugin']);
@@ -355,68 +336,25 @@ JS, [
     /**
      * Sets the available entry types.
      *
-     * @param array<int|string|CkeEntryType> $entryTypes The entry types, or their IDs or UUIDs
+     * @param array<string> $entryTypes The entry types, or their IDs or UUIDs
      */
     public function setEntryTypes(array $entryTypes): void
     {
-        $entriesService = Craft::$app->getEntries();
-
+        // normalize the $entryTypes; when saving the config, it'll be an array of json strings, like so:
         foreach ($entryTypes as &$entryType) {
             if (is_string($entryType)) {
                 try {
                     $entryType = Json::decode($entryType);
-                    $entryType = new CkeEntryType($entryType);
                 } catch (InvalidArgumentException) {
                     // do nothing?
                 }
             }
         }
-        $t = 1;
-        // TODO: normalize the $entryTypes; when saving the config, it'll be an array of json strings, like so:
-        //Array
-        //(
-        //    [0] => {"withColor":true,"withIcon":true,"withText":true,"expanded":true,"id":9,"name":"Article","handle":"article"}
-        //    [1] => {"withColor":true,"withIcon":true,"withText":true,"expanded":false,"id":16,"name":"tommy et","handle":"tommyEt"}
-        //)
-//        foreach ($entryTypes as &$entryType) {
-//            if (is_string($entryType)) {
-//                try {
-//                    $entryType = Json::decode($entryType);
-//                } catch (InvalidArgumentException) {
-//                    // do nothing?
-//                }
-//            }
-//        }
         unset($entryType);
 
-        $craftEntryTypes = array_values(array_filter(array_map(
-            fn($entryType) => $entriesService->getEntryType($entryType),
-            $entryTypes,
-        )));
-
-        foreach ($craftEntryTypes as $craftEntryType) {
-            foreach ($entryTypes as $entryType) {
-                if (
-                    (isset($entryType['uid']) && $entryType['uid'] === $craftEntryType->uid) ||
-                    (isset($entryType['id']) && $entryType['id'] === $craftEntryType->id)
-                ) {
-                    $test = new CkeEntryType(get_object_vars($craftEntryType));
-                    if (isset($entryType['withColor'])) {
-                        $test->withColor = $entryType['withColor'];
-                    }
-                    if (isset($entryType['withIcon'])) {
-                        $test->withIcon = $entryType['withIcon'];
-                    }
-                    if (isset($entryType['withText'])) {
-                        $test->withText = $entryType['withText'];
-                    }
-                    if (isset($entryType['expanded'])) {
-                        $test->expanded = $entryType['expanded'];
-                    }
-
-                    $this->_entryTypes[] = $test;
-                }
-            }
+        foreach ($entryTypes as $entryType) {
+            /** @var array $entryType */
+            $this->_entryTypes[] = CkeditorConfig::getCkeEntryType($entryType);
         }
     }
 
@@ -427,93 +365,21 @@ JS, [
      */
     public function getEntryTypeOptions(): array
     {
-        $entryTypes = $this->getEntryTypes();
-        $entryTypesToolbar = $this->getEntryTypesToolbar();
         $entryTypeOptions = [];
-        foreach ($entryTypesToolbar as $item) {
-            /** @var CkeEntryType $entryType */
-            $entryType = array_values(array_filter($entryTypes, function($entryType) use ($item) {
-                return $entryType->uid === $item['uid'];
-            }));
 
-            if (empty($entryType)) {
-                continue;
-            }
-
-            $entryType = $entryType[0];
-
+        foreach ($this->getEntryTypes() as $entryType) {
             $entryTypeOptions[] = [
                 'color' => $entryType->getColor()?->value,
-                'expanded' => $item['expanded'] ?? false,
+                'expanded' => $entryType['expanded'] ?? false,
                 'icon' => $entryType->icon ? Cp::iconSvg($entryType->icon) : null,
                 'label' => Craft::t('site', $entryType->name),
                 'value' => $entryType->id,
-                'withColor' => $item['withColor'] ?? true,
-                'withIcon' => $item['withIcon'] ?? true,
-                'withText' => $item['withText'] ?? true,
+                'withColor' => $entryType['withColor'] ?? true,
+                'withIcon' => $entryType['withIcon'] ?? true,
+                'withText' => $entryType['withText'] ?? true,
             ];
         }
 
         return $entryTypeOptions;
-    }
-
-    public function createButtonLabel(): string
-    {
-        if (isset($this->createButtonLabel)) {
-            return Craft::t('site', $this->createButtonLabel);
-        }
-        return $this->defaultCreateButtonLabel();
-    }
-
-    public function defaultCreateButtonLabel(): string
-    {
-        return Craft::t('app', 'New {type}', [
-            'type' => Entry::lowerDisplayName(),
-        ]);
-    }
-
-    public function getEntryTypesToolbar(): array
-    {
-        $items = [];
-        foreach ($this->_entryTypesToolbar as $item) {
-            // find ET by ID
-            $entryType = Craft::$app->getEntries()->getEntryTypeByUid($item['uid']);
-
-//            if (!$entryType) {
-//                throw new InvalidArgumentException("Invalid Entry Type UID: {$item['uid']}");
-//            }
-
-            if ($entryType) {
-                $item['id'] = $entryType->id;
-            }
-
-            $items[] = $item;
-        }
-
-        return $items;
-    }
-
-    public function setEntryTypesToolbar(mixed $config): void
-    {
-        if (is_string($config)) {
-            $config = Json::decode($config);
-        }
-
-        if (!empty($config)) {
-            foreach ($config as &$item) {
-                if (isset($item['id'])) {
-                    // find ET by ID
-                    $entryType = Craft::$app->getEntries()->getEntryTypeById($item['id']);
-
-                    if (!$entryType) {
-                        throw new InvalidArgumentException("Invalid Entry Type ID: {$item['id']}");
-                    }
-
-                    unset($item['id']);
-                    $item['uid'] = $entryType->uid;
-                }
-            }
-        }
-        $this->_entryTypesToolbar = $config;
     }
 }

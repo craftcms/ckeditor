@@ -52,7 +52,6 @@ use craft\htmlfield\HtmlField;
 use craft\htmlfield\HtmlFieldData;
 use craft\i18n\Locale;
 use craft\models\CategoryGroup;
-use craft\models\EntryType;
 use craft\models\ImageTransform;
 use craft\models\Section;
 use craft\models\Volume;
@@ -442,24 +441,11 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
      */
     public bool $showUnpermittedFiles = false;
 
-//    /**
-//     * @var string|null The “New entry” button label.
-//     * @since 4.0.0
-//     */
-//    public ?string $createButtonLabel = null;
-
     /**
      * @var bool Whether GraphQL values should be returned as objects with `content`, `chunks`, etc., sub-fields.
      * @since 4.8.0
      */
     public bool $fullGraphqlData = true;
-
-//    /**
-//     * @var EntryType[] The field’s available entry types
-//     * @see getEntryTypes()
-//     * @see setEntryTypes()
-//     */
-//    private array $_entryTypes = [];
 
     /**
      * @inheritdoc
@@ -592,16 +578,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
 
         return Generator::generateType($this);
     }
-
-//    /**
-//     * @inheritdoc
-//     */
-//    public function settingsAttributes(): array
-//    {
-//        $attributes = parent::settingsAttributes();
-//        $attributes[] = 'entryTypes';
-//        return $attributes;
-//    }
 
     /**
      * @inheritdoc
@@ -739,35 +715,9 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
                     'value' => null,
                 ],
             ], $transformOptions),
-            'defaultCreateButtonLabel' => $ckeConfig->defaultCreateButtonLabel(),
         ]);
     }
 
-//    /**
-//     * Returns the available entry types.
-//     *
-//     * @return EntryType[]
-//     */
-//    public function getEntryTypes(): array
-//    {
-//        return $this->_entryTypes;
-//    }
-//
-//    /**
-//     * Sets the available entry types.
-//     *
-//     * @param array<int|string|EntryType> $entryTypes The entry types, or their IDs or UUIDs
-//     */
-//    public function setEntryTypes(array $entryTypes): void
-//    {
-//        $entriesService = Craft::$app->getEntries();
-//
-//        $this->_entryTypes = array_values(array_filter(array_map(
-//            fn($entryType) => $entriesService->getEntryType($entryType),
-//            $entryTypes,
-//        )));
-//    }
-//
     /**
      * @inheritdoc
      */
@@ -791,11 +741,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             $settings['entryTypes'],
             $settings['createButtonLabel'],
         );
-
-//        $settings['entryTypes'] = array_map(
-//            fn(EntryType $entryType) => $entryType->getUsageConfig(),
-//            $this->getEntryTypes(),
-//        );
 
         return $settings;
     }
@@ -979,7 +924,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             'accessibleFieldName' => $this->_accessibleFieldName($element),
             'describedBy' => $this->_describedBy($view),
             'entryTypeOptions' => $ckeConfig->getEntryTypeOptions(),
-            'createButtonLabel' => $ckeConfig->createButtonLabel(),
             'findAndReplace' => [
                 'uiType' => 'dropdown',
             ],
@@ -1387,40 +1331,6 @@ JS,
 
         return $keywords;
     }
-
-//    /**
-//     * Returns entry type options in form of an array with 'label' and 'value' keys for each option.
-//     *
-//     * @return array
-//     */
-//    private function _getEntryTypeOptions(): array
-//    {
-//        $entryTypeOptions = array_map(
-//            fn(EntryType $entryType) => [
-//                'icon' => $entryType->icon ? Cp::iconSvg($entryType->icon) : null,
-//                'label' => Craft::t('site', $entryType->name),
-//                'value' => $entryType->id,
-//            ],
-//            $this->getEntryTypes(),
-//        );
-//
-//        return $entryTypeOptions;
-//    }
-//
-//    private function createButtonLabel(): string
-//    {
-//        if (isset($this->createButtonLabel)) {
-//            return Craft::t('site', $this->createButtonLabel);
-//        }
-//        return $this->defaultCreateButtonLabel();
-//    }
-//
-//    private function defaultCreateButtonLabel(): string
-//    {
-//        return Craft::t('app', 'New {type}', [
-//            'type' => Entry::lowerDisplayName(),
-//        ]);
-//    }
 
     /**
      * Normalizes <figure> tags, ensuring they have an `image` or `media` class depending on their contents,

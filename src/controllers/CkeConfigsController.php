@@ -13,6 +13,8 @@ use craft\ckeditor\helpers\CkeditorConfig;
 use craft\ckeditor\helpers\CkeditorConfigSchema;
 use craft\ckeditor\Plugin;
 use craft\ckeditor\web\assets\ckeconfig\CkeConfigAsset;
+use craft\helpers\Cp;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\web\assets\admintable\AdminTableAsset;
 use craft\web\Controller;
@@ -93,7 +95,6 @@ class CkeConfigsController extends Controller
                 $response->contentTemplate('ckeditor/cke-configs/_edit.twig', [
                     'importStatements' => CkeditorConfig::getImportStatements(),
                     'toolbarBuilderId' => $this->view->namespaceInputId('toolbar-builder'),
-                    'entryTypesToolbarBuilderId' => $this->view->namespaceInputId('entry-types-toolbar-builder'),
                     'configOptionsId' => $this->view->namespaceInputId('config-options'),
                     'containerId' => $containerId,
                     'toolbarItems' => CkeditorConfig::normalizeToolbarItems(CkeditorConfig::$toolbarItems),
@@ -102,9 +103,7 @@ class CkeConfigsController extends Controller
                     'jsonSchema' => CkeditorConfigSchema::create(),
                     'jsonSchemaUri' => $jsonSchemaUri,
                     'advanceLinkOptions' => CkeditorConfig::advanceLinkOptions(),
-                    'defaultCreateButtonLabel' => $ckeConfig->defaultCreateButtonLabel(),
                     'entryTypes' => $ckeConfig->getEntryTypes(),
-                    'entryTypesToolbar' => $ckeConfig->getEntryTypesToolbar(),
                 ]);
             });
 
@@ -140,8 +139,6 @@ class CkeConfigsController extends Controller
             'js' => $this->request->getBodyParam('js'),
             'css' => $this->request->getBodyParam('css'),
             'entryTypes' => $this->request->getBodyParam('entryTypes'),
-            'entryTypesToolbar' => $this->request->getBodyParam('entryTypesToolbar') ?: null,
-            'createButtonLabel' => $this->request->getBodyParam('createButtonLabel'),
         ]);
 
         if (!Plugin::getInstance()->getCkeConfigs()->save($ckeConfig)) {
@@ -165,5 +162,31 @@ class CkeConfigsController extends Controller
         $uid = $this->request->getBodyParam('uid') ?? $this->request->getBodyParam('id');
         Plugin::getInstance()->getCkeConfigs()->delete($uid);
         return $this->asSuccess(Craft::t('ckeditor', 'CKEditor config deleted.'));
+    }
+
+    /**
+     *
+     */
+    public function actionApplyEntryTypeIndicators(): Response
+    {
+        $config = $this->request->getRequiredBodyParam('config');
+
+        // get entry type by id
+        $entryType = CkeditorConfig::getCkeEntryType($config);
+
+        $chip = Cp::chipHtml($entryType, [
+            'inputName' => 'entryTypes[]',
+            'inputValue' => Json::encode($entryType->toArray(['id', 'name', 'handle', 'expanded', 'withColor', 'withIcon', 'withText'])),
+            'checkbox' => false,
+            'showActionMenu' => true,
+            'showHandle' => true,
+            'showIndicators' => true,
+            'hyperlink' => true,
+            'sortable' => true,
+        ]);
+
+        return $this->asJson([
+            'chip' => $chip,
+        ]);
     }
 }
