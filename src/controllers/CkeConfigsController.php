@@ -20,6 +20,7 @@ use craft\web\assets\admintable\AdminTableAsset;
 use craft\web\Controller;
 use craft\web\CpScreenResponseBehavior;
 use yii\base\InvalidArgumentException;
+use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -165,7 +166,11 @@ class CkeConfigsController extends Controller
     }
 
     /**
+     * Applies an entry type indicators depending on config.
      *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @since 5.0.0
      */
     public function actionApplyEntryTypeIndicators(): Response
     {

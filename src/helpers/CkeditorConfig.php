@@ -414,10 +414,16 @@ final class CkeditorConfig
         ];
     }
 
+    /**
+     * Get ckeditor's Entry Type based on provided config.
+     *
+     * @param array $config
+     * @return CkeEntryType
+     */
     public static function getCkeEntryType(array $config): CkeEntryType
     {
         $craftEntryType = Craft::$app->getEntries()->getEntryType($config);
-        $properties = $config + get_object_vars($craftEntryType);
+        $properties = get_object_vars($craftEntryType) + $config;
 
         return new CkeEntryType($properties);
     }
