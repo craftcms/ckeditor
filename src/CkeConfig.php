@@ -320,6 +320,14 @@ JS, [
                 },
                 'when' => fn() => isset($this->_json),
             ],
+            ['entryTypes', function(string $attribute, ?array $params, Validator $validator) {
+                // ensure that each selected entry type has at least one of: withText, withIcon
+                foreach ($this->$attribute as $entryType) {
+                    if (!$entryType->withIcon && !$entryType->withText) {
+                        $validator->addError($this, $attribute, Craft::t('ckeditor', 'Each entry type must either have an icon or text.'));
+                    }
+                }
+            }],
         ];
     }
 

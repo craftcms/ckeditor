@@ -22,6 +22,7 @@ return [
     'Define custom [config options]({link}) which should be merged with the default config.' => 'Define custom [config options]({link}) which should be merged with the default config.',
     'Disable this at your own risk!' => 'Disable this at your own risk!',
     'Drag toolbar items into the editor.' => 'Drag toolbar items into the editor.',
+    'Each entry type must either have an icon or text.' => 'Each entry type must either have an icon or text.',
     'Edit CKEditor Config' => 'Edit CKEditor Config',
     'Entries cannot be copied between CKEditor fields.' => 'Entries cannot be copied between CKEditor fields.',
     'Entry toolbar' => 'Entry toolbar',
