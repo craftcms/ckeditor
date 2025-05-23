@@ -626,6 +626,7 @@ const EntryTypesToolbarBuilder = Garnish.Base.extend({
     let $entryTypesContainer = this.$container.closest("form").find('[data-attribute="entry-types"]');
     let $entryTypesField = $entryTypesContainer.find(".componentselect").first();
     this.entryTypesComponent = $entryTypesField.data("componentSelect");
+    console.log(this.entryTypesComponent);
     this.selectedComponentIds = this.entryTypesComponent.getSelectedComponentIds();
     this.entryTypesComponent.on("change", () => {
       this.handleEntryTypesChange();
@@ -658,7 +659,53 @@ const EntryTypesToolbarBuilder = Garnish.Base.extend({
     this.selectedComponentIds = this.entryTypesComponent.getSelectedComponentIds();
   }
 });
+const CkeEntryTypeSelectInput = Craft.EntryTypeSelectInput.extend(
+  {
+    init: function(settings = {}) {
+      this.base(
+        Object.assign({}, Craft.EntryTypeSelectInput.defaults, settings)
+      );
+    },
+    addComponentInternal: function($component) {
+      let $input = $component.find('input[name$="entryTypes[]"]');
+      let config2 = JSON.parse($input.val());
+      let $actionBtn = $component.find(".action-btn");
+      let disclosureMenu = $actionBtn.disclosureMenu().data("disclosureMenu");
+      let expandBtn, collapseBtn;
+      expandBtn = disclosureMenu.addItem({
+        icon: async () => await Craft.ui.icon("eye"),
+        label: Craft.t("ckeditor", "Expand to a separate button"),
+        callback: () => {
+          config2.expanded = true;
+          this.updateConfig($input, config2);
+        }
+      });
+      collapseBtn = disclosureMenu.addItem({
+        icon: async () => await Craft.ui.icon("eye-slash"),
+        label: Craft.t("ckeditor", "Collapse to a dropdown"),
+        callback: () => {
+          config2.expanded = false;
+          this.updateConfig($input, config2);
+        }
+      });
+      disclosureMenu.on("show", () => {
+        disclosureMenu.toggleItem(expandBtn, !config2.expanded);
+        disclosureMenu.toggleItem(collapseBtn, config2.expanded);
+      });
+      this.base($component);
+    },
+    updateConfig: function($input, config2) {
+      $input.val(JSON.stringify(config2));
+    }
+  },
+  {
+    defaults: {
+      allowOverrides: false
+    }
+  }
+);
 export {
+  CkeEntryTypeSelectInput,
   ConfigOptions,
   EntryTypesToolbarBuilder,
   ToolbarBuilder

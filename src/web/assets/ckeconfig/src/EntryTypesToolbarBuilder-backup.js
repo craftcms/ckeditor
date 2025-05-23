@@ -8,15 +8,19 @@
 import './ckeconfig.css';
 
 export default Garnish.Base.extend({
-  entryTypes: [],
-  entryTypesToolbar: [],
+  $entryTypesToolbarVisual: null,
+  $entryTypesToolbarInput: null,
+  entryTypesToolbarValue: [],
   entryTypesComponent: [],
   selectedComponentIds: [],
 
-  init: function (id, entryTypes, entryTypesToolbar) {
+  init: function (id /*, entryTypes, entryTypesToolbar*/) {
     this.$container = $(`#${id}`);
-    this.entryTypes = entryTypes;
-    this.entryTypesToolbar = entryTypesToolbar;
+    this.$entryTypesToolbarVisual = this.$container.find('.visual');
+    this.$entryTypesToolbarInput = this.$container.find('input');
+    this.entryTypesToolbarValue = JSON.parse(
+      this.$entryTypesToolbarInput.val(),
+    );
     let $entryTypesContainer = this.$container
       .closest('form')
       .find('[data-attribute="entry-types"]');
@@ -24,10 +28,10 @@ export default Garnish.Base.extend({
       .find('.componentselect')
       .first();
     this.entryTypesComponent = $entryTypesField.data('componentSelect');
-    console.log(this.entryTypesComponent);
     this.selectedComponentIds =
       this.entryTypesComponent.getSelectedComponentIds();
 
+    this.updateVisual();
     // add or remove - sorting is disabled
     this.entryTypesComponent.on('change', () => {
       this.handleEntryTypesChange();
@@ -35,6 +39,7 @@ export default Garnish.Base.extend({
   },
 
   handleEntryTypesChange: function () {
+    console.log('handleEntryTypesChange');
     let selectedComponents = this.entryTypesComponent.getComponents();
     let newSelectedComponentIds =
       this.entryTypesComponent.getSelectedComponentIds();
@@ -45,22 +50,22 @@ export default Garnish.Base.extend({
         (value) => !newSelectedComponentIds.includes(value),
       )[0];
 
-      // find it in the entryTypesToolbar and remove
-      this.entryTypesToolbar = this.entryTypesToolbar.filter(
+      // find it in the entryTypesToolbarValue and remove
+      this.entryTypesToolbarValue = this.entryTypesToolbarValue.filter(
         (item) => item.id != removedComponentId,
       );
 
-      this.$container
-        .find('textarea')
-        .val(JSON.stringify(this.entryTypesToolbar));
+      this.$entryTypesToolbarInput.val(
+        JSON.stringify(this.entryTypesToolbarValue),
+      );
     } else {
       // we added something
       const newComponentId = newSelectedComponentIds.filter(
         (value) => !this.selectedComponentIds.includes(value),
       )[0];
 
-      // add to the entryTypesToolbar
-      this.entryTypesToolbar.push({
+      // add to the entryTypesToolbarValue
+      this.entryTypesToolbarValue.push({
         expanded: false,
         id: newComponentId,
         withColor: true,
@@ -68,13 +73,19 @@ export default Garnish.Base.extend({
         withText: true,
       });
 
-      this.$container
-        .find('textarea')
-        .val(JSON.stringify(this.entryTypesToolbar));
+      this.$entryTypesToolbarInput.val(
+        JSON.stringify(this.entryTypesToolbarValue),
+      );
     }
 
     // update selected components ids so the next comparison works as expected
     this.selectedComponentIds =
       this.entryTypesComponent.getSelectedComponentIds();
+
+    this.updateVisual();
+  },
+
+  updateVisual: function () {
+    console.log(this.$entryTypesToolbarVisual);
   },
 });

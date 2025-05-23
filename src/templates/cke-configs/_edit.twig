@@ -1,6 +1,11 @@
 {% import '_includes/forms.twig' as forms %}
 {% import 'codeeditor/codeEditor.twig' as codeEditor %}
 
+
+{#{% script with {type: 'module'} %}#}
+{#import {CkeEntryTypeSelectInput} from '@craftcms/ckeditor-config';#}
+{#{% endscript %}#}
+
 {% set readOnly = readOnly ?? false %}
 
 {% set baseMonacoOptions = {
@@ -71,7 +76,7 @@
 {% endembed %}
 
 
-{% embed '_includes/forms/field.twig' with {
+{#{% embed '_includes/forms/field.twig' with {
   label: 'Entry Types Toolbar'|t('ckeditor'),
   instructions: ''|t('ckeditor'),
   id: 'entryTypesToolbar',
@@ -85,9 +90,19 @@
       <input type="text" style="width: 100%;" name="entryTypesToolbar" value="{{ ckeConfig.entryTypesToolbar|json_encode }}"/>
     </div>
   {% endblock %}
-{% endembed %}
+{% endembed %}#}
 
-{{ forms.entryTypeSelectField({
+{#{{ forms.textareaField({
+  label: 'Entry Types Toolbar'|t('app'),
+  instructions: ''|t('app'),
+  id: 'entry-types-toolbar-builder',
+  name: 'entryTypesToolbar[]',
+  values: ckeConfig.getEntryTypesToolbar(),
+  errors: ckeConfig.getErrors('entryTypesToolbar'),
+  data: {'error-key': 'entryTypesToolbar'},
+}) }}#}
+
+{#{{ forms.entryTypeSelectField({
   label: 'Entry Types'|t('app'),
   instructions: 'Choose the types of entries that can be created in this field.'|t('app'),
   id: 'entry-types',
@@ -98,7 +113,23 @@
   sortable: false,
   errors: ckeConfig.getErrors('entryTypes'),
   data: {'error-key': 'entryTypes'},
-}) }}
+}) }}#}
+
+{% set config = {
+  label: 'Entry Types'|t('app'),
+  instructions: 'Choose the types of entries that can be created in this field.'|t('app'),
+  id: 'entry-types',
+  name: 'entryTypes[]',
+  values: ckeConfig.getEntryTypes(),
+  allowOverrides: true,
+  create: true,
+  sortable: true,
+  errors: ckeConfig.getErrors('entryTypes'),
+  data: {'error-key': 'entryTypes'},
+} %}
+{% set config = config|merge({id: config.id ?? "entrytypeselect#{random()}"}) %}
+{{ forms.field(config, 'template:ckeditor/cke-configs/entryTypeSelect') }}
+
 
 {{ forms.textField({
   label: '“New” Button Label'|t('app'),
@@ -232,7 +263,7 @@ import {ConfigOptions, ToolbarBuilder, EntryTypesToolbarBuilder} from '@craftcms
 
 const configOptions = new ConfigOptions("{{ configOptionsId }}", "{{ jsonSchemaUri }}");
 new ToolbarBuilder("{{ toolbarBuilderId }}", "{{ containerId }}", configOptions, [{{ plugins | join(',') }}]);
-new EntryTypesToolbarBuilder("{{ entryTypesToolbarBuilderId }}", {{ entryTypes|json_encode|raw }}, {{ entryTypesToolbar|json_encode|raw }});
+{#new EntryTypesToolbarBuilder("{{ entryTypesToolbarBuilderId }}", {{ entryTypes|json_encode|raw }}, {{ entryTypesToolbar|json_encode|raw }});#}
 
 (() => {
   // Register the config options JSON schema

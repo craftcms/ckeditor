@@ -15,6 +15,7 @@ use craft\elements\Entry;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Json;
+use craft\ckeditor\models\EntryType as CkeEntryType;
 use craft\models\EntryType;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -88,7 +89,7 @@ class CkeConfig extends Model implements Chippable, Actionable
     public ?string $css = null;
 
     /**
-     * @var EntryType[] The field’s available entry types
+     * @var CkeEntryType[] The field’s available entry types
      * @see getEntryTypes()
      * @see setEntryTypes()
      */
@@ -344,7 +345,7 @@ JS, [
     /**
      * Returns the available entry types.
      *
-     * @return EntryType[]
+     * @return CkeEntryType[]
      */
     public function getEntryTypes(): array
     {
@@ -354,16 +355,69 @@ JS, [
     /**
      * Sets the available entry types.
      *
-     * @param array<int|string|EntryType> $entryTypes The entry types, or their IDs or UUIDs
+     * @param array<int|string|CkeEntryType> $entryTypes The entry types, or their IDs or UUIDs
      */
     public function setEntryTypes(array $entryTypes): void
     {
         $entriesService = Craft::$app->getEntries();
 
-        $this->_entryTypes = array_values(array_filter(array_map(
+        foreach ($entryTypes as &$entryType) {
+            if (is_string($entryType)) {
+                try {
+                    $entryType = Json::decode($entryType);
+                    $entryType = new CkeEntryType($entryType);
+                } catch (InvalidArgumentException) {
+                    // do nothing?
+                }
+            }
+        }
+        $t = 1;
+        // TODO: normalize the $entryTypes; when saving the config, it'll be an array of json strings, like so:
+        //Array
+        //(
+        //    [0] => {"withColor":true,"withIcon":true,"withText":true,"expanded":true,"id":9,"name":"Article","handle":"article"}
+        //    [1] => {"withColor":true,"withIcon":true,"withText":true,"expanded":false,"id":16,"name":"tommy et","handle":"tommyEt"}
+        //)
+//        foreach ($entryTypes as &$entryType) {
+//            if (is_string($entryType)) {
+//                try {
+//                    $entryType = Json::decode($entryType);
+//                } catch (InvalidArgumentException) {
+//                    // do nothing?
+//                }
+//            }
+//        }
+        unset($entryType);
+
+        $craftEntryTypes = array_values(array_filter(array_map(
             fn($entryType) => $entriesService->getEntryType($entryType),
             $entryTypes,
         )));
+
+        foreach ($craftEntryTypes as $craftEntryType) {
+            foreach ($entryTypes as $entryType) {
+                if (
+                    (isset($entryType['uid']) && $entryType['uid'] === $craftEntryType->uid) ||
+                    (isset($entryType['id']) && $entryType['id'] === $craftEntryType->id)
+                ) {
+                    $test = new CkeEntryType(get_object_vars($craftEntryType));
+                    if (isset($entryType['withColor'])) {
+                        $test->withColor = $entryType['withColor'];
+                    }
+                    if (isset($entryType['withIcon'])) {
+                        $test->withIcon = $entryType['withIcon'];
+                    }
+                    if (isset($entryType['withText'])) {
+                        $test->withText = $entryType['withText'];
+                    }
+                    if (isset($entryType['expanded'])) {
+                        $test->expanded = $entryType['expanded'];
+                    }
+
+                    $this->_entryTypes[] = $test;
+                }
+            }
+        }
     }
 
     /**
@@ -377,7 +431,7 @@ JS, [
         $entryTypesToolbar = $this->getEntryTypesToolbar();
         $entryTypeOptions = [];
         foreach ($entryTypesToolbar as $item) {
-            /** @var EntryType $entryType */
+            /** @var CkeEntryType $entryType */
             $entryType = array_values(array_filter($entryTypes, function($entryType) use ($item) {
                 return $entryType->uid === $item['uid'];
             }));
