@@ -32,20 +32,20 @@ const ToolbarBuilder = Garnish.Base.extend({
       entryTypeOptions: [{ label: "fake", value: "fake" }],
       plugins: r
     }).then((f) => {
-      const h = f.ui.componentFactory;
-      for (const i of h.names())
-        this.components[i] = h.create(i);
+      const d = f.ui.componentFactory;
+      for (const i of d.names())
+        this.components[i] = d.create(i);
       const u = JSON.parse(this.$container.attr("data-available-items"));
       for (let i = 0; i < u.length; i++) {
         const s = u[i];
         if (s.length > 1) {
           const a = this.value.findIndex(
-            (c) => s.some((d) => d.button === c)
+            (c) => s.some((h) => h.button === c)
           );
           if (a !== -1) {
             for (let c = 0; c < s.length; c++)
               if (this.value[a + c] !== s[c].button) {
-                u.splice(i, 1, ...s.map((d) => [d])), i += s.length - 1;
+                u.splice(i, 1, ...s.map((h) => [h])), i += s.length - 1;
                 break;
               }
           }
@@ -101,8 +101,8 @@ const ToolbarBuilder = Garnish.Base.extend({
                 const a = i.data("componentNames");
                 s = this.renderComponentGroup(a);
                 for (const c of a) {
-                  const d = u.flat().find(({ button: p }) => p === c);
-                  d && d.configOption && n.addSetting(d.configOption);
+                  const h = u.flat().find(({ button: p }) => p === c);
+                  h && h.configOption && n.addSetting(h.configOption);
                 }
               }
               s.data("sourceItem", i[0]), s.css("visibility", "hidden"), this.$insertion.replaceWith(s), this.drag.$draggee = s;
@@ -113,7 +113,7 @@ const ToolbarBuilder = Garnish.Base.extend({
               const s = $(i.data("sourceItem"));
               if (i.remove(), this.drag.$draggee = i = s, !this.draggingSeparator)
                 for (const a of s.data("componentNames")) {
-                  const c = u.flat().find(({ button: d }) => d === a);
+                  const c = u.flat().find(({ button: h }) => h === a);
                   c && c.configOption && n.removeSetting(c.configOption);
                 }
             }
@@ -149,12 +149,12 @@ const ToolbarBuilder = Garnish.Base.extend({
         if (s === "|")
           a = this.renderSeparator().appendTo(this.$targetContainer), c = "|";
         else {
-          const d = u.find(
+          const h = u.find(
             (p) => p.some((C) => C.button === s)
           );
-          if (!d || (a = this.renderComponentGroup(d), !a))
+          if (!h || (a = this.renderComponentGroup(h), !a))
             continue;
-          a.appendTo(this.$targetContainer), c = d.map((p) => p.button).join(","), i += d.length - 1;
+          a.appendTo(this.$targetContainer), c = h.map((p) => p.button).join(","), i += h.length - 1;
         }
         a.data("sourceItem", g[c]), this.$items = this.$items.add(a);
       }
@@ -175,8 +175,8 @@ const ToolbarBuilder = Garnish.Base.extend({
       let l;
       try {
         l = this.renderComponent(o);
-      } catch (h) {
-        console.warn(h);
+      } catch (d) {
+        console.warn(d);
         continue;
       }
       e.push(l);
@@ -435,7 +435,7 @@ const ConfigOptions = Garnish.Base.extend({
     this.base(Object.assign({}, Craft.EntryTypeSelectInput.defaults, t));
   },
   addComponentInternal: function(t) {
-    let e = t.find('input[name$="entryTypes[]"]'), n = JSON.parse(e.val()), o = t.find(".action-btn").disclosureMenu().data("disclosureMenu"), l, f, h, u, g, i, s, a;
+    let e = t.find('input[name$="entryTypes[]"]'), n = JSON.parse(e.val()), o = t.find(".action-btn").disclosureMenu().data("disclosureMenu"), l, f, d, u, g, i, s, a;
     l = o.addItem({
       icon: async () => await Craft.ui.icon("eye"),
       label: Craft.t("ckeditor", "Expand to a separate button"),
@@ -448,7 +448,7 @@ const ConfigOptions = Garnish.Base.extend({
       callback: () => {
         n.expanded = !1, this.applyConfigChange(t, e, n);
       }
-    }), h = o.addItem({
+    }), d = o.addItem({
       icon: async () => await Craft.ui.icon("brush"),
       label: Craft.t("ckeditor", "Show with color"),
       callback: () => {
@@ -485,8 +485,8 @@ const ConfigOptions = Garnish.Base.extend({
         n.withText = !1, this.applyConfigChange(t, e, n);
       }
     }), o.on("show", () => {
-      o.toggleItem(l, !n.expanded), o.toggleItem(f, n.expanded), o.toggleItem(h, !n.withColor), o.toggleItem(u, n.withColor), o.toggleItem(g, !n.withIcon), o.toggleItem(i, n.withIcon), o.toggleItem(s, !n.withText), o.toggleItem(a, n.withText);
-    }), this.base(t);
+      o.toggleItem(l, !n.expanded), o.toggleItem(f, n.expanded), o.toggleItem(d, !n.withColor), o.toggleItem(u, n.withColor), o.toggleItem(g, !n.withIcon), o.toggleItem(i, n.withIcon), o.toggleItem(s, !n.withText), o.toggleItem(a, n.withText);
+    }), this.applyIndicators(t, n), this.base(t);
   },
   async applyConfigChange(t, e, n) {
     this.applyIndicators(t, n).then(() => {
@@ -506,10 +506,15 @@ const ConfigOptions = Garnish.Base.extend({
           }
         }
       )).data;
-    } catch (h) {
-      throw Craft.cp.displayError((f = (l = h == null ? void 0 : h.response) == null ? void 0 : l.data) == null ? void 0 : f.message), h;
+    } catch (d) {
+      throw Craft.cp.displayError((f = (l = d == null ? void 0 : d.response) == null ? void 0 : l.data) == null ? void 0 : f.message), d;
     }
-    const r = t.find(".indicators"), o = $(n.chip).find(".indicators");
+    let r = t.find(".indicators");
+    if (r.length == 0) {
+      let d = t.find(".chip-label");
+      r = $('<div class="indicators">').appendTo(d);
+    }
+    const o = $(n.chip).find(".indicators");
     r.replaceWith(o);
   },
   updateConfig: function(t, e) {

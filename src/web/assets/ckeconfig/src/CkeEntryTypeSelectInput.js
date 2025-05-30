@@ -112,6 +112,8 @@ export default Craft.EntryTypeSelectInput.extend({
       disclosureMenu.toggleItem(withoutTextBtn, config.withText);
     });
 
+    this.applyIndicators($component, config);
+
     this.base($component);
   },
 
@@ -140,7 +142,13 @@ export default Craft.EntryTypeSelectInput.extend({
       throw e;
     }
 
-    const $oldIndicators = $component.find('.indicators');
+    let $oldIndicators = $component.find('.indicators');
+    // if we can't find old indicators, then we need to add the new ones at the end of .chip-label
+    // this will be the case if we're choosing a new entry type to the list
+    if ($oldIndicators.length == 0) {
+      let $chipLabel = $component.find('.chip-label');
+      $oldIndicators = $('<div class="indicators">').appendTo($chipLabel);
+    }
     const $newIndicators = $(data.chip).find('.indicators');
     $oldIndicators.replaceWith($newIndicators);
   },
