@@ -3,14 +3,12 @@
 namespace craft\ckeditor\migrations;
 
 use Craft;
-use craft\ckeditor\CkeConfig;
 use craft\ckeditor\CkeConfigs;
 use craft\ckeditor\Field;
 use craft\ckeditor\Plugin;
 use craft\db\Migration;
 use craft\helpers\ProjectConfig;
 use craft\helpers\StringHelper;
-use craft\models\EntryType;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
@@ -26,10 +24,12 @@ class m250523_124328_v5_upgrade extends Migration
     {
         // get all CKE fields grouped by the cke config they use; keyed by the cke config uid
         $fieldsByConfig = Collection::make(Craft::$app->getFields()->getFieldsByType(Field::class))
+            /** @phpstan-ignore-next-line */
             ->groupBy(fn(Field $field) => $field->ckeConfig);
 
         $projectConfig = Craft::$app->getProjectConfig();
 
+        /** @var Collection<Field[]> $fields **/
         foreach ($fieldsByConfig->all() as $ckeConfigUid => $fields) {
             // if there's only one field that uses this config
             if ($fields->count() == 1) {
@@ -74,7 +74,7 @@ class m250523_124328_v5_upgrade extends Migration
                             // duplicate cke config
                             $duplicatedCkeConfig = clone $ckeConfig;
                             $duplicatedCkeConfig->uid = StringHelper::UUID();
-                            $duplicatedCkeConfig->name .= ' ' . $key + 1;
+                            $duplicatedCkeConfig->name .= ' ' . ($key + 1);
                             Plugin::getInstance()->getCkeConfigs()->save($duplicatedCkeConfig);
                         } else {
                             $duplicatedCkeConfig = $ckeConfig;
