@@ -50,7 +50,7 @@ class Generator implements GeneratorInterface, SingleGeneratorInterface
                 $entryArgs = EntryArguments::getArguments();
                 $gqlService = Craft::$app->getGql();
 
-                foreach ($context->getEntryTypes() as $entryType) {
+                foreach ($context->getFieldLayoutProviders() as $entryType) {
                     $entryArgs += $gqlService->getFieldLayoutArguments($entryType->getFieldLayout());
                 }
 
