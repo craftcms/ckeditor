@@ -157,6 +157,39 @@ a.ck.ck-button:focus {
   border-radius: var(--large-border-radius);
 }
 
+/* minimum color variations that meet the 3:1 colour contrast requirement against the white background */
+.ck-toolbar .entry-type-buttons .icon.orange {
+  --icon-color: var(--orange-600);
+}
+
+.ck-toolbar .entry-type-buttons .icon.amber {
+  --icon-color: var(--amber-600);
+}
+
+.ck-toolbar .entry-type-buttons .icon.yellow {
+  --icon-color: var(--yellow-700);
+}
+
+.ck-toolbar .entry-type-buttons .icon.lime {
+  --icon-color: var(--lime-600);
+}
+
+.ck-toolbar .entry-type-buttons .icon.green {
+  --icon-color: var(--green-600);
+}
+
+.ck-toolbar .entry-type-buttons .icon.emerald {
+  --icon-color: var(--emerald-600);
+}
+
+.ck-toolbar .entry-type-buttons .icon.cyan {
+  --icon-color: var(--cyan-600);
+}
+
+.ck-toolbar .entry-type-buttons .icon.sky {
+  --icon-color: var(--sky-600);
+}
+
 .ck-toolbar .entry-type-buttons .icon {
   color: var(--icon-color);
 }
