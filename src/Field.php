@@ -459,6 +459,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             $config['removeNbsp'],
             $config['createButtonLabel'],
             $config['entryTypes'],
+            $config['expandEntryButtons'],
         );
 
         if (isset($config['enableSourceEditingForNonAdmins'])) {

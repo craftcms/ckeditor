@@ -56,7 +56,7 @@ class Plugin extends \craft\base\Plugin
     private static array $ckeditorPackages = [];
     private static array $ckeditorImports = [];
 
-    public string $schemaVersion = '3.0.0.0';
+    public string $schemaVersion = '5.0.0.0';
     public bool $hasCpSettings = true;
     public bool $hasReadOnlyCpSettings = true;
 
