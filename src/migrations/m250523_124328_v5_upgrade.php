@@ -43,6 +43,7 @@ class m250523_124328_v5_upgrade extends Migration
                     // compare entry types for each field
                     $pcFieldConfig = $projectConfig->get($projectConfig::PATH_FIELDS . '.' . $field->uid);
                     $fieldEntryTypeConfigs[$field->uid] = ProjectConfig::unpackAssociativeArrays($pcFieldConfig['settings']['entryTypes']);
+                    $fieldEntryTypeConfigs[$field->uid]['expandEntryButtons'] = $pcFieldConfig['settings']['expandEntryButtons'];
                 }
                 // get the list of the unique entry types configs
                 $uniqueFieldEntryTypeConfigs = Collection::make($fieldEntryTypeConfigs)
@@ -60,11 +61,6 @@ class m250523_124328_v5_upgrade extends Migration
                     // otherwise
                     foreach ($uniqueFieldEntryTypeConfigs as $key => $uniqueFieldEntryTypeConfig) {
                         // get all the fields that use each unique config
-//                        $fieldsForThisConfig = array_uintersect(
-//                            $fieldEntryTypeConfigs,
-//                            $uniqueFieldEntryTypeConfig,
-//                            fn($fieldEntryTypeConfig) => (int)($fieldEntryTypeConfig === $uniqueFieldEntryTypeConfig)
-//                        );
                         $fieldsForThisConfig = Arr::where(
                             $fieldEntryTypeConfigs,
                             fn($fieldEntryTypeConfig) => $fieldEntryTypeConfig === $uniqueFieldEntryTypeConfig
