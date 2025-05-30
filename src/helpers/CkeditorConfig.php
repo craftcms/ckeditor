@@ -419,6 +419,7 @@ final class CkeditorConfig
      *
      * @param array $config
      * @return CkeEntryType
+     * @since 5.0.0
      */
     public static function getCkeEntryType(array $config): CkeEntryType
     {

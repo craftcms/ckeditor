@@ -34,7 +34,6 @@ class m250523_124328_v5_upgrade extends Migration
             // if there's only one field that uses this config
             if ($fields->count() == 1) {
                 $this->updateConfigs($ckeConfigUid, $fields[0]);
-
             } else {
                 // key fields by field uid
                 $fields = $fields->keyBy('uid');

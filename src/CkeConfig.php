@@ -13,7 +13,6 @@ use craft\base\Chippable;
 use craft\base\Model;
 use craft\ckeditor\helpers\CkeditorConfig;
 use craft\ckeditor\models\EntryType as CkeEntryType;
-use craft\elements\Entry;
 use craft\helpers\Cp;
 use craft\helpers\Json;
 use Illuminate\Support\Collection;
@@ -335,6 +334,7 @@ JS, [
      * Returns the available entry types.
      *
      * @return CkeEntryType[]
+     * @since 5.0.0
      */
     public function getEntryTypes(): array
     {
@@ -345,6 +345,7 @@ JS, [
      * Sets the available entry types.
      *
      * @param array<string> $entryTypes The entry types, or their IDs or UUIDs
+     * @since 5.0.0
      */
     public function setEntryTypes(array $entryTypes): void
     {
@@ -370,6 +371,7 @@ JS, [
      * Returns entry type options in form of an array with 'label' and 'value' keys for each option.
      *
      * @return array
+     * @since 5.0.0
      */
     public function getEntryTypeOptions(): array
     {
