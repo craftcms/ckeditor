@@ -1,5 +1,11 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed a bug where the CKEditor toolbar overflow menu could be cut off within Live Preview. ([#417](https://github.com/craftcms/ckeditor/issues/417))
+- Fixed a bug where new paragraphs were getting inserted automatically after newly-added nested entries. ([#416](https://github.com/craftcms/ckeditor/issues/416))
+- Fixed a JavaScript error that occurred when saving a nested entry, for an owner element that didn’t use the new element editor (like global sets). ([#419](https://github.com/craftcms/ckeditor/issues/419))
+
 ## 4.9.0 - 2025-05-23
 
 - Added the “Parse embeds” field setting. ([#409](https://github.com/craftcms/ckeditor/pull/409))

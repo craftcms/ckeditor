@@ -289,7 +289,7 @@ export default class CraftEntriesUI extends Plugin {
         if (
           $element !== null &&
           Garnish.hasAttr($element, 'data-owner-is-canonical') &&
-          !elementEditor.settings.isUnpublishedDraft
+          (!elementEditor || !elementEditor.settings.isUnpublishedDraft)
         ) {
           await slideout.elementEditor.checkForm(true, true);
           let baseInputName = $(editor.sourceElement).attr('name');
@@ -298,6 +298,7 @@ export default class CraftEntriesUI extends Plugin {
             await elementEditor.setFormValue(baseInputName, '*');
           }
           if (
+            elementEditor &&
             elementEditor.settings.draftId &&
             slideout.elementEditor.settings.draftId
           ) {
