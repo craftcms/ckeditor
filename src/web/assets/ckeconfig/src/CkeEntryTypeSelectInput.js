@@ -99,17 +99,21 @@ export default Craft.EntryTypeSelectInput.extend({
     });
 
     disclosureMenu.on('show', () => {
-      disclosureMenu.toggleItem(expandBtn, !config.expanded);
-      disclosureMenu.toggleItem(collapseBtn, config.expanded);
+      let $chip = disclosureMenu.$trigger.parents('.chip');
+      let $input = $chip.find('input[name$="entryTypes[]"]');
+      let updatedConfig = JSON.parse($input.val());
 
-      disclosureMenu.toggleItem(withColorBtn, !config.withColor);
-      disclosureMenu.toggleItem(withoutColorBtn, config.withColor);
+      disclosureMenu.toggleItem(expandBtn, !updatedConfig.expanded);
+      disclosureMenu.toggleItem(collapseBtn, updatedConfig.expanded);
 
-      disclosureMenu.toggleItem(withIconBtn, !config.withIcon);
-      disclosureMenu.toggleItem(withoutIconBtn, config.withIcon);
+      disclosureMenu.toggleItem(withColorBtn, !updatedConfig.withColor);
+      disclosureMenu.toggleItem(withoutColorBtn, updatedConfig.withColor);
 
-      disclosureMenu.toggleItem(withTextBtn, !config.withText);
-      disclosureMenu.toggleItem(withoutTextBtn, config.withText);
+      disclosureMenu.toggleItem(withIconBtn, !updatedConfig.withIcon);
+      disclosureMenu.toggleItem(withoutIconBtn, updatedConfig.withIcon);
+
+      disclosureMenu.toggleItem(withTextBtn, !updatedConfig.withText);
+      disclosureMenu.toggleItem(withoutTextBtn, updatedConfig.withText);
     });
 
     this.applyIndicators($component, config);
@@ -118,9 +122,7 @@ export default Craft.EntryTypeSelectInput.extend({
   },
 
   async applyConfigChange($component, $input, config) {
-    this.applyIndicators($component, config).then(() => {
-      this.updateConfig($input, config);
-    });
+    this.applyIndicators($component, config);
   },
 
   async applyIndicators($component, config) {
@@ -143,14 +145,21 @@ export default Craft.EntryTypeSelectInput.extend({
     }
 
     let $oldIndicators = $component.find('.indicators');
+    const $oldInput = $component.find('input[name$="entryTypes[]"]');
+
+    const $newIndicators = $(data.chip).find('.indicators');
+    const $newInput = $(data.chip).find('input[name$="entryTypes[]"]');
+    const newConfig = JSON.parse($newInput.val());
+
     // if we can't find old indicators, then we need to add the new ones at the end of .chip-label
     // this will be the case if we're choosing a new entry type to the list
     if ($oldIndicators.length == 0) {
-      let $chipLabel = $component.find('.chip-label');
+      const $chipLabel = $component.find('.chip-label');
       $oldIndicators = $('<div class="indicators">').appendTo($chipLabel);
     }
-    const $newIndicators = $(data.chip).find('.indicators');
+
     $oldIndicators.replaceWith($newIndicators);
+    this.updateConfig($oldInput, newConfig);
   },
 
   updateConfig: function ($input, config) {
