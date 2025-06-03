@@ -11,112 +11,53 @@ export default Craft.EntryTypeSelectInput.extend({
     this.base(Object.assign({}, Craft.EntryTypeSelectInput.defaults, settings));
   },
 
+  getInput: function ($component) {
+    return $component.find('input');
+  },
+
+  getConfig: function ($input) {
+    return JSON.parse($input.val());
+  },
+
+  getConfigFromComponent: function ($component) {
+    let $input = this.getInput($component);
+    return JSON.parse($input.val());
+  },
+
   addComponentInternal: function ($component) {
-    let $input = $component.find('input[name$="entryTypes[]"]');
-    let config = JSON.parse($input.val());
+    let $input = this.getInput($component);
     let $actionBtn = $component.find('.action-btn');
     let disclosureMenu = $actionBtn.disclosureMenu().data('disclosureMenu');
 
-    let expandBtn,
+    let [
+      expandBtn,
       collapseBtn,
       withColorBtn,
       withoutColorBtn,
       withIconBtn,
       withoutIconBtn,
       withTextBtn,
-      withoutTextBtn;
-
-    expandBtn = disclosureMenu.addItem({
-      icon: async () => await Craft.ui.icon('eye'),
-      label: Craft.t('ckeditor', 'Expand to a separate button'),
-      callback: () => {
-        config.expanded = true;
-        this.applyConfigChange($component, $input, config);
-      },
-    });
-
-    collapseBtn = disclosureMenu.addItem({
-      icon: async () => await Craft.ui.icon('eye-slash'),
-      label: Craft.t('ckeditor', 'Collapse to a dropdown'),
-      callback: () => {
-        config.expanded = false;
-        this.applyConfigChange($component, $input, config);
-      },
-    });
-
-    withColorBtn = disclosureMenu.addItem({
-      icon: async () => await Craft.ui.icon('brush'),
-      label: Craft.t('ckeditor', 'Show with color'),
-      callback: () => {
-        config.withColor = true;
-        this.applyConfigChange($component, $input, config);
-      },
-    });
-
-    withoutColorBtn = disclosureMenu.addItem({
-      icon: async () => await Craft.ui.icon('xmark'),
-      label: Craft.t('ckeditor', 'Show without color'),
-      callback: () => {
-        config.withColor = false;
-        this.applyConfigChange($component, $input, config);
-      },
-    });
-
-    withIconBtn = disclosureMenu.addItem({
-      icon: async () => await Craft.ui.icon('image'),
-      label: Craft.t('ckeditor', 'Show with icon'),
-      callback: () => {
-        config.withIcon = true;
-        this.applyConfigChange($component, $input, config);
-      },
-    });
-
-    withoutIconBtn = disclosureMenu.addItem({
-      icon: async () => await Craft.ui.icon('xmark'),
-      label: Craft.t('ckeditor', 'Show without icon'),
-      callback: () => {
-        config.withIcon = false;
-        this.applyConfigChange($component, $input, config);
-      },
-    });
-
-    withTextBtn = disclosureMenu.addItem({
-      icon: async () => await Craft.ui.icon('t'),
-      label: Craft.t('ckeditor', 'Show with text'),
-      callback: () => {
-        config.withText = true;
-        this.applyConfigChange($component, $input, config);
-      },
-    });
-
-    withoutTextBtn = disclosureMenu.addItem({
-      icon: async () => await Craft.ui.icon('xmark'),
-      label: Craft.t('ckeditor', 'Show without text'),
-      callback: () => {
-        config.withText = false;
-        this.applyConfigChange($component, $input, config);
-      },
-    });
+      withoutTextBtn,
+    ] = this.getButtons(disclosureMenu, $component, $input);
 
     disclosureMenu.on('show', () => {
       let $chip = disclosureMenu.$trigger.parents('.chip');
-      let $input = $chip.find('input[name$="entryTypes[]"]');
-      let updatedConfig = JSON.parse($input.val());
+      let config = this.getConfigFromComponent($chip);
 
-      disclosureMenu.toggleItem(expandBtn, !updatedConfig.expanded);
-      disclosureMenu.toggleItem(collapseBtn, updatedConfig.expanded);
+      disclosureMenu.toggleItem(expandBtn, !config.expanded);
+      disclosureMenu.toggleItem(collapseBtn, config.expanded);
 
-      disclosureMenu.toggleItem(withColorBtn, !updatedConfig.withColor);
-      disclosureMenu.toggleItem(withoutColorBtn, updatedConfig.withColor);
+      disclosureMenu.toggleItem(withColorBtn, !config.withColor);
+      disclosureMenu.toggleItem(withoutColorBtn, config.withColor);
 
-      disclosureMenu.toggleItem(withIconBtn, !updatedConfig.withIcon);
-      disclosureMenu.toggleItem(withoutIconBtn, updatedConfig.withIcon);
+      disclosureMenu.toggleItem(withIconBtn, !config.withIcon);
+      disclosureMenu.toggleItem(withoutIconBtn, config.withIcon);
 
-      disclosureMenu.toggleItem(withTextBtn, !updatedConfig.withText);
-      disclosureMenu.toggleItem(withoutTextBtn, updatedConfig.withText);
+      disclosureMenu.toggleItem(withTextBtn, !config.withText);
+      disclosureMenu.toggleItem(withoutTextBtn, config.withText);
     });
 
-    this.applyIndicators($component, config);
+    this.applyIndicators($component, this.getConfig($input));
 
     this.base($component);
   },
@@ -145,11 +86,11 @@ export default Craft.EntryTypeSelectInput.extend({
     }
 
     let $oldIndicators = $component.find('.indicators');
-    const $oldInput = $component.find('input[name$="entryTypes[]"]');
+    const $oldInput = this.getInput($component);
 
     const $newIndicators = $(data.chip).find('.indicators');
-    const $newInput = $(data.chip).find('input[name$="entryTypes[]"]');
-    const newConfig = JSON.parse($newInput.val());
+    const $newInput = this.getInput($(data.chip));
+    const newConfig = this.getConfig($newInput);
 
     // if we can't find old indicators, then we need to add the new ones at the end of .chip-label
     // this will be the case if we're choosing a new entry type to the list
@@ -164,5 +105,98 @@ export default Craft.EntryTypeSelectInput.extend({
 
   updateConfig: function ($input, config) {
     $input.val(JSON.stringify(config));
+  },
+
+  getButtons: function (disclosureMenu, $component, $input) {
+    let expandBtn = disclosureMenu.addItem({
+      icon: async () => await Craft.ui.icon('eye'),
+      label: Craft.t('ckeditor', 'Expand to a separate button'),
+      callback: () => {
+        let config = this.getConfig($input);
+        config.expanded = true;
+        this.applyConfigChange($component, $input, config);
+      },
+    });
+
+    let collapseBtn = disclosureMenu.addItem({
+      icon: async () => await Craft.ui.icon('eye-slash'),
+      label: Craft.t('ckeditor', 'Collapse to a dropdown'),
+      callback: () => {
+        let config = this.getConfig($input);
+        config.expanded = false;
+        this.applyConfigChange($component, $input, config);
+      },
+    });
+
+    let withColorBtn = disclosureMenu.addItem({
+      icon: async () => await Craft.ui.icon('brush'),
+      label: Craft.t('ckeditor', 'Show with color'),
+      callback: () => {
+        let config = this.getConfig($input);
+        config.withColor = true;
+        this.applyConfigChange($component, $input, config);
+      },
+    });
+
+    let withoutColorBtn = disclosureMenu.addItem({
+      icon: async () => await Craft.ui.icon('xmark'),
+      label: Craft.t('ckeditor', 'Show without color'),
+      callback: () => {
+        let config = this.getConfig($input);
+        config.withColor = false;
+        this.applyConfigChange($component, $input, config);
+      },
+    });
+
+    let withIconBtn = disclosureMenu.addItem({
+      icon: async () => await Craft.ui.icon('image'),
+      label: Craft.t('ckeditor', 'Show with icon'),
+      callback: () => {
+        let config = this.getConfig($input);
+        config.withIcon = true;
+        this.applyConfigChange($component, $input, config);
+      },
+    });
+
+    let withoutIconBtn = disclosureMenu.addItem({
+      icon: async () => await Craft.ui.icon('xmark'),
+      label: Craft.t('ckeditor', 'Show without icon'),
+      callback: () => {
+        let config = this.getConfig($input);
+        config.withIcon = false;
+        this.applyConfigChange($component, $input, config);
+      },
+    });
+
+    let withTextBtn = disclosureMenu.addItem({
+      icon: async () => await Craft.ui.icon('t'),
+      label: Craft.t('ckeditor', 'Show with text'),
+      callback: () => {
+        let config = this.getConfig($input);
+        config.withText = true;
+        this.applyConfigChange($component, $input, config);
+      },
+    });
+
+    let withoutTextBtn = disclosureMenu.addItem({
+      icon: async () => await Craft.ui.icon('xmark'),
+      label: Craft.t('ckeditor', 'Show without text'),
+      callback: () => {
+        let config = this.getConfig($input);
+        config.withText = false;
+        this.applyConfigChange($component, $input, config);
+      },
+    });
+
+    return [
+      expandBtn,
+      collapseBtn,
+      withColorBtn,
+      withoutColorBtn,
+      withIconBtn,
+      withoutIconBtn,
+      withTextBtn,
+      withoutTextBtn,
+    ];
   },
 });
