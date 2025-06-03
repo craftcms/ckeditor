@@ -25,6 +25,10 @@ export default Craft.EntryTypeSelectInput.extend({
   },
 
   addComponentInternal: function ($component) {
+    this.on('applySettings', () => {
+      this.applyIndicators($component, this.getConfigFromComponent($component));
+    });
+
     let $input = this.getInput($component);
     let $actionBtn = $component.find('.action-btn');
     let disclosureMenu = $actionBtn.disclosureMenu().data('disclosureMenu');
