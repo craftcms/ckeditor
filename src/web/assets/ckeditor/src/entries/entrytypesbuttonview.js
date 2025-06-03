@@ -48,7 +48,7 @@ export default class CraftEntryTypesButtonView extends View {
             classes.push(['cp-icon']);
           }
 
-          if (item.model.color) {
+          if (item.model.color && item.model.withColor) {
             classes.push([item.model.color]);
           }
 
@@ -65,7 +65,7 @@ export default class CraftEntryTypesButtonView extends View {
             if (!item.model.class) {
               item.model.class = '';
             }
-            item.model.class += 'icon ' + item.model.color;
+            item.model.class += 'icon ' + item.model.color; // the icon class is needed for the colour to work
           }
           textButtons.add(item);
         }

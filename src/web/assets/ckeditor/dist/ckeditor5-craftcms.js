@@ -674,7 +674,7 @@ class hu extends $o {
             type: r.model.label
           })
         }, y = ["btn", "ck-reset_all-excluded"];
-        r.model.icon && y.push(["icon"]), r.model.icon && r.model.withIcon && !r.model.withText && y.push(["cp-icon"]), r.model.color && y.push([r.model.color]), b.class = y.join(" "), r.model.withIcon && (b.icon = r.model.icon), m.set(b), u.add(m);
+        r.model.icon && y.push(["icon"]), r.model.icon && r.model.withIcon && !r.model.withText && y.push(["cp-icon"]), r.model.color && r.model.withColor && y.push([r.model.color]), b.class = y.join(" "), r.model.withIcon && (b.icon = r.model.icon), m.set(b), u.add(m);
       } else
         r.model.color && r.model.withColor && (r.model.class || (r.model.class = ""), r.model.class += "icon " + r.model.color), c.add(r);
       this.listenTo(m, "execute", (b) => {
