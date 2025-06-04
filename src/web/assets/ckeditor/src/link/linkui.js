@@ -148,7 +148,7 @@ export default class CraftLinkUI extends Plugin {
       onSelect: (elements) => {
         if (elements.length) {
           const element = elements[0];
-          const url = `${element.url}#${linkOption.refHandle}:${element.id}@${element.siteId}`;
+          const url = `${element.url}#${linkOption.refHandle}:${element.id}`;
           editor.editing.view.focus();
           if (!isCollapsed && range) {
             // Restore the previous range
