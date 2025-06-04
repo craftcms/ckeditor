@@ -153,8 +153,236 @@
   border-radius: var(--large-border-radius);
 }
 
-.ck-toolbar .entry-type-buttons .icon {
-  color: var(--icon-color);
+/* minimum color variations that meet the 3:1 colour contrast requirement against the white bg and #d7dfe7 hover bg */
+.ck-toolbar .entry-type-buttons {
+  .icon.red {
+    &:hover {
+      .ck-button__label {
+        color: var(--red-700);
+      }
+    }
+  }
+
+  .icon.orange {
+    --icon-color: var(--orange-600);
+
+    .ck-button__label {
+      color: var(--orange-700);
+    }
+
+    &:hover {
+      --icon-color: var(--orange-700);
+
+      .ck-button__label {
+        color: var(--orange-800);
+      }
+    }
+  }
+
+  .icon.amber {
+    --icon-color: var(--amber-600);
+
+    .ck-button__label {
+      color: var(--amber-700);
+    }
+
+    &:hover {
+      --icon-color: var(--amber-700);
+
+      .ck-button__label {
+        color: var(--amber-800);
+      }
+    }
+  }
+
+  .icon.yellow {
+    --icon-color: var(--yellow-700);
+
+    &:hover {
+      .ck-button__label {
+        color: var(--yellow-800);
+      }
+    }
+  }
+
+  .icon.lime {
+    --icon-color: var(--lime-600);
+
+    .ck-button__label {
+      color: var(--lime-700);
+    }
+
+    &:hover {
+      --icon-color: var(--lime-700);
+
+      .ck-button__label {
+        color: var(--lime-800);
+      }
+    }
+  }
+
+  .icon.green {
+    --icon-color: var(--green-600);
+
+    .ck-button__label {
+      color: var(--green-700);
+    }
+
+    &:hover {
+      --icon-color: var(--green-700);
+
+      .ck-button__label {
+        color: var(--green-800);
+      }
+    }
+  }
+
+  .icon.emerald {
+    --icon-color: var(--emerald-600);
+
+    .ck-button__label {
+      color: var(--emerald-700);
+    }
+
+    &:hover {
+      --icon-color: var(--emerald-700);
+
+      .ck-button__label {
+        color: var(--emerald-800);
+      }
+    }
+  }
+
+  .icon.teal {
+    .ck-button__label {
+      color: var(--teal-700);
+    }
+
+    &:hover {
+      --icon-color: var(--teal-700);
+
+      .ck-button__label {
+        color: var(--teal-800);
+      }
+    }
+  }
+
+  .icon.cyan {
+    --icon-color: var(--cyan-600);
+
+    .ck-button__label {
+      color: var(--cyan-700);
+    }
+
+    &:hover {
+      --icon-color: var(--cyan-700);
+
+      .ck-button__label {
+        color: var(--cyan-800);
+      }
+    }
+  }
+
+  .icon.sky {
+    --icon-color: var(--sky-600);
+
+    .ck-button__label {
+      color: var(--sky-700);
+    }
+
+    &:hover {
+      .ck-button__label {
+        color: var(--sky-800);
+      }
+    }
+  }
+
+  .icon.blue {
+    &:hover {
+      .ck-button__label {
+        color: var(--blue-700);
+      }
+    }
+  }
+
+  .icon.indigo {
+    .ck-button__label {
+      color: var(--indigo-600);
+    }
+  }
+
+  .icon.violet {
+    .ck-button__label {
+      color: var(--violet-600);
+    }
+
+    &:hover {
+      .ck-button__label {
+        color: var(--violet-700);
+      }
+    }
+  }
+
+  .icon.purple {
+    .ck-button__label {
+      color: var(--purple-600);
+    }
+
+    &:hover {
+      --icon-color: var(--purple-600);
+
+      .ck-button__label {
+        color: var(--purple-700);
+      }
+    }
+  }
+
+  .icon.fuchsia {
+    .ck-button__label {
+      color: var(--fuchsia-600);
+    }
+
+    &:hover {
+      --icon-color: var(--fuchsia-600);
+
+      .ck-button__label {
+        color: var(--fuchsia-700);
+      }
+    }
+  }
+
+  .icon.pink {
+    .ck-button__label {
+      color: var(--pink-600);
+    }
+
+    &:hover {
+      --icon-color: var(--pink-600);
+
+      .ck-button__label {
+        color: var(--pink-800);
+      }
+    }
+  }
+
+  .icon.rose {
+    .ck-button__label {
+      color: var(--rose-600);
+    }
+
+    &:hover {
+      --icon-color: var(--rose-600);
+
+      .ck-button__label {
+        color: var(--rose-700);
+      }
+    }
+  }
+
+  .icon,
+  .icon:hover {
+    color: var(--icon-color);
+  }
 }
 /* end nested entries
 
