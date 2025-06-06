@@ -1184,11 +1184,8 @@ JS,
             ['type' => 'module']
         );
 
-        if ($ckeConfig->css) {
-            $view->registerCss($ckeConfig->css);
-        }
-
         $value = $this->prepValueForInput($value, $element);
+        $inputId = Html::id('input-ckeditor-' . $id);
         $html = Html::textarea($this->handle, $value, [
             'id' => $id,
             'class' => 'hidden',
@@ -1201,10 +1198,15 @@ JS,
             ]);
         }
 
+        if ($ckeConfig->css) {
+            $html .= Html::tag('style', "#{$inputId} { $ckeConfig->css }");
+        }
+
         return Html::tag('div', $html, [
             'class' => array_filter([
                 $this->showWordCount ? 'ck-with-show-word-count' : null,
             ]),
+            'id' => $inputId,
             'data' => [
                 'element-id' => $element?->id,
                 'config' => $this->ckeConfig,
