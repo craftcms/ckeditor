@@ -124,6 +124,33 @@ export default class CraftLinkElementView extends View {
 
             // reshuffle focus
             linkUi._alignFocus();
+          } else {
+            // if no element was returned - show notice
+            Craft.cp.displayNotice(
+              Craft.t(
+                'ckeditor',
+                'This element doesn’t exist in the site you selected.',
+              ),
+            );
+
+            if (this.linkUi.previousLinkValue.length > 0) {
+              // if we still have the previous element - use it
+              const {formView} = this.linkUi._linkUI;
+              formView.urlInputView.fieldView.set(
+                'value',
+                this.linkUi.previousLinkValue,
+              );
+            } else {
+              // otherwise set it to the "Choose" button
+              this.button = new ButtonView();
+              this.button.set({
+                label: Craft.t('app', 'Choose'),
+                withText: true,
+                class: 'btn add icon dashed',
+              });
+              this.button.render();
+              this.element.innerHTML = this.button.element.outerHTML;
+            }
           }
         })
         .catch((e) => {

@@ -44,6 +44,7 @@ return [
     'The maximum number of words or characters the field is allowed to have.' => 'The maximum number of words or characters the field is allowed to have.',
     'The transforms that should be available when inserting images.' => 'The transforms that should be available when inserting images.',
     'The type of column this field should get in the database.' => 'The type of column this field should get in the database.',
+    'This element doesn’t exist in the site you selected.' => 'This element doesn’t exist in the site you selected.',
     'This field doesn’t allow nested entries.' => 'This field doesn’t allow nested entries.',
     'This field doesn’t allow nested {type} entries.' => 'This field doesn’t allow nested {type} entries.',
     'Toolbar' => 'Toolbar',

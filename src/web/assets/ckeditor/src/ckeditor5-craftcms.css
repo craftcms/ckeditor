@@ -207,9 +207,20 @@ body.ck-fullscreen .slideout-container {
   justify-content: start;
 }
 
-.link-type-group.ck.ck-form__row .ck.ck-labeled-field-view {
+.ck.ck-form__row > :not(.ck-label) + * {
   margin-inline-start: 0;
+}
+.link-type-group.ck.ck-form__row .ck.ck-labeled-field-view {
   margin-block-start: var(--ck-spacing-small);
+}
+
+.ck.ck-link-form_layout-vertical .link-type-group .ck.ck-dropdown {
+  min-width: 47%;
+}
+
+.link-type-group.ck.ck-form__row .elementselect {
+  margin-inline: 0;
+  max-width: 50%;
 }
 
 .ck.ck-link-form_layout-vertical {
@@ -219,6 +230,11 @@ body.ck-fullscreen .slideout-container {
 .ck.ck-button.btn.dashed {
   background-color: transparent;
   border: 1px dashed var(--medium-hairline-color);
+}
+
+.break {
+  flex-basis: 100%;
+  height: 0;
 }
 
 .menu {
