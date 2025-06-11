@@ -270,22 +270,39 @@ class ConvertController extends Controller
             if (!isset($groupedFields[$prePath])) {
                 $groupedFields[$prePath] = [];
             }
-            $groupedFields[$prePath][$fieldUid] = $field;
+            $groupedFields[$prePath]['fields'][$fieldUid] = $field;
+            $groupedFields[$prePath]['originalPath'] = $path;
         }
 
-        // for each group, get the pc based on the preceding path, update it with the fields we have and that should be set in PC
-        foreach ($groupedFields as $path => $fields) {
-            $blockConfig = $this->projectConfig->get($path);
-            foreach ($fields as $fieldUid => $field) {
-                $blockConfig['fields'][$fieldUid] = $field;
-            }
+        // for each group
+        foreach ($groupedFields as $path => $values) {
+            // if there's only one nested field - save in the same way as a global field
+            if (count($values['fields']) == 1) {
+                $field = reset($values['fields']);
+                if ($field) {
+                    $this->projectConfig->set($values['originalPath'], $field);
+                    $this->stdout(PHP_EOL);
+                    $this->stdout(' → ', Console::FG_GREY);
+                    $this->stdout($this->markdownToAnsi(sprintf('Converting %s', $this->pathAndHandleMarkdown($values['originalPath'], $field))));
+                    $this->stdout(' …', Console::FG_GREY);
+                    $this->stdout(" ✓ Field converted", Console::FG_GREEN);
+                }
+            } else {
+                // get the pc based on the preceding path (block), update it with the fields we have and that block should be set in PC
+                $blockConfig = $this->projectConfig->get($path);
+                if ($blockConfig) {
+                    foreach ($values['fields'] as $fieldUid => $field) {
+                        $blockConfig['fields'][$fieldUid] = $field;
+                    }
 
-            $this->projectConfig->set($path, $blockConfig);
-            $this->stdout(PHP_EOL);
-            $this->stdout(' → ', Console::FG_GREY);
-            $this->stdout($this->markdownToAnsi(sprintf('Converting fields inside %s', $this->pathAndHandleMarkdown($path, $blockConfig))));
-            $this->stdout(' …', Console::FG_GREY);
-            $this->stdout(" ✓ Nested fields converted", Console::FG_GREEN);
+                    $this->projectConfig->set($path, $blockConfig);
+                    $this->stdout(PHP_EOL);
+                    $this->stdout(' → ', Console::FG_GREY);
+                    $this->stdout($this->markdownToAnsi(sprintf('Converting fields inside %s', $this->pathAndHandleMarkdown($path, $blockConfig))));
+                    $this->stdout(' …', Console::FG_GREY);
+                    $this->stdout(" ✓ Nested fields converted", Console::FG_GREEN);
+                }
+            }
         }
 
         $this->stdout("\n\n ✓ Finished converting Redactor fields.\n", Console::FG_GREEN, Console::BOLD);
