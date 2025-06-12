@@ -117,28 +117,30 @@ class m250523_124328_v5_upgrade extends Migration
         $pcCkeConfig = $projectConfig->get(CkeConfigs::PROJECT_CONFIG_PATH . '.' . $ckeConfigUid);
         $pcFieldConfig = $projectConfig->get($projectConfig::PATH_FIELDS . '.' . $field->uid);
 
-        $entryTypesConfig = ProjectConfig::unpackAssociativeArrays($pcFieldConfig['settings']['entryTypes']);
-        $pcCkeConfig['entryTypes'] = $entryTypesConfig;
-        unset($pcFieldConfig['settings']['entryTypes']);
-
-        if ($pcFieldConfig['settings']['expandEntryButtons']) {
-            foreach ($entryTypesConfig as $key => $item) {
-                try {
-                    $entryType = Craft::$app->getEntries()->getEntryType($item['uid']);
-                    if ($entryType->getIcon() !== null) {
-                        // mark as expanded
-                        $entryTypesConfig[$key]['expanded'] = true;
-                    }
-                    // otherwise, the default expanded => false will be used
-                } catch (\Throwable $e) {
-                    // if something went wrong, the default expanded => false will be used
-                }
-            }
+        if (isset($pcFieldConfig['settings']['entryTypes'])) {
+            $entryTypesConfig = ProjectConfig::unpackAssociativeArrays($pcFieldConfig['settings']['entryTypes']);
             $pcCkeConfig['entryTypes'] = $entryTypesConfig;
-        }
-        unset($pcFieldConfig['settings']['expandEntryButtons']);
+            unset($pcFieldConfig['settings']['entryTypes']);
 
-        $projectConfig->set(sprintf('%s.%s', CkeConfigs::PROJECT_CONFIG_PATH, $ckeConfigUid), $pcCkeConfig);
-        $projectConfig->set(sprintf('%s.%s', $projectConfig::PATH_FIELDS, $field->uid), $pcFieldConfig);
+            if ($pcFieldConfig['settings']['expandEntryButtons']) {
+                foreach ($entryTypesConfig as $key => $item) {
+                    try {
+                        $entryType = Craft::$app->getEntries()->getEntryType($item['uid']);
+                        if ($entryType->getIcon() !== null) {
+                            // mark as expanded
+                            $entryTypesConfig[$key]['expanded'] = true;
+                        }
+                        // otherwise, the default expanded => false will be used
+                    } catch (\Throwable $e) {
+                        // if something went wrong, the default expanded => false will be used
+                    }
+                }
+                $pcCkeConfig['entryTypes'] = $entryTypesConfig;
+            }
+            unset($pcFieldConfig['settings']['expandEntryButtons']);
+
+            $projectConfig->set(sprintf('%s.%s', CkeConfigs::PROJECT_CONFIG_PATH, $ckeConfigUid), $pcCkeConfig);
+            $projectConfig->set(sprintf('%s.%s', $projectConfig::PATH_FIELDS, $field->uid), $pcFieldConfig);
+        }
     }
 }
