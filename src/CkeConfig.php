@@ -383,6 +383,7 @@ JS, [
                 'expanded' => $entryType['expanded'] ?? false,
                 'icon' => $entryType->icon ? Cp::iconSvg($entryType->icon) : null,
                 'label' => Craft::t('site', $entryType->name),
+                'uid' => $entryType->uid,
                 'value' => $entryType->id,
                 'withColor' => $entryType['withColor'] ?? true,
                 'withIcon' => $entryType['withIcon'] ?? true,

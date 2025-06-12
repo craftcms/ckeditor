@@ -9,7 +9,9 @@ import {
   WidgetToolbarRepository,
 } from 'ckeditor5';
 import {DoubleClickObserver} from '../observers/domevent';
-import CraftEntryTypesButtonView from './entrytypesbuttonview.js';
+import CraftEntryTypeButtonView from './entrytypebuttonview.js';
+import CraftEntryTypeDropdownView from './entrytypedropdownview.js';
+import CraftFakeEntryTypeButtonView from './fakeentrytypebuttonview.js';
 
 export default class CraftEntriesUI extends Plugin {
   /**
@@ -119,14 +121,48 @@ export default class CraftEntriesUI extends Plugin {
       return;
     }
 
-    this.editor.ui.componentFactory.add(
-      'createEntry',
-      (locale) =>
-        new CraftEntryTypesButtonView(locale, {
-          entriesUi: this,
-          entryTypeOptions: entryTypeOptions,
-        }),
-    );
+    // if this is for the toolbar builder (when editing cke config)
+    if (entryTypeOptions.length == 1 && entryTypeOptions[0].value == 'fake') {
+      // we need to add our fake button
+      this.editor.ui.componentFactory.add(
+        'createEntry',
+        (locale) =>
+          new CraftFakeEntryTypeButtonView(this.editor.locale, {
+            entriesUi: this,
+          }),
+      );
+    } else {
+      // otherwise - add an individual button for all expanded entry types and a dropdown for the rest
+      let entryTypeButtons = this._getEntryTypeButtonsCollection(
+        entryTypeOptions ?? [],
+      );
+      let expandedButtons = entryTypeButtons.filter((item) => {
+        return item.model.expanded;
+      });
+      let collapsedButtons = entryTypeButtons.filter((item) => {
+        return !item.model.expanded;
+      });
+
+      expandedButtons.forEach((entryType, index) => {
+        this.editor.ui.componentFactory.add(
+          `createEntry-${entryType.model.uid}`,
+          (locale) =>
+            new CraftEntryTypeButtonView(this.editor.locale, {
+              entriesUi: this,
+              entryType: entryType,
+            }),
+        );
+      });
+
+      this.editor.ui.componentFactory.add(
+        `createEntry`,
+        (locale) =>
+          new CraftEntryTypeDropdownView(this.editor.locale, {
+            entriesUi: this,
+            entryTypes: collapsedButtons,
+          }),
+      );
+    }
   }
 
   /**
@@ -147,6 +183,7 @@ export default class CraftEntriesUI extends Plugin {
           expanded: option.expanded,
           icon: option.icon,
           label: option.label || option.value,
+          uid: option.uid,
           withColor: option.withColor,
           withIcon: option.withIcon,
           withText: option.expanded ? option.withText : true, // items in a dropdown should always have text

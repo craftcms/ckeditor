@@ -58,7 +58,7 @@ class CkeConfigsController extends Controller
         if (!$ckeConfig) {
             if ($uid !== null) {
                 try {
-                    $ckeConfig = Plugin::getInstance()->getCkeConfigs()->getByUid($uid);
+                    $ckeConfig = Plugin::getInstance()->getCkeConfigs()->getByUid($uid, true);
                 } catch (InvalidArgumentException $e) {
                     throw new NotFoundHttpException($e->getMessage());
                 }

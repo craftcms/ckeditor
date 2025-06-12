@@ -61,6 +61,7 @@ use GraphQL\Type\Definition\Type;
 use HTMLPurifier_Config;
 use HTMLPurifier_Exception;
 use HTMLPurifier_HTMLDefinition;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -905,7 +906,8 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         $toolbar = array_merge($ckeConfig->toolbar);
 
         if (!$element?->id) {
-            ArrayHelper::removeValue($toolbar, 'createEntry');
+            // remove all toolbar items that start with 'createEntry'
+            $toolbar = array_filter($toolbar, fn($item) => !str_starts_with($item, 'createEntry'));
         }
 
         if (!$this->isSourceEditingAllowed(Craft::$app->getUser()->getIdentity())) {
@@ -1788,7 +1790,8 @@ JS,
             $def?->addAttribute('ul', 'style', 'Text');
         }
 
-        if (in_array('createEntry', $ckeConfig->toolbar)) {
+        $createEntryToolbarItems = array_filter($ckeConfig->toolbar, fn($item) => str_starts_with($item, 'createEntry'));
+        if (!empty($createEntryToolbarItems)) {
             $def?->addElement('craft-entry', 'Inline', 'Inline', '', [
                 'data-entry-id' => 'Number',
                 'data-site-id' => 'Number',

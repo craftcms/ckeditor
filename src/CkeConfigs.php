@@ -41,7 +41,7 @@ class CkeConfigs extends Component
     /**
      * @throws InvalidArgumentException if $uid is invalid
      */
-    public function getByUid(string $uid): CkeConfig
+    public function getByUid(string $uid, bool $forToolbarEditor = false): CkeConfig
     {
         $config = Craft::$app->getProjectConfig()->get($this->_pcPath($uid));
 
@@ -49,7 +49,7 @@ class CkeConfigs extends Component
             throw new InvalidArgumentException("Invalid CKEditor config UUID: $uid");
         }
 
-        $config = $this->_adjustConfig($config);
+        $config = $this->_adjustConfig($config, $forToolbarEditor);
 
         return new CkeConfig($config + ['uid' => $uid]);
     }
@@ -96,12 +96,26 @@ class CkeConfigs extends Component
      * @param array $config
      * @return array
      */
-    private function _adjustConfig(array $config): array
+    private function _adjustConfig(array $config, bool $forToolbarEditor = false): array
     {
         // rewrite anchor toolbar item to bookmark
         $key = array_search('anchor', $config['toolbar']);
         if ($key !== false) {
             $config['toolbar'][$key] = 'bookmark';
+        }
+
+        // rewrite createEntry into per-entry-type buttons
+        if (!$forToolbarEditor && in_array('createEntry', $config['toolbar'])) {
+            if (!empty($config['entryTypes'])) {
+                // ensure the dropdown option is after the individual buttons
+                $key = array_search('createEntry', $config['toolbar']);
+                unset($config['toolbar'][$key]);
+                // create toolbar items for individual entry types
+                foreach ($config['entryTypes'] as $entryType) {
+                    $config['toolbar'][] = 'createEntry-' . $entryType['uid'];
+                }
+                $config['toolbar'][] = 'createEntry';
+            }
         }
 
         return $config;
