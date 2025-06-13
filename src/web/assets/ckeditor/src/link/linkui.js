@@ -501,9 +501,17 @@ export default class CraftLinkUI extends Plugin {
             });
           }
 
-          this._linkUI._hideFakeVisualSelection();
           setTimeout(() => {
-            this._linkUI._showUI(true);
+            // once element has been selected, show the form view so content authors can change the selected site
+            // copied from https://github.com/ckeditor/ckeditor5/blob/v45.0.0/packages/ckeditor5-link/src/linkui.ts#L965-L976
+            this._linkUI._addToolbarView();
+
+            // Be sure panel with link is visible.
+            this._linkUI._balloon.showStack('main');
+
+            this._linkUI._addFormView();
+            this._linkUI._startUpdatingUI();
+            // end copied
           }, 100);
         } else {
           onCancel();

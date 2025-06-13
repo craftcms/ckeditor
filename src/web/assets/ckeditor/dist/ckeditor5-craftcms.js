@@ -1495,8 +1495,8 @@ class vu extends Vn {
                 } catch {
                 }
             });
-          this._linkUI._hideFakeVisualSelection(), setTimeout(() => {
-            this._linkUI._showUI(!0);
+          setTimeout(() => {
+            this._linkUI._addToolbarView(), this._linkUI._balloon.showStack("main"), this._linkUI._addFormView(), this._linkUI._startUpdatingUI();
           }, 100);
         } else
           g();
