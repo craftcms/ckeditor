@@ -227,7 +227,7 @@ class CkeditorController extends Controller
 
         $elementParam = $this->request->getRequiredBodyParam('elements')[0];
 
-        /** @var ElementInterface $element */
+        /** @var ElementInterface|null $element */
         $element = $elementParam['type']::find()
             ->id($elementParam['id'])
             ->drafts(null)
