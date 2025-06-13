@@ -370,7 +370,9 @@ export default class CraftLinkUI extends Plugin {
     if (linkOption === 'default') {
       this.elementInputView = urlInputView;
       if (this.sitesView !== null) {
-        this.sitesView.siteDropdownView.buttonView.set('isVisible', false);
+        if (this.sitesView?.siteDropdownView?.buttonView) {
+          this.sitesView.siteDropdownView.buttonView.set('isVisible', false);
+        }
       }
     } else {
       // otherwise we need to create the Element view,
@@ -381,7 +383,9 @@ export default class CraftLinkUI extends Plugin {
         value: this._urlInputValue(),
       });
       if (this.sitesView !== null) {
-        this.sitesView.siteDropdownView.buttonView.set('isVisible', true);
+        if (this.sitesView?.siteDropdownView?.buttonView) {
+          this.sitesView.siteDropdownView.buttonView.set('isVisible', true);
+        }
       }
     }
 
@@ -390,7 +394,6 @@ export default class CraftLinkUI extends Plugin {
       this.sitesView = new CraftLinkSitesView(formView.locale, {
         linkUi: this,
         linkOption: linkOption,
-        value: this._urlInputValue(),
       });
     }
 

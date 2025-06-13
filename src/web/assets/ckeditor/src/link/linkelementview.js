@@ -74,27 +74,45 @@ export default class CraftLinkElementView extends View {
     // if element doesn't have children, it means it doesn't have the "Choose" button in it,
     // so we should insert the element chip
     if (this.element.children.length == 0) {
-      Craft.sendActionRequest('POST', 'app/render-elements', {
-        data: {
-          elements: [
-            {
-              type: linkOption.elementType,
-              id: this.elementId,
-              siteId: this.siteId,
-              instances: [
-                {
-                  context: 'field',
-                  ui: 'chip',
-                  sortable: false,
-                  showActionMenu: false,
-                },
-              ],
-            },
-          ],
+      Craft.sendActionRequest(
+        'POST',
+        'ckeditor/ckeditor/render-element-with-supported-sites',
+        {
+          data: {
+            elements: [
+              {
+                type: linkOption.elementType,
+                id: this.elementId,
+                siteId: this.siteId,
+                instances: [
+                  {
+                    context: 'field',
+                    ui: 'chip',
+                    sortable: false,
+                    showActionMenu: false,
+                  },
+                ],
+              },
+            ],
+          },
         },
-      })
+      )
         .then((response) => {
           if (Object.keys(response.data.elements).length > 0) {
+            // disable sites that are not in the response
+            for (const [siteId, model] of Object.entries(
+              this.linkUi.sitesView.siteDropdownItemModels,
+            )) {
+              if (
+                response.data.siteIds.includes(parseInt(siteId)) ||
+                siteId == 'current'
+              ) {
+                model.set('isEnabled', true);
+              } else {
+                model.set('isEnabled', false);
+              }
+            }
+
             this.element.innerHTML = response.data.elements[this.elementId][0];
             Craft.appendHeadHtml(response.data.headHtml);
             Craft.appendBodyHtml(response.data.bodyHtml);
@@ -125,15 +143,7 @@ export default class CraftLinkElementView extends View {
             // reshuffle focus
             linkUi._alignFocus();
           } else {
-            // if no element was returned - show notice
-            Craft.cp.displayNotice(
-              Craft.t(
-                'ckeditor',
-                'This element doesn’t exist in the site you selected.',
-              ),
-            );
-
-            if (this.linkUi.previousLinkValue.length > 0) {
+            if (this.linkUi.previousLinkValue?.length > 0) {
               // if we still have the previous element - use it
               const {formView} = this.linkUi._linkUI;
               formView.urlInputView.fieldView.set(

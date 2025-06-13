@@ -23,7 +23,7 @@ export default class CraftLinkSitesView extends View {
     this.linkOption = options.linkOption;
     const elementRefHandle = this.linkUi._getLinkElementRefHandle();
 
-    this.siteDropdownView = '';
+    this.siteDropdownView = createDropdown(this.linkUi._linkUI.formView.locale);
     this.siteDropdownItemModels = null;
     this.localizedRefHandleRE = null;
 
@@ -31,8 +31,6 @@ export default class CraftLinkSitesView extends View {
     this.localizedRefHandleRE = new RegExp(
       `(#(?:${refHandlesPattern}):\\d+)(?:@(\\d+))?`,
     );
-
-    this._sitesDropdown();
 
     this.setTemplate({
       tag: 'div',
@@ -52,6 +50,8 @@ export default class CraftLinkSitesView extends View {
 
   render() {
     super.render();
+
+    this._sitesDropdown();
   }
 
   _sitesDropdown() {
@@ -59,7 +59,6 @@ export default class CraftLinkSitesView extends View {
     const {urlInputView} = formView;
     const {fieldView} = urlInputView;
 
-    this.siteDropdownView = createDropdown(formView.locale);
     this.siteDropdownView.buttonView.set({
       label: '',
       withText: true,
