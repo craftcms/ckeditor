@@ -1199,7 +1199,7 @@ JS,
         }
 
         if ($ckeConfig->css) {
-            $html .= Html::tag('style', "#{$inputId} { $ckeConfig->css }");
+            $view->registerCss("#{$view->namespaceInputId($inputId)} { $ckeConfig->css }");
         }
 
         return Html::tag('div', $html, [
