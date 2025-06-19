@@ -163,7 +163,23 @@ This behavior is independent of CKEditor’s own HTML sanitization engine—the 
 > _Disabling HTML Purifier entirely can expose your site to significant security risks, even if you don’t accept input from anonymous users._  
 > HTML Purifier provides a layer of security, while CKEditor is primarily concerned with hygiene.
 
-CKEditor also makes its [general HTML support](https://ckeditor.com/docs/ckeditor5/latest/features/html/general-html-support.html) rules configurable, for situations where the source editor is used, or when preserving some formatting from pasted content is desirable.
+CKEditor also makes its [general HTML support](https://ckeditor.com/docs/ckeditor5/latest/features/html/general-html-support.html) rules configurable, for situations where the source editor is used, or when preserving some formatting from pasted content is desirable:
+
+```js
+return {
+  // ...
+  htmlSupport: {
+    allow: [
+      {
+        name: 'abbr',
+        attributes: ['title'],
+        classes: false,
+        styles: false
+      }
+    ]
+  }
+}
+```
 
 The `HTMLPurifier_Config` object can be modified directly, using the `craft\ckeditor\Field::EVENT_MODIFY_PURIFIER_CONFIG` [event](https://craftcms.com/docs/5.x/extend/events.html).
 
