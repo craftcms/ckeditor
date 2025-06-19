@@ -153,15 +153,19 @@ You can then register custom CSS styles that should be applied within the editor
 
 ### HTML Purifier Configs
 
-CKEditor fields use [HTML Purifier](http://htmlpurifier.org) to ensure that no malicious code makes it into its field values, to prevent XSS attacks and other vulnerabilities.
+CKEditor fields pass input through [HTML Purifier](http://htmlpurifier.org) to avoid saving malicious code to the database. This helps prevent XSS attacks and other vulnerabilities.
 
-You can create custom HTML Purifier configs that will be available to your CKEditor fields. They should be created as JSON files in your `config/htmlpurifier/` folder.
+HTML Purifier is configured primarily via JSON files in your `config/htmlpurifier/` folder. New Craft projects (based on [`craftcms/craft`](https://github.com/craftcms/craft)) come with a single [`Default.json` config](https://github.com/craftcms/craft/blob/5.x/config/htmlpurifier/Default.json), which you can modify or supplement with your own configurations. Each CKEditor field with **Advanced** &rarr; **Purify HTML** enabled uses its selected HTML Purifier config. See the [HTML Purifier documentation](http://htmlpurifier.org/live/configdoc/plain.html) for a complete list of  options!
 
-The [Default config](https://github.com/craftcms/craft/blob/HEAD/config/htmlpurifier/Default.json) defined by the the [craftcms/craft](https://github.com/craftcms/craft) starter project should be used as a starting point.
+This behavior is independent of CKEditor’s own HTML sanitization engine—the client-side editor automatically strips out any markup that isn’t supported by an enabled feature or plugin. If you [install additional plugins](#adding-ckeditor-plugins) or add [custom styles](#registering-custom-styles), you may need to relax associated HTML Purifier rules to ensure the markup is not removed by the server when saved.
 
-See the [HTML Purifier documentation](http://htmlpurifier.org/live/configdoc/plain.html) for a list of available config options.
+> [!WARNING]
+> _Disabling HTML Purifier entirely can expose your site to significant security risks, even if you don’t accept input from anonymous users._  
+> HTML Purifier provides a layer of security, while CKEditor is primarily concerned with hygiene.
 
-For advanced customization, you can modify the `HTMLPurifier_Config` object directly via the `craft\ckeditor\Field::EVENT_MODIFY_PURIFIER_CONFIG` event.
+CKEditor also makes its [general HTML support](https://ckeditor.com/docs/ckeditor5/latest/features/html/general-html-support.html) rules configurable, for situations where the source editor is used, or when preserving some formatting from pasted content is desirable.
+
+The `HTMLPurifier_Config` object can be modified directly, using the `craft\ckeditor\Field::EVENT_MODIFY_PURIFIER_CONFIG` [event](https://craftcms.com/docs/5.x/extend/events.html).
 
 ```php
 use craft\htmlfield\events\ModifyPurifierConfigEvent;
@@ -182,7 +186,7 @@ Event::on(
 
 ### Embedding Media
 
-CKEditor 5 stores references to embedded media embeds using `oembed` tags. Craft CMS configures HTML Purifier to support these tags, however you will need to ensure that the `URI.SafeIframeRegexp` HTML Purifier setting is set to allow any domains you wish to embed content from.
+CKEditor 5 stores references to embedded media embeds using `oembed` tags. Craft CMS configures HTML Purifier to support these tags, however you will need to ensure that the `URI.SafeIframeRegexp` [HTML Purifier](#html-purifier-configs) setting is set to allow any domains you wish to embed content from.
 
 ```json
 {
@@ -190,7 +194,7 @@ CKEditor 5 stores references to embedded media embeds using `oembed` tags. Craft
 }
 ```
 
-To automatically replace `oembed` tags with the media provider’s embed HTML, enable the field’s “Parse embeds” setting. Alternatively, see CKEditor’s [media embed documentation](https://ckeditor.com/docs/ckeditor5/latest/features/media-embed.html#displaying-embedded-media-on-your-website) for examples of how to show the embedded media on your front end.
+To automatically replace `oembed` tags with the media provider’s embed HTML, enable the field’s **Parse embeds** setting. Alternatively, see CKEditor’s [media embed documentation](https://ckeditor.com/docs/ckeditor5/latest/features/media-embed.html#displaying-embedded-media-on-your-website) for examples of how to show the embedded media on your front end.
 
 > [!NOTE]
 > Be sure to cache your front-end output if you enable the “Parse embeds” setting (e.g. by using a `{% cache %}` tag). Otherwise, there will be a slight performance hit on each request while CKEditor fetches the embed HTML from the provider.
