@@ -240,10 +240,13 @@ For each entry type selected by your CKEditor field, create a `_partials/entry/<
 An `entry` variable will be available to the template, which references the entry being rendered.
 
 > [!TIP]
-> If your nested entries contain any relation fields, you can eager-load their related elements for each of the CKEditor field’s nested entries using [`eagerly()`](https://craftcms.com/docs/5.x/development/eager-loading.html#lazy-eager-loading).
+> If your nested entries contain any relational fields, you can eager-load the related elements using [`eagerly()`](https://craftcms.com/docs/5.x/development/eager-loading.html#lazy-eager-loading).
 > 
 > ```twig
+> {# Within an element partial... #}
 > {% for image in entry.myAssetsField.eagerly().all() %}
+>   {# ... #}
+> {% endfor %}
 > ```
 
 ### Rendering Chunks
@@ -258,9 +261,9 @@ CKEditor field content is represented by an object that can be output as a strin
 {% endfor %}
 ```
 
-“Chunks” have two `type`s: `markup`, containing CKEditor HTML; and `entry`, representing a single nested entry. Adjacent markup chunks are collapsed into one another in cases where the nested entry is disabled.
+“Chunks” have two `type`s: `markup`, containing CKEditor HTML; and `entry`, representing a single nested entry. Adjacent `markup` chunks are collapsed into one another in cases where an intervening nested entry is disabled.
 
-This example treats both chunk types as strings. For entry chunks, this is equivalent to calling `{{ entry.render() }}`. If you would like to customize the data passed to the element partial, or use a different representation of the entry entirely, you have access to the nested entry via `chunk.entry`:
+The example above treats both chunk types as strings. For entry chunks, this is equivalent to calling `{{ entry.render() }}`. If you would like to customize the data passed to the element partial, or use a different representation of the entry entirely, you have access to the nested entry via `chunk.entry`:
 
 ```twig
 {% for chunk in entry.myCkeditorField %}
