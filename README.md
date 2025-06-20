@@ -163,24 +163,6 @@ This behavior is independent of CKEditor’s own HTML sanitization engine—the 
 > _Disabling HTML Purifier entirely can expose your site to significant security risks, even if you don’t accept input from anonymous users._  
 > HTML Purifier provides a layer of security, while CKEditor is primarily concerned with hygiene.
 
-CKEditor also makes its [general HTML support](https://ckeditor.com/docs/ckeditor5/latest/features/html/general-html-support.html) rules configurable, for situations where the source editor is used, or when preserving some formatting from pasted content is desirable:
-
-```js
-return {
-  // ...
-  htmlSupport: {
-    allow: [
-      {
-        name: 'abbr',
-        attributes: ['title'],
-        classes: false,
-        styles: false
-      }
-    ]
-  }
-}
-```
-
 The `HTMLPurifier_Config` object can be modified directly, using the `craft\ckeditor\Field::EVENT_MODIFY_PURIFIER_CONFIG` [event](https://craftcms.com/docs/5.x/extend/events.html).
 
 ```php
@@ -199,6 +181,29 @@ Event::on(
     }
 );
 ```
+
+CKEditor also makes its [general HTML support](https://ckeditor.com/docs/ckeditor5/latest/features/html/general-html-support.html) rules configurable, for situations where the source editor is used, or when authors expect some formatting from pasted content to be preserved:
+
+```js
+return {
+  // ...
+  htmlSupport: {
+    allow: [
+      {
+        name: 'abbr',
+        attributes: ['title'],
+        classes: false,
+        styles: false
+      }
+    ],
+    disallow: [
+      // ...
+    ].
+  },
+};
+```
+
+Adding a rule to the `disallow` array does not guarantee that matching HTML is stripped from the markup! CKEditor always ensures that the editor’s enabled features and plugins continue to work—for example, disabling all `style` attributes in an editor that supports lists will still permit `style="list-style-type: upper-roman;"`.
 
 ### Embedding Media
 
