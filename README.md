@@ -245,7 +245,7 @@ You can also copy/paste the card to duplicate the nested entry.
 To delete the nested entry, simply select it and press the **Delete** key.
 
 > [!NOTE]  
-> Copy/pasting entry cards across separate CKEditor fields is not supported.
+> Copy/pasting entry cards across separate CKEditor fields is supported, providing both fields allow the entry type of the copied nested entry.
 
 ### Rendering Nested Entries on the Front End
 
