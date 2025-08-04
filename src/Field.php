@@ -548,7 +548,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             $rules[] = [
                 function(ElementInterface $element) {
                     $value = strip_tags((string)$element->getFieldValue($this->handle));
-                    if (strlen($value) > $this->characterLimit) {
+                    if (mb_strlen($value) > $this->characterLimit) {
                         $element->addError(
                             "field:$this->handle",
                             Craft::t('ckeditor', '{field} should contain at most {max, number} {max, plural, one{character} other{characters}}.', [
