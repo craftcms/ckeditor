@@ -674,7 +674,11 @@ JS,
             return null;
         }
 
-        $value = preg_replace(StringHelper::invisibleCharsRegex(), '', $value);
+        $value = preg_replace(
+            '/\\x{00ad}|\\x{0083}|\\x{200b}|\\x{200c}|\\x{200d}|\\x{200e}|\\x{200f}|\\x{2062}|\\x{2063}|\\x{2064}|\\x{feff}/iu',
+            '',
+            $value
+        );
 
         // Redactor to CKEditor syntax for <figure>
         // (https://github.com/craftcms/ckeditor/issues/96)
