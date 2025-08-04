@@ -21,6 +21,7 @@ use craft\errors\InvalidHtmlTagException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\htmlfield\events\ModifyPurifierConfigEvent;
 use craft\htmlfield\HtmlField;
@@ -672,6 +673,8 @@ JS,
         if (!$value) {
             return null;
         }
+
+        $value = preg_replace(StringHelper::invisibleCharsRegex(), '', $value);
 
         // Redactor to CKEditor syntax for <figure>
         // (https://github.com/craftcms/ckeditor/issues/96)
