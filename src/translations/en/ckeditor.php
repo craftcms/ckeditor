@@ -47,4 +47,6 @@ return [
     '{attribute} isn’t valid JSON.' => '{attribute} isn’t valid JSON.',
     '{field} should contain at most {max, number} {max, plural, one{character} other{characters}}.' => '{field} should contain at most {max, number} {max, plural, one{character} other{characters}}.',
     '{field} should contain at most {max, number} {max, plural, one{word} other{words}}.' => '{field} should contain at most {max, number} {max, plural, one{word} other{words}}.',
+    '{num, number} {num, plural, =1{character} other{characters}}' => '{num, number} {num, plural, =1{character} other{characters}}',
+    '{num, number} {num, plural, =1{word} other{words}}' => '{num, number} {num, plural, =1{word} other{words}}',
 ];

@@ -66,6 +66,8 @@ class CkeditorAsset extends BaseCkeditorPackageAsset
                 'Insert link',
                 'Link to the current site',
                 'Site: {name}',
+                '{num, number} {num, plural, =1{character} other{characters}}',
+                '{num, number} {num, plural, =1{word} other{words}}',
             ]);
         }
     }
