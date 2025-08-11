@@ -234,7 +234,7 @@ class Field extends HtmlField
             $rules[] = [
                 function(ElementInterface $element) {
                     $value = strip_tags((string)$element->getFieldValue($this->handle));
-                    if (strlen($value) > $this->characterLimit) {
+                    if (mb_strlen($value) > $this->characterLimit) {
                         $element->addError(
                             "field:$this->handle",
                             Craft::t('ckeditor', '{field} should contain at most {max, number} {max, plural, one{character} other{characters}}.', [
@@ -692,6 +692,12 @@ JS,
         if (!$value) {
             return null;
         }
+
+        $value = preg_replace(
+            '/\\x{00ad}|\\x{0083}|\\x{200b}|\\x{200c}|\\x{200d}|\\x{200e}|\\x{200f}|\\x{2062}|\\x{2063}|\\x{2064}|\\x{feff}/iu',
+            '',
+            $value
+        );
 
         // Redactor to CKEditor syntax for <figure>
         // (https://github.com/craftcms/ckeditor/issues/96)
