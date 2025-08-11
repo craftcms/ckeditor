@@ -193,6 +193,7 @@ class ConvertController extends Controller
         $ckeConfigs = $this->ckeConfigs->getAll();
         $fieldSettingsByConfig = [];
         $configMap = [];
+        $convertedFields = [];
 
         foreach ($fields as $path => $field) {
             $this->stdout(' → ', Console::FG_GREY);
@@ -246,16 +247,65 @@ class ConvertController extends Controller
                     $field['settings']['uiMode'],
                 );
 
-                $this->projectConfig->set($path, $field);
+                // if the converted field's path is just fields.<uid> - set PC
+                if (str_starts_with($path, 'fields.')) {
+                    $this->projectConfig->set($path, $field);
+                    $this->stdout(" ✓ Field converted\n", Console::FG_GREEN);
+                } else {
+                    // otherwise we need to do more processing
+                    $convertedFields[$path] = $field;
+                    $this->stdout(" ~ Nested field will be converted later on\n", Console::FG_YELLOW);
+                }
             } catch (OperationAbortedException) {
                 $this->stdout(" ✕ Field skipped\n", Console::FG_YELLOW);
                 continue;
             }
-
-            $this->stdout(" ✓ Field converted\n", Console::FG_GREEN);
         }
 
-        $this->stdout("\n ✓ Finished converting Redactor fields.\n", Console::FG_GREEN, Console::BOLD);
+        $groupedFields = [];
+        // group converted fields by path that precedes fields.<uid>
+        foreach ($convertedFields as $path => $field) {
+            $prePath = rtrim(substr($path, 0, strrpos($path, '.')), '.fields.');
+            $fieldUid = substr($path, strrpos($path, '.') + 1);
+            if (!isset($groupedFields[$prePath])) {
+                $groupedFields[$prePath] = [];
+            }
+            $groupedFields[$prePath]['fields'][$fieldUid] = $field;
+            $groupedFields[$prePath]['originalPath'] = $path;
+        }
+
+        // for each group
+        foreach ($groupedFields as $path => $values) {
+            // if there's only one nested field - save in the same way as a global field
+            if (count($values['fields']) == 1) {
+                $field = reset($values['fields']);
+                if ($field) {
+                    $this->projectConfig->set($values['originalPath'], $field);
+                    $this->stdout(PHP_EOL);
+                    $this->stdout(' → ', Console::FG_GREY);
+                    $this->stdout($this->markdownToAnsi(sprintf('Converting %s', $this->pathAndHandleMarkdown($values['originalPath'], $field))));
+                    $this->stdout(' …', Console::FG_GREY);
+                    $this->stdout(" ✓ Field converted", Console::FG_GREEN);
+                }
+            } else {
+                // get the pc based on the preceding path (block), update it with the fields we have and that block should be set in PC
+                $blockConfig = $this->projectConfig->get($path);
+                if ($blockConfig) {
+                    foreach ($values['fields'] as $fieldUid => $field) {
+                        $blockConfig['fields'][$fieldUid] = $field;
+                    }
+
+                    $this->projectConfig->set($path, $blockConfig);
+                    $this->stdout(PHP_EOL);
+                    $this->stdout(' → ', Console::FG_GREY);
+                    $this->stdout($this->markdownToAnsi(sprintf('Converting fields inside %s', $this->pathAndHandleMarkdown($path, $blockConfig))));
+                    $this->stdout(' …', Console::FG_GREY);
+                    $this->stdout(" ✓ Nested fields converted", Console::FG_GREEN);
+                }
+            }
+        }
+
+        $this->stdout("\n\n ✓ Finished converting Redactor fields.\n", Console::FG_GREEN, Console::BOLD);
         $this->stdout("\nCommit your project config changes, 
 and run `craft up` on other environments
 for the changes to take effect.\n", Console::FG_GREEN);
