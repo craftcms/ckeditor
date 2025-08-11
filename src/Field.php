@@ -1085,6 +1085,26 @@ JS;
 (($) => {
   let instance;
   const config = Object.assign($baseConfigJs, $configOptionsJs);
+
+  // special case for heading config, because of the Heading Levels
+  // see https://github.com/craftcms/ckeditor/issues/431
+  const baseHeadings = $baseConfigJs?.heading?.options;
+  const configOptionHeadings = $configOptionsJs?.heading?.options;
+  if (baseHeadings && configOptionHeadings && baseHeadings != configOptionHeadings) {
+      // use baseHeadings as our base as those options account for selection from the "Heading Levels"
+      let headings = baseHeadings.map(function(baseHeadingItem) {
+        // if there's an option in the configOptionHeadings that matches the same model, then use its config
+        let match = configOptionHeadings.filter(configOptionHeadingItem => configOptionHeadingItem.model === baseHeadingItem.model);
+        return match.length > 0 ? match[0] : null;
+      });
+      
+      // filter out empties
+      headings = headings.filter(n => n);
+      
+      // use the headings
+      config.heading.options = Object.values(headings);
+  }
+  
   if (!jQuery.isPlainObject(config.toolbar)) {
     config.toolbar = {};
   }
