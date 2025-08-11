@@ -5,6 +5,7 @@
 - Fixed a bug where the CKEditor toolbar overflow menu could be cut off within Live Preview. ([#417](https://github.com/craftcms/ckeditor/issues/417))
 - Fixed a bug where the Field Limit setting was treating multibyte characters as multiple characters. ([#441](https://github.com/craftcms/ckeditor/issues/441))
 - Fixed a bug where the `ckeditor/convert` command wasn’t fully converting all Redactor fields within nested field contexts. ([#432](https://github.com/craftcms/ckeditor/issues/432))
+- Fixed a JavaScript error that occurred if a CKEditor field wasn’t configured with any link options. ([#435](https://github.com/craftcms/ckeditor/issues/435))
 - Fixed a bug where new paragraphs were getting inserted automatically after newly-added nested entries. ([#416](https://github.com/craftcms/ckeditor/issues/416))
 - Fixed a JavaScript error that occurred when saving a nested entry, for an owner element that didn’t use the new element editor (like global sets). ([#419](https://github.com/craftcms/ckeditor/issues/419))
 
