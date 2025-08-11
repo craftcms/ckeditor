@@ -549,7 +549,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             $rules[] = [
                 function(ElementInterface $element) {
                     $value = strip_tags((string)$element->getFieldValue($this->handle));
-                    if (strlen($value) > $this->characterLimit) {
+                    if (mb_strlen($value) > $this->characterLimit) {
                         $element->addError(
                             "field:$this->handle",
                             Craft::t('ckeditor', '{field} should contain at most {max, number} {max, plural, one{character} other{characters}}.', [
@@ -819,6 +819,8 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             return null;
         }
 
+        $value = preg_replace(StringHelper::invisibleCharsRegex(), '', $value);
+
         // Redactor to CKEditor syntax for <figure>
         // (https://github.com/craftcms/ckeditor/issues/96)
         $value = $this->_normalizeFigures($value);
@@ -1084,6 +1086,26 @@ JS;
 (($) => {
   let instance;
   const config = Object.assign($baseConfigJs, $configOptionsJs);
+
+  // special case for heading config, because of the Heading Levels
+  // see https://github.com/craftcms/ckeditor/issues/431
+  const baseHeadings = $baseConfigJs?.heading?.options;
+  const configOptionHeadings = $configOptionsJs?.heading?.options;
+  if (baseHeadings && configOptionHeadings && baseHeadings != configOptionHeadings) {
+      // use baseHeadings as our base as those options account for selection from the "Heading Levels"
+      let headings = baseHeadings.map(function(baseHeadingItem) {
+        // if there's an option in the configOptionHeadings that matches the same model, then use its config
+        let match = configOptionHeadings.filter(configOptionHeadingItem => configOptionHeadingItem.model === baseHeadingItem.model);
+        return match.length > 0 ? match[0] : null;
+      });
+      
+      // filter out empties
+      headings = headings.filter(n => n);
+      
+      // use the headings
+      config.heading.options = Object.values(headings);
+  }
+  
   if (!jQuery.isPlainObject(config.toolbar)) {
     config.toolbar = {};
   }

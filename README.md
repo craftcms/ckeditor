@@ -153,15 +153,17 @@ You can then register custom CSS styles that should be applied within the editor
 
 ### HTML Purifier Configs
 
-CKEditor fields use [HTML Purifier](http://htmlpurifier.org) to ensure that no malicious code makes it into its field values, to prevent XSS attacks and other vulnerabilities.
+CKEditor fields pass input through [HTML Purifier](http://htmlpurifier.org) to avoid saving malicious code to the database. This helps prevent XSS attacks and other vulnerabilities.
 
-You can create custom HTML Purifier configs that will be available to your CKEditor fields. They should be created as JSON files in your `config/htmlpurifier/` folder.
+HTML Purifier is configured primarily via JSON files in your `config/htmlpurifier/` folder. New Craft projects (based on [`craftcms/craft`](https://github.com/craftcms/craft)) come with a single [`Default.json` config](https://github.com/craftcms/craft/blob/5.x/config/htmlpurifier/Default.json), which you can modify or supplement with your own configurations. Each CKEditor field with **Advanced** &rarr; **Purify HTML** enabled uses its selected HTML Purifier config. See the [HTML Purifier documentation](http://htmlpurifier.org/live/configdoc/plain.html) for a complete list of  options!
 
-The [Default config](https://github.com/craftcms/craft/blob/HEAD/config/htmlpurifier/Default.json) defined by the the [craftcms/craft](https://github.com/craftcms/craft) starter project should be used as a starting point.
+This behavior is independent of CKEditor’s own HTML sanitization engine—the client-side editor automatically strips out any markup that isn’t supported by an enabled feature or plugin. If you [install additional plugins](#adding-ckeditor-plugins) or add [custom styles](#registering-custom-styles), you may need to relax associated HTML Purifier rules to ensure the markup is not removed by the server when saved.
 
-See the [HTML Purifier documentation](http://htmlpurifier.org/live/configdoc/plain.html) for a list of available config options.
+> [!WARNING]
+> _Disabling HTML Purifier entirely can expose your site to significant security risks, even if you don’t accept input from anonymous users._  
+> HTML Purifier provides a layer of security, while CKEditor is primarily concerned with hygiene.
 
-For advanced customization, you can modify the `HTMLPurifier_Config` object directly via the `craft\ckeditor\Field::EVENT_MODIFY_PURIFIER_CONFIG` event.
+The `HTMLPurifier_Config` object can be modified directly, using the `craft\ckeditor\Field::EVENT_MODIFY_PURIFIER_CONFIG` [event](https://craftcms.com/docs/5.x/extend/events.html).
 
 ```php
 use craft\htmlfield\events\ModifyPurifierConfigEvent;
@@ -180,9 +182,32 @@ Event::on(
 );
 ```
 
+CKEditor also makes its [general HTML support](https://ckeditor.com/docs/ckeditor5/latest/features/html/general-html-support.html) rules configurable, for situations where the source editor is used, or when authors expect some formatting from pasted content to be preserved:
+
+```js
+return {
+  // ...
+  htmlSupport: {
+    allow: [
+      {
+        name: 'abbr',
+        attributes: ['title'],
+        classes: false,
+        styles: false
+      }
+    ],
+    disallow: [
+      // ...
+    ].
+  },
+};
+```
+
+Adding a rule to the `disallow` array does not guarantee that matching HTML is stripped from the markup! CKEditor always ensures that the editor’s enabled features and plugins continue to work—for example, disabling all `style` attributes in an editor that supports lists will still permit `style="list-style-type: upper-roman;"`.
+
 ### Embedding Media
 
-CKEditor 5 stores references to embedded media embeds using `oembed` tags. Craft CMS configures HTML Purifier to support these tags, however you will need to ensure that the `URI.SafeIframeRegexp` HTML Purifier setting is set to allow any domains you wish to embed content from.
+CKEditor 5 stores references to embedded media embeds using `oembed` tags. Craft CMS configures HTML Purifier to support these tags, however you will need to ensure that the `URI.SafeIframeRegexp` [HTML Purifier](#html-purifier-configs) setting is set to allow any domains you wish to embed content from.
 
 ```json
 {
@@ -190,7 +215,7 @@ CKEditor 5 stores references to embedded media embeds using `oembed` tags. Craft
 }
 ```
 
-To automatically replace `oembed` tags with the media provider’s embed HTML, enable the field’s “Parse embeds” setting. Alternatively, see CKEditor’s [media embed documentation](https://ckeditor.com/docs/ckeditor5/latest/features/media-embed.html#displaying-embedded-media-on-your-website) for examples of how to show the embedded media on your front end.
+To automatically replace `oembed` tags with the media provider’s embed HTML, enable the field’s **Parse embeds** setting. Alternatively, see CKEditor’s [media embed documentation](https://ckeditor.com/docs/ckeditor5/latest/features/media-embed.html#displaying-embedded-media-on-your-website) for examples of how to show the embedded media on your front end.
 
 > [!NOTE]
 > Be sure to cache your front-end output if you enable the “Parse embeds” setting (e.g. by using a `{% cache %}` tag). Otherwise, there will be a slight performance hit on each request while CKEditor fetches the embed HTML from the provider.
@@ -225,7 +250,7 @@ You can also copy/paste the card to duplicate the nested entry.
 To delete the nested entry, simply select it and press the **Delete** key.
 
 > [!NOTE]  
-> Copy/pasting entry cards across separate CKEditor fields is not supported.
+> Copy/pasting entry cards across separate CKEditor fields is supported, providing both fields allow the entry type of the copied nested entry.
 
 ### Rendering Nested Entries on the Front End
 
@@ -236,10 +261,13 @@ For each entry type selected by your CKEditor field, create a `_partials/entry/<
 An `entry` variable will be available to the template, which references the entry being rendered.
 
 > [!TIP]
-> If your nested entries contain any relation fields, you can eager-load their related elements for each of the CKEditor field’s nested entries using [`eagerly()`](https://craftcms.com/docs/5.x/development/eager-loading.html#lazy-eager-loading).
+> If your nested entries contain any relational fields, you can eager-load the related elements using [`eagerly()`](https://craftcms.com/docs/5.x/development/eager-loading.html#lazy-eager-loading).
 > 
 > ```twig
+> {# Within an element partial... #}
 > {% for image in entry.myAssetsField.eagerly().all() %}
+>   {# ... #}
+> {% endfor %}
 > ```
 
 ### Rendering Chunks
@@ -254,9 +282,9 @@ CKEditor field content is represented by an object that can be output as a strin
 {% endfor %}
 ```
 
-“Chunks” have two `type`s: `markup`, containing CKEditor HTML; and `entry`, representing a single nested entry. Adjacent markup chunks are collapsed into one another in cases where the nested entry is disabled.
+“Chunks” have two `type`s: `markup`, containing CKEditor HTML; and `entry`, representing a single nested entry. Adjacent `markup` chunks are collapsed into one another in cases where an intervening nested entry is disabled.
 
-This example treats both chunk types as strings. For entry chunks, this is equivalent to calling `{{ entry.render() }}`. If you would like to customize the data passed to the element partial, or use a different representation of the entry entirely, you have access to the nested entry via `chunk.entry`:
+The example above treats both chunk types as strings. For entry chunks, this is equivalent to calling `{{ entry.render() }}`. If you would like to customize the data passed to the element partial, or use a different representation of the entry entirely, you have access to the nested entry via `chunk.entry`:
 
 ```twig
 {% for chunk in entry.myCkeditorField %}
