@@ -8,6 +8,7 @@
 namespace craft\ckeditor;
 
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
@@ -70,7 +71,7 @@ use yii\base\InvalidConfigException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
-class Field extends HtmlField implements ElementContainerFieldInterface, MergeableFieldInterface
+class Field extends HtmlField implements ElementContainerFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
 {
     /**
      * @event ModifyPurifierConfigEvent The event that is triggered when creating HTML Purifier config
@@ -832,6 +833,37 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             '<div class="page-break" style="page-break-after:always;"><span style="display:none;">&nbsp;</span></div>',
             $value,
         );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function copyCrossSiteValue(ElementInterface $from, ElementInterface $to): void
+    {
+        /** @var FieldData|null $fromValue */
+        $fromValue = $from->getFieldValue($this->handle);
+        $chunks = $fromValue->getChunks(false);
+        if ($chunks->contains(fn(BaseChunk $chunk) => $chunk instanceof EntryChunk)) {
+            $elementsService = Craft::$app->getElements();
+            $toValue = $chunks
+                ->map(function(BaseChunk $chunk) use ($to, $elementsService) {
+                    if ($chunk instanceof Markup) {
+                        return $chunk->rawHtml;
+                    }
+
+                    /** @var EntryChunk $chunk */
+                    $entry = $elementsService->duplicateElement($chunk->getEntry(), [
+                        'siteId' => $to->siteId,
+                    ]);
+
+                    return sprintf('<craft-entry data-entry-id="%s">&nbsp;</craft-entry>', $entry->id);
+                })
+                ->join('');
+        } else {
+            $toValue = $fromValue->getRawContent();
+        }
+
+        $to->setFieldValue($this->handle, $toValue);
     }
 
     private function escapePageBreaks(string &$html): void
