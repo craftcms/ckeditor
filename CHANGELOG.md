@@ -10,6 +10,7 @@
 - Fixed a bug where the `heading.options` CKEditor config option was overriding the available heading levels defined by the “Heading Levels” setting. ([#431](https://github.com/craftcms/ckeditor/issues/431))
 - Fixed a bug where new paragraphs were getting inserted automatically after newly-added nested entries. ([#416](https://github.com/craftcms/ckeditor/issues/416))
 - Fixed a JavaScript error that occurred when saving a nested entry, for an owner element that didn’t use the new element editor (like global sets). ([#419](https://github.com/craftcms/ckeditor/issues/419))
+- Fixed a bug where entry type toolbar buttons didn’t always meet minimum contrast requirements. ([#424](https://github.com/craftcms/ckeditor/pull/424))
 
 ## 4.9.0 - 2025-05-23
 
