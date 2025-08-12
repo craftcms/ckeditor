@@ -835,6 +835,37 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         );
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function copyCrossSiteValue(ElementInterface $from, ElementInterface $to): void
+    {
+        /** @var FieldData|null $fromValue */
+        $fromValue = $from->getFieldValue($this->handle);
+        $chunks = $fromValue->getChunks(false);
+        if ($chunks->contains(fn(BaseChunk $chunk) => $chunk instanceof EntryChunk)) {
+            $elementsService = Craft::$app->getElements();
+            $toValue = $chunks
+                ->map(function(BaseChunk $chunk) use ($to, $elementsService) {
+                    if ($chunk instanceof Markup) {
+                        return $chunk->rawHtml;
+                    }
+
+                    /** @var EntryChunk $chunk */
+                    $entry = $elementsService->duplicateElement($chunk->getEntry(), [
+                        'siteId' => $to->siteId,
+                    ]);
+
+                    return sprintf('<craft-entry data-entry-id="%s">&nbsp;</craft-entry>', $entry->id);
+                })
+                ->join('');
+        } else {
+            $toValue = $fromValue->getRawContent();
+        }
+
+        $to->setFieldValue($this->handle, $toValue);
+    }
+
     private function escapePageBreaks(string &$html): void
     {
         $offset = 0;
