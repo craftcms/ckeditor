@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 3.14.0 - 2025-08-12
 
 - Fixed a bug where the CKEditor toolbar overflow menu could be cut off within Live Preview. ([#417](https://github.com/craftcms/ckeditor/issues/417))
 - Fixed a bug where the Field Limit setting was treating multibyte characters as multiple characters. ([#441](https://github.com/craftcms/ckeditor/issues/441))
