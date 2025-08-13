@@ -76,6 +76,8 @@ class CkeditorAsset extends BaseCkeditorPackageAsset
                 'New {type}',
                 'Site: {name}',
                 'This field doesn’t allow nested entries.',
+                '{num, number} {num, plural, =1{character} other{characters}}',
+                '{num, number} {num, plural, =1{word} other{words}}',
             ]);
             $view->registerJsWithVars(fn($attach) => <<<JS
 Craft.showCkeditorInspector = $attach;
