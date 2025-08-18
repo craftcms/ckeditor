@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed a bug where heading levels specified via `heading.options` were being ignored if their corresponding checkbox wasn’t checked. ([#456](https://github.com/craftcms/ckeditor/issues/456))
+
 ## 4.10.0 - 2025-08-12
 
 - Added support for cross-site field value copying. ([#450](https://github.com/craftcms/ckeditor/pull/450))
