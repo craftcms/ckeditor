@@ -481,11 +481,16 @@ JS;
   // see https://github.com/craftcms/ckeditor/issues/431
   const baseHeadings = $baseConfigJs?.heading?.options;
   const configOptionHeadings = $configOptionsJs?.heading?.options;
+  const nativeHeadingModels = ['paragraph', 'heading1', 'heading2', 'heading3', 'heading4', 'heading5', 'heading6'];
   if (baseHeadings && configOptionHeadings && baseHeadings != configOptionHeadings) {
-      // use baseHeadings as our base as those options account for selection from the "Heading Levels"
-      let headings = baseHeadings.map(function(baseHeadingItem) {
-        // if there's an option in the configOptionHeadings that matches the same model, then use its config
-        let match = configOptionHeadings.filter(configOptionHeadingItem => configOptionHeadingItem.model === baseHeadingItem.model);
+      // use configOptionHeadings as our base as those options can have custom settings
+      let headings = configOptionHeadings.map(function(configOptionHeadingItem) {
+        // if there's an option in the baseHeadings that matches the same model, then use its config
+        let match = baseHeadings.filter(baseHeadingItem => baseHeadingItem.model === configOptionHeadingItem.model);
+        // if there isn't, check if this option is fully custom (not a native heading model) - if so, allow it
+        if (match.length == 0 && !nativeHeadingModels.includes(configOptionHeadingItem.model)) {
+          match[0] = configOptionHeadingItem;
+        }
         return match.length > 0 ? match[0] : null;
       });
       
