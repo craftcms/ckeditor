@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 4.10.1 - 2025-08-18
 
 - Fixed a bug where heading levels specified via `heading.options` were being ignored if their corresponding checkbox wasn’t checked. ([#456](https://github.com/craftcms/ckeditor/issues/456))
 
