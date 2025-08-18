@@ -70,6 +70,11 @@ class CkeConfig extends Model
 
     public function __construct($config = [])
     {
+        // make the config name translatable
+        if (isset($config['name'])) {
+            $config['name'] = Craft::t('ckeditor', $config['name']);
+        }
+
         if (isset($config['toolbar']) && is_array($config['toolbar'])) {
             // anchor → bookmark
             $key = array_search('anchor', $config['toolbar']);

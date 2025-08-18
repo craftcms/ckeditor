@@ -17,7 +17,7 @@
 {% set tableData = ckeConfigs|map(config => {
   id: config.uid,
   name: config.name|e,
-  title: config.name|e,
+  title: config.name|e|t('ckeditor'),
   url: url("settings/ckeditor/#{config.uid}"),
 }) %}
 
