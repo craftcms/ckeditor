@@ -980,7 +980,31 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element, $inline): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
+    {
+        return $this->_inputHtml($value, $element, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStaticHtml(mixed $value, ElementInterface $element): string
+    {
+        return $this->_inputHtml($value, $element, true);
+    }
+
+    /**
+     * Return the HTML for the CKEditor field.
+     *
+     * @param mixed $value
+     * @param ElementInterface $element
+     * @param bool $inline
+     * @param bool $static
+     * @return string
+     * @throws InvalidConfigException
+     * @throws \Throwable
+     */
+    private function _inputHtml(mixed $value, ElementInterface $element, bool $static): string
     {
         $view = Craft::$app->getView();
         $view->registerAssetBundle(CkeditorAsset::class);
@@ -1199,7 +1223,15 @@ JS;
     }
     config.removePlugins.push(...extraRemovePlugins);
   }
+  
   instance = CKEditor5.craftcms.create($idJs, config);
+  
+  if (Boolean($static)) {
+    instance.then((editor) => {
+      editor.enableReadOnlyMode($idJs);
+    });
+    
+  }
 })(jQuery)
 JS,
             View::POS_END,
@@ -1231,20 +1263,6 @@ JS,
                 'config' => $this->ckeConfig,
             ],
         ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
-    {
-        Craft::$app->getView()->registerAssetBundle(CkeditorAsset::class);
-
-        return Html::tag(
-            'div',
-            $this->prepValueForInput($value, $element, true) ?: '&nbsp;',
-            ['class' => 'noteditable']
-        );
     }
 
     /**
@@ -1817,6 +1835,7 @@ JS,
 
         if (in_array('numberedList', $ckeConfig->toolbar)) {
             $def?->addAttribute('ol', 'style', 'Text');
+            $def?->addAttribute('ol', 'reversed', 'Text');
         }
 
         if (in_array('bulletedList', $ckeConfig->toolbar)) {

@@ -273,3 +273,7 @@ form[class*=' lp-editor']
   > :has(+ .ck-fake-selection-container:last-child) {
   margin-bottom: var(--ck-spacing-large);
 }
+
+.ck.ck-read-only {
+  cursor: not-allowed;
+}
