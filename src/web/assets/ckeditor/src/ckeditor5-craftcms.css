@@ -178,3 +178,7 @@ form[class*=' lp-editor']
   z-index: auto;
 }
 /* end fix */
+
+.ck.ck-read-only {
+  cursor: not-allowed;
+}

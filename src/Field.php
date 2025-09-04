@@ -353,6 +353,19 @@ class Field extends HtmlField
      */
     protected function inputHtml(mixed $value, ElementInterface $element = null): string
     {
+        return $this->_inputHtml($value, $element, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStaticHtml(mixed $value, ElementInterface $element): string
+    {
+        return $this->_inputHtml($value, $element, true);
+    }
+
+    private function _inputHtml(mixed $value, ?ElementInterface $element = null, bool $static = false)
+    {
         $view = Craft::$app->getView();
         $view->registerAssetBundle(CkeditorAsset::class);
 
@@ -559,6 +572,12 @@ JS;
     config.removePlugins.push(...extraRemovePlugins);
   }
   instance = CKEditor5.craftcms.create($idJs, config);
+  
+  if (Boolean($static)) {
+    instance.then((editor) => {
+      editor.enableReadOnlyMode($idJs);
+    });
+  }
 })(jQuery)
 JS,
             View::POS_END,
@@ -589,18 +608,6 @@ JS,
                 'config' => $this->ckeConfig,
             ],
         ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
-    {
-        return Html::tag(
-            'div',
-            $this->prepValueForInput($value, $element) ?: '&nbsp;',
-            ['class' => 'noteditable']
-        );
     }
 
     /**
