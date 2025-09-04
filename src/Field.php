@@ -998,7 +998,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
      *
      * @param mixed $value
      * @param ElementInterface $element
-     * @param bool $inline
      * @param bool $static
      * @return string
      * @throws InvalidConfigException
