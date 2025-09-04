@@ -988,7 +988,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     /**
      * @inheritdoc
      */
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
+    public function getStaticHtml(mixed $value, ?ElementInterface $element): string
     {
         return $this->_inputHtml($value, $element, true);
     }
@@ -1003,7 +1003,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
      * @throws InvalidConfigException
      * @throws \Throwable
      */
-    private function _inputHtml(mixed $value, ElementInterface $element, bool $static): string
+    private function _inputHtml(mixed $value, ?ElementInterface $element, bool $static): string
     {
         $view = Craft::$app->getView();
         $view->registerAssetBundle(CkeditorAsset::class);
