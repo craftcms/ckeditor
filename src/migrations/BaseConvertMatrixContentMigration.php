@@ -76,6 +76,8 @@ class BaseConvertMatrixContentMigration extends Migration
             ->column();
 
         foreach ($ownerIds as $ownerId) {
+            $owner = Craft::$app->getElements()->getElementById($ownerId);
+
             // get all the nested entries for the owner/field
             /** @var Entry[] $allNestedEntries */
             $allNestedEntries = Entry::find()
@@ -84,7 +86,7 @@ class BaseConvertMatrixContentMigration extends Migration
                 ->siteId('*')
                 ->drafts(null)
                 ->revisions(null)
-                ->trashed(null)
+                ->trashed($owner->revisionId ? null : false)
                 ->status(null)
                 ->all();
 
@@ -95,6 +97,7 @@ class BaseConvertMatrixContentMigration extends Migration
             ]);
 
             foreach ($groupedNestedEntries as $nestedEntries) {
+                // we're intentionally getting the site specific owner, from the nested entry
                 $owner = $nestedEntries[0]->getOwner();
 
                 echo sprintf('    > Updating %s %s ("%s") in %s … ', $owner::lowerDisplayName(),  $owner->id, $owner->getUiLabel(), $owner->getSite()->name);
