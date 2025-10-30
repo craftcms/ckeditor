@@ -372,6 +372,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         }
 
         if ($resave) {
+            $owner->propagateRequired = false;
             Craft::$app->getElements()->saveElement($owner, false, $propagate, false);
         }
     }
@@ -1880,5 +1881,13 @@ JS,
     public function setEnableSourceEditingForNonAdmins(bool $value): void
     {
         $this->sourceEditingGroups = $value ? '*' : ['__ADMINS__'];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function handlePropagateRequired(ElementInterface $element, ElementInterface $siteElement): void
+    {
+        self::entryManager($this)->duplicateNestedElements($element, $siteElement, force: true);
     }
 }
