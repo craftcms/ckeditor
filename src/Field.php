@@ -372,7 +372,9 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         }
 
         if ($resave) {
-            $owner->propagateRequired = false;
+            if (version_compare(Craft::$app->getVersion(), '5.9.0', '>=')) {
+                $owner->propagateRequired = false;
+            }
             Craft::$app->getElements()->saveElement($owner, false, $propagate, false);
         }
     }
@@ -1888,6 +1890,8 @@ JS,
      */
     public function handlePropagateRequired(ElementInterface $element, ElementInterface $siteElement): void
     {
-        self::entryManager($this)->duplicateNestedElements($element, $siteElement, force: true);
+        if (version_compare(Craft::$app->getVersion(), '5.9.0', '>=')) {
+            self::entryManager($this)->duplicateNestedElements($element, $siteElement, force: true);
+        }
     }
 }
