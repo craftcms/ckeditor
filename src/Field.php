@@ -1889,11 +1889,12 @@ JS,
     /**
      * @inheritdoc
      */
-    public function handlePropagateRequired(ElementInterface $element, ElementInterface $siteElement): void
+    public function propagateValue(ElementInterface $from, ElementInterface $to): void
     {
+        parent::propagateValue($from, $to);
         if (version_compare(Craft::$app->getVersion(), '5.9.0', '>=')) {
             /** @phpstan-ignore-next-line */
-            self::entryManager($this)->duplicateNestedElements($element, $siteElement, force: true);
+            self::entryManager($this)->duplicateNestedElements($from, $to, force: true);
         }
     }
 }
