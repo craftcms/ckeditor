@@ -1817,6 +1817,7 @@ JS,
 
         if (in_array('numberedList', $ckeConfig->toolbar)) {
             $def?->addAttribute('ol', 'style', 'Text');
+            $def?->addAttribute('ol', 'reversed', 'Text');
         }
 
         if (in_array('bulletedList', $ckeConfig->toolbar)) {

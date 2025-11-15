@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed a bug where `reversed` attributes were being removed from `<ol>` elements by HTML Purifier. ([#463](https://github.com/craftcms/ckeditor/issues/463))
+
 ## 4.10.1 - 2025-08-18
 
 - Fixed a bug where heading levels specified via `heading.options` were being ignored if their corresponding checkbox wasn’t checked. ([#456](https://github.com/craftcms/ckeditor/issues/456))
