@@ -4,6 +4,7 @@
 
 - Statically-rendered CKEditor fields are now shown in read-only mode. ([#466](https://github.com/craftcms/ckeditor/pull/466))
 - Fixed a bug where `reversed` attributes were being removed from `<ol>` elements by HTML Purifier. ([#463](https://github.com/craftcms/ckeditor/issues/463))
+- Fixed a bug where custom heading level configs weren’t always respected. ([#470](https://github.com/craftcms/ckeditor/pull/470))
 - Fixed a bug where selected heading levels weren’t always allowed within CKEditor fields. ([#470](https://github.com/craftcms/ckeditor/pull/470))
 
 ## 3.14.1 - 2025-08-18
