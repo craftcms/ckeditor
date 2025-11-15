@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Statically-rendered CKEditor fields are now shown in read-only mode. ([#466](https://github.com/craftcms/ckeditor/pull/466))
 - Fixed a bug where `reversed` attributes were being removed from `<ol>` elements by HTML Purifier. ([#463](https://github.com/craftcms/ckeditor/issues/463))
 
 ## 4.10.1 - 2025-08-18
