@@ -1142,6 +1142,7 @@ JS,
             /** @var HTMLPurifier_HTMLDefinition|null $def */
             $def = $purifierConfig->getDefinition('HTML', true);
             $def?->addAttribute('ol', 'style', 'Text');
+            $def?->addAttribute('ol', 'reversed', 'Text');
         }
 
         if (in_array('bulletedList', $ckeConfig->toolbar)) {
