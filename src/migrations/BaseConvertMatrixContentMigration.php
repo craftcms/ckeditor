@@ -11,6 +11,7 @@ use craft\elements\Entry;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\PlainText;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use yii\helpers\Markdown;
 
 /**
@@ -75,9 +76,10 @@ class BaseConvertMatrixContentMigration extends Migration
             ->groupBy('ownerId')
             ->column();
 
-        foreach ($ownerIds as $ownerId) {
-            $owner = Craft::$app->getElements()->getElementById($ownerId);
+        $nestedEntriesToDelete = [];
+        $ownersToSave = [];
 
+        foreach ($ownerIds as $ownerId) {
             // get all the nested entries for the owner/field
             /** @var Entry[] $allNestedEntries */
             $allNestedEntries = Entry::find()
@@ -86,7 +88,7 @@ class BaseConvertMatrixContentMigration extends Migration
                 ->siteId('*')
                 ->drafts(null)
                 ->revisions(null)
-                ->trashed($owner->revisionId ? null : false)
+                ->trashed(null)
                 ->status(null)
                 ->all();
 
@@ -105,32 +107,53 @@ class BaseConvertMatrixContentMigration extends Migration
                 $value = '';
                 // iterate through each nested entry,
                 foreach ($nestedEntries as $entry) {
-                    // if the nested entry is the one containing the top-level field,
-                    // get its content and place it before the rest of that entry’s content
-                    // possibly followed by the <craft-entry data-entry-id=\"<nested entry id>\"></craft-entry>
-                    if ($entry->type->uid === $htmlEntryType?->uid) {
-                        $textValue = $entry->getFieldValue($htmlField->handle);
-                        if ($this->markdownFlavor !== 'none' && $htmlField instanceof PlainText) {
-                            // Parse it as Markdown
-                            $value .= Markdown::process($textValue, $this->markdownFlavor);
-                        } else {
-                            $value .= $textValue;
-                        }
+                    // only get the content if the nested entry is not soft-deleted
+                    // or the owner is soft-deleted or the owner is a revision
+                    if (!$entry->trashed || $owner->trashed || $owner->getIsRevision()) {
+                        // if the nested entry is the one containing the top-level field,
+                        // get its content and place it before the rest of that entry’s content
+                        // possibly followed by the <craft-entry data-entry-id=\"<nested entry id>\"></craft-entry>
+                        if ($entry->type->uid === $htmlEntryType?->uid) {
+                            $textValue = $entry->getFieldValue($htmlField->handle);
+                            if ($this->markdownFlavor !== 'none' && $htmlField instanceof PlainText) {
+                                // Parse it as Markdown
+                                $value .= Markdown::process($textValue, $this->markdownFlavor);
+                            } else {
+                                $value .= $textValue;
+                            }
 
-                        if ($this->preserveHtmlEntries) {
-                            $value .= sprintf('<craft-entry data-entry-id="%s"></craft-entry>', $entry->id);
+                            if ($this->preserveHtmlEntries) {
+                                $value .= sprintf('<craft-entry data-entry-id="%s"></craft-entry>', $entry->id);
+                            } else {
+                                // don't delete straight away or some nested elements won't be available when
+                                // e.g. processing the revisions of the owner
+                                $nestedEntriesToDelete[] = $entry;
+                            }
                         } else {
-                            $elementsService->deleteElement($entry);
+                            // for other nested entries add the <craft-entry data-entry-id=\"<nested entry id>\”></craft-entry>
+                            $value .= sprintf('<craft-entry data-entry-id="%s"></craft-entry>', $entry->id);
                         }
-                    } else {
-                        // for other nested entries add the <craft-entry data-entry-id=\"<nested entry id>\”></craft-entry>
-                        $value .= sprintf('<craft-entry data-entry-id="%s"></craft-entry>', $entry->id);
                     }
                 }
 
                 $owner->setFieldValue($ckeField->handle, $value);
-                $elementsService->saveElement($owner, false);
+                // we can't save here or some nested elements won't be available when we process e.g. the revisions
+                $ownersToSave[] = $owner;
                 echo "✓\n";
+            }
+        }
+
+        // now save all the amended owners
+        if (!empty($ownersToSave)) {
+            foreach ($ownersToSave as $owner) {
+                $elementsService->saveElement($owner, false);
+            }
+        }
+
+        // and delete all nested elements we no longer need
+        if (!empty($nestedEntriesToDelete)) {
+            foreach ($nestedEntriesToDelete as $nestedEntry) {
+                $elementsService->deleteElement($nestedEntry);
             }
         }
 
