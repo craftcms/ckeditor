@@ -11,7 +11,6 @@ use craft\elements\Entry;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\PlainText;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Db;
 use yii\helpers\Markdown;
 
 /**
