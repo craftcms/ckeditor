@@ -1914,6 +1914,7 @@ JS,
      */
     public function propagateValue(ElementInterface $from, ElementInterface $to): void
     {
+        /** @phpstan-ignore-next-line */
         parent::propagateValue($from, $to);
 
         if (!$from->propagateAll) {
