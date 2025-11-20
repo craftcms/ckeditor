@@ -1915,7 +1915,10 @@ JS,
     public function propagateValue(ElementInterface $from, ElementInterface $to): void
     {
         parent::propagateValue($from, $to);
-        if (version_compare(Craft::$app->getVersion(), '5.9.0', '>=')) {
+
+        if (!$from->propagateAll) {
+            // NestedElementManager won't duplicate the nested entries automatically,
+            // because the field has a value in the target site (the HTML content), so isValueEmpty() is false.
             /** @phpstan-ignore-next-line */
             self::entryManager($this)->duplicateNestedElements($from, $to, force: true);
         }
