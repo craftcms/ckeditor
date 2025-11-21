@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed a bug where CKEditor field values weren’t always getting propagated to other sites (with duplicated nested entries) when creating a new element. ([#479](https://github.com/craftcms/ckeditor/pull/479))
+
 ## 4.11.0 - 2025-11-19
 
 - Statically-rendered CKEditor fields are now shown in read-only mode. ([#466](https://github.com/craftcms/ckeditor/pull/466))
