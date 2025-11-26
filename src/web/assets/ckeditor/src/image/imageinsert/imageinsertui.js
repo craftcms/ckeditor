@@ -178,9 +178,9 @@ export default class CraftImageInsertUI extends ImageInsertUI {
    * Attach the uploader with drag event handler
    */
   _attachUploader() {
-    let params = this.editor.config.get('assetUploadParams');
+    let params = this.editor.config.get('assetUploadParams') ?? null;
 
-    if (!params['folderId']) {
+    if (!params || !params['folderId']) {
       return;
     }
 
