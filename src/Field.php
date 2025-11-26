@@ -37,7 +37,6 @@ use craft\elements\NestedElementManager;
 use craft\elements\User;
 use craft\enums\PropagationMethod;
 use craft\errors\InvalidHtmlTagException;
-use craft\errors\InvalidSubpathException;
 use craft\events\CancelableEvent;
 use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\ArrayHelper;
