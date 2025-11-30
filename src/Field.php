@@ -1787,7 +1787,7 @@ JS,
         $volume = Craft::$app->getVolumes()->getVolumeByUid($this->defaultUploadLocationVolume);
         if ($volume) {
             $subpath = trim($this->defaultUploadLocationSubpath ?? '', '/');
-            [$subpath, $folder] = AssetsHelper::findFolderBySubpath($volume, $subpath);
+            [$subpath, $folder] = AssetsHelper::resolveSubpath($volume, $subpath);
 
             // Ensure that the folder exists
             if (!$folder) {
