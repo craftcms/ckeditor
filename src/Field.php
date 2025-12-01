@@ -1512,21 +1512,6 @@ JS,
         return $entryTypeOptions;
     }
 
-    private function createButtonLabel(): string
-    {
-        if (isset($this->createButtonLabel)) {
-            return Craft::t('site', $this->createButtonLabel);
-        }
-        return $this->defaultCreateButtonLabel();
-    }
-
-    private function defaultCreateButtonLabel(): string
-    {
-        return Craft::t('app', 'New {type}', [
-            'type' => Entry::lowerDisplayName(),
-        ]);
-    }
-
     /**
      * Normalizes <figure> tags, ensuring they have an `image` or `media` class depending on their contents,
      * and they contain a <div data-oembed-url> or <oembed> tag, depending on the `mediaEmbed.previewsInData`
