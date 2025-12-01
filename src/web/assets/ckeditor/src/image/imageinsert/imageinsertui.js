@@ -4,9 +4,7 @@
  * @license GPL-3.0-or-later
  */
 
-import {IconImage} from 'ckeditor5/src/icons';
-import {ButtonView} from 'ckeditor5/src/ui';
-import {ImageInsertUI} from '@ckeditor/ckeditor5-image';
+import {ButtonView, IconImage, ImageInsertUI} from 'ckeditor5';
 
 export default class CraftImageInsertUI extends ImageInsertUI {
   static get pluginName() {

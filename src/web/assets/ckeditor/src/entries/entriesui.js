@@ -1,14 +1,15 @@
-import {Plugin} from 'ckeditor5/src/core';
 import {
   addListToDropdown,
   ButtonView,
+  Collection,
   createDropdown,
+  IconPlus,
+  isWidget,
+  Plugin,
+  Range,
   ViewModel,
-} from 'ckeditor5/src/ui';
-import {Range} from 'ckeditor5/src/engine';
-import {Collection} from 'ckeditor5/src/utils';
-import {IconPlus} from 'ckeditor5/src/icons';
-import {isWidget, WidgetToolbarRepository} from 'ckeditor5/src/widget';
+  WidgetToolbarRepository,
+} from 'ckeditor5';
 import {DoubleClickObserver} from '../observers/domevent';
 import CraftEntryTypesButtonView from './entrytypesbuttonview.js';
 

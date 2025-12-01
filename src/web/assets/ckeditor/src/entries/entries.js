@@ -1,4 +1,4 @@
-import {Plugin} from 'ckeditor5/src/core';
+import {Plugin} from 'ckeditor5';
 import CraftEntriesEditing from './entriesediting';
 import CraftEntriesUI from './entriesui';
 

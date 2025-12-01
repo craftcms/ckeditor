@@ -4,9 +4,8 @@
  * @license GPL-3.0-or-later
  */
 
-/** global: CKEditor5, Garnish */
+/** global: CKEditor5, Garnish, $ */
 import './ckeconfig.css';
-import $ from 'jquery';
 
 export default Garnish.Base.extend({
   jsonSchemaUri: null,

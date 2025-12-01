@@ -115,6 +115,7 @@ final class CkeditorConfigSchema
                     'fontColor' => ['interface' => 'FontColorConfig'],
                     'fontFamily' => ['interface' => 'FontFamilyConfig'],
                     'fontSize' => ['interface' => 'FontSizeConfig'],
+                    'fullscreen' => ['interface' => 'FullscreenConfig'],
                     'heading' => ['interface' => 'HeadingConfig'],
                     'htmlEmbed' => ['interface' => 'HtmlEmbedConfig'],
                     'htmlSupport' => ['interface' => 'GeneralHtmlSupportConfig'],
@@ -235,6 +236,18 @@ final class CkeditorConfigSchema
                     'view' => ['interface' => 'ElementDefinition'],
                 ],
                 'required' => ['title'],
+            ],
+            'FullscreenConfig' => [
+                'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_fullscreen_fullscreenconfig-FullscreenConfig.html',
+                'properties' => [
+                    'menuBar' => ['type' => 'object'],
+                    'toolbar' => ['type' => 'object'],
+                ],
+                'default' => [
+                    'menuBar' => [
+                        'isVisible' => false,
+                    ],
+                ],
             ],
             'GeneralHtmlSupportConfig' => [
                 'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_html-support_generalhtmlsupportconfig-GeneralHtmlSupportConfig.html',
@@ -437,7 +450,7 @@ final class CkeditorConfigSchema
             'PluginList' => [
                 'title' => 'List of plugin names',
                 'type' => 'array',
-                'items' => ['enum' => '__PLUGIN_LIST__'],
+                'items' => ['enum' => CkeditorConfig::getAllPlugins()],
             ],
             'PropertyPatterns' => [
                 'description' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_engine_view_matcher-PropertyPatterns.html',

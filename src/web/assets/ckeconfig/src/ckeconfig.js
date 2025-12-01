@@ -4,8 +4,5 @@
  * @license GPL-3.0-or-later
  */
 
-import ToolbarBuilder from './ToolbarBuilder';
-import ConfigOptions from './ConfigOptions';
-
-window.CKEditor5.craftcms.ToolbarBuilder = ToolbarBuilder;
-window.CKEditor5.craftcms.ConfigOptions = ConfigOptions;
+export {default as ToolbarBuilder} from './ToolbarBuilder.js';
+export {default as ConfigOptions} from './ConfigOptions.js';

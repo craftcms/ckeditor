@@ -4,7 +4,7 @@
  * @license GPL-3.0-or-later
  */
 
-import {Plugin} from 'ckeditor5/src/core';
+import {Plugin} from 'ckeditor5';
 import ImageTransformEditing from './imagetransform/imagetransformediting';
 import ImageTransformUI from './imagetransform/imagetransformui';
 

@@ -3,6 +3,7 @@
 return [
     'Add nested content' => 'Add nested content',
     'Advanced' => 'Advanced',
+    'Advanced Link Fields' => 'Advanced Link Fields',
     'Available Transforms' => 'Available Transforms',
     'CKEditor Config' => 'CKEditor Config',
     'CKEditor Configs' => 'CKEditor Configs',
@@ -33,7 +34,7 @@ return [
     'Link to an asset' => 'Link to an asset',
     'Link to an entry' => 'Link to an entry',
     'Link to the current site' => 'Link to the current site',
-    'New {type}' => 'New {type}',
+    'Links' => 'Links',
     'No transform' => 'No transform',
     'Purify HTML' => 'Purify HTML',
     'Raw content only' => 'Raw content only',
