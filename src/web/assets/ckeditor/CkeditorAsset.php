@@ -69,13 +69,17 @@ class CkeditorAsset extends BaseCkeditorPackageAsset
                 'Edit {type}',
             ]);
             $view->registerTranslations('ckeditor', [
+                'Add nested content',
                 'Entries cannot be copied between CKEditor fields.',
                 'Entry toolbar',
                 'Entry types list',
                 'Insert link',
                 'Link to the current site',
+                'New {type}',
                 'Site: {name}',
                 'This field doesn’t allow nested entries.',
+                '{num, number} {num, plural, =1{character} other{characters}}',
+                '{num, number} {num, plural, =1{word} other{words}}',
             ]);
 
             $view->registerJsWithVars(fn($attach) => <<<JS
