@@ -1,12 +1,12 @@
 import {
   addListToDropdown,
   ButtonView,
+  Collection,
   createDropdown,
+  IconPlus,
   ViewModel,
   View,
-} from 'ckeditor5/src/ui';
-import {Collection} from 'ckeditor5/src/utils';
-import {IconPlus} from 'ckeditor5/src/icons';
+} from 'ckeditor5';
 
 export default class CraftEntryTypesButtonView extends View {
   constructor(locale, options = {}) {
