@@ -3,8 +3,10 @@ import {
   ButtonView,
   Collection,
   createDropdown,
+  IconPlus,
   isWidget,
   Plugin,
+  Range,
   ViewModel,
   WidgetToolbarRepository,
 } from 'ckeditor5';
@@ -86,17 +88,23 @@ export default class CraftEntriesUI extends Plugin {
     view.addObserver(DoubleClickObserver);
 
     this.editor.listenTo(viewDocument, 'dblclick', (evt, data) => {
-      const modelElement = this.editor.editing.mapper.toModelElement(
-        data.target.parent,
-      );
+      if (!this.editor.isReadOnly) {
+        const modelElement = this.editor.editing.mapper.toModelElement(
+          data.target.parent,
+        );
 
-      if (modelElement.name === 'craftEntryModel') {
-        this._initEditEntrySlideout(data, modelElement);
+        if (modelElement.name === 'craftEntryModel') {
+          this._initEditEntrySlideout(data, modelElement);
+        }
       }
     });
   }
 
   _initEditEntrySlideout(data = null, modelElement = null) {
+    if (this.editor.isReadOnly) {
+      return;
+    }
+
     if (modelElement === null) {
       const selection = this.editor.model.document.selection;
       modelElement = selection.getSelectedElement();
@@ -202,6 +210,10 @@ export default class CraftEntriesUI extends Plugin {
    * @private
    */
   _createEditEntryBtn(locale) {
+    if (this.editor.isReadOnly) {
+      return;
+    }
+
     // const command = this.editor.commands.get('insertEntry');
     const button = new ButtonView(locale);
     button.set({
@@ -276,7 +288,7 @@ export default class CraftEntriesUI extends Plugin {
         if (
           $element !== null &&
           Garnish.hasAttr($element, 'data-owner-is-canonical') &&
-          !elementEditor.settings.isUnpublishedDraft
+          (!elementEditor || !elementEditor.settings.isUnpublishedDraft)
         ) {
           await slideout.elementEditor.checkForm(true, true);
           let baseInputName = $(editor.sourceElement).attr('name');
@@ -285,6 +297,7 @@ export default class CraftEntriesUI extends Plugin {
             await elementEditor.setFormValue(baseInputName, '*');
           }
           if (
+            elementEditor &&
             elementEditor.settings.draftId &&
             slideout.elementEditor.settings.draftId
           ) {

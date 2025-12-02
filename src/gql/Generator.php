@@ -119,11 +119,6 @@ class Generator implements GeneratorInterface, SingleGeneratorInterface
                         'type' => Type::string(),
                         'description' => 'The parsed content as plain text.',
                     ],
-                    'entries' => [
-                        'type' => Type::nonNull(Type::listOf(Gql::getUnionType("{$typeName}_entries", $entryTypes))),
-                        'description' => 'The nested entries within the content.',
-                        'args' => $entryArgs,
-                    ],
                     'chunks' => [
                         'type' => Type::nonNull(Type::listOf(Gql::getUnionType("{$typeName}_chunks", [
                             ...$entryTypes,
@@ -165,6 +160,14 @@ class Generator implements GeneratorInterface, SingleGeneratorInterface
                         },
                     ],
                 ];
+
+                if ($entryTypes) {
+                    $fields['entries'] = [
+                        'type' => Type::nonNull(Type::listOf(Gql::getUnionType("{$typeName}_entries", $entryTypes))),
+                        'description' => 'The nested entries within the content.',
+                        'args' => $entryArgs,
+                    ];
+                }
 
                 return Craft::$app->getGql()->prepareFieldDefinitions($fields, $typeName);
             },

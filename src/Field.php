@@ -8,6 +8,7 @@
 namespace craft\ckeditor;
 
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
@@ -70,7 +71,7 @@ use yii\base\InvalidConfigException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
-class Field extends HtmlField implements ElementContainerFieldInterface, MergeableFieldInterface
+class Field extends HtmlField implements ElementContainerFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
 {
     /**
      * @event ModifyPurifierConfigEvent The event that is triggered when creating HTML Purifier config
@@ -371,6 +372,10 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         }
 
         if ($resave) {
+            if (version_compare(Craft::$app->getVersion(), '5.9.0', '>=')) {
+                /** @phpstan-ignore-next-line */
+                $owner->propagateRequired = false;
+            }
             Craft::$app->getElements()->saveElement($owner, false, $propagate, false);
         }
     }
@@ -527,7 +532,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             $rules[] = [
                 function(ElementInterface $element) {
                     $value = strip_tags((string)$element->getFieldValue($this->handle));
-                    if (strlen($value) > $this->characterLimit) {
+                    if (mb_strlen($value) > $this->characterLimit) {
                         $element->addError(
                             "field:$this->handle",
                             Craft::t('ckeditor', '{field} should contain at most {max, number} {max, plural, one{character} other{characters}}.', [
@@ -583,6 +588,17 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     /**
      * @inheritdoc
      */
+    public function settingsAttributes(): array
+    {
+        $attributes = ArrayHelper::without(parent::settingsAttributes(), 'createButtonLabel');
+        $attributes[] = 'entryTypes';
+        return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+
     public function getUriFormatForElement(NestedElementInterface $element): ?string
     {
         return null;
@@ -759,6 +775,8 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             return null;
         }
 
+        $value = preg_replace(StringHelper::invisibleCharsRegex(), '', $value);
+
         // Redactor to CKEditor syntax for <figure>
         // (https://github.com/craftcms/ckeditor/issues/96)
         $value = $this->_normalizeFigures($value);
@@ -771,6 +789,37 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             '<div class="page-break" style="page-break-after:always;"><span style="display:none;">&nbsp;</span></div>',
             $value,
         );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function copyCrossSiteValue(ElementInterface $from, ElementInterface $to): void
+    {
+        /** @var FieldData|null $fromValue */
+        $fromValue = $from->getFieldValue($this->handle);
+        $chunks = $fromValue->getChunks(false);
+        if ($chunks->contains(fn(BaseChunk $chunk) => $chunk instanceof EntryChunk)) {
+            $elementsService = Craft::$app->getElements();
+            $toValue = $chunks
+                ->map(function(BaseChunk $chunk) use ($to, $elementsService) {
+                    if ($chunk instanceof Markup) {
+                        return $chunk->rawHtml;
+                    }
+
+                    /** @var EntryChunk $chunk */
+                    $entry = $elementsService->duplicateElement($chunk->getEntry(), [
+                        'siteId' => $to->siteId,
+                    ]);
+
+                    return sprintf('<craft-entry data-entry-id="%s">&nbsp;</craft-entry>', $entry->id);
+                })
+                ->join('');
+        } else {
+            $toValue = $fromValue->getRawContent();
+        }
+
+        $to->setFieldValue($this->handle, $toValue);
     }
 
     private function escapePageBreaks(string &$html): void
@@ -887,7 +936,30 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element, $inline): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
+    {
+        return $this->_inputHtml($value, $element, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStaticHtml(mixed $value, ?ElementInterface $element): string
+    {
+        return $this->_inputHtml($value, $element, true);
+    }
+
+    /**
+     * Return the HTML for the CKEditor field.
+     *
+     * @param mixed $value
+     * @param ElementInterface $element
+     * @param bool $static
+     * @return string
+     * @throws InvalidConfigException
+     * @throws \Throwable
+     */
+    private function _inputHtml(mixed $value, ?ElementInterface $element, bool $static): string
     {
         $view = Craft::$app->getView();
         $view->registerAssetBundle(CkeditorAsset::class);
@@ -1070,7 +1142,37 @@ import {create} from '@craftcms/ckeditor';
     },
     removePlugins: []
   });
+  
 
+  // special case for heading config, because of the Heading Levels
+  // see https://github.com/craftcms/ckeditor/issues/431
+  const baseHeadings = $baseConfigJs?.heading?.options;
+  const configOptionHeadings = $configOptionsJs?.heading?.options;
+  const nativeHeadingModels = ['paragraph', 'heading1', 'heading2', 'heading3', 'heading4', 'heading5', 'heading6'];
+  
+  if (baseHeadings && configOptionHeadings && baseHeadings != configOptionHeadings) {
+    let headings = new Object();
+    
+    // allow all options from baseHeading
+    baseHeadings.forEach((baseHeading) => {
+      headings[baseHeading.model] = baseHeading;
+    });
+    
+    configOptionHeadings.forEach((configOptionHeading) => {
+      // if a baseHeading option has a custom config in the configOptionHeadings - use that custom config
+      if (typeof headings[configOptionHeading.model] !== 'undefined') {
+        headings[configOptionHeading.model] = configOptionHeading;
+      }
+      // if custom config contains a fully custom option (not a native heading model) - allow it
+      if (!nativeHeadingModels.includes(configOptionHeading.model)) {
+        headings[configOptionHeading.model] = configOptionHeading;
+      }
+    });
+      
+    // use the headings
+    config.heading.options = Object.values(headings);
+  }
+  
   const extraRemovePlugins = [];
   if ($showWordCountJs) {
     if (typeof config.wordCount === 'undefined') {
@@ -1117,7 +1219,14 @@ import {create} from '@craftcms/ckeditor';
   if (extraRemovePlugins.length) {
     config.removePlugins.push(...extraRemovePlugins);
   }
+
   instance = create($idJs, config);
+  
+  if (Boolean($static)) {
+    instance.then((editor) => {
+      editor.enableReadOnlyMode($idJs);
+    });
+  }
 })(jQuery);
 JS,
             [
@@ -1162,20 +1271,6 @@ JS,
                 'config' => $this->ckeConfig,
             ],
         ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
-    {
-        Craft::$app->getView()->registerAssetBundle(CkeditorAsset::class);
-
-        return Html::tag(
-            'div',
-            $this->prepValueForInput($value, $element, true) ?: '&nbsp;',
-            ['class' => 'noteditable']
-        );
     }
 
     /**
@@ -1783,6 +1878,7 @@ JS,
 
         if (in_array('numberedList', $ckeConfig->toolbar)) {
             $def?->addAttribute('ol', 'style', 'Text');
+            $def?->addAttribute('ol', 'reversed', 'Text');
         }
 
         if (in_array('bulletedList', $ckeConfig->toolbar)) {
@@ -1848,5 +1944,21 @@ JS,
     public function setEnableSourceEditingForNonAdmins(bool $value): void
     {
         $this->sourceEditingGroups = $value ? '*' : ['__ADMINS__'];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function propagateValue(ElementInterface $from, ElementInterface $to): void
+    {
+        /** @phpstan-ignore-next-line */
+        parent::propagateValue($from, $to);
+
+        if (!$from->propagateAll) {
+            // NestedElementManager won't duplicate the nested entries automatically,
+            // because the field has a value in the target site (the HTML content), so isValueEmpty() is false.
+            /** @phpstan-ignore-next-line */
+            self::entryManager($this)->duplicateNestedElements($from, $to, force: true);
+        }
     }
 }

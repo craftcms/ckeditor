@@ -56,6 +56,7 @@ return [
     'This field doesn’t allow nested {type} entries.' => 'This field doesn’t allow nested {type} entries.',
     'Toolbar' => 'Toolbar',
     'View available settings' => 'View available settings',
+    'Whether entry types with icons should be shown as separate buttons in the toolbar.' => 'Whether entry types with icons should be shown as separate buttons in the toolbar.',
     'Who should see the “Source” button?' => 'Who should see the “Source” button?',
     'Words' => 'Words',
     'You can save custom {name} configs as {ext} files in {path}.' => 'You can save custom {name} configs as {ext} files in {path}.',
@@ -63,5 +64,7 @@ return [
     '{attribute} isn’t valid JSON.' => '{attribute} isn’t valid JSON.',
     '{field} should contain at most {max, number} {max, plural, one{character} other{characters}}.' => '{field} should contain at most {max, number} {max, plural, one{character} other{characters}}.',
     '{field} should contain at most {max, number} {max, plural, one{word} other{words}}.' => '{field} should contain at most {max, number} {max, plural, one{word} other{words}}.',
+    '{num, number} {num, plural, =1{character} other{characters}}' => '{num, number} {num, plural, =1{character} other{characters}}',
+    '{num, number} {num, plural, =1{word} other{words}}' => '{num, number} {num, plural, =1{word} other{words}}',
     '“+” Button Tooltip' => '“+” Button Tooltip',
 ];

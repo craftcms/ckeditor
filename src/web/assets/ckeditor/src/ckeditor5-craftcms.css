@@ -154,7 +154,7 @@
 }
 
 /* minimum color variations that meet the 3:1 colour contrast requirement against the white bg and #d7dfe7 hover bg */
-.ck-toolbar .entry-type-buttons {
+.ck-toolbar .entry-type-button {
   .icon.red {
     &:hover {
       .ck-button__label {
@@ -386,19 +386,35 @@
 }
 /* end nested entries
 
-/* start fix for https://github.com/craftcms/ckeditor/issues/345 */
+/* start fix for https://github.com/craftcms/ckeditor/issues/345 and https://github.com/craftcms/ckeditor/issues/417 */
+form[class^='lp-editor'] .ck-toolbar_grouping,
+form[class*=' lp-editor'] .ck-toolbar_grouping,
 .so-body .ck-toolbar_grouping {
   position: relative !important;
 }
 
+form[class^='lp-editor'] .ck-toolbar_grouping .ck.ck-dropdown,
+form[class*=' lp-editor'] .ck-toolbar_grouping .ck.ck-dropdown,
 .so-body .ck-toolbar_grouping .ck.ck-dropdown {
   position: static;
 }
 
+form[class^='lp-editor'] .ck.ck-toolbar-dropdown > .ck-dropdown__panel,
+form[class*=' lp-editor'] .ck.ck-toolbar-dropdown > .ck-dropdown__panel,
 .so-body .ck.ck-toolbar-dropdown > .ck-dropdown__panel {
   width: 100%;
 }
 
+form[class^='lp-editor']
+  .ck.ck-editor
+  .ck-editor__top
+  .ck-sticky-panel
+  .ck-toolbar,
+form[class*=' lp-editor']
+  .ck.ck-editor
+  .ck-editor__top
+  .ck-sticky-panel
+  .ck-toolbar,
 .so-body .ck.ck-editor .ck-editor__top .ck-sticky-panel .ck-toolbar {
   z-index: auto;
 }
@@ -474,4 +490,8 @@ body.ck-fullscreen .slideout-container {
 
 .ck.link-type-advanced .pane.hairline .ck.ck-button {
   padding: 0 !important;
+}
+
+.ck.ck-read-only {
+  cursor: not-allowed;
 }
