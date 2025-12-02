@@ -45,6 +45,15 @@
   on: field.showWordCount
 }) }}
 
+{{ forms.lightswitchField({
+  id: 'parse-embeds',
+  name: 'parseEmbeds',
+  label: 'Parse embeds'|t('ckeditor'),
+  instructions: 'Whether `<oembed>` tags should be parsed and replaced with the provider’s embed code.'|t('ckeditor'),
+  warning: 'This should only be enabled if the field output is cached.'|t('ckeditor'),
+  on: field.parseEmbeds,
+}) }}
+
 {% if userGroupOptions|length %}
 <div id="source-editing-groups">
   {{ forms.checkboxSelectField({
@@ -76,14 +85,12 @@
   data: {'error-key': 'entryTypes'},
 }) }}
 
-{{ forms.textField({
-  label: '“New” Button Label'|t('app'),
-  instructions: 'The text label for the entry creation button.'|t('app'),
-  id: 'create-button-label',
-  name: 'createButtonLabel',
-  value: field.createButtonLabel,
-  placeholder: defaultCreateButtonLabel,
-  errors: field.getErrors('createButtonLabel')
+{{ forms.lightswitchField({
+  id: 'expand-entry-buttons',
+  name: 'expandEntryButtons',
+  label: 'Show toolbar buttons for entry types with icons'|t('ckeditor'),
+  instructions: 'Whether entry types with icons should be shown as separate buttons in the toolbar.' |t('ckeditor'),
+  on: field.expandEntryButtons,
 }) }}
 
 <hr>

@@ -9,6 +9,7 @@ namespace craft\ckeditor\web\assets\ckeconfig;
 
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
 use craft\web\AssetBundle;
+use nystudio107\codeeditor\assetbundles\codeeditor\CodeEditorAsset;
 
 /**
  * CKEditor custom build asset bundle
@@ -26,6 +27,7 @@ class CkeConfigAsset extends AssetBundle
      * @inheritdoc
      */
     public $depends = [
+        CodeEditorAsset::class,
         CkeditorAsset::class,
     ];
 
