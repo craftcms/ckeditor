@@ -11,12 +11,18 @@ namespace craft\ckeditor\data;
 use ArrayIterator;
 use Countable;
 use Craft;
+use craft\ckeditor\Field;
+use craft\controllers\GraphqlController;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry as EntryElement;
 use craft\helpers\Html;
 use craft\htmlfield\HtmlFieldData;
+use Embed\Embed;
+use Embed\Extractor;
+use Embed\Http\Crawler;
 use Illuminate\Support\Collection;
 use IteratorAggregate;
+use Throwable;
 use Traversable;
 use Twig\Markup as TwigMarkup;
 
@@ -39,7 +45,7 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
      * @inheritdoc
      * @noinspection PhpMissingParentConstructorInspection
      */
-    public function __construct(string $content, ?int $siteId = null)
+    public function __construct(string $content, ?int $siteId = null, private readonly ?Field $field = null)
     {
         $this->rawContent = $content;
         $this->siteId = $siteId;
@@ -103,31 +109,85 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
             return;
         }
 
+        $content = $this->rawContent;
+
+        if (
+            $this->field?->parseEmbeds &&
+            (!Craft::$app->getRequest()->getIsCpRequest() || Craft::$app->controller instanceof GraphqlController)
+        ) {
+            $content = $this->parseEmbeds($content);
+        }
+
         $this->chunks = Collection::make();
         $offset = 0;
 
-        while (($pos = stripos($this->rawContent, '<craft-entry', $offset)) !== false) {
-            $gtPos = strpos($this->rawContent, '>', $pos + 12);
+        while (($pos = stripos($content, '<craft-entry', $offset)) !== false) {
+            $gtPos = strpos($content, '>', $pos + 12);
             if ($gtPos === false) {
                 break;
             }
 
-            $this->addContentChunk(substr($this->rawContent, $offset, $pos - $offset));
+            $this->addContentChunk(substr($content, $offset, $pos - $offset));
 
-            $attributes = Html::parseTagAttributes($this->rawContent, $pos);
+            $attributes = Html::parseTagAttributes($content, $pos);
             if (!empty($attributes['data']['entry-id'])) {
                 $this->chunks->push(new Entry($attributes['data']['entry-id'], $this));
             }
 
             $offset = $gtPos + 1;
 
-            $closePos = stripos($this->rawContent, '</craft-entry>', $offset);
+            $closePos = stripos($content, '</craft-entry>', $offset);
             if ($closePos !== false) {
                 $offset = $closePos + 14;
             }
         }
 
-        $this->addContentChunk($offset ? substr($this->rawContent, $offset) : $this->rawContent);
+        $this->addContentChunk($offset ? substr($content, $offset) : $content);
+    }
+
+    private function parseEmbeds(string $content): string
+    {
+        $offset = 0;
+        $urls = [];
+
+        while (($pos = stripos($content, '<oembed', $offset)) !== false) {
+            $gtPos = strpos($content, '>', $pos + 7);
+            if ($gtPos === false) {
+                break;
+            }
+
+            $endPos = $gtPos + 1;
+            $closePos = stripos($content, '</oembed>', $endPos);
+            if ($closePos !== false) {
+                $endPos = $closePos + 9;
+            }
+
+            $tag = substr($content, $pos, $endPos - $pos);
+            if (!isset($urls[$tag])) {
+                $attributes = Html::parseTagAttributes($content, $pos);
+                if (!empty($attributes['url'])) {
+                    $urls[$tag] = $attributes['url'];
+                }
+            }
+
+            $offset = $endPos;
+        }
+
+        if (empty($urls)) {
+            return $content;
+        }
+
+        $crawler = new Crawler(Craft::createGuzzleClient());
+        $embed = new Embed($crawler);
+
+        try {
+            $infos = $embed->getMulti(...$urls);
+            $html = array_map(fn(Extractor $info) => $info->code->html, $infos);
+            return str_replace(array_keys($urls), $html, $content);
+        } catch (Throwable $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+            return $content;
+        }
     }
 
     private function addContentChunk(string $content): void

@@ -3,12 +3,15 @@ import {
   ButtonView,
   Collection,
   createDropdown,
+  IconPlus,
   isWidget,
   Plugin,
+  Range,
   ViewModel,
   WidgetToolbarRepository,
 } from 'ckeditor5';
 import {DoubleClickObserver} from '../observers/domevent';
+import CraftEntryTypesButtonView from './entrytypesbuttonview.js';
 
 export default class CraftEntriesUI extends Plugin {
   /**
@@ -29,9 +32,7 @@ export default class CraftEntriesUI extends Plugin {
    * @inheritDoc
    */
   init() {
-    this.editor.ui.componentFactory.add('createEntry', (locale) => {
-      return this._createToolbarEntriesButton(locale);
-    });
+    this._createToolbarEntriesButtons();
 
     this.editor.ui.componentFactory.add('editEntryBtn', (locale) => {
       return this._createEditEntryBtn(locale);
@@ -85,17 +86,23 @@ export default class CraftEntriesUI extends Plugin {
     view.addObserver(DoubleClickObserver);
 
     this.editor.listenTo(viewDocument, 'dblclick', (evt, data) => {
-      const modelElement = this.editor.editing.mapper.toModelElement(
-        data.target.parent,
-      );
+      if (!this.editor.isReadOnly) {
+        const modelElement = this.editor.editing.mapper.toModelElement(
+          data.target.parent,
+        );
 
-      if (modelElement.name === 'craftEntryModel') {
-        this._initEditEntrySlideout(data, modelElement);
+        if (modelElement.name === 'craftEntryModel') {
+          this._initEditEntrySlideout(data, modelElement);
+        }
       }
     });
   }
 
   _initEditEntrySlideout(data = null, modelElement = null) {
+    if (this.editor.isReadOnly) {
+      return;
+    }
+
     if (modelElement === null) {
       const selection = this.editor.model.document.selection;
       modelElement = selection.getSelectedElement();
@@ -108,12 +115,12 @@ export default class CraftEntriesUI extends Plugin {
   }
 
   /**
-   * Creates a toolbar button that allows for an entry to be inserted into the editor
+   * Creates a single toolbar button that allows for an entry to be inserted into the editor
    *
    * @param locale
    * @private
    */
-  _createToolbarEntriesButton(locale) {
+  _createSingleToolbarEntriesButton(locale) {
     const editor = this.editor;
     const entryTypeOptions = editor.config.get('entryTypeOptions');
     const insertEntryCommand = editor.commands.get('insertEntry');
@@ -124,21 +131,20 @@ export default class CraftEntriesUI extends Plugin {
 
     const dropdownView = createDropdown(locale);
     dropdownView.buttonView.set({
-      label:
-        editor.config.get('createButtonLabel') ||
-        Craft.t('app', 'New {type}', {
-          type: Craft.t('app', 'entry'),
-        }),
+      label: Craft.t('ckeditor', 'Add nested content'),
+      icon: IconPlus,
       tooltip: true,
-      withText: true,
-      //commandValue: null,
+      withText: false,
     });
 
     dropdownView.bind('isEnabled').to(insertEntryCommand);
     addListToDropdown(
       dropdownView,
       () =>
-        this._getDropdownItemsDefinitions(entryTypeOptions, insertEntryCommand),
+        this._getEntryTypeButtonsCollection(
+          entryTypeOptions,
+          insertEntryCommand,
+        ),
       {
         ariaLabel: Craft.t('ckeditor', 'Entry types list'),
       },
@@ -152,14 +158,45 @@ export default class CraftEntriesUI extends Plugin {
   }
 
   /**
+   * Creates toolbar buttons that allow for an entry of given type to be inserted into the editor.
+   * If the entry type has an icon, it'll get its own button. Entry types without an icon are grouped in a dropdown.
+   *
+   * @private
+   */
+  _createToolbarEntriesButtons() {
+    const editor = this.editor;
+    const entryTypeOptions = editor.config.get('entryTypeOptions');
+
+    if (!entryTypeOptions || !entryTypeOptions.length) {
+      return;
+    }
+
+    const expandEntryButtons = editor.config.get('expandEntryButtons');
+
+    if (expandEntryButtons) {
+      this.editor.ui.componentFactory.add(
+        'createEntry',
+        (locale) =>
+          new CraftEntryTypesButtonView(locale, {
+            entriesUi: this,
+            entryTypeOptions: entryTypeOptions,
+          }),
+      );
+    } else {
+      this.editor.ui.componentFactory.add('createEntry', (locale) => {
+        return this._createSingleToolbarEntriesButton(locale);
+      });
+    }
+  }
+
+  /**
    * Creates a list of entry type options that go into the insert entry button
    *
    * @param options
-   * @param command
    * @returns {Collection<Record<string, any>>}
    * @private
    */
-  _getDropdownItemsDefinitions(options, command) {
+  _getEntryTypeButtonsCollection(options) {
     const itemDefinitions = new Collection();
     options.map((option) => {
       const definition = {
@@ -168,6 +205,7 @@ export default class CraftEntriesUI extends Plugin {
           commandValue: option.value, //entry type id
           label: option.label || option.value,
           icon: option.icon,
+          color: option.color,
           withText: true,
         }),
       };
@@ -184,6 +222,10 @@ export default class CraftEntriesUI extends Plugin {
    * @private
    */
   _createEditEntryBtn(locale) {
+    if (this.editor.isReadOnly) {
+      return;
+    }
+
     // const command = this.editor.commands.get('insertEntry');
     const button = new ButtonView(locale);
     button.set({
@@ -258,7 +300,7 @@ export default class CraftEntriesUI extends Plugin {
         if (
           $element !== null &&
           Garnish.hasAttr($element, 'data-owner-is-canonical') &&
-          !elementEditor.settings.isUnpublishedDraft
+          (!elementEditor || !elementEditor.settings.isUnpublishedDraft)
         ) {
           await slideout.elementEditor.checkForm(true, true);
           let baseInputName = $(editor.sourceElement).attr('name');
@@ -267,6 +309,7 @@ export default class CraftEntriesUI extends Plugin {
             await elementEditor.setFormValue(baseInputName, '*');
           }
           if (
+            elementEditor &&
             elementEditor.settings.draftId &&
             slideout.elementEditor.settings.draftId
           ) {
