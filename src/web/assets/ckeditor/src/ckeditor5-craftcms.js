@@ -162,7 +162,21 @@ const handleClipboard = function (editor, plugins) {
         await elementEditor.ensureIsDraftOrRevision();
 
         // get the target owner id, in case we're pasting to a different element all together
-        ownerId = elementEditor.settings.elementId;
+
+        // first try to get that ID by wrapper div
+        // this way if the CKE field we're pasting into is nested in a matrixblock (or similar), we'll get the correct owner ID
+        let inputContainer = $editorElement.parents('.input');
+        if (inputContainer.length > 0) {
+          let divWrapper = $(inputContainer[0]).find('div[data-config]');
+          if (divWrapper.length > 0) {
+            ownerId = $(divWrapper[0]).data('element-id');
+          }
+        }
+
+        // if we still didn't get the ownerId this way, get it form the element editor
+        if (ownerId == null) {
+          ownerId = elementEditor.settings.elementId;
+        }
 
         // get the target field id, in case we're pasting to a different field all together (not different instance, different field)
         layoutElementUid = $editorElement
