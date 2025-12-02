@@ -15,10 +15,47 @@
 
 ## Unreleased
 
+- Fixed a bug where CKEditor field values weren’t always getting propagated to other sites (with duplicated nested entries) when creating a new element. ([#479](https://github.com/craftcms/ckeditor/pull/479))
+
+## 4.11.0 - 2025-11-19
+
+- Statically-rendered CKEditor fields are now shown in read-only mode. ([#466](https://github.com/craftcms/ckeditor/pull/466))
+- Fixed a bug where `reversed` attributes were being removed from `<ol>` elements by HTML Purifier. ([#463](https://github.com/craftcms/ckeditor/issues/463))
+- Fixed a bug where custom heading level configs weren’t always respected. ([#470](https://github.com/craftcms/ckeditor/pull/470))
+- Fixed a bug where selected heading levels weren’t always allowed within CKEditor fields. ([#470](https://github.com/craftcms/ckeditor/pull/470))
+- Fixed a bug where soft-deleted nested Matrix entries were getting restored by the `convert/matrix` command. ([#468](https://github.com/craftcms/ckeditor/issues/468))
+
+## 4.10.1 - 2025-08-18
+
+- Fixed a bug where heading levels specified via `heading.options` were being ignored if their corresponding checkbox wasn’t checked. ([#456](https://github.com/craftcms/ckeditor/issues/456))
+
+## 4.10.0 - 2025-08-12
+
+- Added support for cross-site field value copying. ([#450](https://github.com/craftcms/ckeditor/pull/450))
+- Fixed a bug where the CKEditor toolbar overflow menu could be cut off within Live Preview. ([#417](https://github.com/craftcms/ckeditor/issues/417))
+- Fixed a bug where the Field Limit setting was treating multibyte characters as multiple characters. ([#441](https://github.com/craftcms/ckeditor/issues/441))
+- Fixed a bug where the `ckeditor/convert` command wasn’t fully converting all Redactor fields within nested field contexts. ([#432](https://github.com/craftcms/ckeditor/issues/432))
+- Fixed a JavaScript error that occurred if a CKEditor field wasn’t configured with any link options. ([#435](https://github.com/craftcms/ckeditor/issues/435))
+- Fixed a bug where the `heading.options` CKEditor config option was overriding the available heading levels defined by the “Heading Levels” setting. ([#431](https://github.com/craftcms/ckeditor/issues/431))
+- Fixed a bug where new paragraphs were getting inserted automatically after newly-added nested entries. ([#416](https://github.com/craftcms/ckeditor/issues/416))
+- Fixed a JavaScript error that occurred when saving a nested entry, for an owner element that didn’t use the new element editor (like global sets). ([#419](https://github.com/craftcms/ckeditor/issues/419))
+- Fixed a bug where entry type toolbar buttons didn’t always meet minimum contrast requirements. ([#424](https://github.com/craftcms/ckeditor/pull/424))
+
+## 4.9.0 - 2025-05-23
+
+- Added the “Parse embeds” field setting. ([#409](https://github.com/craftcms/ckeditor/pull/409))
+- Added the “Show toolbar buttons for entry types with icons” field settings. ([#413](https://github.com/craftcms/ckeditor/pull/413))
+- Fixed an error that occurred when copy/pasting a nested entry from a top-level element’s CKEditor field into a nested element’s CKEditor field. ([#408](https://github.com/craftcms/ckeditor/issues/408))
+- Fixed an error that could occur when generating a GraphQL introspection schema, if a CKEditor field’s GraphQL Mode setting was set to “Full data”. ([#414](https://github.com/craftcms/ckeditor/issues/414))  
+
+## 4.8.0 - 2025-04-30
+
 - Added the “Field Limit” field setting, which can be set to a character limit or word limit. ([#384](https://github.com/craftcms/ckeditor/pull/384))
 - Added the “GraphQL Mode” field setting. ([#403](https://github.com/craftcms/ckeditor/pull/403))
+- Editor toolbars now have dedicated nested entry creation buttons, for entry types that have icons. Any entry types that don’t have an icon are now grouped into a “+” menu. ([#404](https://github.com/craftcms/ckeditor/pull/404))
 - Improved the styling of CKEditor fields. ([craftcms/cms#17164](https://github.com/craftcms/cms/discussions/17164))
 - The “Anchors” CKEditor plugin has been replaced with CKEditor’s new built-in [Bookmarks](https://ckeditor.com/docs/ckeditor5/latest/features/bookmarks.html) plugin. ([#397](https://github.com/craftcms/ckeditor/pull/397))
+- Removed the “‘New’ Button Label” field setting. ([#404](https://github.com/craftcms/ckeditor/pull/404))
 - Updated to CKEditor 5 45.0.0. ([#397](https://github.com/craftcms/ckeditor/pull/397))
 - Added `craft\ckeditor\Field::$characterLimit`.
 - Added `craft\ckeditor\Field::$fullGraphqlData`.
@@ -29,6 +66,7 @@
 - Added `craft\ckeditor\gql\CkeditorMarkup`.
 - Added `craft\ckeditor\gql\Generator`.
 - Fixed a bug where it wasn’t easily possible to drag a toolbar button to the last position in the toolbar, if that meant wrapping the buttons to a new row.
+- Fixed a JavaScript error that could prevent the toolbar configurator from loading, when editing a CKEditor config within a slideout. ([#401](https://github.com/craftcms/ckeditor/pull/401))
 
 ## 4.7.0 - 2025-04-21
 
