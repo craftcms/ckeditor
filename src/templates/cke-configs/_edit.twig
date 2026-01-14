@@ -123,10 +123,10 @@
 
     {% set classes = [] %}
     {% if not isJson %}
-      {% set classes = classes|merge(['hidden']) %}
+      {% set classes = classes|push('hidden') %}
     {% endif %}
     {% if readOnly %}
-      {% set classes = classes|merge(['disabled']) %}
+      {% set classes = classes|push('disabled') %}
     {% endif %}
 
     {% tag 'div' with {
@@ -151,10 +151,10 @@
 
     {% set classes = [] %}
     {% if not isJs %}
-      {% set classes = classes|merge(['hidden']) %}
+      {% set classes = classes|push('hidden') %}
     {% endif %}
     {% if readOnly %}
-      {% set classes = classes|merge(['disabled']) %}
+      {% set classes = classes|push('disabled') %}
     {% endif %}
     {% tag 'div' with {
       id: 'config-options-js-container',
