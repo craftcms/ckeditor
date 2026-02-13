@@ -273,6 +273,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
 
         // Existing element?
         if ($owner && $owner->id) {
+            /** @phpstan-ignore-next-line */
             $query->attachBehavior(self::class, new EventBehavior([
                 ElementQuery::EVENT_BEFORE_PREPARE => function(
                     CancelableEvent $event,
@@ -375,7 +376,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
 
         if ($resave) {
             if (version_compare(Craft::$app->getVersion(), '5.9.0', '>=')) {
-                /** @phpstan-ignore-next-line */
                 $owner->propagateRequired = false;
             }
             Craft::$app->getElements()->saveElement($owner, false, $propagate, false);
@@ -2064,13 +2064,11 @@ JS,
      */
     public function propagateValue(ElementInterface $from, ElementInterface $to): void
     {
-        /** @phpstan-ignore-next-line */
         parent::propagateValue($from, $to);
 
         if (!$from->propagateAll) {
             // NestedElementManager won't duplicate the nested entries automatically,
             // because the field has a value in the target site (the HTML content), so isValueEmpty() is false.
-            /** @phpstan-ignore-next-line */
             self::entryManager($this)->duplicateNestedElements($from, $to, force: true);
         }
     }
