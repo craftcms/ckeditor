@@ -1864,19 +1864,21 @@ JS,
         $params['siteId'] = Craft::$app->getSites()->getCurrentSite()->id;
         $params['kind'] = 'image';
 
-        $volume = Craft::$app->getVolumes()->getVolumeByUid($this->defaultUploadLocationVolume);
-        if ($volume) {
-            $subpath = trim($this->defaultUploadLocationSubpath ?? '', '/');
-            [$subpath, $folder] = AssetsHelper::resolveSubpath($volume, $subpath);
+        if ($this->defaultUploadLocationVolume) {
+            $volume = Craft::$app->getVolumes()->getVolumeByUid($this->defaultUploadLocationVolume);
+            if ($volume) {
+                $subpath = trim($this->defaultUploadLocationSubpath ?? '', '/');
+                [$subpath, $folder] = AssetsHelper::resolveSubpath($volume, $subpath);
 
-            // Ensure that the folder exists
-            if (!$folder) {
-                $folder = Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($subpath, $volume);
+                // Ensure that the folder exists
+                if (!$folder) {
+                    $folder = Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($subpath, $volume);
+                }
+
+                $params['volumeId'] = $volume->id;
+                $params['volumeType'] = $volume::class;
+                $params['folderId'] = $folder->id;
             }
-
-            $params['volumeId'] = $volume->id;
-            $params['volumeType'] = $volume::class;
-            $params['folderId'] = $folder->id;
         }
 
         return $params;
