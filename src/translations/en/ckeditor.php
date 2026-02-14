@@ -51,7 +51,7 @@ return [
     'This field doesn’t allow nested {type} entries.' => 'This field doesn’t allow nested {type} entries.',
     'Toolbar' => 'Toolbar',
     'View available settings' => 'View available settings',
-    'Where images should be stored when they are uploaded directly to the field via drag & drop mechanism.' => 'Where images should be stored when they are uploaded directly to the field via drag & drop mechanism.',
+    'Where images should be stored when they are uploaded directly to the field via drag & drop.' => 'Where images should be stored when they are uploaded directly to the field via drag & drop.',
     'Whether entry types with icons should be shown as separate buttons in the toolbar.' => 'Whether entry types with icons should be shown as separate buttons in the toolbar.',
     'Who should see the “Source” button?' => 'Who should see the “Source” button?',
     'Words' => 'Words',
