@@ -18,25 +18,25 @@ class Pu extends Vc {
       );
       return;
     }
-    const R = this.editor.ui.componentFactory, p = (i) => this._createToolbarImageButton(i);
-    R.add("insertImage", p), R.add("imageInsert", p), this._attachUploader();
+    const D = this.editor.ui.componentFactory, p = (i) => this._createToolbarImageButton(i);
+    D.add("insertImage", p), D.add("imageInsert", p), this._attachUploader();
   }
   get _assetSources() {
     return this.editor.config.get("assetSources");
   }
-  _createToolbarImageButton(R) {
-    const p = this.editor, i = p.t, u = new vi(R);
+  _createToolbarImageButton(D) {
+    const p = this.editor, i = p.t, u = new vi(D);
     u.isEnabled = !0, u.label = i("Insert image"), u.icon = Wc, u.tooltip = !0;
     const c = p.commands.get("insertImage");
     return u.bind("isEnabled").to(c), this.listenTo(u, "execute", () => this._showImageSelectModal()), u;
   }
   _showImageSelectModal() {
-    const R = this._assetSources, p = this.editor, i = p.config, u = Object.assign({}, i.get("assetSelectionCriteria"), {
+    const D = this._assetSources, p = this.editor, i = p.config, u = Object.assign({}, i.get("assetSelectionCriteria"), {
       kind: "image"
     });
     Craft.createElementSelectorModal("craft\\elements\\Asset", {
       storageKey: `ckeditor:${this.pluginName}:'craft\\elements\\Asset'`,
-      sources: R,
+      sources: D,
       criteria: u,
       defaultSiteId: i.get("elementSiteId"),
       transforms: i.get("transforms"),
@@ -53,9 +53,9 @@ class Pu extends Vc {
       closeOtherModals: !1
     });
   }
-  _processAssetUrls(R, p) {
+  _processAssetUrls(D, p) {
     return new Promise((i) => {
-      if (!R.length) {
+      if (!D.length) {
         i();
         return;
       }
@@ -63,7 +63,7 @@ class Pu extends Vc {
       r.on("afterRun", () => {
         u.execute("insertImage", { source: _ }), i();
       });
-      for (const g of R)
+      for (const g of D)
         r.push(
           () => new Promise((b) => {
             const v = this._isTransformUrl(g.url);
@@ -83,29 +83,29 @@ class Pu extends Vc {
         );
     });
   }
-  _buildAssetUrl(R, p, i) {
-    return `${p}#asset:${R}:${i ? "transform:" + i : "url"}`;
+  _buildAssetUrl(D, p, i) {
+    return `${p}#asset:${D}:${i ? "transform:" + i : "url"}`;
   }
-  _removeTransformFromUrl(R) {
-    return R.replace(/(^|\/)(_[^\/]+\/)([^\/]+)$/, "$1$3");
+  _removeTransformFromUrl(D) {
+    return D.replace(/(^|\/)(_[^\/]+\/)([^\/]+)$/, "$1$3");
   }
-  _isTransformUrl(R) {
-    return /(^|\/)_[^\/]+\/[^\/]+$/.test(R);
+  _isTransformUrl(D) {
+    return /(^|\/)_[^\/]+\/[^\/]+$/.test(D);
   }
-  _getTransformUrl(R, p, i) {
+  _getTransformUrl(D, p, i) {
     Craft.sendActionRequest("POST", "ckeditor/ckeditor/image-url", {
       data: {
-        assetId: R,
+        assetId: D,
         transform: p
       }
     }).then(({ data: u }) => {
-      i(this._buildAssetUrl(R, u.url, p));
+      i(this._buildAssetUrl(D, u.url, p));
     }).catch(() => {
       alert("There was an error generating the transform URL.");
     });
   }
-  _getAssetUrlComponents(R) {
-    const p = R.match(
+  _getAssetUrlComponents(D) {
+    const p = D.match(
       /(.*)#asset:(\d+):(url|transform):?([a-zA-Z][a-zA-Z0-9_]*)?/
     );
     return p ? {
@@ -118,24 +118,37 @@ class Pu extends Vc {
    * Attach the uploader with drag event handler
    */
   _attachUploader() {
-    let R = this.editor.config.get("assetUploadParams") ?? null;
-    if (!(!R || !R.folderId)) {
-      this.$container = $(this.editor.sourceElement).parents(".input"), this.progressBar = new Craft.ProgressBar(
+    let D = this.editor, p = D.config.get("assetUploadParams") ?? null;
+    if (!(!p || !p.folderId)) {
+      this.$container = $(D.sourceElement).parents(".input"), this.progressBar = new Craft.ProgressBar(
         $('<div class="progress-shade"></div>').appendTo(this.$container)
       ), this.$fileInput = $("<input/>", {
         type: "file",
         class: "hidden",
         multiple: !1
-      }).insertAfter(this.editor.sourceElement);
-      var p = {
+      }).insertAfter(D.sourceElement);
+      var i = {
         dropZone: this.$container,
         fileInput: this.$fileInput
       };
-      R.kind && (p.allowedKinds = R.kind), p.canAddMoreFiles = !0, p.events = {}, p.events.fileuploadstart = this._onUploadStart.bind(this), p.events.fileuploadprogressall = this._onUploadProgress.bind(this), p.events.fileuploaddone = this._onUploadComplete.bind(this), p.events.fileuploadfail = this._onUploadFailure.bind(this), this.uploader = Craft.createUploader(
-        R.volumeType,
+      p.kind && (i.allowedKinds = p.kind), i.canAddMoreFiles = !0, i.events = {}, i.events.fileuploadstart = this._onUploadStart.bind(this), i.events.fileuploadprogressall = this._onUploadProgress.bind(this), i.events.fileuploaddone = this._onUploadComplete.bind(this), i.events.fileuploadfail = this._onUploadFailure.bind(this), this.uploader = Craft.createUploader(
+        p.volumeType,
         this.$container,
-        p
-      ), delete R.volumeId, delete R.volumeType, this.uploader.setParams(R);
+        i
+      ), delete p.volumeId, delete p.volumeType, this.uploader.setParams(p), D.editing.view.document.on(
+        "drop",
+        async (u, c) => {
+          D.editing.view, D.model;
+          const r = D.editing.mapper, _ = c.dropRange;
+          if (_) {
+            const g = _.start, b = r.toModelPosition(g);
+            D.model.change((v) => {
+              v.setSelection(b, 0);
+            });
+          }
+        },
+        { priority: "high" }
+      );
     }
   }
   /**
@@ -149,20 +162,20 @@ class Pu extends Vc {
   /**
    * On upload progress.
    */
-  _onUploadProgress(R, p = null) {
-    p = R instanceof CustomEvent ? R.detail : p;
+  _onUploadProgress(D, p = null) {
+    p = D instanceof CustomEvent ? D.detail : p;
     var i = parseInt(Math.min(p.loaded / p.total, 1) * 100, 10);
     this.progressBar.setProgressPercentage(i);
   }
   /**
    * On a file being uploaded.
    */
-  _onUploadComplete(R, p = null) {
-    const i = R instanceof CustomEvent ? R.detail : p.result;
+  _onUploadComplete(D, p = null) {
+    const i = D instanceof CustomEvent ? D.detail : p.result;
     this.progressBar.hideProgressBar(), this.$container.removeClass("uploading");
     const u = this.editor.config.get("defaultTransform"), c = new Craft.Queue(), r = [];
     c.on("afterRun", () => {
-      this.editor.execute("insertImage", { source: r });
+      this.editor.execute("insertImage", { source: r, breakBlock: !0 });
     }), c.push(
       () => new Promise((_) => {
         const g = this._isTransformUrl(i.url);
@@ -184,9 +197,9 @@ class Pu extends Vc {
   /**
    * On Upload Failure.
    */
-  _onUploadFailure(R, p = null) {
+  _onUploadFailure(D, p = null) {
     var g, b;
-    const i = R instanceof CustomEvent ? R.detail : (g = p == null ? void 0 : p.jqXHR) == null ? void 0 : g.responseJSON;
+    const i = D instanceof CustomEvent ? D.detail : (g = p == null ? void 0 : p.jqXHR) == null ? void 0 : g.responseJSON;
     let { message: u, filename: c, errors: r } = i || {};
     c = c || ((b = p == null ? void 0 : p.files) == null ? void 0 : b[0].name);
     let _ = r ? Object.values(r).flat() : [];
@@ -201,21 +214,21 @@ class Pu extends Vc {
  */
 class iu extends Os {
   refresh() {
-    const R = this._element(), p = this._srcInfo(R);
+    const D = this._element(), p = this._srcInfo(D);
     this.isEnabled = !!p, p ? this.value = {
       transform: p.transform
     } : this.value = null;
   }
   _element() {
-    const R = this.editor;
-    return R.plugins.get("ImageUtils").getClosestSelectedImageElement(
-      R.model.document.selection
+    const D = this.editor;
+    return D.plugins.get("ImageUtils").getClosestSelectedImageElement(
+      D.model.document.selection
     );
   }
-  _srcInfo(R) {
-    if (!R || !R.hasAttribute("src"))
+  _srcInfo(D) {
+    if (!D || !D.hasAttribute("src"))
       return null;
-    const p = R.getAttribute("src"), i = p.match(
+    const p = D.getAttribute("src"), i = p.match(
       /#asset:(\d+)(?::transform:([a-zA-Z][a-zA-Z0-9_]*))?/
     );
     return i ? {
@@ -239,19 +252,19 @@ class iu extends Os {
    * @param options.transform The new transform for the image.
    * @fires execute
    */
-  execute(R) {
+  execute(D) {
     const i = this.editor.model, u = this._element(), c = this._srcInfo(u);
     if (this.value = {
-      transform: R.transform
+      transform: D.transform
     }, c) {
-      const r = `#asset:${c.assetId}` + (R.transform ? `:transform:${R.transform}` : "");
+      const r = `#asset:${c.assetId}` + (D.transform ? `:transform:${D.transform}` : "");
       i.change((_) => {
         const g = c.src.replace(/#.*/, "") + r;
         _.setAttribute("src", g, u);
       }), Craft.sendActionRequest("post", "ckeditor/ckeditor/image-url", {
         data: {
           assetId: c.assetId,
-          transform: R.transform
+          transform: D.transform
         }
       }).then(({ data: _ }) => {
         i.change((g) => {
@@ -274,12 +287,12 @@ class nc extends Bn {
   static get pluginName() {
     return "ImageTransformEditing";
   }
-  constructor(R) {
-    super(R), R.config.define("transforms", []);
+  constructor(D) {
+    super(D), D.config.define("transforms", []);
   }
   init() {
-    const R = this.editor, p = new iu(R);
-    R.commands.add("transformImage", p);
+    const D = this.editor, p = new iu(D);
+    D.commands.add("transformImage", p);
   }
 }
 /**
@@ -296,7 +309,7 @@ class su extends Bn {
     return "ImageTransformUI";
   }
   init() {
-    const R = this.editor, p = R.config.get("transforms"), i = R.commands.get("transformImage");
+    const D = this.editor, p = D.config.get("transforms"), i = D.commands.get("transformImage");
     this.bind("isEnabled").to(i), this._registerImageTransformDropdown(p);
   }
   /**
@@ -305,13 +318,13 @@ class su extends Bn {
    *
    * @param transforms An array of the available image transforms.
    */
-  _registerImageTransformDropdown(R) {
+  _registerImageTransformDropdown(D) {
     const p = this.editor, i = p.t, u = {
       name: "transformImage:original",
       value: null
     }, c = [
       u,
-      ...R.map((_) => ({
+      ...D.map((_) => ({
         label: _.name,
         name: `transformImage:${_.handle}`,
         value: _.handle
@@ -329,7 +342,7 @@ class su extends Bn {
       }), v.bind("label").to(g, "value", (y) => {
         if (!y || !y.transform)
           return this._getOptionLabelValue(u);
-        const C = R.find(
+        const C = D.find(
           (x) => x.handle === y.transform
         );
         return C ? C.name : y.transform;
@@ -353,8 +366,8 @@ class su extends Bn {
    * @param option A transform option object.
    * @returns The option label.
    */
-  _getOptionLabelValue(R) {
-    return R.label || R.value || this.editor.t("Original");
+  _getOptionLabelValue(D) {
+    return D.label || D.value || this.editor.t("Original");
   }
   /**
    * A helper function that parses the transform options and returns list item definitions ready for use in the dropdown.
@@ -363,9 +376,9 @@ class su extends Bn {
    * @param command The transform image command.
    * @returns Dropdown item definitions.
    */
-  _getTransformDropdownListItemDefinitions(R, p) {
+  _getTransformDropdownListItemDefinitions(D, p) {
     const i = new yi();
-    return R.map((u) => {
+    return D.map((u) => {
       const c = {
         type: "button",
         model: new Sa({
@@ -381,8 +394,8 @@ class su extends Bn {
   }
 }
 function lu(xe) {
-  return (R) => {
-    const p = R;
+  return (D) => {
+    const p = D;
     return xe === null && p === xe ? !0 : p !== null && p.transform === xe;
   };
 }
@@ -406,7 +419,7 @@ class Nu extends Bn {
  */
 class cu extends Os {
   refresh() {
-    const R = this._element(), p = this._srcInfo(R);
+    const D = this._element(), p = this._srcInfo(D);
     if (this.isEnabled = !!p, this.isEnabled) {
       let i = {
         assetId: p.assetId
@@ -422,9 +435,9 @@ class cu extends Os {
    * Returns the selected image element.
    */
   _element() {
-    const R = this.editor;
-    return R.plugins.get("ImageUtils").getClosestSelectedImageElement(
-      R.model.document.selection
+    const D = this.editor;
+    return D.plugins.get("ImageUtils").getClosestSelectedImageElement(
+      D.model.document.selection
     );
   }
   /**
@@ -435,10 +448,10 @@ class cu extends Os {
    * @returns {{transform: *, src: *, assetId: *, baseSrc: *}|null}
    * @private
    */
-  _srcInfo(R) {
-    if (!R || !R.hasAttribute("src"))
+  _srcInfo(D) {
+    if (!D || !D.hasAttribute("src"))
       return null;
-    const p = R.getAttribute("src"), i = p.match(
+    const p = D.getAttribute("src"), i = p.match(
       /(.*)#asset:(\d+)(?::transform:([a-zA-Z][a-zA-Z0-9_]*))?/
     );
     return i ? {
@@ -473,10 +486,10 @@ class cu extends Os {
    *
    * @param data
    */
-  _reloadImage(R, p) {
+  _reloadImage(D, p) {
     let u = this.editor.model;
     this._getAllImageAssets().forEach((r) => {
-      if (r.srcInfo.assetId == R)
+      if (r.srcInfo.assetId == D)
         if (r.srcInfo.transform) {
           let _ = {
             assetId: r.srcInfo.assetId,
@@ -531,8 +544,8 @@ class rc extends Bn {
     return "ImageEditorEditing";
   }
   init() {
-    const R = this.editor, p = new cu(R);
-    R.commands.add("imageEditor", p);
+    const D = this.editor, p = new cu(D);
+    D.commands.add("imageEditor", p);
   }
 }
 /**
@@ -555,16 +568,16 @@ class uu extends Bn {
    * A helper function that creates a button component for the plugin that triggers launch of the Image Editor.
    */
   _registerImageEditorButton() {
-    const R = this.editor, p = R.t, i = R.commands.get("imageEditor"), u = () => {
+    const D = this.editor, p = D.t, i = D.commands.get("imageEditor"), u = () => {
       const c = new vi();
       return c.set({
         label: p("Edit Image"),
         withText: !0
       }), c.bind("isEnabled").to(i), this.listenTo(c, "execute", (r) => {
-        R.execute("imageEditor"), R.editing.view.focus();
+        D.execute("imageEditor"), D.editing.view.focus();
       }), c;
     };
-    R.ui.componentFactory.add("imageEditor", u);
+    D.ui.componentFactory.add("imageEditor", u);
   }
 }
 /**
@@ -572,7 +585,7 @@ class uu extends Bn {
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license GPL-3.0-or-later
  */
-class Du extends Bn {
+class Ru extends Bn {
   static get requires() {
     return [rc, uu];
   }
@@ -581,14 +594,14 @@ class Du extends Bn {
   }
 }
 class du extends Os {
-  execute(R) {
+  execute(D) {
     const p = this.editor, i = p.model.document.selection;
     p.model.change((u) => {
       const c = u.createElement("craftEntryModel", {
         ...Object.fromEntries(i.getAttributes()),
-        cardHtml: R.cardHtml,
-        entryId: R.entryId,
-        siteId: R.siteId
+        cardHtml: D.cardHtml,
+        entryId: D.entryId,
+        siteId: D.siteId
       });
       p.model.insertObject(c, null, null, {
         setSelection: "on"
@@ -618,10 +631,10 @@ class fu extends Bn {
    */
   init() {
     this._defineSchema(), this._defineConverters();
-    const R = this.editor;
-    R.commands.add("insertEntry", new du(R)), R.editing.mapper.on(
+    const D = this.editor;
+    D.commands.add("insertEntry", new du(D)), D.editing.mapper.on(
       "viewToModelPosition",
-      Yc(R.model, (p) => {
+      Yc(D.model, (p) => {
         p.hasClass("cke-entry-card");
       })
     );
@@ -642,8 +655,8 @@ class fu extends Bn {
    * @private
    */
   _defineConverters() {
-    const R = this.editor.conversion;
-    R.for("upcast").elementToElement({
+    const D = this.editor.conversion;
+    D.for("upcast").elementToElement({
       view: {
         name: "craft-entry"
         // has to be lower case
@@ -656,7 +669,7 @@ class fu extends Bn {
           siteId: _
         });
       }
-    }), R.for("editingDowncast").elementToElement({
+    }), D.for("editingDowncast").elementToElement({
       model: "craftEntryModel",
       view: (i, { writer: u }) => {
         const c = i.getAttribute("entryId") ?? null, r = i.getAttribute("siteId") ?? null, _ = u.createContainerElement("div", {
@@ -666,7 +679,7 @@ class fu extends Bn {
         });
         return p(i, u, _), Kc(_, u);
       }
-    }), R.for("dataDowncast").elementToElement({
+    }), D.for("dataDowncast").elementToElement({
       model: "craftEntryModel",
       view: (i, { writer: u }) => {
         const c = i.getAttribute("entryId") ?? null, r = i.getAttribute("siteId") ?? null;
@@ -702,13 +715,13 @@ class fu extends Bn {
    * @returns {Promise<unknown>|Promise<T | string>}
    * @private
    */
-  async _getCardHtml(R) {
+  async _getCardHtml(D) {
     var _, g, b;
-    let p = R.getAttribute("cardHtml") ?? null, i = $(this.editor.sourceElement).parents(".field");
+    let p = D.getAttribute("cardHtml") ?? null, i = $(this.editor.sourceElement).parents(".field");
     const u = $(i[0]).data("layout-element");
     if (p)
       return { cardHtml: p };
-    const c = R.getAttribute("entryId") ?? null, r = R.getAttribute("siteId") ?? null;
+    const c = D.getAttribute("entryId") ?? null, r = D.getAttribute("siteId") ?? null;
     try {
       const v = this.editor, C = $(v.ui.view.element).closest(
         "form,.lp-editor-container"
@@ -732,16 +745,16 @@ class fu extends Bn {
   }
 }
 class pu extends Qc {
-  constructor(R) {
-    super(R), this.domEventType = "dblclick";
+  constructor(D) {
+    super(D), this.domEventType = "dblclick";
   }
-  onDomEvent(R) {
-    this.fire(R.type, R);
+  onDomEvent(D) {
+    this.fire(D.type, D);
   }
 }
 class hu extends $o {
-  constructor(R, p = {}) {
-    super(R), this.bindTemplate, this.set("isFocused", !1), this.entriesUi = p.entriesUi, this.editor = this.entriesUi.editor;
+  constructor(D, p = {}) {
+    super(D), this.bindTemplate, this.set("isFocused", !1), this.entriesUi = p.entriesUi, this.editor = this.entriesUi.editor;
     const i = this.editor.commands.get("insertEntry");
     let u = new yi(), c = new yi();
     if (this.entriesUi._getEntryTypeButtonsCollection(p.entryTypeOptions ?? []).forEach((r, _) => {
@@ -765,7 +778,7 @@ class hu extends $o {
         this.entriesUi._showCreateEntrySlideout(b.source.commandValue);
       }), g.bind("isEnabled").to(i);
     }), c.length > 0) {
-      const r = Ca(R);
+      const r = Ca(D);
       r.buttonView.set({
         label: Craft.t("ckeditor", "Add nested content"),
         icon: ec,
@@ -805,7 +818,7 @@ class mu extends Bn {
    * @inheritDoc
    */
   init() {
-    this._createToolbarEntriesButtons(), this.editor.ui.componentFactory.add("editEntryBtn", (R) => this._createEditEntryBtn(R)), this._listenToEvents();
+    this._createToolbarEntriesButtons(), this.editor.ui.componentFactory.add("editEntryBtn", (D) => this._createEditEntryBtn(D)), this._listenToEvents();
   }
   /**
    * @inheritDoc
@@ -830,8 +843,8 @@ class mu extends Bn {
    * @private
    */
   _listenToEvents() {
-    const R = this.editor.editing.view, p = R.document;
-    R.addObserver(pu), this.editor.listenTo(p, "dblclick", (i, u) => {
+    const D = this.editor.editing.view, p = D.document;
+    D.addObserver(pu), this.editor.listenTo(p, "dblclick", (i, u) => {
       if (!this.editor.isReadOnly) {
         const c = this.editor.editing.mapper.toModelElement(
           u.target.parent
@@ -840,7 +853,7 @@ class mu extends Bn {
       }
     });
   }
-  _initEditEntrySlideout(R = null, p = null) {
+  _initEditEntrySlideout(D = null, p = null) {
     if (this.editor.isReadOnly)
       return;
     p === null && (p = this.editor.model.document.selection.getSelectedElement());
@@ -853,11 +866,11 @@ class mu extends Bn {
    * @param locale
    * @private
    */
-  _createSingleToolbarEntriesButton(R) {
+  _createSingleToolbarEntriesButton(D) {
     const p = this.editor, i = p.config.get("entryTypeOptions"), u = p.commands.get("insertEntry");
     if (!i || !i.length)
       return;
-    const c = Ca(R);
+    const c = Ca(D);
     return c.buttonView.set({
       label: Craft.t("ckeditor", "Add nested content"),
       icon: ec,
@@ -883,10 +896,10 @@ class mu extends Bn {
    * @private
    */
   _createToolbarEntriesButtons() {
-    const R = this.editor, p = R.config.get("entryTypeOptions");
+    const D = this.editor, p = D.config.get("entryTypeOptions");
     if (!p || !p.length)
       return;
-    R.config.get("expandEntryButtons") ? this.editor.ui.componentFactory.add(
+    D.config.get("expandEntryButtons") ? this.editor.ui.componentFactory.add(
       "createEntry",
       (u) => new hu(u, {
         entriesUi: this,
@@ -901,9 +914,9 @@ class mu extends Bn {
    * @returns {Collection<Record<string, any>>}
    * @private
    */
-  _getEntryTypeButtonsCollection(R) {
+  _getEntryTypeButtonsCollection(D) {
     const p = new yi();
-    return R.map((i) => {
+    return D.map((i) => {
       const u = {
         type: "button",
         model: new Sa({
@@ -924,10 +937,10 @@ class mu extends Bn {
    * @returns {ButtonView}
    * @private
    */
-  _createEditEntryBtn(R) {
+  _createEditEntryBtn(D) {
     if (this.editor.isReadOnly)
       return;
-    const p = new vi(R);
+    const p = new vi(D);
     return p.set({
       isEnabled: !0,
       label: Craft.t("app", "Edit {type}", {
@@ -956,8 +969,8 @@ class mu extends Bn {
    * @returns {*}
    * @private
    */
-  _getCardElement(R) {
-    return $(this.editor.ui.element).find('.element.card[data-id="' + R + '"]');
+  _getCardElement(D) {
+    return $(this.editor.ui.element).find('.element.card[data-id="' + D + '"]');
   }
   /**
    * Opens an element editor for existing entry
@@ -965,11 +978,11 @@ class mu extends Bn {
    * @param entryId
    * @private
    */
-  _showEditEntrySlideout(R, p, i) {
+  _showEditEntrySlideout(D, p, i) {
     const u = this.editor, c = u.model, r = this.getElementEditor();
-    let _ = this._getCardElement(R);
+    let _ = this._getCardElement(D);
     const g = _.data("owner-id"), b = Craft.createElementEditor(this.elementType, null, {
-      elementId: R,
+      elementId: D,
       params: {
         siteId: p
       },
@@ -986,7 +999,7 @@ class mu extends Bn {
         }
       },
       onSubmit: (v) => {
-        let y = this._getCardElement(R);
+        let y = this._getCardElement(D);
         y !== null && v.data.id != y.data("id") && (y.attr("data-id", v.data.id).data("id", v.data.id).data("owner-id", v.data.ownerId), u.editing.model.change((C) => {
           C.setAttribute("entryId", v.data.id, i), u.ui.update();
         }), Craft.refreshElementInstances(v.data.id));
@@ -1006,12 +1019,12 @@ class mu extends Bn {
    * @param entryTypeId
    * @private
    */
-  async _showCreateEntrySlideout(R) {
+  async _showCreateEntrySlideout(D) {
     var y, C;
     const p = this.editor, i = p.model, c = i.document.selection.getFirstRange(), r = p.config.get(
       "nestedElementAttributes"
     ), _ = Object.assign({}, r, {
-      typeId: R
+      typeId: D
     }), g = this.getElementEditor();
     g && (await g.markDeltaNameAsModified(p.sourceElement.name), _.ownerId = g.getDraftElementId(
       r.ownerId
@@ -1079,16 +1092,16 @@ class bu extends Bn {
     this.conversionData = p.map((i) => i.conversion ?? null).filter((i) => i), this._defineSchema(), this._defineConverters(), this._adjustLinkCommand(), this._adjustUnlinkCommand();
   }
   _defineSchema() {
-    const R = this.editor.model.schema;
+    const D = this.editor.model.schema;
     let p = this.conversionData.map((i) => i.model);
-    R.extend("$text", {
+    D.extend("$text", {
       allowAttributes: p
     });
   }
   _defineConverters() {
-    const R = this.editor.conversion;
+    const D = this.editor.conversion;
     for (let p = 0; p < this.conversionData.length; p++)
-      R.for("downcast").attributeToElement({
+      D.for("downcast").attributeToElement({
         model: this.conversionData[p].model,
         view: (i, { writer: u }) => {
           const c = u.createAttributeElement(
@@ -1098,7 +1111,7 @@ class bu extends Bn {
           );
           return u.setCustomProperty("link", !0, c), c;
         }
-      }), R.for("upcast").attributeToAttribute({
+      }), D.for("upcast").attributeToAttribute({
         view: {
           name: "a",
           key: this.conversionData[p].view
@@ -1110,7 +1123,7 @@ class bu extends Bn {
       });
   }
   _adjustLinkCommand() {
-    const R = this.editor, p = R.commands.get("link");
+    const D = this.editor, p = D.commands.get("link");
     let i = !1;
     p.on(
       "execute",
@@ -1120,9 +1133,9 @@ class bu extends Bn {
           return;
         }
         u.stop(), i = !0;
-        const r = c[c.length - 1], _ = R.model.document.selection;
-        R.model.change((g) => {
-          R.execute("link", ...c);
+        const r = c[c.length - 1], _ = D.model.document.selection;
+        D.model.change((g) => {
+          D.execute("link", ...c);
           const b = _.getFirstPosition();
           this.conversionData.forEach((v) => {
             if (_.isCollapsed) {
@@ -1133,7 +1146,7 @@ class bu extends Bn {
                 g.createRangeOn(y)
               ) : g.removeAttribute(v.model, g.createRangeOn(y));
             } else {
-              const y = R.model.schema.getValidRanges(
+              const y = D.model.schema.getValidRanges(
                 _.getRanges(),
                 v.model
               );
@@ -1151,13 +1164,13 @@ class bu extends Bn {
     );
   }
   _adjustUnlinkCommand() {
-    const R = this.editor, p = R.commands.get("unlink"), { model: i } = R, { selection: u } = i.document;
+    const D = this.editor, p = D.commands.get("unlink"), { model: i } = D, { selection: u } = i.document;
     let c = !1;
     p.on(
       "execute",
       (r) => {
         c || (r.stop(), i.change(() => {
-          c = !0, R.execute("unlink"), c = !1, i.change((_) => {
+          c = !0, D.execute("unlink"), c = !1, i.change((_) => {
             let g;
             this.conversionData.forEach((b) => {
               u.isCollapsed ? g = [
@@ -1182,8 +1195,8 @@ class bu extends Bn {
   }
 }
 class yu extends $o {
-  constructor(R, p = {}) {
-    super(R), this.bindTemplate, this.set("isFocused", !1), this.linkUi = p.linkUi, this.editor = this.linkUi.editor, this.elementId = this.linkUi._getLinkElementId(), this.siteId = this.linkUi._getLinkSiteId(), this.linkOption = p.linkOption;
+  constructor(D, p = {}) {
+    super(D), this.bindTemplate, this.set("isFocused", !1), this.linkUi = p.linkUi, this.editor = this.linkUi.editor, this.elementId = this.linkUi._getLinkElementId(), this.siteId = this.linkUi._getLinkSiteId(), this.linkOption = p.linkOption;
     const i = this.linkUi._getLinkElementRefHandle();
     if (this.button = null, i) {
       const u = this.linkUi.linkTypeDropdownItemModels[i];
@@ -1209,9 +1222,9 @@ class yu extends $o {
   }
   render() {
     super.render();
-    const R = this.linkUi, p = R._linkUI, i = this.linkOption;
+    const D = this.linkUi, p = D._linkUI, i = this.linkOption;
     this.element.addEventListener("click", function(u) {
-      (this.children[0].classList.contains("add") || u.target.classList.contains("ck-button__label")) && (p._hideUI(), R._showElementSelectorModal(i));
+      (this.children[0].classList.contains("add") || u.target.classList.contains("ck-button__label")) && (p._hideUI(), D._showElementSelectorModal(i));
     }), this.element.children.length == 0 && Craft.sendActionRequest("POST", "app/render-elements", {
       data: {
         elements: [
@@ -1250,7 +1263,7 @@ class yu extends $o {
             }
           }
         ];
-        Craft.addActionsToChip(c, r), R._alignFocus();
+        Craft.addActionsToChip(c, r), D._alignFocus();
       }
     }).catch((u) => {
       var c, r, _, g;
@@ -1259,8 +1272,8 @@ class yu extends $o {
   }
 }
 class vu extends $o {
-  constructor(R, p = {}) {
-    super(R);
+  constructor(D, p = {}) {
+    super(D);
     const i = this.bindTemplate;
     this.set("label", Craft.t("app", "Advanced")), this.linkUi = p.linkUi, this.editor = this.linkUi.editor, this.children = this.createCollection(), this.advancedChildren = this.createCollection(), this.setTemplate({
       tag: "details",
@@ -1268,13 +1281,13 @@ class vu extends $o {
         class: ["ck", "ck-form__details", "link-type-advanced"]
       },
       children: this.children
-    }), this.summary = new $o(R), this.summary.setTemplate({
+    }), this.summary = new $o(D), this.summary.setTemplate({
       tag: "summary",
       attributes: {
         class: ["ck", "ck-form__details__summary"]
       },
       children: [{ text: i.to("label") }]
-    }), this.children.add(this.summary), this.advancedFieldsContainer = new $o(R), this.advancedFieldsContainer.setTemplate({
+    }), this.children.add(this.summary), this.advancedFieldsContainer = new $o(D), this.advancedFieldsContainer.setTemplate({
       tag: "div",
       attributes: {
         class: ["meta", "pane", "hairline"]
@@ -1290,9 +1303,9 @@ class vu extends $o {
     super.render(), this.element.addEventListener("toggle", this.onToggle.bind(this));
   }
   // this is needed to control the focus order
-  onToggle(R) {
+  onToggle(D) {
     const { formView: p } = this.linkUi._linkUI;
-    if (R.target.open) {
+    if (D.target.open) {
       const i = p._focusables.getIndex(this);
       this.advancedChildren._items.forEach((u, c) => {
         p._focusables.add(u, i + c + 1), p.focusTracker.add(u.element, i + c + 1);
@@ -1319,8 +1332,8 @@ class ku extends Bn {
     super(...arguments), this.linkTypeWrapperView = null, this.advancedView = null, this.linkTypeDropdownView = null, this.linkTypeDropdownItemModels = [], this.elementTypeRefHandleRE = null, this.urlWithRefHandleRE = null, this.conversionData = [], this.linkOptions = [], this.advancedLinkFields = [], this.editor.config.define("linkOptions", []), this.editor.config.define("advancedLinkFields", []);
   }
   init() {
-    const R = this.editor;
-    this._linkUI = R.plugins.get(Xl), this._balloon = R.plugins.get(Zc), this.linkOptions = R.config.get("linkOptions"), this.advancedLinkFields = R.config.get("advancedLinkFields"), this.conversionData = this.advancedLinkFields.map((i) => i.conversion ?? null).filter((i) => i);
+    const D = this.editor;
+    this._linkUI = D.plugins.get(Xl), this._balloon = D.plugins.get(Zc), this.linkOptions = D.config.get("linkOptions"), this.advancedLinkFields = D.config.get("advancedLinkFields"), this.conversionData = this.advancedLinkFields.map((i) => i.conversion ?? null).filter((i) => i);
     const p = CKE_LOCALIZED_REF_HANDLES.join("|");
     this.elementTypeRefHandleRE = new RegExp(
       `(#((?:${p})):\\d+)`
@@ -1338,19 +1351,19 @@ class ku extends Bn {
    * Reset focus order of the extra fields we're adding to the link form view
    */
   _alignFocus() {
-    const { formView: R } = this._linkUI;
+    const { formView: D } = this._linkUI;
     let p = 0;
     this.linkTypeWrapperView && (this.linkTypeWrapperView._unboundChildren._items.forEach((i) => {
-      R._focusables.has(i) && R._focusables.remove(i), R.focusTracker.remove(i.element), R._focusables.add(i, p), R.focusTracker.add(i.element, p), p++;
-    }), this.advancedView !== null && (R._focusables.has(this.advancedView) && R._focusables.remove(this.advancedView), R.focusTracker.remove(this.advancedView), R._focusables.add(this.advancedView, p), R.focusTracker.add(this.advancedView.element, p)));
+      D._focusables.has(i) && D._focusables.remove(i), D.focusTracker.remove(i.element), D._focusables.add(i, p), D.focusTracker.add(i.element, p), p++;
+    }), this.advancedView !== null && (D._focusables.has(this.advancedView) && D._focusables.remove(this.advancedView), D.focusTracker.remove(this.advancedView), D._focusables.add(this.advancedView, p), D.focusTracker.add(this.advancedView.element, p)));
   }
   /**
    * Add all our custom fields (for element linking and advanced fields) to the link form view.
    */
   _modifyFormViewTemplate() {
     this._linkUI.formView || this._linkUI._createViews();
-    const { formView: R } = this._linkUI;
-    R.template.attributes.class.push(
+    const { formView: D } = this._linkUI;
+    D.template.attributes.class.push(
       "ck-link-form_layout-vertical",
       "ck-vertical-form"
     ), this.linkOptions && this.linkOptions.length && this._linkOptionsDropdown(), this.advancedLinkFields && this.advancedLinkFields.length && this._advancedLinkFields();
@@ -1364,16 +1377,16 @@ class ku extends Bn {
   /**
    * Returns whether the "default" URL input field value matched given regular expression.
    */
-  _urlInputRefMatch(R) {
-    return this._urlInputValue().match(R);
+  _urlInputRefMatch(D) {
+    return this._urlInputValue().match(D);
   }
   ////////////////////// Link Options Dropdown (link types) //////////////////////
   /**
    * Create a link type dropdown.
    */
   _linkOptionsDropdown() {
-    const { formView: R } = this._linkUI, { urlInputView: p } = R, { fieldView: i } = p;
-    this.linkTypeDropdownView = Ca(R.locale), this.linkTypeDropdownView.buttonView.set({
+    const { formView: D } = this._linkUI, { urlInputView: p } = D, { fieldView: i } = p;
+    this.linkTypeDropdownView = Ca(D.locale), this.linkTypeDropdownView.buttonView.set({
       label: "",
       withText: !0,
       isVisible: !0
@@ -1390,7 +1403,7 @@ class ku extends Bn {
     ), i.isEmpty && this._showLinkTypeForm("default"), this.linkTypeDropdownView.on("execute", (u) => {
       if (u.source.linkOption) {
         const c = u.source.linkOption;
-        this._selectLinkTypeDropdownItem(c.refHandle), this._showLinkTypeForm(c, R);
+        this._selectLinkTypeDropdownItem(c.refHandle), this._showLinkTypeForm(c, D);
       } else
         this._selectLinkTypeDropdownItem("default"), this._showLinkTypeForm("default");
     }), this.listenTo(i, "change:value", () => {
@@ -1407,38 +1420,38 @@ class ku extends Bn {
    * Get the refHandle from the URL field value.
    */
   _getLinkElementRefHandle() {
-    let R = null;
+    let D = null;
     const p = this._urlInputValue().match(this.elementTypeRefHandleRE);
-    return p && (R = p[2], R && typeof this.linkTypeDropdownItemModels[R] > "u" && (R = null)), R;
+    return p && (D = p[2], D && typeof this.linkTypeDropdownItemModels[D] > "u" && (D = null)), D;
   }
   /**
    * Get element ID from the URL field value.
    */
   _getLinkElementId() {
-    let R = null;
+    let D = null;
     const p = this._urlInputRefMatch(this.urlWithRefHandleRE);
-    return p && (R = p[4] ? parseInt(p[4], 10) : null), R;
+    return p && (D = p[4] ? parseInt(p[4], 10) : null), D;
   }
   /**
    * Get site ID from the URL field value.
    */
   _getLinkSiteId() {
-    let R = null;
+    let D = null;
     const p = this._urlInputRefMatch(this.urlWithRefHandleRE);
-    return p && (R = p[5] ? parseInt(p[5], 10) : null), R;
+    return p && (D = p[5] ? parseInt(p[5], 10) : null), D;
   }
   /**
    * Toggle between element link and default URL link fields.
    */
   _toggleLinkTypeDropdownView() {
-    let R = this._getLinkElementRefHandle();
-    R ? (this.linkTypeDropdownView.buttonView.set("isVisible", !0), this._selectLinkTypeDropdownItem(R)) : this._selectLinkTypeDropdownItem("default");
+    let D = this._getLinkElementRefHandle();
+    D ? (this.linkTypeDropdownView.buttonView.set("isVisible", !0), this._selectLinkTypeDropdownItem(D)) : this._selectLinkTypeDropdownItem("default");
   }
   /**
    * Select link type from the dropdown.
    */
-  _selectLinkTypeDropdownItem(R) {
-    const p = this.linkTypeDropdownItemModels[R], i = R ? Craft.t("app", "{name}", { name: p.label }) : p.label;
+  _selectLinkTypeDropdownItem(D) {
+    const p = this.linkTypeDropdownItemModels[D], i = D ? Craft.t("app", "{name}", { name: p.label }) : p.label;
     this.linkTypeDropdownView.buttonView.set("label", i), Object.values(this.linkTypeDropdownItemModels).forEach((u) => {
       u.set("isOn", u.handle === p.handle);
     });
@@ -1447,9 +1460,9 @@ class ku extends Bn {
    * Get a list of all the options that should be shown in the link type dropdown.
    */
   _getLinkListItemDefinitions() {
-    const R = [];
+    const D = [];
     for (const p of this.linkOptions)
-      R.push(
+      D.push(
         new Sa({
           label: p.label,
           handle: p.refHandle,
@@ -1457,23 +1470,23 @@ class ku extends Bn {
           withText: !0
         })
       );
-    return R.push(
+    return D.push(
       new Sa({
         label: Craft.t("app", "URL"),
         handle: "default",
         withText: !0
       })
-    ), R;
+    ), D;
   }
   /**
    * Place the link type fields in the form.
    */
-  _showLinkTypeForm(R) {
+  _showLinkTypeForm(D) {
     let p = null;
     const { formView: i } = this._linkUI, { children: u } = i, { urlInputView: c } = i, { displayedTextInputView: r } = i;
-    r.focus(), this.linkTypeWrapperView !== null && u.remove(this.linkTypeWrapperView), R === "default" ? p = c : (this._getLinkSiteId(), this._getLinkElementId(), p = new yu(i.locale, {
+    r.focus(), this.linkTypeWrapperView !== null && u.remove(this.linkTypeWrapperView), D === "default" ? p = c : (this._getLinkSiteId(), this._getLinkElementId(), p = new yu(i.locale, {
       linkUi: this,
-      linkOption: R,
+      linkOption: D,
       value: this._urlInputValue()
     })), this.linkTypeWrapperView = new $o(), this.linkTypeWrapperView.setTemplate({
       tag: "div",
@@ -1492,21 +1505,21 @@ class ku extends Bn {
   /**
    * Show element selector modal for given element type (link option).
    */
-  _showElementSelectorModal(R) {
+  _showElementSelectorModal(D) {
     const p = this.editor, i = p.model, u = i.document.selection, c = u.isCollapsed, r = u.getFirstRange(), _ = this._linkUI._getSelectedLinkElement(), g = () => {
       p.editing.view.focus(), !c && r && i.change((b) => {
         b.setSelection(r);
       }), this._linkUI._hideFakeVisualSelection();
     };
-    _ || this._linkUI._showFakeVisualSelection(), Craft.createElementSelectorModal(R.elementType, {
-      storageKey: `ckeditor:${this.pluginName}:${R.elementType}`,
-      sources: R.sources,
-      criteria: R.criteria,
+    _ || this._linkUI._showFakeVisualSelection(), Craft.createElementSelectorModal(D.elementType, {
+      storageKey: `ckeditor:${this.pluginName}:${D.elementType}`,
+      sources: D.sources,
+      criteria: D.criteria,
       defaultSiteId: p.config.get("elementSiteId"),
       autoFocusSearchBox: !1,
       onSelect: (b) => {
         if (b.length) {
-          const v = b[0], y = `${v.url}#${R.refHandle}:${v.id}@${v.siteId}`;
+          const v = b[0], y = `${v.url}#${D.refHandle}:${v.id}@${v.siteId}`;
           if (p.editing.view.focus(), (!c || _) && r) {
             i.change((N) => {
               N.setSelection(r);
@@ -1555,7 +1568,7 @@ class ku extends Bn {
    */
   _addAdvancedLinkFieldInputs() {
     var u;
-    const R = this.editor.commands.get("link"), { formView: p } = this._linkUI, { children: i } = p;
+    const D = this.editor.commands.get("link"), { formView: p } = this._linkUI, { children: i } = p;
     this.advancedView = new vu(p.locale, {
       linkUi: this
     }), i.add(this.advancedView, 3);
@@ -1568,12 +1581,12 @@ class ku extends Bn {
             withText: !0,
             label: c.label,
             isToggleable: !0
-          }), c.tooltip && (_.tooltip = c.tooltip), this.advancedView.advancedChildren.add(_), p[r] = _, p[r].bind("isOn").to(R, r, (g) => g === void 0 ? (p[r].element.value = "", !1) : (p[r].element.value = c.conversion.value, !0)), _.on("execute", () => {
+          }), c.tooltip && (_.tooltip = c.tooltip), this.advancedView.advancedChildren.add(_), p[r] = _, p[r].bind("isOn").to(D, r, (g) => g === void 0 ? (p[r].element.value = "", !1) : (p[r].element.value = c.conversion.value, !0)), _.on("execute", () => {
             _.isOn ? (_.isOn = !1, p[r].element.value = "") : (_.isOn = !0, p[r].element.value = c.conversion.value);
           });
         } else {
           let _ = this._addLabeledField(c);
-          p[r] = _, p[r].fieldView.bind("value").to(R, r), p[r].fieldView.element.value = R[r] || "";
+          p[r] = _, p[r].fieldView.bind("value").to(D, r), p[r].fieldView.element.value = D[r] || "";
         }
       else if (c.value === "urlSuffix") {
         let _ = this._addLabeledField(c);
@@ -1617,32 +1630,32 @@ class ku extends Bn {
   /**
    * Create a labeled field for given advanced field.
    */
-  _addLabeledField(R) {
+  _addLabeledField(D) {
     const { formView: p } = this._linkUI;
     let i = new tu(
       p.locale,
       nu
     );
-    return i.label = R.label, R.tooltip && (i.infoText = R.tooltip), this.advancedView.advancedChildren.add(i), i;
+    return i.label = D.label, D.tooltip && (i.infoText = D.tooltip), this.advancedView.advancedChildren.add(i), i;
   }
   /**
    * Populate URL suffix advanced field with content.
    * e.g. if a query string was added directly to the default URL input field,
    * ensure the value is also showing in the URL Suffix advanced field.
    */
-  _toggleUrlSuffixInputView(R, p) {
+  _toggleUrlSuffixInputView(D, p) {
     if (p)
-      R.fieldView.set("value", "");
+      D.fieldView.set("value", "");
     else {
       const i = this._urlInputRefMatch(this.urlWithRefHandleRE);
       let u = null;
       i ? u = i[1] : u = this._urlInputValue();
       try {
         let c = new URL(u), r = c.search, _ = c.hash;
-        R.fieldView.set("value", r + _);
+        D.fieldView.set("value", r + _);
       } catch {
         let [r, _] = u.split("#"), [g, b] = r.split("?");
-        _ = _ ? "#" + _ : "", b = b ? "?" + b : "", R.fieldView.set("value", b + _);
+        _ = _ ? "#" + _ : "", b = b ? "?" + b : "", D.fieldView.set("value", b + _);
       }
     }
   }
@@ -1670,9 +1683,9 @@ class ku extends Bn {
    * Update the link command when the advanced field value changes.
    */
   _trackAdvancedLinkFieldsValueChange() {
-    const R = this.editor, p = R.commands.get("link"), i = R.model.document.selection;
+    const D = this.editor, p = D.commands.get("link"), i = D.model.document.selection;
     this.conversionData.forEach((u) => {
-      p.set(u.model, null), R.model.document.on("change", () => {
+      p.set(u.model, null), D.model.document.on("change", () => {
         p[u.model] = i.getAttribute(u.model);
       });
     });
@@ -1681,15 +1694,15 @@ class ku extends Bn {
    * Get the values of all the advanced fields.
    */
   _getAdvancedFieldValues() {
-    const { formView: R } = this._linkUI;
+    const { formView: D } = this._linkUI;
     let p = {};
     return this.conversionData.forEach((i) => {
       let u = [];
-      i.type === "bool" ? u[i.model] = R[i.model].element.value : u[i.model] = R[i.model].fieldView.element.value, Object.assign(p, u);
+      i.type === "bool" ? u[i.model] = D[i.model].element.value : u[i.model] = D[i.model].fieldView.element.value, Object.assign(p, u);
     }), p;
   }
 }
-class Ru extends Bn {
+class Du extends Bn {
   static get requires() {
     return [bu, ku];
   }
@@ -1704,7 +1717,7 @@ var Ts = { exports: {} };
 /*! For license information please see inspector.js.LICENSE.txt */
 var Zl;
 function Eu() {
-  return Zl || (Zl = 1, function(xe, R) {
+  return Zl || (Zl = 1, function(xe, D) {
     (function(p, i) {
       xe.exports = i();
     })(window, function() {
@@ -1875,9 +1888,9 @@ function Eu() {
               ke[++se] = Ce;
             }), ke;
           }
-          var I, ae, le, ne = Array.prototype, ce = Function.prototype, ye = Object.prototype, ee = K["__core-js_shared__"], de = ce.toString, D = ye.hasOwnProperty, ie = (I = /[^.]+$/.exec(ee && ee.keys && ee.keys.IE_PROTO || "")) ? "Symbol(src)_1." + I : "", be = ye.toString, Te = RegExp("^" + de.call(D).replace(/[\\^$.*+?()[\]{}|]/g, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"), we = P ? K.Buffer : void 0, Pe = K.Symbol, Se = K.Uint8Array, ze = ye.propertyIsEnumerable, Je = ne.splice, X = Pe ? Pe.toStringTag : void 0, q = Object.getOwnPropertySymbols, me = we ? we.isBuffer : void 0, l = (ae = Object.keys, le = Object, function(H) {
+          var I, ae, le, ne = Array.prototype, ce = Function.prototype, ye = Object.prototype, ee = K["__core-js_shared__"], de = ce.toString, R = ye.hasOwnProperty, ie = (I = /[^.]+$/.exec(ee && ee.keys && ee.keys.IE_PROTO || "")) ? "Symbol(src)_1." + I : "", be = ye.toString, Te = RegExp("^" + de.call(R).replace(/[\\^$.*+?()[\]{}|]/g, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"), we = P ? K.Buffer : void 0, Pe = K.Symbol, Se = K.Uint8Array, ze = ye.propertyIsEnumerable, Je = ne.splice, X = Pe ? Pe.toStringTag : void 0, q = Object.getOwnPropertySymbols, me = we ? we.isBuffer : void 0, l = (ae = Object.keys, le = Object, function(H) {
             return ae(le(H));
-          }), f = gn(K, "DataView"), w = gn(K, "Map"), U = gn(K, "Promise"), F = gn(K, "Set"), W = gn(K, "WeakMap"), he = gn(Object, "create"), je = bn(f), Re = bn(w), Xe = bn(U), He = bn(F), At = bn(W), kt = Pe ? Pe.prototype : void 0, Jt = kt ? kt.valueOf : void 0;
+          }), f = gn(K, "DataView"), w = gn(K, "Map"), U = gn(K, "Promise"), F = gn(K, "Set"), W = gn(K, "WeakMap"), he = gn(Object, "create"), je = bn(f), De = bn(w), Xe = bn(U), He = bn(F), At = bn(W), kt = Pe ? Pe.prototype : void 0, Jt = kt ? kt.valueOf : void 0;
           function wt(H) {
             var se = -1, ke = H == null ? 0 : H.length;
             for (this.clear(); ++se < ke; ) {
@@ -1912,7 +1925,7 @@ function Eu() {
               for (var tn = -1, ht = Array(bt); ++tn < bt; ) ht[tn] = Pt(tn);
               return ht;
             }(H.length, String) : [], Ot = tt.length;
-            for (var nt in H) !D.call(H, nt) || st && (nt == "length" || it && (nt == "offset" || nt == "parent") || Ye && (nt == "buffer" || nt == "byteLength" || nt == "byteOffset") || Cr(nt, Ot)) || tt.push(nt);
+            for (var nt in H) !R.call(H, nt) || st && (nt == "length" || it && (nt == "offset" || nt == "parent") || Ye && (nt == "buffer" || nt == "byteLength" || nt == "byteOffset") || Cr(nt, Ot)) || tt.push(nt);
             return tt;
           }
           function qn(H, se) {
@@ -1921,7 +1934,7 @@ function Eu() {
           }
           function Sn(H) {
             return H == null ? H === void 0 ? "[object Undefined]" : "[object Null]" : X && X in Object(H) ? function(se) {
-              var ke = D.call(se, X), Ce = se[X];
+              var ke = R.call(se, X), Ce = se[X];
               try {
                 se[X] = void 0;
                 var it = !0;
@@ -1967,15 +1980,15 @@ function Eu() {
                     var cr = nn.get(rt);
                     if (cr) return cr == Ue;
                     Kt |= 2, nn.set(rt, Ue);
-                    var Dn = qt(Wt(rt), Wt(Ue), Kt, Or, It, nn);
-                    return nn.delete(rt), Dn;
+                    var Rn = qt(Wt(rt), Wt(Ue), Kt, Or, It, nn);
+                    return nn.delete(rt), Rn;
                   case "[object Symbol]":
                     if (Jt) return Jt.call(rt) == Jt.call(Ue);
                 }
                 return !1;
               }(Ye, st, ht, tt, Ot, nt, bt);
               if (!(1 & tt)) {
-                var un = Pn && D.call(Ye, "__wrapped__"), Nn = ct && D.call(st, "__wrapped__");
+                var un = Pn && R.call(Ye, "__wrapped__"), Nn = ct && R.call(st, "__wrapped__");
                 if (un || Nn) {
                   var Eo = un ? Ye.value() : Ye, _o = Nn ? st.value() : st;
                   return bt || (bt = new Tt()), nt(Eo, _o, tt, Ot, bt);
@@ -1984,16 +1997,16 @@ function Eu() {
               return yn ? (bt || (bt = new Tt()), function(rt, Ue, Yn, Kt, Or, It) {
                 var nn = 1 & Yn, Wt = xr(rt), Qt = Wt.length, cr = xr(Ue).length;
                 if (Qt != cr && !nn) return !1;
-                for (var Dn = Qt; Dn--; ) {
-                  var rn = Wt[Dn];
-                  if (!(nn ? rn in Ue : D.call(Ue, rn))) return !1;
+                for (var Rn = Qt; Rn--; ) {
+                  var rn = Wt[Rn];
+                  if (!(nn ? rn in Ue : R.call(Ue, rn))) return !1;
                 }
                 var yt = It.get(rt);
                 if (yt && It.get(Ue)) return yt == Ue;
                 var Et = !0;
                 It.set(rt, Ue), It.set(Ue, rt);
-                for (var ur = nn; ++Dn < Qt; ) {
-                  rn = Wt[Dn];
+                for (var ur = nn; ++Rn < Qt; ) {
+                  rn = Wt[Rn];
                   var dr = rt[rn], vn = Ue[rn];
                   if (Kt) var Ut = nn ? Kt(vn, dr, rn, Ue, rt, It) : Kt(dr, vn, rn, rt, Ue, It);
                   if (!(Ut === void 0 ? dr === vn || Or(dr, vn, Yn, Kt, It) : Ut)) {
@@ -2018,7 +2031,7 @@ function Eu() {
           function en(H) {
             if (ke = (se = H) && se.constructor, Ce = typeof ke == "function" && ke.prototype || ye, se !== Ce) return l(H);
             var se, ke, Ce, it = [];
-            for (var Ye in Object(H)) D.call(H, Ye) && Ye != "constructor" && it.push(Ye);
+            for (var Ye in Object(H)) R.call(H, Ye) && Ye != "constructor" && it.push(Ye);
             return it;
           }
           function qt(H, se, ke, Ce, it, Ye) {
@@ -2080,10 +2093,10 @@ function Eu() {
               var ke = se[H];
               return ke === "__lodash_hash_undefined__" ? void 0 : ke;
             }
-            return D.call(se, H) ? se[H] : void 0;
+            return R.call(se, H) ? se[H] : void 0;
           }, wt.prototype.has = function(H) {
             var se = this.__data__;
-            return he ? se[H] !== void 0 : D.call(se, H);
+            return he ? se[H] !== void 0 : R.call(se, H);
           }, wt.prototype.set = function(H, se) {
             var ke = this.__data__;
             return this.size += this.has(H) ? 0 : 1, ke[H] = he && se === void 0 ? "__lodash_hash_undefined__" : se, this;
@@ -2171,7 +2184,7 @@ function Eu() {
             if (Ce) switch (Ce) {
               case je:
                 return "[object DataView]";
-              case Re:
+              case De:
                 return g;
               case Xe:
                 return "[object Promise]";
@@ -2185,7 +2198,7 @@ function Eu() {
           var ir = or(/* @__PURE__ */ function() {
             return arguments;
           }()) ? or : function(H) {
-            return On(H) && D.call(H, "callee") && !ze.call(H, "callee");
+            return On(H) && R.call(H, "callee") && !ze.call(H, "callee");
           }, ar = Array.isArray, Cn = me || function() {
             return !1;
           };
@@ -2541,20 +2554,20 @@ function Eu() {
                 for (const ee of ye) {
                   const de = ee.offset;
                   if (de === 0) {
-                    const D = le.children[0];
-                    D ? D.positionsBefore.push(ee) : le.positions.push(ee);
+                    const R = le.children[0];
+                    R ? R.positionsBefore.push(ee) : le.positions.push(ee);
                   } else if (de === le.maxOffset) {
-                    const D = le.children[le.children.length - 1];
-                    D ? D.positionsAfter.push(ee) : le.positions.push(ee);
+                    const R = le.children[le.children.length - 1];
+                    R ? R.positionsAfter.push(ee) : le.positions.push(ee);
                   } else {
-                    let D = ee.isEnd ? 0 : le.children.length - 1, ie = le.children[D];
+                    let R = ee.isEnd ? 0 : le.children.length - 1, ie = le.children[R];
                     for (; ie; ) {
                       if (ie.startOffset === de) {
                         ie.positionsBefore.push(ee);
                         break;
                       }
                       if (ie.endOffset === de) {
-                        const be = le.children[D + 1], Te = ie.type === "text" && be && be.type === "element", we = ie.type === "element" && be && be.type === "text", Pe = ie.type === "text" && be && be.type === "text";
+                        const be = le.children[R + 1], Te = ie.type === "text" && be && be.type === "element", we = ie.type === "element" && be && be.type === "text", Pe = ie.type === "text" && be && be.type === "text";
                         ee.isEnd && (Te || we || Pe) ? be.positionsBefore.push(ee) : ie.positionsAfter.push(ee);
                         break;
                       }
@@ -2562,7 +2575,7 @@ function Eu() {
                         ie.positions.push(ee);
                         break;
                       }
-                      D += ee.isEnd ? 1 : -1, ie = le.children[D];
+                      R += ee.isEnd ? 1 : -1, ie = le.children[R];
                     }
                   }
                 }
@@ -3035,7 +3048,7 @@ function Eu() {
           }
           return { result: X, keyPrefix: q, func: me, context: l, count: 0 };
         }
-        function D(X) {
+        function R(X) {
           X.result = null, X.keyPrefix = null, X.func = null, X.context = null, X.count = 0, 10 > ee.length && ee.push(X);
         }
         function ie(X, q, me) {
@@ -3058,10 +3071,10 @@ function Eu() {
             }
             if (he) return U(F, f, w === "" ? "." + be(f, 0) : w), 1;
             if (he = 0, w = w === "" ? "." : w + ":", Array.isArray(f)) for (var je = 0; je < f.length; je++) {
-              var Re = w + be(W = f[je], je);
-              he += l(W, Re, U, F);
+              var De = w + be(W = f[je], je);
+              he += l(W, De, U, F);
             }
-            else if (f === null || typeof f != "object" ? Re = null : Re = typeof (Re = B && f[B] || f["@@iterator"]) == "function" ? Re : null, typeof Re == "function") for (f = Re.call(f), je = 0; !(W = f.next()).done; ) he += l(W = W.value, Re = w + be(W, je++), U, F);
+            else if (f === null || typeof f != "object" ? De = null : De = typeof (De = B && f[B] || f["@@iterator"]) == "function" ? De : null, typeof De == "function") for (f = De.call(f), je = 0; !(W = f.next()).done; ) he += l(W = W.value, De = w + be(W, je++), U, F);
             else if (W === "object") throw U = "" + f, Error(P(31, U === "[object Object]" ? "object with keys {" + Object.keys(f).join(", ") + "}" : U, ""));
             return he;
           }(X, "", q, me);
@@ -3087,7 +3100,7 @@ function Eu() {
         }
         function Pe(X, q, me, l, f) {
           var w = "";
-          me != null && (w = ("" + me).replace(ye, "$&/") + "/"), ie(X, we, q = de(q, w, l, f)), D(q);
+          me != null && (w = ("" + me).replace(ye, "$&/") + "/"), ie(X, we, q = de(q, w, l, f)), R(q);
         }
         var Se = { current: null };
         function ze() {
@@ -3102,7 +3115,7 @@ function Eu() {
           return Pe(X, l, null, q, me), l;
         }, forEach: function(X, q, me) {
           if (X == null) return X;
-          ie(X, Te, q = de(null, null, q, me)), D(q);
+          ie(X, Te, q = de(null, null, q, me)), R(q);
         }, count: function(X) {
           return ie(X, function() {
             return null;
@@ -3187,7 +3200,7 @@ function Eu() {
         var K = null, j = null, B = null;
         function P(e, t, n) {
           var o = e.type || "unknown-event";
-          e.currentTarget = B(n), function(a, h, k, T, Z, Y, ge, De, We) {
+          e.currentTarget = B(n), function(a, h, k, T, Z, Y, ge, Re, We) {
             if (G.apply(this, arguments), v) {
               if (!v) throw Error(g(198));
               var ot = y;
@@ -3240,7 +3253,7 @@ function Eu() {
             t && (t = K(t), ce(e.stateNode, e.type, t));
           }
         }
-        function D(e) {
+        function R(e) {
           ye ? ee ? ee.push(e) : ee = [e] : ye = e;
         }
         function ie() {
@@ -3317,14 +3330,14 @@ function Eu() {
         function je(e, t, n, o) {
           var a = U.hasOwnProperty(t) ? U[t] : null;
           (a !== null ? a.type === 0 : !o && 2 < t.length && (t[0] === "o" || t[0] === "O") && (t[1] === "n" || t[1] === "N")) || (function(h, k, T, Z) {
-            if (k == null || function(Y, ge, De, We) {
-              if (De !== null && De.type === 0) return !1;
+            if (k == null || function(Y, ge, Re, We) {
+              if (Re !== null && Re.type === 0) return !1;
               switch (typeof ge) {
                 case "function":
                 case "symbol":
                   return !0;
                 case "boolean":
-                  return !We && (De !== null ? !De.acceptsBooleans : (Y = Y.toLowerCase().slice(0, 5)) !== "data-" && Y !== "aria-");
+                  return !We && (Re !== null ? !Re.acceptsBooleans : (Y = Y.toLowerCase().slice(0, 5)) !== "data-" && Y !== "aria-");
                 default:
                   return !1;
               }
@@ -3346,7 +3359,7 @@ function Eu() {
           }(t) && (n === null ? e.removeAttribute(t) : e.setAttribute(t, "" + n)) : a.mustUseProperty ? e[a.propertyName] = n === null ? a.type !== 3 && "" : n : (t = a.attributeName, o = a.attributeNamespace, n === null ? e.removeAttribute(t) : (n = (a = a.type) === 3 || a === 4 && n === !0 ? "" : "" + n, o ? e.setAttributeNS(o, t, n) : e.setAttribute(t, n))));
         }
         he.hasOwnProperty("ReactCurrentDispatcher") || (he.ReactCurrentDispatcher = { current: null }), he.hasOwnProperty("ReactCurrentBatchConfig") || (he.ReactCurrentBatchConfig = { suspense: null });
-        var Re = /^(.*)[\\\/]/, Xe = typeof Symbol == "function" && Symbol.for, He = Xe ? Symbol.for("react.element") : 60103, At = Xe ? Symbol.for("react.portal") : 60106, kt = Xe ? Symbol.for("react.fragment") : 60107, Jt = Xe ? Symbol.for("react.strict_mode") : 60108, wt = Xe ? Symbol.for("react.profiler") : 60114, gt = Xe ? Symbol.for("react.provider") : 60109, cn = Xe ? Symbol.for("react.context") : 60110, Er = Xe ? Symbol.for("react.concurrent_mode") : 60111, Tt = Xe ? Symbol.for("react.forward_ref") : 60112, pt = Xe ? Symbol.for("react.suspense") : 60113, qn = Xe ? Symbol.for("react.suspense_list") : 60120, Sn = Xe ? Symbol.for("react.memo") : 60115, or = Xe ? Symbol.for("react.lazy") : 60116, _r = Xe ? Symbol.for("react.block") : 60121, wo = typeof Symbol == "function" && Symbol.iterator;
+        var De = /^(.*)[\\\/]/, Xe = typeof Symbol == "function" && Symbol.for, He = Xe ? Symbol.for("react.element") : 60103, At = Xe ? Symbol.for("react.portal") : 60106, kt = Xe ? Symbol.for("react.fragment") : 60107, Jt = Xe ? Symbol.for("react.strict_mode") : 60108, wt = Xe ? Symbol.for("react.profiler") : 60114, gt = Xe ? Symbol.for("react.provider") : 60109, cn = Xe ? Symbol.for("react.context") : 60110, Er = Xe ? Symbol.for("react.concurrent_mode") : 60111, Tt = Xe ? Symbol.for("react.forward_ref") : 60112, pt = Xe ? Symbol.for("react.suspense") : 60113, qn = Xe ? Symbol.for("react.suspense_list") : 60120, Sn = Xe ? Symbol.for("react.memo") : 60115, or = Xe ? Symbol.for("react.lazy") : 60116, _r = Xe ? Symbol.for("react.block") : 60121, wo = typeof Symbol == "function" && Symbol.iterator;
         function en(e) {
           return e === null || typeof e != "object" ? null : typeof (e = wo && e[wo] || e["@@iterator"]) == "function" ? e : null;
         }
@@ -3399,7 +3412,7 @@ function Eu() {
                 break e;
               default:
                 var o = e._debugOwner, a = e._debugSource, h = qt(e.type);
-                n = null, o && (n = qt(o.type)), o = h, h = "", a ? h = " (at " + a.fileName.replace(Re, "") + ":" + a.lineNumber + ")" : n && (h = " (created by " + n + ")"), n = `
+                n = null, o && (n = qt(o.type)), o = h, h = "", a ? h = " (at " + a.fileName.replace(De, "") + ":" + a.lineNumber + ")" : n && (h = " (created by " + n + ")"), n = `
     in ` + (o || "Unknown") + h;
             }
             t += n, e = e.return;
@@ -3705,7 +3718,7 @@ function Eu() {
         function cr(e) {
           e.topLevelType = null, e.nativeEvent = null, e.targetInst = null, e.ancestors.length = 0, 10 > Qt.length && Qt.push(e);
         }
-        function Dn(e, t, n, o) {
+        function Rn(e, t, n, o) {
           if (Qt.length) {
             var a = Qt.pop();
             return a.topLevelType = e, a.eventSystemFlags = o, a.nativeEvent = t, a.targetInst = n, a;
@@ -3833,44 +3846,44 @@ function Eu() {
           }
           Ht !== null && So(Ht) && (Ht = null), on !== null && So(on) && (on = null), Kn !== null && So(Kn) && (Kn = null), fr.forEach(ki), Zr.forEach(ki);
         }
-        function Dr(e, t) {
+        function Rr(e, t) {
           e.blockedOn === t && (e.blockedOn = null, vn || (vn = !0, _.unstable_scheduleCallback(_.unstable_NormalPriority, wi)));
         }
         function pr(e) {
           function t(a) {
-            return Dr(a, e);
+            return Rr(a, e);
           }
           if (0 < Ut.length) {
-            Dr(Ut[0], e);
+            Rr(Ut[0], e);
             for (var n = 1; n < Ut.length; n++) {
               var o = Ut[n];
               o.blockedOn === e && (o.blockedOn = null);
             }
           }
-          for (Ht !== null && Dr(Ht, e), on !== null && Dr(on, e), Kn !== null && Dr(Kn, e), fr.forEach(t), Zr.forEach(t), n = 0; n < Pr.length; n++) (o = Pr[n]).blockedOn === e && (o.blockedOn = null);
+          for (Ht !== null && Rr(Ht, e), on !== null && Rr(on, e), Kn !== null && Rr(Kn, e), fr.forEach(t), Zr.forEach(t), n = 0; n < Pr.length; n++) (o = Pr[n]).blockedOn === e && (o.blockedOn = null);
           for (; 0 < Pr.length && (n = Pr[0]).blockedOn === null; ) Oa(n), n.blockedOn === null && Pr.shift();
         }
-        var Ei = {}, _i = /* @__PURE__ */ new Map(), Rr = /* @__PURE__ */ new Map(), Pa = ["abort", "abort", tn, "animationEnd", ht, "animationIteration", Vt, "animationStart", "canplay", "canPlay", "canplaythrough", "canPlayThrough", "durationchange", "durationChange", "emptied", "emptied", "encrypted", "encrypted", "ended", "ended", "error", "error", "gotpointercapture", "gotPointerCapture", "load", "load", "loadeddata", "loadedData", "loadedmetadata", "loadedMetadata", "loadstart", "loadStart", "lostpointercapture", "lostPointerCapture", "playing", "playing", "progress", "progress", "seeking", "seeking", "stalled", "stalled", "suspend", "suspend", "timeupdate", "timeUpdate", Pn, "transitionEnd", "waiting", "waiting"];
+        var Ei = {}, _i = /* @__PURE__ */ new Map(), Dr = /* @__PURE__ */ new Map(), Pa = ["abort", "abort", tn, "animationEnd", ht, "animationIteration", Vt, "animationStart", "canplay", "canPlay", "canplaythrough", "canPlayThrough", "durationchange", "durationChange", "emptied", "emptied", "encrypted", "encrypted", "ended", "ended", "error", "error", "gotpointercapture", "gotPointerCapture", "load", "load", "loadeddata", "loadedData", "loadedmetadata", "loadedMetadata", "loadstart", "loadStart", "lostpointercapture", "lostPointerCapture", "playing", "playing", "progress", "progress", "seeking", "seeking", "stalled", "stalled", "suspend", "suspend", "timeupdate", "timeUpdate", Pn, "transitionEnd", "waiting", "waiting"];
         function qo(e, t) {
           for (var n = 0; n < e.length; n += 2) {
             var o = e[n], a = e[n + 1], h = "on" + (a[0].toUpperCase() + a.slice(1));
-            h = { phasedRegistrationNames: { bubbled: h, captured: h + "Capture" }, dependencies: [o], eventPriority: t }, Rr.set(o, t), _i.set(o, h), Ei[a] = h;
+            h = { phasedRegistrationNames: { bubbled: h, captured: h + "Capture" }, dependencies: [o], eventPriority: t }, Dr.set(o, t), _i.set(o, h), Ei[a] = h;
           }
         }
         qo("blur blur cancel cancel click click close close contextmenu contextMenu copy copy cut cut auxclick auxClick dblclick doubleClick dragend dragEnd dragstart dragStart drop drop focus focus input input invalid invalid keydown keyDown keypress keyPress keyup keyUp mousedown mouseDown mouseup mouseUp paste paste pause pause play play pointercancel pointerCancel pointerdown pointerDown pointerup pointerUp ratechange rateChange reset reset seeked seeked submit submit touchcancel touchCancel touchend touchEnd touchstart touchStart volumechange volumeChange".split(" "), 0), qo("drag drag dragenter dragEnter dragexit dragExit dragleave dragLeave dragover dragOver mousemove mouseMove mouseout mouseOut mouseover mouseOver pointermove pointerMove pointerout pointerOut pointerover pointerOver scroll scroll toggle toggle touchmove touchMove wheel wheel".split(" "), 1), qo(Pa, 2);
-        for (var xi = "change selectionchange textInput compositionstart compositionend compositionupdate".split(" "), Yo = 0; Yo < xi.length; Yo++) Rr.set(xi[Yo], 0);
-        var Na = _.unstable_UserBlockingPriority, Da = _.unstable_runWithPriority, Co = !0;
+        for (var xi = "change selectionchange textInput compositionstart compositionend compositionupdate".split(" "), Yo = 0; Yo < xi.length; Yo++) Dr.set(xi[Yo], 0);
+        var Na = _.unstable_UserBlockingPriority, Ra = _.unstable_runWithPriority, Co = !0;
         function mt(e, t) {
           Jr(t, e, !1);
         }
         function Jr(e, t, n) {
-          var o = Rr.get(t);
+          var o = Dr.get(t);
           switch (o === void 0 ? 2 : o) {
             case 0:
               o = eo.bind(null, t, 1, e);
               break;
             case 1:
-              o = Ra.bind(null, t, 1, e);
+              o = Da.bind(null, t, 1, e);
               break;
             default:
               o = To.bind(null, t, 1, e);
@@ -3887,8 +3900,8 @@ function Eu() {
             (Se = h) || Je();
           }
         }
-        function Ra(e, t, n, o) {
-          Da(Na, To.bind(null, e, t, n, o));
+        function Da(e, t, n, o) {
+          Ra(Na, To.bind(null, e, t, n, o));
         }
         function To(e, t, n, o) {
           if (Co) if (0 < Ut.length && -1 < Vn.indexOf(e)) e = xo(null, e, t, n, o), Ut.push(e);
@@ -3912,7 +3925,7 @@ function Eu() {
               }
               return !1;
             }(a, e, t, n, o)) {
-              kn(e, o), e = Dn(e, o, null, t);
+              kn(e, o), e = Rn(e, o, null, t);
               try {
                 X(rn, e);
               } finally {
@@ -3936,7 +3949,7 @@ function Eu() {
               } else a !== n && (n = null);
             }
           }
-          e = Dn(e, o, n, t);
+          e = Rn(e, o, n, t);
           try {
             X(rn, e);
           } finally {
@@ -4026,7 +4039,7 @@ function Eu() {
             o = Pi(o);
           }
         }
-        function Di() {
+        function Ri() {
           for (var e = window, t = Go(); t instanceof e.HTMLIFrameElement; ) {
             try {
               var n = typeof t.contentWindow.location.href == "string";
@@ -4043,7 +4056,7 @@ function Eu() {
           return t && (t === "input" && (e.type === "text" || e.type === "search" || e.type === "tel" || e.type === "url" || e.type === "password") || t === "textarea" || e.contentEditable === "true");
         }
         var Zo = null, Jo = null;
-        function Ri(e, t) {
+        function Di(e, t) {
           switch (e) {
             case "button":
             case "input":
@@ -4104,7 +4117,7 @@ function Eu() {
         function ni(e) {
           return e[no] || null;
         }
-        function Rn(e) {
+        function Dn(e) {
           do
             e = e.return;
           while (e && e.tag !== 5);
@@ -4142,7 +4155,7 @@ function Eu() {
         }
         function Ia(e) {
           if (e && e.dispatchConfig.phasedRegistrationNames) {
-            for (var t = e._targetInst, n = []; t; ) n.push(t), t = Rn(t);
+            for (var t = e._targetInst, n = []; t; ) n.push(t), t = Dn(t);
             for (t = n.length; 0 < t--; ) ji(n[t], "captured", e);
             for (t = 0; t < n.length; t++) ji(n[t], "bubbled", e);
           }
@@ -4156,16 +4169,16 @@ function Eu() {
         function jr(e) {
           Yn(e, Ia);
         }
-        var hr = null, ri = null, Do = null;
+        var hr = null, ri = null, Ro = null;
         function zi() {
-          if (Do) return Do;
+          if (Ro) return Ro;
           var e, t, n = ri, o = n.length, a = "value" in hr ? hr.value : hr.textContent, h = a.length;
           for (e = 0; e < o && n[e] === a[e]; e++) ;
           var k = o - e;
           for (t = 1; t <= k && n[o - t] === a[h - t]; t++) ;
-          return Do = a.slice(e, 1 < t ? 1 - t : void 0);
+          return Ro = a.slice(e, 1 < t ? 1 - t : void 0);
         }
-        function Ro() {
+        function Do() {
           return !0;
         }
         function Ao() {
@@ -4173,7 +4186,7 @@ function Eu() {
         }
         function an(e, t, n, o) {
           for (var a in this.dispatchConfig = e, this._targetInst = t, this.nativeEvent = n, e = this.constructor.Interface) e.hasOwnProperty(a) && ((t = e[a]) ? this[a] = t(n) : a === "target" ? this.target = o : this[a] = n[a]);
-          return this.isDefaultPrevented = (n.defaultPrevented != null ? n.defaultPrevented : n.returnValue === !1) ? Ro : Ao, this.isPropagationStopped = Ao, this;
+          return this.isDefaultPrevented = (n.defaultPrevented != null ? n.defaultPrevented : n.returnValue === !1) ? Do : Ao, this.isPropagationStopped = Ao, this;
         }
         function Li(e, t, n, o) {
           if (this.eventPool.length) {
@@ -4192,12 +4205,12 @@ function Eu() {
         r(an.prototype, { preventDefault: function() {
           this.defaultPrevented = !0;
           var e = this.nativeEvent;
-          e && (e.preventDefault ? e.preventDefault() : typeof e.returnValue != "unknown" && (e.returnValue = !1), this.isDefaultPrevented = Ro);
+          e && (e.preventDefault ? e.preventDefault() : typeof e.returnValue != "unknown" && (e.returnValue = !1), this.isDefaultPrevented = Do);
         }, stopPropagation: function() {
           var e = this.nativeEvent;
-          e && (e.stopPropagation ? e.stopPropagation() : typeof e.cancelBubble != "unknown" && (e.cancelBubble = !0), this.isPropagationStopped = Ro);
+          e && (e.stopPropagation ? e.stopPropagation() : typeof e.cancelBubble != "unknown" && (e.cancelBubble = !0), this.isPropagationStopped = Do);
         }, persist: function() {
-          this.isPersistent = Ro;
+          this.isPersistent = Do;
         }, isPersistent: Ao, destructor: function() {
           var e, t = this.constructor.Interface;
           for (e in t) this[e] = null;
@@ -4266,7 +4279,7 @@ function Eu() {
                 return null;
             }
           }(e, n) : function(k, T) {
-            if (Ae) return k === "compositionend" || !S && Ne(k, T) ? (k = zi(), Do = ri = hr = null, Ae = !1, k) : null;
+            if (Ae) return k === "compositionend" || !S && Ne(k, T) ? (k = zi(), Ro = ri = hr = null, Ae = !1, k) : null;
             switch (k) {
               case "paste":
                 return null;
@@ -4289,10 +4302,10 @@ function Eu() {
         }
         var et = { change: { phasedRegistrationNames: { bubbled: "onChange", captured: "onChangeCapture" }, dependencies: "blur change click focus input keydown keyup selectionchange".split(" ") } };
         function qe(e, t, n) {
-          return (e = an.getPooled(et.change, e, t, n)).type = "change", D(n), jr(e), e;
+          return (e = an.getPooled(et.change, e, t, n)).type = "change", R(n), jr(e), e;
         }
         var Le = null, dt = null;
-        function Dt(e) {
+        function Rt(e) {
           It(e);
         }
         function Mt(e) {
@@ -4310,7 +4323,7 @@ function Eu() {
           else {
             Se = !0;
             try {
-              be(Dt, e);
+              be(Rt, e);
             } finally {
               Se = !1, Je();
             }
@@ -4364,19 +4377,19 @@ function Eu() {
           if (e === "mouseout" || e === "mouseover") var T = Lr, Z = Ur.mouseLeave, Y = Ur.mouseEnter, ge = "mouse";
           else e !== "pointerout" && e !== "pointerover" || (T = oi, Z = Ur.pointerLeave, Y = Ur.pointerEnter, ge = "pointer");
           if (e = k == null ? h : Gn(k), h = t == null ? h : Gn(t), (Z = T.getPooled(Z, k, n, o)).type = ge + "leave", Z.target = e, Z.relatedTarget = h, (n = T.getPooled(Y, t, n, o)).type = ge + "enter", n.target = h, n.relatedTarget = e, ge = t, (o = k) && ge) e: {
-            for (Y = ge, k = 0, e = T = o; e; e = Rn(e)) k++;
-            for (e = 0, t = Y; t; t = Rn(t)) e++;
-            for (; 0 < k - e; ) T = Rn(T), k--;
-            for (; 0 < e - k; ) Y = Rn(Y), e--;
+            for (Y = ge, k = 0, e = T = o; e; e = Dn(e)) k++;
+            for (e = 0, t = Y; t; t = Dn(t)) e++;
+            for (; 0 < k - e; ) T = Dn(T), k--;
+            for (; 0 < e - k; ) Y = Dn(Y), e--;
             for (; k--; ) {
               if (T === Y || T === Y.alternate) break e;
-              T = Rn(T), Y = Rn(Y);
+              T = Dn(T), Y = Dn(Y);
             }
             T = null;
           }
           else T = null;
-          for (Y = T, T = []; o && o !== Y && ((k = o.alternate) === null || k !== Y); ) T.push(o), o = Rn(o);
-          for (o = []; ge && ge !== Y && ((k = ge.alternate) === null || k !== Y); ) o.push(ge), ge = Rn(ge);
+          for (Y = T, T = []; o && o !== Y && ((k = o.alternate) === null || k !== Y); ) T.push(o), o = Dn(o);
+          for (o = []; ge && ge !== Y && ((k = ge.alternate) === null || k !== Y); ) o.push(ge), ge = Dn(ge);
           for (ge = 0; ge < T.length; ge++) No(T[ge], "bubbled", Z);
           for (ge = o.length; 0 < ge--; ) No(o[ge], "captured", n);
           return (64 & a) == 0 ? [Z] : [Z, n];
@@ -4558,7 +4571,7 @@ function Eu() {
           if (Xt.current !== Fr) throw Error(g(168));
           St(Xt, t), St(pn, n);
         }
-        function Ds(e, t, n) {
+        function Rs(e, t, n) {
           var o = e.stateNode;
           if (e = t.childContextTypes, typeof o.getChildContext != "function") return n;
           for (var a in o = o.getChildContext()) if (!(a in e)) throw Error(g(108, qt(t) || "Unknown", a));
@@ -4567,10 +4580,10 @@ function Eu() {
         function Vi(e) {
           return e = (e = e.stateNode) && e.__reactInternalMemoizedMergedChildContext || Fr, lo = Xt.current, St(Xt, e), St(pn, pn.current), !0;
         }
-        function Rs(e, t, n) {
+        function Ds(e, t, n) {
           var o = e.stateNode;
           if (!o) throw Error(g(169));
-          n ? (e = Ds(e, t, lo), o.__reactInternalMemoizedMergedChildContext = e, vt(pn), vt(Xt), St(Xt, e)) : vt(pn), St(pn, n);
+          n ? (e = Rs(e, t, lo), o.__reactInternalMemoizedMergedChildContext = e, vt(pn), vt(Xt), St(Xt, e)) : vt(pn), St(pn, n);
         }
         var gc = _.unstable_runWithPriority, za = _.unstable_scheduleCallback, As = _.unstable_cancelCallback, Is = _.unstable_requestPaint, La = _.unstable_now, bc = _.unstable_getCurrentPriorityLevel, Wi = _.unstable_ImmediatePriority, Ms = _.unstable_UserBlockingPriority, js = _.unstable_NormalPriority, zs = _.unstable_LowPriority, Ls = _.unstable_IdlePriority, Us = {}, yc = _.unstable_shouldYield, vc = Is !== void 0 ? Is : function() {
         }, br = null, Hi = null, Ua = !1, Fs = La(), jn = 1e4 > Fs ? La : function() {
@@ -4714,11 +4727,11 @@ function Eu() {
           }
           if (h !== null) {
             T = h.next;
-            var Z = a.baseState, Y = 0, ge = null, De = null, We = null;
+            var Z = a.baseState, Y = 0, ge = null, Re = null, We = null;
             if (T !== null) for (var ot = T; ; ) {
               if ((k = ot.expirationTime) < o) {
                 var Fn = { expirationTime: ot.expirationTime, suspenseConfig: ot.suspenseConfig, tag: ot.tag, payload: ot.payload, callback: ot.callback, next: null };
-                We === null ? (De = We = Fn, ge = Z) : We = We.next = Fn, k > Y && (Y = k);
+                We === null ? (Re = We = Fn, ge = Z) : We = We.next = Fn, k > Y && (Y = k);
               } else {
                 We !== null && (We = We.next = { expirationTime: 1073741823, suspenseConfig: ot.suspenseConfig, tag: ot.tag, payload: ot.payload, callback: ot.callback, next: null }), Bl(k, ot.suspenseConfig);
                 e: {
@@ -4748,7 +4761,7 @@ function Eu() {
                 ot = h.next = k.next, k.next = T, a.baseQueue = h = k, a.shared.pending = null;
               }
             }
-            We === null ? ge = Z : We.next = De, a.baseState = ge, a.baseQueue = We, wa(Y), e.expirationTime = Y, e.memoizedState = Z;
+            We === null ? ge = Z : We.next = Re, a.baseState = ge, a.baseQueue = We, wa(Y), e.expirationTime = Y, e.memoizedState = Z;
           }
         }
         function Ys(e, t, n) {
@@ -4855,7 +4868,7 @@ function Eu() {
           function ge(oe, te, ue, ve, _e) {
             return te === null || te.tag !== 7 ? ((te = Qr(ue, oe.mode, ve, _e)).return = oe, te) : ((te = a(te, ue)).return = oe, te);
           }
-          function De(oe, te, ue) {
+          function Re(oe, te, ue) {
             if (typeof te == "string" || typeof te == "number") return (te = ks("" + te, oe.mode, ue)).return = oe, te;
             if (typeof te == "object" && te !== null) {
               switch (te.$$typeof) {
@@ -4899,21 +4912,21 @@ function Eu() {
             return null;
           }
           function Fn(oe, te, ue, ve) {
-            for (var _e = null, Oe = null, Be = te, at = te = 0, Rt = null; Be !== null && at < ue.length; at++) {
-              Be.index > at ? (Rt = Be, Be = null) : Rt = Be.sibling;
+            for (var _e = null, Oe = null, Be = te, at = te = 0, Dt = null; Be !== null && at < ue.length; at++) {
+              Be.index > at ? (Dt = Be, Be = null) : Dt = Be.sibling;
               var Ze = We(oe, Be, ue[at], ve);
               if (Ze === null) {
-                Be === null && (Be = Rt);
+                Be === null && (Be = Dt);
                 break;
               }
-              e && Be && Ze.alternate === null && t(oe, Be), te = h(Ze, te, at), Oe === null ? _e = Ze : Oe.sibling = Ze, Oe = Ze, Be = Rt;
+              e && Be && Ze.alternate === null && t(oe, Be), te = h(Ze, te, at), Oe === null ? _e = Ze : Oe.sibling = Ze, Oe = Ze, Be = Dt;
             }
             if (at === ue.length) return n(oe, Be), _e;
             if (Be === null) {
-              for (; at < ue.length; at++) (Be = De(oe, ue[at], ve)) !== null && (te = h(Be, te, at), Oe === null ? _e = Be : Oe.sibling = Be, Oe = Be);
+              for (; at < ue.length; at++) (Be = Re(oe, ue[at], ve)) !== null && (te = h(Be, te, at), Oe === null ? _e = Be : Oe.sibling = Be, Oe = Be);
               return _e;
             }
-            for (Be = o(oe, Be); at < ue.length; at++) (Rt = ot(Be, oe, at, ue[at], ve)) !== null && (e && Rt.alternate !== null && Be.delete(Rt.key === null ? at : Rt.key), te = h(Rt, te, at), Oe === null ? _e = Rt : Oe.sibling = Rt, Oe = Rt);
+            for (Be = o(oe, Be); at < ue.length; at++) (Dt = ot(Be, oe, at, ue[at], ve)) !== null && (e && Dt.alternate !== null && Be.delete(Dt.key === null ? at : Dt.key), te = h(Dt, te, at), Oe === null ? _e = Dt : Oe.sibling = Dt, Oe = Dt);
             return e && Be.forEach(function(Bt) {
               return t(oe, Bt);
             }), _e;
@@ -4922,18 +4935,18 @@ function Eu() {
             var _e = en(ue);
             if (typeof _e != "function") throw Error(g(150));
             if ((ue = _e.call(ue)) == null) throw Error(g(151));
-            for (var Oe = _e = null, Be = te, at = te = 0, Rt = null, Ze = ue.next(); Be !== null && !Ze.done; at++, Ze = ue.next()) {
-              Be.index > at ? (Rt = Be, Be = null) : Rt = Be.sibling;
+            for (var Oe = _e = null, Be = te, at = te = 0, Dt = null, Ze = ue.next(); Be !== null && !Ze.done; at++, Ze = ue.next()) {
+              Be.index > at ? (Dt = Be, Be = null) : Dt = Be.sibling;
               var Bt = We(oe, Be, Ze.value, ve);
               if (Bt === null) {
-                Be === null && (Be = Rt);
+                Be === null && (Be = Dt);
                 break;
               }
-              e && Be && Bt.alternate === null && t(oe, Be), te = h(Bt, te, at), Oe === null ? _e = Bt : Oe.sibling = Bt, Oe = Bt, Be = Rt;
+              e && Be && Bt.alternate === null && t(oe, Be), te = h(Bt, te, at), Oe === null ? _e = Bt : Oe.sibling = Bt, Oe = Bt, Be = Dt;
             }
             if (Ze.done) return n(oe, Be), _e;
             if (Be === null) {
-              for (; !Ze.done; at++, Ze = ue.next()) (Ze = De(oe, Ze.value, ve)) !== null && (te = h(Ze, te, at), Oe === null ? _e = Ze : Oe.sibling = Ze, Oe = Ze);
+              for (; !Ze.done; at++, Ze = ue.next()) (Ze = Re(oe, Ze.value, ve)) !== null && (te = h(Ze, te, at), Oe === null ? _e = Ze : Oe.sibling = Ze, Oe = Ze);
               return _e;
             }
             for (Be = o(oe, Be); !Ze.done; at++, Ze = ue.next()) (Ze = ot(Be, oe, at, Ze.value, ve)) !== null && (e && Ze.alternate !== null && Be.delete(Ze.key === null ? at : Ze.key), te = h(Ze, te, at), Oe === null ? _e = Ze : Oe.sibling = Ze, Oe = Ze);
@@ -5379,20 +5392,20 @@ function Eu() {
             k.props = T;
             var Z = k.context, Y = n.contextType;
             typeof Y == "object" && Y !== null ? Y = zn(Y) : Y = zo(t, Y = hn(n) ? lo : Xt.current);
-            var ge = n.getDerivedStateFromProps, De = typeof ge == "function" || typeof k.getSnapshotBeforeUpdate == "function";
-            De || typeof k.UNSAFE_componentWillReceiveProps != "function" && typeof k.componentWillReceiveProps != "function" || (T !== o || Z !== Y) && Xs(t, k, o, Y), Vr = !1;
+            var ge = n.getDerivedStateFromProps, Re = typeof ge == "function" || typeof k.getSnapshotBeforeUpdate == "function";
+            Re || typeof k.UNSAFE_componentWillReceiveProps != "function" && typeof k.componentWillReceiveProps != "function" || (T !== o || Z !== Y) && Xs(t, k, o, Y), Vr = !1;
             var We = t.memoizedState;
-            k.state = We, ai(t, o, k, a), Z = t.memoizedState, T !== o || We !== Z || pn.current || Vr ? (typeof ge == "function" && (Gi(t, n, ge, o), Z = t.memoizedState), (T = Vr || Qs(t, n, T, o, We, Z, Y)) ? (De || typeof k.UNSAFE_componentWillMount != "function" && typeof k.componentWillMount != "function" || (typeof k.componentWillMount == "function" && k.componentWillMount(), typeof k.UNSAFE_componentWillMount == "function" && k.UNSAFE_componentWillMount()), typeof k.componentDidMount == "function" && (t.effectTag |= 4)) : (typeof k.componentDidMount == "function" && (t.effectTag |= 4), t.memoizedProps = o, t.memoizedState = Z), k.props = o, k.state = Z, k.context = Y, o = T) : (typeof k.componentDidMount == "function" && (t.effectTag |= 4), o = !1);
-          } else k = t.stateNode, Wa(e, t), T = t.memoizedProps, k.props = t.type === t.elementType ? T : $n(t.type, T), Z = k.context, typeof (Y = n.contextType) == "object" && Y !== null ? Y = zn(Y) : Y = zo(t, Y = hn(n) ? lo : Xt.current), (De = typeof (ge = n.getDerivedStateFromProps) == "function" || typeof k.getSnapshotBeforeUpdate == "function") || typeof k.UNSAFE_componentWillReceiveProps != "function" && typeof k.componentWillReceiveProps != "function" || (T !== o || Z !== Y) && Xs(t, k, o, Y), Vr = !1, Z = t.memoizedState, k.state = Z, ai(t, o, k, a), We = t.memoizedState, T !== o || Z !== We || pn.current || Vr ? (typeof ge == "function" && (Gi(t, n, ge, o), We = t.memoizedState), (ge = Vr || Qs(t, n, T, o, Z, We, Y)) ? (De || typeof k.UNSAFE_componentWillUpdate != "function" && typeof k.componentWillUpdate != "function" || (typeof k.componentWillUpdate == "function" && k.componentWillUpdate(o, We, Y), typeof k.UNSAFE_componentWillUpdate == "function" && k.UNSAFE_componentWillUpdate(o, We, Y)), typeof k.componentDidUpdate == "function" && (t.effectTag |= 4), typeof k.getSnapshotBeforeUpdate == "function" && (t.effectTag |= 256)) : (typeof k.componentDidUpdate != "function" || T === e.memoizedProps && Z === e.memoizedState || (t.effectTag |= 4), typeof k.getSnapshotBeforeUpdate != "function" || T === e.memoizedProps && Z === e.memoizedState || (t.effectTag |= 256), t.memoizedProps = o, t.memoizedState = We), k.props = o, k.state = We, k.context = Y, o = ge) : (typeof k.componentDidUpdate != "function" || T === e.memoizedProps && Z === e.memoizedState || (t.effectTag |= 4), typeof k.getSnapshotBeforeUpdate != "function" || T === e.memoizedProps && Z === e.memoizedState || (t.effectTag |= 256), o = !1);
+            k.state = We, ai(t, o, k, a), Z = t.memoizedState, T !== o || We !== Z || pn.current || Vr ? (typeof ge == "function" && (Gi(t, n, ge, o), Z = t.memoizedState), (T = Vr || Qs(t, n, T, o, We, Z, Y)) ? (Re || typeof k.UNSAFE_componentWillMount != "function" && typeof k.componentWillMount != "function" || (typeof k.componentWillMount == "function" && k.componentWillMount(), typeof k.UNSAFE_componentWillMount == "function" && k.UNSAFE_componentWillMount()), typeof k.componentDidMount == "function" && (t.effectTag |= 4)) : (typeof k.componentDidMount == "function" && (t.effectTag |= 4), t.memoizedProps = o, t.memoizedState = Z), k.props = o, k.state = Z, k.context = Y, o = T) : (typeof k.componentDidMount == "function" && (t.effectTag |= 4), o = !1);
+          } else k = t.stateNode, Wa(e, t), T = t.memoizedProps, k.props = t.type === t.elementType ? T : $n(t.type, T), Z = k.context, typeof (Y = n.contextType) == "object" && Y !== null ? Y = zn(Y) : Y = zo(t, Y = hn(n) ? lo : Xt.current), (Re = typeof (ge = n.getDerivedStateFromProps) == "function" || typeof k.getSnapshotBeforeUpdate == "function") || typeof k.UNSAFE_componentWillReceiveProps != "function" && typeof k.componentWillReceiveProps != "function" || (T !== o || Z !== Y) && Xs(t, k, o, Y), Vr = !1, Z = t.memoizedState, k.state = Z, ai(t, o, k, a), We = t.memoizedState, T !== o || Z !== We || pn.current || Vr ? (typeof ge == "function" && (Gi(t, n, ge, o), We = t.memoizedState), (ge = Vr || Qs(t, n, T, o, Z, We, Y)) ? (Re || typeof k.UNSAFE_componentWillUpdate != "function" && typeof k.componentWillUpdate != "function" || (typeof k.componentWillUpdate == "function" && k.componentWillUpdate(o, We, Y), typeof k.UNSAFE_componentWillUpdate == "function" && k.UNSAFE_componentWillUpdate(o, We, Y)), typeof k.componentDidUpdate == "function" && (t.effectTag |= 4), typeof k.getSnapshotBeforeUpdate == "function" && (t.effectTag |= 256)) : (typeof k.componentDidUpdate != "function" || T === e.memoizedProps && Z === e.memoizedState || (t.effectTag |= 4), typeof k.getSnapshotBeforeUpdate != "function" || T === e.memoizedProps && Z === e.memoizedState || (t.effectTag |= 256), t.memoizedProps = o, t.memoizedState = We), k.props = o, k.state = We, k.context = Y, o = ge) : (typeof k.componentDidUpdate != "function" || T === e.memoizedProps && Z === e.memoizedState || (t.effectTag |= 4), typeof k.getSnapshotBeforeUpdate != "function" || T === e.memoizedProps && Z === e.memoizedState || (t.effectTag |= 256), o = !1);
           return as(e, t, n, o, h, a);
         }
         function as(e, t, n, o, a, h) {
           hl(e, t);
           var k = (64 & t.effectTag) != 0;
-          if (!o && !k) return a && Rs(t, n, !1), vr(e, t, h);
+          if (!o && !k) return a && Ds(t, n, !1), vr(e, t, h);
           o = t.stateNode, _c.current = t;
           var T = k && typeof n.getDerivedStateFromError != "function" ? null : o.render();
-          return t.effectTag |= 1, e !== null && k ? (t.child = Fo(t, e.child, null, h), t.child = Fo(t, null, T, h)) : Un(e, t, T, h), t.memoizedState = o.state, a && Rs(t, n, !0), t.child;
+          return t.effectTag |= 1, e !== null && k ? (t.child = Fo(t, e.child, null, h), t.child = Fo(t, null, T, h)) : Un(e, t, T, h), t.memoizedState = o.state, a && Ds(t, n, !0), t.child;
         }
         function gl(e) {
           var t = e.stateNode;
@@ -5642,7 +5655,7 @@ function Eu() {
                     default:
                       typeof T.onClick == "function" && (e.onclick = Oo);
                   }
-                  Ri(a, o) && (t.effectTag |= 4);
+                  Di(a, o) && (t.effectTag |= 4);
                 }
                 t.ref !== null && (t.effectTag |= 128);
               }
@@ -5852,7 +5865,7 @@ function Eu() {
               }
               return;
             case 5:
-              return e = n.stateNode, void (t === null && 4 & n.effectTag && Ri(n.type, n.memoizedProps) && e.focus());
+              return e = n.stateNode, void (t === null && 4 & n.effectTag && Di(n.type, n.memoizedProps) && e.focus());
             case 6:
             case 4:
             case 12:
@@ -6075,15 +6088,15 @@ function Eu() {
                 }
                 e.sibling.return = e.return, e = e.sibling;
               }
-              return void Dl(t);
+              return void Rl(t);
             case 19:
-              return void Dl(t);
+              return void Rl(t);
             case 17:
               return;
           }
           throw Error(g(163));
         }
-        function Dl(e) {
+        function Rl(e) {
           var t = e.updateQueue;
           if (t !== null) {
             e.updateQueue = null;
@@ -6095,7 +6108,7 @@ function Eu() {
           }
         }
         var Pc = typeof WeakMap == "function" ? WeakMap : Map;
-        function Rl(e, t, n) {
+        function Dl(e, t, n) {
           (n = Wr(n, null)).tag = 3, n.payload = { element: null };
           var o = t.value;
           return n.callback = function() {
@@ -6200,7 +6213,7 @@ function Eu() {
               var o = Qe;
               Qe |= 16;
               for (var a = Fl(); ; ) try {
-                Rc();
+                Dc();
                 break;
               } catch (T) {
                 Ul(e, T);
@@ -6274,7 +6287,7 @@ function Eu() {
             var n = Qe;
             Qe |= 16;
             for (var o = Fl(); ; ) try {
-              Dc();
+              Rc();
               break;
             } catch (a) {
               Ul(e, a);
@@ -6348,25 +6361,25 @@ function Eu() {
                     var Y = k.alternate;
                     Y ? (k.updateQueue = Y.updateQueue, k.memoizedState = Y.memoizedState, k.expirationTime = Y.expirationTime) : (k.updateQueue = null, k.memoizedState = null);
                   }
-                  var ge = (1 & Ct.current) != 0, De = h;
+                  var ge = (1 & Ct.current) != 0, Re = h;
                   do {
                     var We;
-                    if (We = De.tag === 13) {
-                      var ot = De.memoizedState;
+                    if (We = Re.tag === 13) {
+                      var ot = Re.memoizedState;
                       if (ot !== null) We = ot.dehydrated !== null;
                       else {
-                        var Fn = De.memoizedProps;
+                        var Fn = Re.memoizedProps;
                         We = Fn.fallback !== void 0 && (Fn.unstable_avoidThisFallback !== !0 || !ge);
                       }
                     }
                     if (We) {
-                      var ln = De.updateQueue;
+                      var ln = Re.updateQueue;
                       if (ln === null) {
                         var oe = /* @__PURE__ */ new Set();
-                        oe.add(Z), De.updateQueue = oe;
+                        oe.add(Z), Re.updateQueue = oe;
                       } else ln.add(Z);
-                      if ((2 & De.mode) == 0) {
-                        if (De.effectTag |= 64, k.effectTag &= -2981, k.tag === 1) if (k.alternate === null) k.tag = 17;
+                      if ((2 & Re.mode) == 0) {
+                        if (Re.effectTag |= 64, k.effectTag &= -2981, k.tag === 1) if (k.alternate === null) k.tag = 17;
                         else {
                           var te = Wr(1073741823, null);
                           te.tag = 2, Hr(k, te);
@@ -6381,31 +6394,31 @@ function Eu() {
                         var ve = jc.bind(null, a, Z, k);
                         Z.then(ve, ve);
                       }
-                      De.effectTag |= 4096, De.expirationTime = t;
+                      Re.effectTag |= 4096, Re.expirationTime = t;
                       break e;
                     }
-                    De = De.return;
-                  } while (De !== null);
+                    Re = Re.return;
+                  } while (Re !== null);
                   T = Error((qt(k.type) || "A React component") + ` suspended while rendering, but no fallback UI was specified.
 
 Add a <Suspense fallback=...> component higher in the tree to provide a loading indicator or placeholder to display.` + xr(k));
                 }
-                Ft !== 5 && (Ft = 2), T = cs(T, k), De = h;
+                Ft !== 5 && (Ft = 2), T = cs(T, k), Re = h;
                 do {
-                  switch (De.tag) {
+                  switch (Re.tag) {
                     case 3:
-                      Z = T, De.effectTag |= 4096, De.expirationTime = t, qs(De, Rl(De, Z, t));
+                      Z = T, Re.effectTag |= 4096, Re.expirationTime = t, qs(Re, Dl(Re, Z, t));
                       break e;
                     case 1:
                       Z = T;
-                      var _e = De.type, Oe = De.stateNode;
-                      if ((64 & De.effectTag) == 0 && (typeof _e.getDerivedStateFromError == "function" || Oe !== null && typeof Oe.componentDidCatch == "function" && (Yr === null || !Yr.has(Oe)))) {
-                        De.effectTag |= 4096, De.expirationTime = t, qs(De, Al(De, Z, t));
+                      var _e = Re.type, Oe = Re.stateNode;
+                      if ((64 & Re.effectTag) == 0 && (typeof _e.getDerivedStateFromError == "function" || Oe !== null && typeof Oe.componentDidCatch == "function" && (Yr === null || !Yr.has(Oe)))) {
+                        Re.effectTag |= 4096, Re.expirationTime = t, qs(Re, Al(Re, Z, t));
                         break e;
                       }
                   }
-                  De = De.return;
-                } while (De !== null);
+                  Re = Re.return;
+                } while (Re !== null);
               }
               Ge = Wl(Ge);
             } catch (Be) {
@@ -6425,10 +6438,10 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
         function wa(e) {
           e > pi && (pi = e);
         }
-        function Dc() {
+        function Rc() {
           for (; Ge !== null; ) Ge = Vl(Ge);
         }
-        function Rc() {
+        function Dc() {
           for (; Ge !== null && !yc(); ) Ge = Vl(Ge);
         }
         function Vl(e) {
@@ -6479,7 +6492,7 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
           if (e.firstPendingTime = a, o <= e.lastSuspendedTime ? e.firstSuspendedTime = e.lastSuspendedTime = e.nextKnownPendingLevel = 0 : o <= e.firstSuspendedTime && (e.firstSuspendedTime = o - 1), o <= e.lastPingedTime && (e.lastPingedTime = 0), o <= e.lastExpiredTime && (e.lastExpiredTime = 0), e === _n && (Ge = _n = null, mn = 0), 1 < n.effectTag ? n.lastEffect !== null ? (n.lastEffect.nextEffect = n, a = n.firstEffect) : a = n : a = n.firstEffect, a !== null) {
             var h = Qe;
             Qe |= 32, Ml.current = null, Zo = Co;
-            var k = Di();
+            var k = Ri();
             if (Xo(k)) {
               if ("selectionStart" in k) var T = { start: k.selectionStart, end: k.selectionEnd };
               else e: {
@@ -6494,12 +6507,12 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
                     T = null;
                     break e;
                   }
-                  var De = 0, We = -1, ot = -1, Fn = 0, ln = 0, oe = k, te = null;
+                  var Re = 0, We = -1, ot = -1, Fn = 0, ln = 0, oe = k, te = null;
                   t: for (; ; ) {
-                    for (var ue; oe !== T || Y !== 0 && oe.nodeType !== 3 || (We = De + Y), oe !== ge || Z !== 0 && oe.nodeType !== 3 || (ot = De + Z), oe.nodeType === 3 && (De += oe.nodeValue.length), (ue = oe.firstChild) !== null; ) te = oe, oe = ue;
+                    for (var ue; oe !== T || Y !== 0 && oe.nodeType !== 3 || (We = Re + Y), oe !== ge || Z !== 0 && oe.nodeType !== 3 || (ot = Re + Z), oe.nodeType === 3 && (Re += oe.nodeValue.length), (ue = oe.firstChild) !== null; ) te = oe, oe = ue;
                     for (; ; ) {
                       if (oe === k) break t;
-                      if (te === T && ++Fn === Y && (We = De), te === ge && ++ln === Z && (ot = De), (ue = oe.nextSibling) !== null) break;
+                      if (te === T && ++Fn === Y && (We = Re), te === ge && ++ln === Z && (ot = Re), (ue = oe.nextSibling) !== null) break;
                       te = (oe = te).parentNode;
                     }
                     oe = ue;
@@ -6556,7 +6569,7 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
                 yo(Ie, Ze), Ie = Ie.nextEffect;
               }
             while (Ie !== null);
-            if (Oe = Jo, _e = Di(), ve = Oe.focusedElem, T = Oe.selectionRange, _e !== ve && ve && ve.ownerDocument && function Ze(Bt, wr) {
+            if (Oe = Jo, _e = Ri(), ve = Oe.focusedElem, T = Oe.selectionRange, _e !== ve && ve && ve.ownerDocument && function Ze(Bt, wr) {
               return !(!Bt || !wr) && (Bt === wr || (!Bt || Bt.nodeType !== 3) && (wr && wr.nodeType === 3 ? Ze(Bt, wr.parentNode) : "contains" in Bt ? Bt.contains(wr) : !!Bt.compareDocumentPosition && !!(16 & Bt.compareDocumentPosition(wr))));
             }(ve.ownerDocument.documentElement, ve)) {
               for (T !== null && Xo(ve) && (_e = T.start, (Oe = T.end) === void 0 && (Oe = _e), "selectionStart" in ve ? (ve.selectionStart = _e, ve.selectionEnd = Math.min(Oe, ve.value.length)) : (Oe = (_e = ve.ownerDocument || document) && _e.defaultView || window).getSelection && (Oe = Oe.getSelection(), Y = ve.textContent.length, k = Math.min(T.start, Y), T = T.end === void 0 ? k : Math.min(T.end, Y), !Oe.extend && k > T && (Y = T, T = k, k = Y), Y = Ni(ve, k), ge = Ni(ve, T), Y && ge && (Oe.rangeCount !== 1 || Oe.anchorNode !== Y.node || Oe.anchorOffset !== Y.offset || Oe.focusNode !== ge.node || Oe.focusOffset !== ge.offset) && ((_e = _e.createRange()).setStart(Y.node, Y.offset), Oe.removeAllRanges(), k > T ? (Oe.addRange(_e), Oe.extend(ge.node, ge.offset)) : (_e.setEnd(ge.node, ge.offset), Oe.addRange(_e))))), _e = [], Oe = ve; Oe = Oe.parentNode; ) Oe.nodeType === 1 && _e.push({ element: Oe, left: Oe.scrollLeft, top: Oe.scrollTop });
@@ -6571,13 +6584,13 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
                     _e = void 0;
                     var at = Ie.ref;
                     if (at !== null) {
-                      var Rt = Ie.stateNode;
+                      var Dt = Ie.stateNode;
                       switch (Ie.tag) {
                         case 5:
-                          _e = Rt;
+                          _e = Dt;
                           break;
                         default:
-                          _e = Rt;
+                          _e = Dt;
                       }
                       typeof at == "function" ? at(_e) : at.current = _e;
                     }
@@ -6634,7 +6647,7 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
           return Qe = t, Jn(), !0;
         }
         function Hl(e, t, n) {
-          Hr(e, t = Rl(e, t = cs(n, t), 1073741823)), (e = va(e, 1073741823)) !== null && xn(e);
+          Hr(e, t = Dl(e, t = cs(n, t), 1073741823)), (e = va(e, 1073741823)) !== null && xn(e);
         }
         function yo(e, t) {
           if (e.tag === 3) Hl(e, e, t);
@@ -6717,8 +6730,8 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
                 if (a = t.elementType, e !== null && (e.alternate = null, t.alternate = null, t.effectTag |= 2), e = t.pendingProps, function(ge) {
                   if (ge._status === -1) {
                     ge._status = 0;
-                    var De = ge._ctor;
-                    De = De(), ge._result = De, De.then(function(We) {
+                    var Re = ge._ctor;
+                    Re = Re(), ge._result = Re, Re.then(function(We) {
                       ge._status === 0 && (We = We.default, ge._status = 1, ge._result = We);
                     }, function(We) {
                       ge._status === 0 && (ge._status = 2, ge._result = We);
@@ -6940,7 +6953,7 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
             if (n.tag === 1) {
               var Z = n.type;
               if (hn(Z)) {
-                n = Ds(n, Z, T);
+                n = Rs(n, Z, T);
                 break e;
               }
             }
@@ -6990,7 +7003,7 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
             _a(t, k, e, a);
           } else {
             if (h = n._reactRootContainer = function(Y, ge) {
-              if (ge || (ge = !(!(ge = Y ? Y.nodeType === 9 ? Y.documentElement : Y.firstChild : null) || ge.nodeType !== 1 || !ge.hasAttribute("data-reactroot"))), !ge) for (var De; De = Y.lastChild; ) Y.removeChild(De);
+              if (ge || (ge = !(!(ge = Y ? Y.nodeType === 9 ? Y.documentElement : Y.firstChild : null) || ge.nodeType !== 1 || !ge.hasAttribute("data-reactroot"))), !ge) for (var Re; Re = Y.lastChild; ) Y.removeChild(Re);
               return new Ss(Y, 0, ge ? { hydrate: !0 } : void 0);
             }(n, o), k = h._internalRoot, typeof a == "function") {
               var Z = a;
@@ -7082,7 +7095,7 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
         };
         var Ql, Cs, Bc = { Events: [oo, Gn, ni, le, z, jr, function(e) {
           Yn(e, Ma);
-        }, D, ie, To, It, Ho, { current: !1 }] };
+        }, R, ie, To, It, Ho, { current: !1 }] };
         Cs = (Ql = { findFiberByHostInstance: Mr, bundleType: 0, version: "16.14.0", rendererPackageName: "react-dom" }).findFiberByHostInstance, function(e) {
           if (typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ > "u") return !1;
           var t = __REACT_DEVTOOLS_GLOBAL_HOOK__;
@@ -7245,7 +7258,7 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
           var l = q.sortIndex - me.sortIndex;
           return l !== 0 ? l : q.id - me.id;
         }
-        var ye = [], ee = [], de = 1, D = null, ie = 3, be = !1, Te = !1, we = !1;
+        var ye = [], ee = [], de = 1, R = null, ie = 3, be = !1, Te = !1, we = !1;
         function Pe(q) {
           for (var me = le(ee); me !== null; ) {
             if (me.callback === null) ne(ee);
@@ -7267,23 +7280,23 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
           Te = !1, we && (we = !1, _()), be = !0;
           var l = ie;
           try {
-            for (Pe(me), D = le(ye); D !== null && (!(D.expirationTime > me) || q && !g()); ) {
-              var f = D.callback;
+            for (Pe(me), R = le(ye); R !== null && (!(R.expirationTime > me) || q && !g()); ) {
+              var f = R.callback;
               if (f !== null) {
-                D.callback = null, ie = D.priorityLevel;
-                var w = f(D.expirationTime <= me);
-                me = i.unstable_now(), typeof w == "function" ? D.callback = w : D === le(ye) && ne(ye), Pe(me);
+                R.callback = null, ie = R.priorityLevel;
+                var w = f(R.expirationTime <= me);
+                me = i.unstable_now(), typeof w == "function" ? R.callback = w : R === le(ye) && ne(ye), Pe(me);
               } else ne(ye);
-              D = le(ye);
+              R = le(ye);
             }
-            if (D !== null) var U = !0;
+            if (R !== null) var U = !0;
             else {
               var F = le(ee);
               F !== null && r(Se, F.startTime - me), U = !1;
             }
             return U;
           } finally {
-            D = null, ie = l, be = !1;
+            R = null, ie = l, be = !1;
           }
         }
         function Je(q) {
@@ -7356,7 +7369,7 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
           var q = i.unstable_now();
           Pe(q);
           var me = le(ye);
-          return me !== D && D !== null && me !== null && me.callback !== null && me.startTime <= q && me.expirationTime < D.expirationTime || g();
+          return me !== R && R !== null && me !== null && me.callback !== null && me.startTime <= q && me.expirationTime < R.expirationTime || g();
         }, i.unstable_wrapCallback = function(q) {
           var me = ie;
           return function() {
@@ -7425,8 +7438,8 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
               return W = he === void 0 && je === void 0 ? new Uint8Array(W) : je === void 0 ? new Uint8Array(W, he) : new Uint8Array(W, he, je), y.TYPED_ARRAY_SUPPORT ? (F = W).__proto__ = y.prototype : F = G(F, W), F;
             }(l, f, w, U) : typeof f == "string" ? function(F, W, he) {
               if (typeof he == "string" && he !== "" || (he = "utf8"), !y.isEncoding(he)) throw new TypeError('"encoding" must be a valid string encoding');
-              var je = 0 | j(W, he), Re = (F = v(F, je)).write(W, he);
-              return Re !== je && (F = F.slice(0, Re)), F;
+              var je = 0 | j(W, he), De = (F = v(F, je)).write(W, he);
+              return De !== je && (F = F.slice(0, De)), F;
             }(l, f, w) : function(F, W) {
               if (y.isBuffer(W)) {
                 var he = 0 | K(W.length);
@@ -7531,10 +7544,10 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
             throw new TypeError("val must be string, number or Buffer");
           }
           function V(l, f, w, U, F) {
-            var W, he = 1, je = l.length, Re = f.length;
+            var W, he = 1, je = l.length, De = f.length;
             if (U !== void 0 && ((U = String(U).toLowerCase()) === "ucs2" || U === "ucs-2" || U === "utf16le" || U === "utf-16le")) {
               if (l.length < 2 || f.length < 2) return -1;
-              he = 2, je /= 2, Re /= 2, w /= 2;
+              he = 2, je /= 2, De /= 2, w /= 2;
             }
             function Xe(Jt, wt) {
               return he === 1 ? Jt[wt] : Jt.readUInt16BE(wt * he);
@@ -7542,10 +7555,10 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
             if (F) {
               var He = -1;
               for (W = w; W < je; W++) if (Xe(l, W) === Xe(f, He === -1 ? 0 : W - He)) {
-                if (He === -1 && (He = W), W - He + 1 === Re) return He * he;
+                if (He === -1 && (He = W), W - He + 1 === De) return He * he;
               } else He !== -1 && (W -= W - He), He = -1;
-            } else for (w + Re > je && (w = je - Re), W = w; W >= 0; W--) {
-              for (var At = !0, kt = 0; kt < Re; kt++) if (Xe(l, W + kt) !== Xe(f, kt)) {
+            } else for (w + De > je && (w = je - De), W = w; W >= 0; W--) {
+              for (var At = !0, kt = 0; kt < De; kt++) if (Xe(l, W + kt) !== Xe(f, kt)) {
                 At = !1;
                 break;
               }
@@ -7584,7 +7597,7 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
           }
           function ae(l, f, w, U) {
             return me(function(F, W) {
-              for (var he, je, Re, Xe = [], He = 0; He < F.length && !((W -= 2) < 0); ++He) he = F.charCodeAt(He), je = he >> 8, Re = he % 256, Xe.push(Re), Xe.push(je);
+              for (var he, je, De, Xe = [], He = 0; He < F.length && !((W -= 2) < 0); ++He) he = F.charCodeAt(He), je = he >> 8, De = he % 256, Xe.push(De), Xe.push(je);
               return Xe;
             }(f, l.length - w), l, w, U);
           }
@@ -7594,19 +7607,19 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
           function ne(l, f, w) {
             w = Math.min(l.length, w);
             for (var U = [], F = f; F < w; ) {
-              var W, he, je, Re, Xe = l[F], He = null, At = Xe > 239 ? 4 : Xe > 223 ? 3 : Xe > 191 ? 2 : 1;
+              var W, he, je, De, Xe = l[F], He = null, At = Xe > 239 ? 4 : Xe > 223 ? 3 : Xe > 191 ? 2 : 1;
               if (F + At <= w) switch (At) {
                 case 1:
                   Xe < 128 && (He = Xe);
                   break;
                 case 2:
-                  (192 & (W = l[F + 1])) == 128 && (Re = (31 & Xe) << 6 | 63 & W) > 127 && (He = Re);
+                  (192 & (W = l[F + 1])) == 128 && (De = (31 & Xe) << 6 | 63 & W) > 127 && (He = De);
                   break;
                 case 3:
-                  W = l[F + 1], he = l[F + 2], (192 & W) == 128 && (192 & he) == 128 && (Re = (15 & Xe) << 12 | (63 & W) << 6 | 63 & he) > 2047 && (Re < 55296 || Re > 57343) && (He = Re);
+                  W = l[F + 1], he = l[F + 2], (192 & W) == 128 && (192 & he) == 128 && (De = (15 & Xe) << 12 | (63 & W) << 6 | 63 & he) > 2047 && (De < 55296 || De > 57343) && (He = De);
                   break;
                 case 4:
-                  W = l[F + 1], he = l[F + 2], je = l[F + 3], (192 & W) == 128 && (192 & he) == 128 && (192 & je) == 128 && (Re = (15 & Xe) << 18 | (63 & W) << 12 | (63 & he) << 6 | 63 & je) > 65535 && Re < 1114112 && (He = Re);
+                  W = l[F + 1], he = l[F + 2], je = l[F + 3], (192 & W) == 128 && (192 & he) == 128 && (192 & je) == 128 && (De = (15 & Xe) << 18 | (63 & W) << 12 | (63 & he) << 6 | 63 & je) > 65535 && De < 1114112 && (He = De);
               }
               He === null ? (He = 65533, At = 1) : He > 65535 && (He -= 65536, U.push(He >>> 10 & 1023 | 55296), He = 56320 | 1023 & He), U.push(He), F += At;
             }
@@ -7710,8 +7723,8 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
             if (U >= F) return -1;
             if (f >= w) return 1;
             if (this === l) return 0;
-            for (var W = (F >>>= 0) - (U >>>= 0), he = (w >>>= 0) - (f >>>= 0), je = Math.min(W, he), Re = this.slice(U, F), Xe = l.slice(f, w), He = 0; He < je; ++He) if (Re[He] !== Xe[He]) {
-              W = Re[He], he = Xe[He];
+            for (var W = (F >>>= 0) - (U >>>= 0), he = (w >>>= 0) - (f >>>= 0), je = Math.min(W, he), De = this.slice(U, F), Xe = l.slice(f, w), He = 0; He < je; ++He) if (De[He] !== Xe[He]) {
+              W = De[He], he = Xe[He];
               break;
             }
             return W < he ? -1 : he < W ? 1 : 0;
@@ -7778,7 +7791,7 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
             for (var U = l.slice(f, w), F = "", W = 0; W < U.length; W += 2) F += String.fromCharCode(U[W] + 256 * U[W + 1]);
             return F;
           }
-          function D(l, f, w) {
+          function R(l, f, w) {
             if (l % 1 != 0 || l < 0) throw new RangeError("offset is not uint");
             if (l + f > w) throw new RangeError("Trying to access beyond buffer length");
           }
@@ -7815,53 +7828,53 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
             }
             return w;
           }, y.prototype.readUIntLE = function(l, f, w) {
-            l |= 0, f |= 0, w || D(l, f, this.length);
+            l |= 0, f |= 0, w || R(l, f, this.length);
             for (var U = this[l], F = 1, W = 0; ++W < f && (F *= 256); ) U += this[l + W] * F;
             return U;
           }, y.prototype.readUIntBE = function(l, f, w) {
-            l |= 0, f |= 0, w || D(l, f, this.length);
+            l |= 0, f |= 0, w || R(l, f, this.length);
             for (var U = this[l + --f], F = 1; f > 0 && (F *= 256); ) U += this[l + --f] * F;
             return U;
           }, y.prototype.readUInt8 = function(l, f) {
-            return f || D(l, 1, this.length), this[l];
+            return f || R(l, 1, this.length), this[l];
           }, y.prototype.readUInt16LE = function(l, f) {
-            return f || D(l, 2, this.length), this[l] | this[l + 1] << 8;
+            return f || R(l, 2, this.length), this[l] | this[l + 1] << 8;
           }, y.prototype.readUInt16BE = function(l, f) {
-            return f || D(l, 2, this.length), this[l] << 8 | this[l + 1];
+            return f || R(l, 2, this.length), this[l] << 8 | this[l + 1];
           }, y.prototype.readUInt32LE = function(l, f) {
-            return f || D(l, 4, this.length), (this[l] | this[l + 1] << 8 | this[l + 2] << 16) + 16777216 * this[l + 3];
+            return f || R(l, 4, this.length), (this[l] | this[l + 1] << 8 | this[l + 2] << 16) + 16777216 * this[l + 3];
           }, y.prototype.readUInt32BE = function(l, f) {
-            return f || D(l, 4, this.length), 16777216 * this[l] + (this[l + 1] << 16 | this[l + 2] << 8 | this[l + 3]);
+            return f || R(l, 4, this.length), 16777216 * this[l] + (this[l + 1] << 16 | this[l + 2] << 8 | this[l + 3]);
           }, y.prototype.readIntLE = function(l, f, w) {
-            l |= 0, f |= 0, w || D(l, f, this.length);
+            l |= 0, f |= 0, w || R(l, f, this.length);
             for (var U = this[l], F = 1, W = 0; ++W < f && (F *= 256); ) U += this[l + W] * F;
             return U >= (F *= 128) && (U -= Math.pow(2, 8 * f)), U;
           }, y.prototype.readIntBE = function(l, f, w) {
-            l |= 0, f |= 0, w || D(l, f, this.length);
+            l |= 0, f |= 0, w || R(l, f, this.length);
             for (var U = f, F = 1, W = this[l + --U]; U > 0 && (F *= 256); ) W += this[l + --U] * F;
             return W >= (F *= 128) && (W -= Math.pow(2, 8 * f)), W;
           }, y.prototype.readInt8 = function(l, f) {
-            return f || D(l, 1, this.length), 128 & this[l] ? -1 * (255 - this[l] + 1) : this[l];
+            return f || R(l, 1, this.length), 128 & this[l] ? -1 * (255 - this[l] + 1) : this[l];
           }, y.prototype.readInt16LE = function(l, f) {
-            f || D(l, 2, this.length);
+            f || R(l, 2, this.length);
             var w = this[l] | this[l + 1] << 8;
             return 32768 & w ? 4294901760 | w : w;
           }, y.prototype.readInt16BE = function(l, f) {
-            f || D(l, 2, this.length);
+            f || R(l, 2, this.length);
             var w = this[l + 1] | this[l] << 8;
             return 32768 & w ? 4294901760 | w : w;
           }, y.prototype.readInt32LE = function(l, f) {
-            return f || D(l, 4, this.length), this[l] | this[l + 1] << 8 | this[l + 2] << 16 | this[l + 3] << 24;
+            return f || R(l, 4, this.length), this[l] | this[l + 1] << 8 | this[l + 2] << 16 | this[l + 3] << 24;
           }, y.prototype.readInt32BE = function(l, f) {
-            return f || D(l, 4, this.length), this[l] << 24 | this[l + 1] << 16 | this[l + 2] << 8 | this[l + 3];
+            return f || R(l, 4, this.length), this[l] << 24 | this[l + 1] << 16 | this[l + 2] << 8 | this[l + 3];
           }, y.prototype.readFloatLE = function(l, f) {
-            return f || D(l, 4, this.length), _.read(this, l, !0, 23, 4);
+            return f || R(l, 4, this.length), _.read(this, l, !0, 23, 4);
           }, y.prototype.readFloatBE = function(l, f) {
-            return f || D(l, 4, this.length), _.read(this, l, !1, 23, 4);
+            return f || R(l, 4, this.length), _.read(this, l, !1, 23, 4);
           }, y.prototype.readDoubleLE = function(l, f) {
-            return f || D(l, 8, this.length), _.read(this, l, !0, 52, 8);
+            return f || R(l, 8, this.length), _.read(this, l, !0, 52, 8);
           }, y.prototype.readDoubleBE = function(l, f) {
-            return f || D(l, 8, this.length), _.read(this, l, !1, 52, 8);
+            return f || R(l, 8, this.length), _.read(this, l, !1, 52, 8);
           }, y.prototype.writeUIntLE = function(l, f, w, U) {
             l = +l, f |= 0, w |= 0, U || ie(this, l, f, w, Math.pow(2, 8 * w) - 1, 0);
             var F = 1, W = 0;
@@ -8521,26 +8534,26 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
           var A = Symbol.for;
           c = A("react.element"), r = A("react.portal"), _ = A("react.fragment"), g = A("react.strict_mode"), b = A("react.profiler"), v = A("react.provider"), y = A("react.context"), C = A("react.forward_ref"), x = A("react.suspense"), N = A("react.suspense_list"), G = A("react.memo"), K = A("react.lazy"), j = A("react.block"), B = A("react.server.block"), P = A("react.fundamental"), M = A("react.debug_trace_mode"), V = A("react.legacy_hidden");
         }
-        function J(D) {
-          if (typeof D == "object" && D !== null) {
-            var ie = D.$$typeof;
+        function J(R) {
+          if (typeof R == "object" && R !== null) {
+            var ie = R.$$typeof;
             switch (ie) {
               case c:
-                switch (D = D.type) {
+                switch (R = R.type) {
                   case _:
                   case b:
                   case g:
                   case x:
                   case N:
-                    return D;
+                    return R;
                   default:
-                    switch (D = D && D.$$typeof) {
+                    switch (R = R && R.$$typeof) {
                       case y:
                       case C:
                       case K:
                       case G:
                       case v:
-                        return D;
+                        return R;
                       default:
                         return ie;
                     }
@@ -8555,30 +8568,30 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
           return !1;
         }, i.isConcurrentMode = function() {
           return !1;
-        }, i.isContextConsumer = function(D) {
-          return J(D) === y;
-        }, i.isContextProvider = function(D) {
-          return J(D) === v;
-        }, i.isElement = function(D) {
-          return typeof D == "object" && D !== null && D.$$typeof === c;
-        }, i.isForwardRef = function(D) {
-          return J(D) === C;
-        }, i.isFragment = function(D) {
-          return J(D) === _;
-        }, i.isLazy = function(D) {
-          return J(D) === K;
-        }, i.isMemo = function(D) {
-          return J(D) === G;
-        }, i.isPortal = function(D) {
-          return J(D) === r;
-        }, i.isProfiler = function(D) {
-          return J(D) === b;
-        }, i.isStrictMode = function(D) {
-          return J(D) === g;
-        }, i.isSuspense = function(D) {
-          return J(D) === x;
-        }, i.isValidElementType = function(D) {
-          return typeof D == "string" || typeof D == "function" || D === _ || D === b || D === M || D === g || D === x || D === N || D === V || typeof D == "object" && D !== null && (D.$$typeof === K || D.$$typeof === G || D.$$typeof === v || D.$$typeof === y || D.$$typeof === C || D.$$typeof === P || D.$$typeof === j || D[0] === B);
+        }, i.isContextConsumer = function(R) {
+          return J(R) === y;
+        }, i.isContextProvider = function(R) {
+          return J(R) === v;
+        }, i.isElement = function(R) {
+          return typeof R == "object" && R !== null && R.$$typeof === c;
+        }, i.isForwardRef = function(R) {
+          return J(R) === C;
+        }, i.isFragment = function(R) {
+          return J(R) === _;
+        }, i.isLazy = function(R) {
+          return J(R) === K;
+        }, i.isMemo = function(R) {
+          return J(R) === G;
+        }, i.isPortal = function(R) {
+          return J(R) === r;
+        }, i.isProfiler = function(R) {
+          return J(R) === b;
+        }, i.isStrictMode = function(R) {
+          return J(R) === g;
+        }, i.isSuspense = function(R) {
+          return J(R) === x;
+        }, i.isValidElementType = function(R) {
+          return typeof R == "string" || typeof R == "function" || R === _ || R === b || R === M || R === g || R === x || R === N || R === V || typeof R == "object" && R !== null && (R.$$typeof === K || R.$$typeof === G || R.$$typeof === v || R.$$typeof === y || R.$$typeof === C || R.$$typeof === P || R.$$typeof === j || R[0] === B);
         }, i.typeOf = J;
       }, function(p, i, u) {
         Object.defineProperty(i, "__esModule", { value: !0 }), Object.defineProperty(i, "DraggableCore", { enumerable: !0, get: function() {
@@ -8589,12 +8602,12 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
           if (ee === null || K(ee) !== "object" && typeof ee != "function") return { default: ee };
           var de = G();
           if (de && de.has(ee)) return de.get(ee);
-          var D = {}, ie = Object.defineProperty && Object.getOwnPropertyDescriptor;
+          var R = {}, ie = Object.defineProperty && Object.getOwnPropertyDescriptor;
           for (var be in ee) if (Object.prototype.hasOwnProperty.call(ee, be)) {
             var Te = ie ? Object.getOwnPropertyDescriptor(ee, be) : null;
-            Te && (Te.get || Te.set) ? Object.defineProperty(D, be, Te) : D[be] = ee[be];
+            Te && (Te.get || Te.set) ? Object.defineProperty(R, be, Te) : R[be] = ee[be];
           }
-          return D.default = ee, de && de.set(ee, D), D;
+          return R.default = ee, de && de.set(ee, R), R;
         }(u(0)), r = N(u(18)), _ = N(u(12)), g = N(u(55)), b = u(32), v = u(40), y = u(20), C = N(u(57)), x = N(u(41));
         function N(ee) {
           return ee && ee.__esModule ? ee : { default: ee };
@@ -8616,15 +8629,15 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
         function j() {
           return (j = Object.assign || function(ee) {
             for (var de = 1; de < arguments.length; de++) {
-              var D = arguments[de];
-              for (var ie in D) Object.prototype.hasOwnProperty.call(D, ie) && (ee[ie] = D[ie]);
+              var R = arguments[de];
+              for (var ie in R) Object.prototype.hasOwnProperty.call(R, ie) && (ee[ie] = R[ie]);
             }
             return ee;
           }).apply(this, arguments);
         }
         function B(ee, de) {
           if (ee == null) return {};
-          var D, ie, be = function(we, Pe) {
+          var R, ie, be = function(we, Pe) {
             if (we == null) return {};
             var Se, ze, Je = {}, X = Object.keys(we);
             for (ze = 0; ze < X.length; ze++) Se = X[ze], Pe.indexOf(Se) >= 0 || (Je[Se] = we[Se]);
@@ -8632,18 +8645,18 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
           }(ee, de);
           if (Object.getOwnPropertySymbols) {
             var Te = Object.getOwnPropertySymbols(ee);
-            for (ie = 0; ie < Te.length; ie++) D = Te[ie], de.indexOf(D) >= 0 || Object.prototype.propertyIsEnumerable.call(ee, D) && (be[D] = ee[D]);
+            for (ie = 0; ie < Te.length; ie++) R = Te[ie], de.indexOf(R) >= 0 || Object.prototype.propertyIsEnumerable.call(ee, R) && (be[R] = ee[R]);
           }
           return be;
         }
         function P(ee, de) {
-          return function(D) {
-            if (Array.isArray(D)) return D;
-          }(ee) || function(D, ie) {
-            if (!(typeof Symbol > "u" || !(Symbol.iterator in Object(D)))) {
+          return function(R) {
+            if (Array.isArray(R)) return R;
+          }(ee) || function(R, ie) {
+            if (!(typeof Symbol > "u" || !(Symbol.iterator in Object(R)))) {
               var be = [], Te = !0, we = !1, Pe = void 0;
               try {
-                for (var Se, ze = D[Symbol.iterator](); !(Te = (Se = ze.next()).done) && (be.push(Se.value), !ie || be.length !== ie); Te = !0) ;
+                for (var Se, ze = R[Symbol.iterator](); !(Te = (Se = ze.next()).done) && (be.push(Se.value), !ie || be.length !== ie); Te = !0) ;
               } catch (Je) {
                 we = !0, Pe = Je;
               } finally {
@@ -8655,12 +8668,12 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
               }
               return be;
             }
-          }(ee, de) || function(D, ie) {
-            if (D) {
-              if (typeof D == "string") return M(D, ie);
-              var be = Object.prototype.toString.call(D).slice(8, -1);
-              if (be === "Object" && D.constructor && (be = D.constructor.name), be === "Map" || be === "Set") return Array.from(D);
-              if (be === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(be)) return M(D, ie);
+          }(ee, de) || function(R, ie) {
+            if (R) {
+              if (typeof R == "string") return M(R, ie);
+              var be = Object.prototype.toString.call(R).slice(8, -1);
+              if (be === "Object" && R.constructor && (be = R.constructor.name), be === "Map" || be === "Set") return Array.from(R);
+              if (be === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(be)) return M(R, ie);
             }
           }(ee, de) || function() {
             throw new TypeError(`Invalid attempt to destructure non-iterable instance.
@@ -8669,42 +8682,42 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         }
         function M(ee, de) {
           (de == null || de > ee.length) && (de = ee.length);
-          for (var D = 0, ie = new Array(de); D < de; D++) ie[D] = ee[D];
+          for (var R = 0, ie = new Array(de); R < de; R++) ie[R] = ee[R];
           return ie;
         }
         function V(ee, de) {
-          var D = Object.keys(ee);
+          var R = Object.keys(ee);
           if (Object.getOwnPropertySymbols) {
             var ie = Object.getOwnPropertySymbols(ee);
             de && (ie = ie.filter(function(be) {
               return Object.getOwnPropertyDescriptor(ee, be).enumerable;
-            })), D.push.apply(D, ie);
+            })), R.push.apply(R, ie);
           }
-          return D;
+          return R;
         }
         function A(ee) {
           for (var de = 1; de < arguments.length; de++) {
-            var D = arguments[de] != null ? arguments[de] : {};
-            de % 2 ? V(Object(D), !0).forEach(function(ie) {
-              ce(ee, ie, D[ie]);
-            }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(ee, Object.getOwnPropertyDescriptors(D)) : V(Object(D)).forEach(function(ie) {
-              Object.defineProperty(ee, ie, Object.getOwnPropertyDescriptor(D, ie));
+            var R = arguments[de] != null ? arguments[de] : {};
+            de % 2 ? V(Object(R), !0).forEach(function(ie) {
+              ce(ee, ie, R[ie]);
+            }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(ee, Object.getOwnPropertyDescriptors(R)) : V(Object(R)).forEach(function(ie) {
+              Object.defineProperty(ee, ie, Object.getOwnPropertyDescriptor(R, ie));
             });
           }
           return ee;
         }
         function J(ee, de) {
-          for (var D = 0; D < de.length; D++) {
-            var ie = de[D];
+          for (var R = 0; R < de.length; R++) {
+            var ie = de[R];
             ie.enumerable = ie.enumerable || !1, ie.configurable = !0, "value" in ie && (ie.writable = !0), Object.defineProperty(ee, ie.key, ie);
           }
         }
-        function Q(ee, de, D) {
-          return de && J(ee.prototype, de), D && J(ee, D), ee;
+        function Q(ee, de, R) {
+          return de && J(ee.prototype, de), R && J(ee, R), ee;
         }
         function z(ee, de) {
-          return (z = Object.setPrototypeOf || function(D, ie) {
-            return D.__proto__ = ie, D;
+          return (z = Object.setPrototypeOf || function(R, ie) {
+            return R.__proto__ = ie, R;
           })(ee, de);
         }
         function I(ee) {
@@ -8719,12 +8732,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             }
           }();
           return function() {
-            var D, ie = ne(ee);
+            var R, ie = ne(ee);
             if (de) {
               var be = ne(this).constructor;
-              D = Reflect.construct(ie, arguments, be);
-            } else D = ie.apply(this, arguments);
-            return ae(this, D);
+              R = Reflect.construct(ie, arguments, be);
+            } else R = ie.apply(this, arguments);
+            return ae(this, R);
           };
         }
         function ae(ee, de) {
@@ -8739,20 +8752,20 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             return de.__proto__ || Object.getPrototypeOf(de);
           })(ee);
         }
-        function ce(ee, de, D) {
-          return de in ee ? Object.defineProperty(ee, de, { value: D, enumerable: !0, configurable: !0, writable: !0 }) : ee[de] = D, ee;
+        function ce(ee, de, R) {
+          return de in ee ? Object.defineProperty(ee, de, { value: R, enumerable: !0, configurable: !0, writable: !0 }) : ee[de] = R, ee;
         }
         var ye = function(ee) {
           (function(ie, be) {
             if (typeof be != "function" && be !== null) throw new TypeError("Super expression must either be null or a function");
             ie.prototype = Object.create(be && be.prototype, { constructor: { value: ie, writable: !0, configurable: !0 } }), be && z(ie, be);
-          })(D, ee);
-          var de = I(D);
-          function D(ie) {
+          })(R, ee);
+          var de = I(R);
+          function R(ie) {
             var be;
             return function(Te, we) {
               if (!(Te instanceof we)) throw new TypeError("Cannot call a class as a function");
-            }(this, D), ce(le(be = de.call(this, ie)), "onDragStart", function(Te, we) {
+            }(this, R), ce(le(be = de.call(this, ie)), "onDragStart", function(Te, we) {
               if ((0, x.default)("Draggable: onDragStart: %j", we), be.props.onStart(Te, (0, v.createDraggableData)(le(be), we)) === !1) return !1;
               be.setState({ dragging: !0, dragged: !0 });
             }), ce(le(be), "onDrag", function(Te, we) {
@@ -8778,10 +8791,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               be.setState(Pe);
             }), be.state = { dragging: !1, dragged: !1, x: ie.position ? ie.position.x : ie.defaultPosition.x, y: ie.position ? ie.position.y : ie.defaultPosition.y, prevPropsPosition: A({}, ie.position), slackX: 0, slackY: 0, isElementSVG: !1 }, !ie.position || ie.onDrag || ie.onStop || console.warn("A `position` was applied to this <Draggable>, without drag handlers. This will make this component effectively undraggable. Please attach `onDrag` or `onStop` handlers so you can adjust the `position` of this element."), be;
           }
-          return Q(D, null, [{ key: "getDerivedStateFromProps", value: function(ie, be) {
+          return Q(R, null, [{ key: "getDerivedStateFromProps", value: function(ie, be) {
             var Te = ie.position, we = be.prevPropsPosition;
             return !Te || we && Te.x === we.x && Te.y === we.y ? null : ((0, x.default)("Draggable: getDerivedStateFromProps %j", { position: Te, prevPropsPosition: we }), { x: Te.x, y: Te.y, prevPropsPosition: A({}, Te) });
-          } }]), Q(D, [{ key: "componentDidMount", value: function() {
+          } }]), Q(R, [{ key: "componentDidMount", value: function() {
             window.SVGElement !== void 0 && this.findDOMNode() instanceof window.SVGElement && this.setState({ isElementSVG: !0 });
           } }, { key: "componentWillUnmount", value: function() {
             this.setState({ dragging: !1 });
@@ -8792,7 +8805,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             this.state.isElementSVG ? l = (0, b.createSVGTransform)(U, X) : me = (0, b.createCSSTransform)(U, X);
             var F = (0, g.default)(Te.props.className || "", Pe, (ce(ie = {}, Se, this.state.dragging), ce(ie, ze, this.state.dragged), ie));
             return c.createElement(C.default, j({}, q, { onStart: this.onDragStart, onDrag: this.onDrag, onStop: this.onDragStop }), c.cloneElement(c.Children.only(Te), { className: F, style: A(A({}, Te.props.style), me), transform: l }));
-          } }]), D;
+          } }]), R;
         }(c.Component);
         i.default = ye, ce(ye, "displayName", "Draggable"), ce(ye, "propTypes", A(A({}, C.default.propTypes), {}, { axis: r.default.oneOf(["both", "x", "y", "none"]), bounds: r.default.oneOfType([r.default.shape({ left: r.default.number, right: r.default.number, top: r.default.number, bottom: r.default.number }), r.default.string, r.default.oneOf([!1])]), defaultClassName: r.default.string, defaultClassNameDragging: r.default.string, defaultClassNameDragged: r.default.string, defaultPosition: r.default.shape({ x: r.default.number, y: r.default.number }), positionOffset: r.default.shape({ x: r.default.oneOfType([r.default.number, r.default.string]), y: r.default.oneOfType([r.default.number, r.default.string]) }), position: r.default.shape({ x: r.default.number, y: r.default.number }), className: y.dontSetMe, style: y.dontSetMe, transform: y.dontSetMe })), ce(ye, "defaultProps", A(A({}, C.default.defaultProps), {}, { axis: "both", bounds: !1, defaultClassName: "react-draggable", defaultClassNameDragging: "react-draggable-dragging", defaultClassNameDragged: "react-draggable-dragged", defaultPosition: { x: 0, y: 0 }, position: null, scale: 1 }));
       }, function(p, i, u) {
@@ -8872,8 +8885,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           if (ce && ce.has(ne)) return ce.get(ne);
           var ye = {}, ee = Object.defineProperty && Object.getOwnPropertyDescriptor;
           for (var de in ne) if (Object.prototype.hasOwnProperty.call(ne, de)) {
-            var D = ee ? Object.getOwnPropertyDescriptor(ne, de) : null;
-            D && (D.get || D.set) ? Object.defineProperty(ye, de, D) : ye[de] = ne[de];
+            var R = ee ? Object.getOwnPropertyDescriptor(ne, de) : null;
+            R && (R.get || R.set) ? Object.defineProperty(ye, de, R) : ye[de] = ne[de];
           }
           return ye.default = ne, ce && ce.set(ne, ye), ye;
         }(u(0)), r = C(u(18)), _ = C(u(12)), g = u(32), b = u(40), v = u(20), y = C(u(41));
@@ -8899,14 +8912,14 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             if (Array.isArray(ye)) return ye;
           }(ne) || function(ye, ee) {
             if (!(typeof Symbol > "u" || !(Symbol.iterator in Object(ye)))) {
-              var de = [], D = !0, ie = !1, be = void 0;
+              var de = [], R = !0, ie = !1, be = void 0;
               try {
-                for (var Te, we = ye[Symbol.iterator](); !(D = (Te = we.next()).done) && (de.push(Te.value), !ee || de.length !== ee); D = !0) ;
+                for (var Te, we = ye[Symbol.iterator](); !(R = (Te = we.next()).done) && (de.push(Te.value), !ee || de.length !== ee); R = !0) ;
               } catch (Pe) {
                 ie = !0, be = Pe;
               } finally {
                 try {
-                  D || we.return == null || we.return();
+                  R || we.return == null || we.return();
                 } finally {
                   if (ie) throw be;
                 }
@@ -8980,78 +8993,78 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           return ce in ne ? Object.defineProperty(ne, ce, { value: ye, enumerable: !0, configurable: !0, writable: !0 }) : ne[ce] = ye, ne;
         }
         var z = { start: "touchstart", move: "touchmove", stop: "touchend" }, I = { start: "mousedown", move: "mousemove", stop: "mouseup" }, ae = I, le = function(ne) {
-          (function(D, ie) {
+          (function(R, ie) {
             if (typeof ie != "function" && ie !== null) throw new TypeError("Super expression must either be null or a function");
-            D.prototype = Object.create(ie && ie.prototype, { constructor: { value: D, writable: !0, configurable: !0 } }), ie && P(D, ie);
+            R.prototype = Object.create(ie && ie.prototype, { constructor: { value: R, writable: !0, configurable: !0 } }), ie && P(R, ie);
           })(de, ne);
           var ce, ye, ee = M(de);
           function de() {
-            var D;
+            var R;
             j(this, de);
             for (var ie = arguments.length, be = new Array(ie), Te = 0; Te < ie; Te++) be[Te] = arguments[Te];
-            return Q(A(D = ee.call.apply(ee, [this].concat(be))), "state", { dragging: !1, lastX: NaN, lastY: NaN, touchIdentifier: null }), Q(A(D), "mounted", !1), Q(A(D), "handleDragStart", function(we) {
-              if (D.props.onMouseDown(we), !D.props.allowAnyClick && typeof we.button == "number" && we.button !== 0) return !1;
-              var Pe = D.findDOMNode();
+            return Q(A(R = ee.call.apply(ee, [this].concat(be))), "state", { dragging: !1, lastX: NaN, lastY: NaN, touchIdentifier: null }), Q(A(R), "mounted", !1), Q(A(R), "handleDragStart", function(we) {
+              if (R.props.onMouseDown(we), !R.props.allowAnyClick && typeof we.button == "number" && we.button !== 0) return !1;
+              var Pe = R.findDOMNode();
               if (!Pe || !Pe.ownerDocument || !Pe.ownerDocument.body) throw new Error("<DraggableCore> not mounted on DragStart!");
               var Se = Pe.ownerDocument;
-              if (!(D.props.disabled || !(we.target instanceof Se.defaultView.Node) || D.props.handle && !(0, g.matchesSelectorAndParentsTo)(we.target, D.props.handle, Pe) || D.props.cancel && (0, g.matchesSelectorAndParentsTo)(we.target, D.props.cancel, Pe))) {
+              if (!(R.props.disabled || !(we.target instanceof Se.defaultView.Node) || R.props.handle && !(0, g.matchesSelectorAndParentsTo)(we.target, R.props.handle, Pe) || R.props.cancel && (0, g.matchesSelectorAndParentsTo)(we.target, R.props.cancel, Pe))) {
                 we.type === "touchstart" && we.preventDefault();
                 var ze = (0, g.getTouchIdentifier)(we);
-                D.setState({ touchIdentifier: ze });
-                var Je = (0, b.getControlPosition)(we, ze, A(D));
+                R.setState({ touchIdentifier: ze });
+                var Je = (0, b.getControlPosition)(we, ze, A(R));
                 if (Je != null) {
-                  var X = Je.x, q = Je.y, me = (0, b.createCoreData)(A(D), X, q);
-                  (0, y.default)("DraggableCore: handleDragStart: %j", me), (0, y.default)("calling", D.props.onStart), D.props.onStart(we, me) !== !1 && D.mounted !== !1 && (D.props.enableUserSelectHack && (0, g.addUserSelectStyles)(Se), D.setState({ dragging: !0, lastX: X, lastY: q }), (0, g.addEvent)(Se, ae.move, D.handleDrag), (0, g.addEvent)(Se, ae.stop, D.handleDragStop));
+                  var X = Je.x, q = Je.y, me = (0, b.createCoreData)(A(R), X, q);
+                  (0, y.default)("DraggableCore: handleDragStart: %j", me), (0, y.default)("calling", R.props.onStart), R.props.onStart(we, me) !== !1 && R.mounted !== !1 && (R.props.enableUserSelectHack && (0, g.addUserSelectStyles)(Se), R.setState({ dragging: !0, lastX: X, lastY: q }), (0, g.addEvent)(Se, ae.move, R.handleDrag), (0, g.addEvent)(Se, ae.stop, R.handleDragStop));
                 }
               }
-            }), Q(A(D), "handleDrag", function(we) {
-              var Pe = (0, b.getControlPosition)(we, D.state.touchIdentifier, A(D));
+            }), Q(A(R), "handleDrag", function(we) {
+              var Pe = (0, b.getControlPosition)(we, R.state.touchIdentifier, A(R));
               if (Pe != null) {
                 var Se = Pe.x, ze = Pe.y;
-                if (Array.isArray(D.props.grid)) {
-                  var Je = Se - D.state.lastX, X = ze - D.state.lastY, q = G((0, b.snapToGrid)(D.props.grid, Je, X), 2);
+                if (Array.isArray(R.props.grid)) {
+                  var Je = Se - R.state.lastX, X = ze - R.state.lastY, q = G((0, b.snapToGrid)(R.props.grid, Je, X), 2);
                   if (Je = q[0], X = q[1], !Je && !X) return;
-                  Se = D.state.lastX + Je, ze = D.state.lastY + X;
+                  Se = R.state.lastX + Je, ze = R.state.lastY + X;
                 }
-                var me = (0, b.createCoreData)(A(D), Se, ze);
-                if ((0, y.default)("DraggableCore: handleDrag: %j", me), D.props.onDrag(we, me) !== !1 && D.mounted !== !1) D.setState({ lastX: Se, lastY: ze });
+                var me = (0, b.createCoreData)(A(R), Se, ze);
+                if ((0, y.default)("DraggableCore: handleDrag: %j", me), R.props.onDrag(we, me) !== !1 && R.mounted !== !1) R.setState({ lastX: Se, lastY: ze });
                 else try {
-                  D.handleDragStop(new MouseEvent("mouseup"));
+                  R.handleDragStop(new MouseEvent("mouseup"));
                 } catch {
                   var l = document.createEvent("MouseEvents");
-                  l.initMouseEvent("mouseup", !0, !0, window, 0, 0, 0, 0, 0, !1, !1, !1, !1, 0, null), D.handleDragStop(l);
+                  l.initMouseEvent("mouseup", !0, !0, window, 0, 0, 0, 0, 0, !1, !1, !1, !1, 0, null), R.handleDragStop(l);
                 }
               }
-            }), Q(A(D), "handleDragStop", function(we) {
-              if (D.state.dragging) {
-                var Pe = (0, b.getControlPosition)(we, D.state.touchIdentifier, A(D));
+            }), Q(A(R), "handleDragStop", function(we) {
+              if (R.state.dragging) {
+                var Pe = (0, b.getControlPosition)(we, R.state.touchIdentifier, A(R));
                 if (Pe != null) {
-                  var Se = Pe.x, ze = Pe.y, Je = (0, b.createCoreData)(A(D), Se, ze);
-                  if (D.props.onStop(we, Je) === !1 || D.mounted === !1) return !1;
-                  var X = D.findDOMNode();
-                  X && D.props.enableUserSelectHack && (0, g.removeUserSelectStyles)(X.ownerDocument), (0, y.default)("DraggableCore: handleDragStop: %j", Je), D.setState({ dragging: !1, lastX: NaN, lastY: NaN }), X && ((0, y.default)("DraggableCore: Removing handlers"), (0, g.removeEvent)(X.ownerDocument, ae.move, D.handleDrag), (0, g.removeEvent)(X.ownerDocument, ae.stop, D.handleDragStop));
+                  var Se = Pe.x, ze = Pe.y, Je = (0, b.createCoreData)(A(R), Se, ze);
+                  if (R.props.onStop(we, Je) === !1 || R.mounted === !1) return !1;
+                  var X = R.findDOMNode();
+                  X && R.props.enableUserSelectHack && (0, g.removeUserSelectStyles)(X.ownerDocument), (0, y.default)("DraggableCore: handleDragStop: %j", Je), R.setState({ dragging: !1, lastX: NaN, lastY: NaN }), X && ((0, y.default)("DraggableCore: Removing handlers"), (0, g.removeEvent)(X.ownerDocument, ae.move, R.handleDrag), (0, g.removeEvent)(X.ownerDocument, ae.stop, R.handleDragStop));
                 }
               }
-            }), Q(A(D), "onMouseDown", function(we) {
-              return ae = I, D.handleDragStart(we);
-            }), Q(A(D), "onMouseUp", function(we) {
-              return ae = I, D.handleDragStop(we);
-            }), Q(A(D), "onTouchStart", function(we) {
-              return ae = z, D.handleDragStart(we);
-            }), Q(A(D), "onTouchEnd", function(we) {
-              return ae = z, D.handleDragStop(we);
-            }), D;
+            }), Q(A(R), "onMouseDown", function(we) {
+              return ae = I, R.handleDragStart(we);
+            }), Q(A(R), "onMouseUp", function(we) {
+              return ae = I, R.handleDragStop(we);
+            }), Q(A(R), "onTouchStart", function(we) {
+              return ae = z, R.handleDragStart(we);
+            }), Q(A(R), "onTouchEnd", function(we) {
+              return ae = z, R.handleDragStop(we);
+            }), R;
           }
           return ce = de, (ye = [{ key: "componentDidMount", value: function() {
             this.mounted = !0;
-            var D = this.findDOMNode();
-            D && (0, g.addEvent)(D, z.start, this.onTouchStart, { passive: !1 });
+            var R = this.findDOMNode();
+            R && (0, g.addEvent)(R, z.start, this.onTouchStart, { passive: !1 });
           } }, { key: "componentWillUnmount", value: function() {
             this.mounted = !1;
-            var D = this.findDOMNode();
-            if (D) {
-              var ie = D.ownerDocument;
-              (0, g.removeEvent)(ie, I.move, this.handleDrag), (0, g.removeEvent)(ie, z.move, this.handleDrag), (0, g.removeEvent)(ie, I.stop, this.handleDragStop), (0, g.removeEvent)(ie, z.stop, this.handleDragStop), (0, g.removeEvent)(D, z.start, this.onTouchStart, { passive: !1 }), this.props.enableUserSelectHack && (0, g.removeUserSelectStyles)(ie);
+            var R = this.findDOMNode();
+            if (R) {
+              var ie = R.ownerDocument;
+              (0, g.removeEvent)(ie, I.move, this.handleDrag), (0, g.removeEvent)(ie, z.move, this.handleDrag), (0, g.removeEvent)(ie, I.stop, this.handleDragStop), (0, g.removeEvent)(ie, z.stop, this.handleDragStop), (0, g.removeEvent)(R, z.start, this.onTouchStart, { passive: !1 }), this.props.enableUserSelectHack && (0, g.removeUserSelectStyles)(ie);
             }
           } }, { key: "findDOMNode", value: function() {
             return this.props.nodeRef ? this.props.nodeRef.current : _.default.findDOMNode(this);
@@ -9198,12 +9211,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             for (var ye = arguments.length, ee = Array(ye), de = 0; de < ye; de++) ee[de] = arguments[de];
             return ne = ce = B(this, (le = ae.__proto__ || Object.getPrototypeOf(ae)).call.apply(le, [this].concat(ee))), ce.removePortal = function() {
               !V && b.default.unmountComponentAtNode(ce.node);
-              var D = Q(ce.props.parentSelector);
-              D && D.contains(ce.node) ? D.removeChild(ce.node) : console.warn('React-Modal: "parentSelector" prop did not returned any DOM element. Make sure that the parent element is unmounted to avoid any memory leaks.');
-            }, ce.portalRef = function(D) {
-              ce.portal = D;
-            }, ce.renderPortal = function(D) {
-              var ie = J()(ce, g.default.createElement(y.default, c({ defaultStyles: ae.defaultStyles }, D)), ce.node);
+              var R = Q(ce.props.parentSelector);
+              R && R.contains(ce.node) ? R.removeChild(ce.node) : console.warn('React-Modal: "parentSelector" prop did not returned any DOM element. Make sure that the parent element is unmounted to avoid any memory leaks.');
+            }, ce.portalRef = function(R) {
+              ce.portal = R;
+            }, ce.renderPortal = function(R) {
+              var ie = J()(ce, g.default.createElement(y.default, c({ defaultStyles: ae.defaultStyles }, R)), ce.node);
               ce.portalRef(ie);
             }, B(ce, ne);
           }
@@ -9218,8 +9231,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             if (x.canUseDOM) {
               var ye = this.props, ee = ye.isOpen, de = ye.portalClassName;
               le.portalClassName !== de && (this.node.className = de);
-              var D = ce.prevParent, ie = ce.nextParent;
-              ie !== D && (D.removeChild(this.node), ie.appendChild(this.node)), (le.isOpen || ee) && !V && this.renderPortal(this.props);
+              var R = ce.prevParent, ie = ce.nextParent;
+              ie !== R && (R.removeChild(this.node), ie.appendChild(this.node)), (le.isOpen || ee) && !V && this.renderPortal(this.props);
             }
           } }, { key: "componentWillUnmount", value: function() {
             if (x.canUseDOM && this.node && this.portal) {
@@ -9349,8 +9362,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           } }, { key: "render", value: function() {
             var Q = this.props, z = Q.id, I = Q.className, ae = Q.overlayClassName, le = Q.defaultStyles, ne = Q.children, ce = I ? {} : le.content, ye = ae ? {} : le.overlay;
             if (this.shouldBeClosed()) return null;
-            var ee = { ref: this.setOverlayRef, className: this.buildClassName("overlay", ae), style: c({}, ye, this.props.style.overlay), onClick: this.handleOverlayOnClick, onMouseDown: this.handleOverlayOnMouseDown }, de = c({ id: z, ref: this.setContentRef, style: c({}, ce, this.props.style.content), className: this.buildClassName("content", I), tabIndex: "-1", onKeyDown: this.handleKeyDown, onMouseDown: this.handleContentOnMouseDown, onMouseUp: this.handleContentOnMouseUp, onClick: this.handleContentOnClick, role: this.props.role, "aria-label": this.props.contentLabel }, this.attributesFromObject("aria", c({ modal: !0 }, this.props.aria)), this.attributesFromObject("data", this.props.data || {}), { "data-testid": this.props.testId }), D = this.props.contentElement(de, ne);
-            return this.props.overlayElement(ee, D);
+            var ee = { ref: this.setOverlayRef, className: this.buildClassName("overlay", ae), style: c({}, ye, this.props.style.overlay), onClick: this.handleOverlayOnClick, onMouseDown: this.handleOverlayOnMouseDown }, de = c({ id: z, ref: this.setContentRef, style: c({}, ce, this.props.style.content), className: this.buildClassName("content", I), tabIndex: "-1", onKeyDown: this.handleKeyDown, onMouseDown: this.handleContentOnMouseDown, onMouseUp: this.handleContentOnMouseUp, onClick: this.handleContentOnClick, role: this.props.role, "aria-label": this.props.contentLabel }, this.attributesFromObject("aria", c({ modal: !0 }, this.props.aria)), this.attributesFromObject("data", this.props.data || {}), { "data-testid": this.props.testId }), R = this.props.contentElement(de, ne);
+            return this.props.overlayElement(ee, R);
           } }]), J;
         }(g.Component);
         V.defaultProps = { style: { overlay: {}, content: {} }, defaultStyles: {} }, V.propTypes = { isOpen: b.default.bool.isRequired, defaultStyles: b.default.shape({ content: b.default.object, overlay: b.default.object }), style: b.default.shape({ content: b.default.object, overlay: b.default.object }), className: b.default.oneOfType([b.default.string, b.default.object]), overlayClassName: b.default.oneOfType([b.default.string, b.default.object]), bodyOpenClassName: b.default.string, htmlOpenClassName: b.default.string, ariaHideApp: b.default.bool, appElement: b.default.oneOfType([b.default.instanceOf(G.default), b.default.instanceOf(N.SafeHTMLCollection), b.default.instanceOf(N.SafeNodeList), b.default.arrayOf(b.default.instanceOf(G.default))]), onAfterOpen: b.default.func, onAfterClose: b.default.func, onRequestClose: b.default.func, closeTimeoutMS: b.default.number, shouldFocusAfterRender: b.default.bool, shouldCloseOnOverlayClick: b.default.bool, shouldReturnFocusAfterClose: b.default.bool, preventScroll: b.default.bool, role: b.default.string, contentLabel: b.default.string, aria: b.default.object, data: b.default.object, children: b.default.node, shouldCloseOnEsc: b.default.bool, overlayRef: b.default.func, contentRef: b.default.func, id: b.default.string, overlayElement: b.default.func, contentElement: b.default.func, testId: b.default.string }, i.default = V, p.exports = i.default;
@@ -9707,7 +9720,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
         function de(E, s, d, m, S, O, L) {
           E.current = m, s.current = S, d.current = !1, O.current && (O.current = null, L());
         }
-        function D(E, s, d, m, S, O, L, re, fe, pe) {
+        function R(E, s, d, m, S, O, L, re, fe, pe) {
           if (E) {
             var Ee = !1, Ne = null, Ve = function() {
               if (!Ee) {
@@ -9734,7 +9747,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             return "ConnectAdvanced(" + Le + ")";
           } : m, O = d.methodName, L = O === void 0 ? "connectAdvanced" : O, re = d.renderCountProp, fe = re === void 0 ? void 0 : re, pe = d.shouldHandleStateChanges, Ee = pe === void 0 || pe, Ne = d.storeKey, Ve = Ne === void 0 ? "store" : Ne, Ae = (d.withRef, d.forwardRef), Ke = Ae !== void 0 && Ae, Me = d.context, Fe = Me === void 0 ? G : Me, et = J(d, ae), qe = Fe;
           return function(Le) {
-            var dt = Le.displayName || Le.name || "Component", Dt = S(dt), Mt = A({}, et, { getDisplayName: S, methodName: L, renderCountProp: fe, shouldHandleStateChanges: Ee, storeKey: Ve, displayName: Dt, wrappedComponentName: dt, WrappedComponent: Le }), jt = et.pure, _t = jt ? c.useMemo : function(lt) {
+            var dt = Le.displayName || Le.name || "Component", Rt = S(dt), Mt = A({}, et, { getDisplayName: S, methodName: L, renderCountProp: fe, shouldHandleStateChanges: Ee, storeKey: Ve, displayName: Rt, wrappedComponentName: dt, WrappedComponent: Le }), jt = et.pure, _t = jt ? c.useMemo : function(lt) {
               return lt();
             };
             function zt(lt) {
@@ -9760,7 +9773,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
               var Ui = Object(c.useRef)(), gr = Object(c.useRef)(xt), Mo = Object(c.useRef)(), ii = Object(c.useRef)(!1), Zn = _t(function() {
                 return Mo.current && xt === gr.current ? Mo.current : Xn(dn.getState(), xt);
               }, [dn, Io, xt]);
-              ee(de, [gr, Ui, ii, xt, Zn, Mo, Lr]), ee(D, [Ee, dn, fn, Xn, gr, Ui, ii, Mo, Lr, mr], [dn, fn, Xn]);
+              ee(de, [gr, Ui, ii, xt, Zn, Mo, Lr]), ee(R, [Ee, dn, fn, Xn, gr, Ui, ii, Mo, Lr, mr], [dn, fn, Xn]);
               var ao = Object(c.useMemo)(function() {
                 return r.a.createElement(Le, A({}, Zn, { ref: zr }));
               }, [zr, Le, Zn]);
@@ -9769,11 +9782,11 @@ https://fb.me/react-async-component-lifecycle-hooks`);
               }, [io, ao, oi]);
             }
             var ft = jt ? r.a.memo(zt) : zt;
-            if (ft.WrappedComponent = Le, ft.displayName = zt.displayName = Dt, Ke) {
+            if (ft.WrappedComponent = Le, ft.displayName = zt.displayName = Rt, Ke) {
               var An = r.a.forwardRef(function(lt, In) {
                 return r.a.createElement(ft, A({}, lt, { reactReduxForwardedRef: In }));
               });
-              return An.displayName = Dt, An.WrappedComponent = Le, z()(An, Le);
+              return An.displayName = Rt, An.WrappedComponent = Le, z()(An, Le);
             }
             return z()(ft, Le);
           };
@@ -9895,13 +9908,13 @@ https://fb.me/react-async-component-lifecycle-hooks`);
           var s = {}, d = s.connectHOC, m = d === void 0 ? be : d, S = s.mapStateToPropsFactories, O = S === void 0 ? X : S, L = s.mapDispatchToPropsFactories, re = L === void 0 ? Je : L, fe = s.mergePropsFactories, pe = fe === void 0 ? me : fe, Ee = s.selectorFactory, Ne = Ee === void 0 ? U : Ee;
           return function(Ve, Ae, Ke, Me) {
             Me === void 0 && (Me = {});
-            var Fe = Me, et = Fe.pure, qe = et === void 0 || et, Le = Fe.areStatesEqual, dt = Le === void 0 ? he : Le, Dt = Fe.areOwnPropsEqual, Mt = Dt === void 0 ? we : Dt, jt = Fe.areStatePropsEqual, _t = jt === void 0 ? we : jt, zt = Fe.areMergedPropsEqual, ft = zt === void 0 ? we : zt, An = J(Fe, F), lt = W(Ve, O, "mapStateToProps"), In = W(Ae, re, "mapDispatchToProps"), Hn = W(Ke, pe, "mergeProps");
+            var Fe = Me, et = Fe.pure, qe = et === void 0 || et, Le = Fe.areStatesEqual, dt = Le === void 0 ? he : Le, Rt = Fe.areOwnPropsEqual, Mt = Rt === void 0 ? we : Rt, jt = Fe.areStatePropsEqual, _t = jt === void 0 ? we : jt, zt = Fe.areMergedPropsEqual, ft = zt === void 0 ? we : zt, An = J(Fe, F), lt = W(Ve, O, "mapStateToProps"), In = W(Ae, re, "mapDispatchToProps"), Hn = W(Ke, pe, "mergeProps");
             return m(Ne, A({ methodName: "connect", getDisplayName: function(zr) {
               return "Connect(" + zr + ")";
             }, shouldHandleStateChanges: !!Ve, initMapStateToProps: lt, initMapDispatchToProps: In, initMergeProps: Hn, pure: qe, areStatesEqual: dt, areOwnPropsEqual: Mt, areStatePropsEqual: _t, areMergedPropsEqual: ft }, An));
           };
         }
-        var Re = je(), Xe;
+        var De = je(), Xe;
         Xe = _.unstable_batchedUpdates, K = Xe;
         function He(E) {
           return { type: "SET_MODEL_ACTIVE_TAB", tabName: E };
@@ -10342,8 +10355,8 @@ https://fb.me/react-async-component-lifecycle-hooks`);
           }, s.prototype.calculateNewSizeFromAspectRatio = function(d, m, S, O) {
             var L = this.props, re = L.lockAspectRatio, fe = L.lockAspectRatioExtraHeight, pe = L.lockAspectRatioExtraWidth, Ee = O.width === void 0 ? 10 : O.width, Ne = S.width === void 0 || S.width < 0 ? d : S.width, Ve = O.height === void 0 ? 10 : O.height, Ae = S.height === void 0 || S.height < 0 ? m : S.height, Ke = fe || 0, Me = pe || 0;
             if (re) {
-              var Fe = (Ve - Ke) * this.ratio + Me, et = (Ae - Ke) * this.ratio + Me, qe = (Ee - Me) / this.ratio + Ke, Le = (Ne - Me) / this.ratio + Ke, dt = Math.max(Ee, Fe), Dt = Math.min(Ne, et), Mt = Math.max(Ve, qe), jt = Math.min(Ae, Le);
-              d = Pt(d, dt, Dt), m = Pt(m, Mt, jt);
+              var Fe = (Ve - Ke) * this.ratio + Me, et = (Ae - Ke) * this.ratio + Me, qe = (Ee - Me) / this.ratio + Ke, Le = (Ne - Me) / this.ratio + Ke, dt = Math.max(Ee, Fe), Rt = Math.min(Ne, et), Mt = Math.max(Ve, qe), jt = Math.min(Ae, Le);
+              d = Pt(d, dt, Rt), m = Pt(m, Mt, jt);
             } else d = Pt(d, Ee, Ne), m = Pt(m, Ve, Ae);
             return { newWidth: d, newHeight: m };
           }, s.prototype.setBoundingClientRect = function() {
@@ -10392,8 +10405,8 @@ https://fb.me/react-async-component-lifecycle-hooks`);
               }
               var m = this.props, S = m.maxWidth, O = m.maxHeight, L = m.minWidth, re = m.minHeight, fe = Vt(d) ? d.touches[0].clientX : d.clientX, pe = Vt(d) ? d.touches[0].clientY : d.clientY, Ee = this.state, Ne = Ee.direction, Ve = Ee.original, Ae = Ee.width, Ke = Ee.height, Me = this.getParentSize(), Fe = Nn(Me, this.window.innerWidth, this.window.innerHeight, S, O, L, re);
               S = Fe.maxWidth, O = Fe.maxHeight, L = Fe.minWidth, re = Fe.minHeight;
-              var et = this.calculateNewSizeFromDirection(fe, pe), qe = et.newHeight, Le = et.newWidth, dt = this.calculateNewMaxFromBoundary(S, O), Dt = this.calculateNewSizeFromAspectRatio(Le, qe, { width: dt.maxWidth, height: dt.maxHeight }, { width: L, height: re });
-              if (Le = Dt.newWidth, qe = Dt.newHeight, this.props.grid) {
+              var et = this.calculateNewSizeFromDirection(fe, pe), qe = et.newHeight, Le = et.newWidth, dt = this.calculateNewMaxFromBoundary(S, O), Rt = this.calculateNewSizeFromAspectRatio(Le, qe, { width: dt.maxWidth, height: dt.maxHeight }, { width: L, height: re });
+              if (Le = Rt.newWidth, qe = Rt.newHeight, this.props.grid) {
                 var Mt = tn(Le, this.props.grid[0]), jt = tn(qe, this.props.grid[1]), _t = this.props.snapGap || 0;
                 Le = _t === 0 || Math.abs(Mt - Le) <= _t ? Mt : Le, qe = _t === 0 || Math.abs(jt - qe) <= _t ? jt : qe;
               }
@@ -10506,7 +10519,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
                 S = document.querySelector(this.props.bounds);
               }
               if (S instanceof HTMLElement && O instanceof HTMLElement) {
-                var dt = S.getBoundingClientRect(), Dt = dt.left, Mt = dt.top, jt = O.getBoundingClientRect(), _t = (Dt - jt.left) / L, zt = Mt - jt.top;
+                var dt = S.getBoundingClientRect(), Rt = dt.left, Mt = dt.top, jt = O.getBoundingClientRect(), _t = (Rt - jt.left) / L, zt = Mt - jt.top;
                 if (this.resizable) {
                   this.updateOffsetFromParent();
                   var ft = this.offsetFromParent;
@@ -10538,12 +10551,12 @@ https://fb.me/react-async-component-lifecycle-hooks`);
                   Ve = Ke.width * Me;
                 } else Ve.endsWith("px") && (Ve = Number(Ve.replace("px", "")));
                 Ae && typeof Ae == "string" && (Ae.endsWith("%") ? (Me = Number(Ae.replace("%", "")) / 100, Ae = Ke.width * Me) : Ae.endsWith("px") && (Ae = Number(Ae.replace("px", ""))));
-                var Fe = Ee.getBoundingClientRect(), et = Fe.left, qe = Fe.top, Le = this.props.bounds === "window" ? { left: 0, top: 0 } : pe.getBoundingClientRect(), dt = Le.left, Dt = Le.top, Mt = this.getOffsetWidth(pe), jt = this.getOffsetHeight(pe), _t = m.toLowerCase().endsWith("left"), zt = m.toLowerCase().endsWith("right"), ft = m.startsWith("top"), An = m.startsWith("bottom");
+                var Fe = Ee.getBoundingClientRect(), et = Fe.left, qe = Fe.top, Le = this.props.bounds === "window" ? { left: 0, top: 0 } : pe.getBoundingClientRect(), dt = Le.left, Rt = Le.top, Mt = this.getOffsetWidth(pe), jt = this.getOffsetHeight(pe), _t = m.toLowerCase().endsWith("left"), zt = m.toLowerCase().endsWith("right"), ft = m.startsWith("top"), An = m.startsWith("bottom");
                 if (_t && this.resizable) {
                   var lt = (et - dt) / O + this.resizable.size.width;
                   this.setState({ maxWidth: lt > Number(Ve) ? Ve : lt });
                 }
-                (zt || this.props.lockAspectRatio && !_t) && (lt = Mt + (dt - et) / O, this.setState({ maxWidth: lt > Number(Ve) ? Ve : lt })), ft && this.resizable && (lt = (qe - Dt) / O + this.resizable.size.height, this.setState({ maxHeight: lt > Number(Ae) ? Ae : lt })), (An || this.props.lockAspectRatio && !ft) && (lt = jt + (Dt - qe) / O, this.setState({ maxHeight: lt > Number(Ae) ? Ae : lt }));
+                (zt || this.props.lockAspectRatio && !_t) && (lt = Mt + (dt - et) / O, this.setState({ maxWidth: lt > Number(Ve) ? Ve : lt })), ft && this.resizable && (lt = (qe - Rt) / O + this.resizable.size.height, this.setState({ maxHeight: lt > Number(Ae) ? Ae : lt })), (An || this.props.lockAspectRatio && !ft) && (lt = jt + (Rt - qe) / O, this.setState({ maxHeight: lt > Number(Ae) ? Ae : lt }));
               }
             } else this.setState({ maxWidth: this.props.maxWidth, maxHeight: this.props.maxHeight });
             this.props.onResizeStart && this.props.onResizeStart(d, m, S);
@@ -10566,7 +10579,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             var O = m.getBoundingClientRect(), L = O.left, re = O.top, fe = S.getBoundingClientRect(), pe = this.getDraggablePosition();
             this.offsetFromParent = { left: fe.left - L - pe.x * d, top: fe.top - re - pe.y * d };
           }, s.prototype.render = function() {
-            var d = this.props, m = d.disableDragging, S = d.style, O = d.dragHandleClassName, L = d.position, re = d.onMouseDown, fe = d.onMouseUp, pe = d.dragAxis, Ee = d.dragGrid, Ne = d.bounds, Ve = d.enableUserSelectHack, Ae = d.cancel, Ke = d.children, Me = (d.onResizeStart, d.onResize, d.onResizeStop, d.onDragStart, d.onDrag, d.onDragStop, d.resizeHandleStyles), Fe = d.resizeHandleClasses, et = d.resizeHandleComponent, qe = d.enableResizing, Le = d.resizeGrid, dt = d.resizeHandleWrapperClass, Dt = d.resizeHandleWrapperStyle, Mt = d.scale, jt = d.allowAnyClick, _t = function($t, dn) {
+            var d = this.props, m = d.disableDragging, S = d.style, O = d.dragHandleClassName, L = d.position, re = d.onMouseDown, fe = d.onMouseUp, pe = d.dragAxis, Ee = d.dragGrid, Ne = d.bounds, Ve = d.enableUserSelectHack, Ae = d.cancel, Ke = d.children, Me = (d.onResizeStart, d.onResize, d.onResizeStop, d.onDragStart, d.onDrag, d.onDragStop, d.resizeHandleStyles), Fe = d.resizeHandleClasses, et = d.resizeHandleComponent, qe = d.enableResizing, Le = d.resizeGrid, dt = d.resizeHandleWrapperClass, Rt = d.resizeHandleWrapperStyle, Mt = d.scale, jt = d.allowAnyClick, _t = function($t, dn) {
               var Xn = {};
               for (var Gt in $t) Object.prototype.hasOwnProperty.call($t, Gt) && dn.indexOf(Gt) < 0 && (Xn[Gt] = $t[Gt]);
               if ($t != null && typeof Object.getOwnPropertySymbols == "function") {
@@ -10579,7 +10592,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             var ft, An = m || O ? { cursor: "auto" } : { cursor: "move" }, lt = Ue(Ue(Ue({}, Kt), An), S), In = this.offsetFromParent, Hn = In.left, zr = In.top;
             L && (ft = { x: L.x - Hn, y: L.y - zr });
             var xt, io = this.resizing ? void 0 : ft, Mn = this.resizing ? "both" : pe;
-            return Object(c.createElement)(Yn, { ref: this.refDraggable, handle: O ? "." + O : void 0, defaultPosition: zt, onMouseDown: re, onMouseUp: fe, onStart: this.onDragStart, onDrag: this.onDrag, onStop: this.onDragStop, axis: Mn, disabled: m, grid: Ee, bounds: Ne ? this.state.bounds : void 0, position: io, enableUserSelectHack: Ve, cancel: Ae, scale: Mt, allowAnyClick: jt, nodeRef: this.resizableElement }, Object(c.createElement)(_o, Ue({}, _t, { ref: this.refResizable, defaultSize: zt, size: this.props.size, enable: typeof qe == "boolean" ? (xt = qe, { bottom: xt, bottomLeft: xt, bottomRight: xt, left: xt, right: xt, top: xt, topLeft: xt, topRight: xt }) : qe, onResizeStart: this.onResizeStart, onResize: this.onResize, onResizeStop: this.onResizeStop, style: lt, minWidth: this.props.minWidth, minHeight: this.props.minHeight, maxWidth: this.resizing ? this.state.maxWidth : this.props.maxWidth, maxHeight: this.resizing ? this.state.maxHeight : this.props.maxHeight, grid: Le, handleWrapperClass: dt, handleWrapperStyle: Dt, lockAspectRatio: this.props.lockAspectRatio, lockAspectRatioExtraWidth: this.props.lockAspectRatioExtraWidth, lockAspectRatioExtraHeight: this.props.lockAspectRatioExtraHeight, handleStyles: Me, handleClasses: Fe, handleComponent: et, scale: this.props.scale }), Ke));
+            return Object(c.createElement)(Yn, { ref: this.refDraggable, handle: O ? "." + O : void 0, defaultPosition: zt, onMouseDown: re, onMouseUp: fe, onStart: this.onDragStart, onDrag: this.onDrag, onStop: this.onDragStop, axis: Mn, disabled: m, grid: Ee, bounds: Ne ? this.state.bounds : void 0, position: io, enableUserSelectHack: Ve, cancel: Ae, scale: Mt, allowAnyClick: jt, nodeRef: this.resizableElement }, Object(c.createElement)(_o, Ue({}, _t, { ref: this.refResizable, defaultSize: zt, size: this.props.size, enable: typeof qe == "boolean" ? (xt = qe, { bottom: xt, bottomLeft: xt, bottomRight: xt, left: xt, right: xt, top: xt, topLeft: xt, topRight: xt }) : qe, onResizeStart: this.onResizeStart, onResize: this.onResize, onResizeStop: this.onResizeStop, style: lt, minWidth: this.props.minWidth, minHeight: this.props.minHeight, maxWidth: this.resizing ? this.state.maxWidth : this.props.maxWidth, maxHeight: this.resizing ? this.state.maxHeight : this.props.maxHeight, grid: Le, handleWrapperClass: dt, handleWrapperStyle: Rt, lockAspectRatio: this.props.lockAspectRatio, lockAspectRatioExtraWidth: this.props.lockAspectRatioExtraWidth, lockAspectRatioExtraHeight: this.props.lockAspectRatioExtraHeight, handleStyles: Me, handleClasses: Fe, handleComponent: et, scale: this.props.scale }), Ke));
           }, s.defaultProps = { maxWidth: Number.MAX_SAFE_INTEGER, maxHeight: Number.MAX_SAFE_INTEGER, scale: 1, onResizeStart: function() {
           }, onResize: function() {
           }, onResizeStop: function() {
@@ -10626,13 +10639,13 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             return r.a.createElement(Wt, null, [this.props.contentBefore, r.a.createElement(It, { key: "navigation", definitions: s.map((d) => d.props.label), activeTab: this.props.activeTab, onClick: this.handleTabClick }), this.props.contentAfter], s.filter((d) => d.props.label === this.props.activeTab));
           }
         }
-        var cr = u(5), Dn = u.n(cr);
+        var cr = u(5), Rn = u.n(cr);
         class rn extends c.Component {
           render() {
             return [r.a.createElement("label", { htmlFor: this.props.id, key: "label" }, this.props.label, ":"), r.a.createElement("select", { id: this.props.id, value: this.props.value, onChange: this.props.onChange, key: "select" }, this.props.options.map((s) => r.a.createElement("option", { value: s, key: s }, s)))];
           }
           shouldComponentUpdate(s) {
-            return !Dn()(this.props, s);
+            return !Rn()(this.props, s);
           }
         }
         u(62);
@@ -10659,7 +10672,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             return r.a.createElement("div", { className: "ck-inspector-side-pane" }, r.a.createElement(Or, { enableResizing: { left: !0 }, disableDragging: !0, minWidth: 200, maxWidth: this.maxSidePaneWidth, style: ur, position: { x: "100%", y: "100%" }, size: { width: this.props.sidePaneWidth, height: "100%" }, onResizeStop: (s, d, m) => this.props.setSidePaneWidth(m.style.width) }, this.props.children));
           }
         }
-        var vn = Re(({ ui: { sidePaneWidth: E } }) => ({ sidePaneWidth: E }), { setSidePaneWidth: function(E) {
+        var vn = De(({ ui: { sidePaneWidth: E } }) => ({ sidePaneWidth: E }), { setSidePaneWidth: function(E) {
           return { type: "SET_SIDE_PANE_WIDTH", newWidth: E };
         } })(dr), Ut = u(11);
         u(68);
@@ -10683,7 +10696,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             return r.a.createElement(Wt, null, [r.a.createElement("div", { className: "ck-inspector-tree__config", key: "root-cfg" }, r.a.createElement(rn, { id: "view-root-select", label: "Root", value: this.props.currentRootName, options: Object(gt.d)(s).map((d) => d.rootName), onChange: this.handleRootChange })), r.a.createElement("span", { className: "ck-inspector-separator", key: "separator" }), r.a.createElement("div", { className: "ck-inspector-tree__config", key: "text-cfg" }, r.a.createElement(Ht, { label: "Compact text", id: "model-compact-text", isChecked: this.props.showCompactText, onChange: this.props.toggleModelShowCompactText }), r.a.createElement(Ht, { label: "Show markers", id: "model-show-markers", isChecked: this.props.showMarkers, onChange: this.props.toggleModelShowMarkers }))], r.a.createElement(Ut.a, { className: [this.props.showMarkers ? "" : "ck-inspector-model-tree__hide-markers"], definition: this.props.treeDefinition, textDirection: s.locale.contentLanguageDirection, onClick: this.handleTreeClick, showCompactText: this.props.showCompactText, activeNode: this.props.currentNode }));
           }
         }
-        var Kn = Re(({ editors: E, currentEditorName: s, model: { treeDefinition: d, currentRootName: m, currentNode: S, ui: { showMarkers: O, showCompactText: L } } }) => ({ treeDefinition: d, editors: E, currentEditorName: s, currentRootName: m, currentNode: S, showMarkers: O, showCompactText: L }), { toggleModelShowCompactText: function() {
+        var Kn = De(({ editors: E, currentEditorName: s, model: { treeDefinition: d, currentRootName: m, currentNode: S, ui: { showMarkers: O, showCompactText: L } } }) => ({ treeDefinition: d, editors: E, currentEditorName: s, currentRootName: m, currentNode: S, showMarkers: O, showCompactText: L }), { toggleModelShowCompactText: function() {
           return { type: "TOGGLE_MODEL_SHOW_COMPACT_TEXT" };
         }, setModelCurrentRootName: function(E) {
           return { type: "SET_MODEL_CURRENT_ROOT_NAME", currentRootName: E };
@@ -10703,7 +10716,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             return r.a.createElement("dl", { className: "ck-inspector-property-list ck-inspector-code" }, d);
           }
           shouldComponentUpdate(s) {
-            return !Dn()(this.props, s);
+            return !Rn()(this.props, s);
           }
         }
         class Zr extends c.PureComponent {
@@ -10773,7 +10786,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             return s ? r.a.createElement(Vn, { header: [r.a.createElement("span", { key: "link" }, r.a.createElement("a", { href: s.url, target: "_blank", rel: "noopener noreferrer" }, r.a.createElement("b", null, s.type)), ":", s.type === "Text" ? r.a.createElement("em", null, s.name) : s.name), r.a.createElement(yt, { key: "log", icon: r.a.createElement(kn, null), text: "Log in console", onClick: this.handleNodeLogButtonClick }), r.a.createElement(yt, { key: "schema", icon: r.a.createElement(Oa, null), text: "Show in schema", onClick: this.handleNodeSchemaButtonClick })], lists: [{ name: "Attributes", url: s.url, itemDefinitions: s.attributes }, { name: "Properties", url: s.url, itemDefinitions: s.properties }] }) : r.a.createElement(Et, { isEmpty: "true" }, r.a.createElement("p", null, "Select a node in the tree to inspect"));
           }
         }
-        var ki = Re(({ editors: E, currentEditorName: s, model: { currentNodeDefinition: d } }) => ({ editors: E, currentEditorName: s, currentNodeDefinition: d }), { setActiveTab: wt, setSchemaCurrentDefinitionName: ir })(So);
+        var ki = De(({ editors: E, currentEditorName: s, model: { currentNodeDefinition: d } }) => ({ editors: E, currentEditorName: s, currentNodeDefinition: d }), { setActiveTab: wt, setSchemaCurrentDefinitionName: ir })(So);
         function wi() {
           return (wi = Object.assign ? Object.assign.bind() : function(E) {
             for (var s = 1; s < arguments.length; s++) {
@@ -10783,7 +10796,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             return E;
           }).apply(this, arguments);
         }
-        var Dr = ({ styles: E = {}, ...s }) => r.a.createElement("svg", wi({ viewBox: "0 0 19 19", xmlns: "http://www.w3.org/2000/svg" }, s), r.a.createElement("path", { d: "M9.5 4.5c1.85 0 3.667.561 5.199 1.519C16.363 7.059 17.5 8.4 17.5 9.5s-1.137 2.441-2.801 3.481c-1.532.958-3.35 1.519-5.199 1.519-1.85 0-3.667-.561-5.199-1.519C2.637 11.941 1.5 10.6 1.5 9.5s1.137-2.441 2.801-3.481C5.833 5.06 7.651 4.5 9.5 4.5zm0 1a4 4 0 11-.2.005l.2-.005c-1.655 0-3.29.505-4.669 1.367C3.431 7.742 2.5 8.84 2.5 9.5c0 .66.931 1.758 2.331 2.633C6.21 12.995 7.845 13.5 9.5 13.5c1.655 0 3.29-.505 4.669-1.367 1.4-.875 2.331-1.974 2.331-2.633 0-.66-.931-1.758-2.331-2.633C12.79 6.005 11.155 5.5 9.5 5.5zM8 6.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3z" }));
+        var Rr = ({ styles: E = {}, ...s }) => r.a.createElement("svg", wi({ viewBox: "0 0 19 19", xmlns: "http://www.w3.org/2000/svg" }, s), r.a.createElement("path", { d: "M9.5 4.5c1.85 0 3.667.561 5.199 1.519C16.363 7.059 17.5 8.4 17.5 9.5s-1.137 2.441-2.801 3.481c-1.532.958-3.35 1.519-5.199 1.519-1.85 0-3.667-.561-5.199-1.519C2.637 11.941 1.5 10.6 1.5 9.5s1.137-2.441 2.801-3.481C5.833 5.06 7.651 4.5 9.5 4.5zm0 1a4 4 0 11-.2.005l.2-.005c-1.655 0-3.29.505-4.669 1.367C3.431 7.742 2.5 8.84 2.5 9.5c0 .66.931 1.758 2.331 2.633C6.21 12.995 7.845 13.5 9.5 13.5c1.655 0 3.29-.505 4.669-1.367 1.4-.875 2.331-1.974 2.331-2.633 0-.66-.931-1.758-2.331-2.633C12.79 6.005 11.155 5.5 9.5 5.5zM8 6.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3z" }));
         const pr = "https://ckeditor.com/docs/ckeditor5/latest/api/module_engine_model_selection-Selection.html";
         class Ei extends c.Component {
           constructor(s) {
@@ -10799,22 +10812,22 @@ https://fb.me/react-async-component-lifecycle-hooks`);
           }
           render() {
             const s = this.props.editor, d = this.props.info;
-            return r.a.createElement(Vn, { header: [r.a.createElement("span", { key: "link" }, r.a.createElement("a", { href: pr, target: "_blank", rel: "noopener noreferrer" }, r.a.createElement("b", null, "Selection"))), r.a.createElement(yt, { key: "log", icon: r.a.createElement(kn, null), text: "Log in console", onClick: this.handleSelectionLogButtonClick }), r.a.createElement(yt, { key: "scroll", icon: r.a.createElement(Dr, null), text: "Scroll to selection", onClick: this.handleScrollToSelectionButtonClick })], lists: [{ name: "Attributes", url: pr + "#function-getAttributes", itemDefinitions: d.attributes }, { name: "Properties", url: "" + pr, itemDefinitions: d.properties }, { name: "Anchor", url: pr + "#member-anchor", buttons: [{ icon: r.a.createElement(kn, null), text: "Log in console", onClick: () => Nt.a.log(s.model.document.selection.anchor) }], itemDefinitions: d.anchor }, { name: "Focus", url: pr + "#member-focus", buttons: [{ icon: r.a.createElement(kn, null), text: "Log in console", onClick: () => Nt.a.log(s.model.document.selection.focus) }], itemDefinitions: d.focus }, { name: "Ranges", url: pr + "#function-getRanges", buttons: [{ icon: r.a.createElement(kn, null), text: "Log in console", onClick: () => Nt.a.log(...s.model.document.selection.getRanges()) }], itemDefinitions: d.ranges, presentation: { expandCollapsibles: !0 } }] });
+            return r.a.createElement(Vn, { header: [r.a.createElement("span", { key: "link" }, r.a.createElement("a", { href: pr, target: "_blank", rel: "noopener noreferrer" }, r.a.createElement("b", null, "Selection"))), r.a.createElement(yt, { key: "log", icon: r.a.createElement(kn, null), text: "Log in console", onClick: this.handleSelectionLogButtonClick }), r.a.createElement(yt, { key: "scroll", icon: r.a.createElement(Rr, null), text: "Scroll to selection", onClick: this.handleScrollToSelectionButtonClick })], lists: [{ name: "Attributes", url: pr + "#function-getAttributes", itemDefinitions: d.attributes }, { name: "Properties", url: "" + pr, itemDefinitions: d.properties }, { name: "Anchor", url: pr + "#member-anchor", buttons: [{ icon: r.a.createElement(kn, null), text: "Log in console", onClick: () => Nt.a.log(s.model.document.selection.anchor) }], itemDefinitions: d.anchor }, { name: "Focus", url: pr + "#member-focus", buttons: [{ icon: r.a.createElement(kn, null), text: "Log in console", onClick: () => Nt.a.log(s.model.document.selection.focus) }], itemDefinitions: d.focus }, { name: "Ranges", url: pr + "#function-getRanges", buttons: [{ icon: r.a.createElement(kn, null), text: "Log in console", onClick: () => Nt.a.log(...s.model.document.selection.getRanges()) }], itemDefinitions: d.ranges, presentation: { expandCollapsibles: !0 } }] });
           }
         }
-        var _i = Re(({ editors: E, currentEditorName: s, model: { ranges: d } }) => {
+        var _i = De(({ editors: E, currentEditorName: s, model: { ranges: d } }) => {
           const m = E.get(s);
           return { editor: m, currentEditorName: s, info: function(S, O) {
-            const L = S.model.document.selection, re = L.anchor, fe = L.focus, pe = { properties: { isCollapsed: { value: L.isCollapsed }, isBackward: { value: L.isBackward }, isGravityOverridden: { value: L.isGravityOverridden }, rangeCount: { value: L.rangeCount } }, attributes: {}, anchor: Rr(Object(cn.a)(re)), focus: Rr(Object(cn.a)(fe)), ranges: {} };
+            const L = S.model.document.selection, re = L.anchor, fe = L.focus, pe = { properties: { isCollapsed: { value: L.isCollapsed }, isBackward: { value: L.isBackward }, isGravityOverridden: { value: L.isGravityOverridden }, rangeCount: { value: L.rangeCount } }, attributes: {}, anchor: Dr(Object(cn.a)(re)), focus: Dr(Object(cn.a)(fe)), ranges: {} };
             for (const [Ee, Ne] of L.getAttributes()) pe.attributes[Ee] = { value: Ne };
             O.forEach((Ee, Ne) => {
-              pe.ranges[Ne] = { value: "", subProperties: { start: { value: "", subProperties: Object(ut.b)(Rr(Ee.start)) }, end: { value: "", subProperties: Object(ut.b)(Rr(Ee.end)) } } };
+              pe.ranges[Ne] = { value: "", subProperties: { start: { value: "", subProperties: Object(ut.b)(Dr(Ee.start)) }, end: { value: "", subProperties: Object(ut.b)(Dr(Ee.end)) } } };
             });
             for (const Ee in pe) Ee !== "ranges" && (pe[Ee] = Object(ut.b)(pe[Ee]));
             return pe;
           }(m, d) };
         }, {})(Ei);
-        function Rr({ path: E, stickiness: s, index: d, isAtEnd: m, isAtStart: S, offset: O, textNode: L }) {
+        function Dr({ path: E, stickiness: s, index: d, isAtEnd: m, isAtStart: S, offset: O, textNode: L }) {
           return { path: { value: E }, stickiness: { value: s }, index: { value: d }, isAtEnd: { value: m }, isAtStart: { value: S }, offset: { value: O }, textNode: { value: L } };
         }
         class Pa extends c.Component {
@@ -10847,7 +10860,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             return Object.keys(s).length ? r.a.createElement(Vn, { header: [r.a.createElement("span", { key: "link" }, r.a.createElement("a", { href: "https://ckeditor.com/docs/ckeditor5/latest/api/module_engine_model_markercollection-Marker.html", target: "_blank", rel: "noopener noreferrer" }, r.a.createElement("b", null, "Markers"))), r.a.createElement(yt, { key: "log", icon: r.a.createElement(kn, null), text: "Log in console", onClick: () => Nt.a.log([...m.model.markers]) })], lists: [{ name: "Markers tree", itemDefinitions: d, presentation: { expandCollapsibles: !0 } }] }) : r.a.createElement(Et, { isEmpty: "true" }, r.a.createElement("p", null, "No markers in the document."));
           }
         }
-        var qo = Re(({ editors: E, currentEditorName: s, model: { markers: d } }) => ({ editors: E, currentEditorName: s, markers: d }), {})(Pa);
+        var qo = De(({ editors: E, currentEditorName: s, model: { markers: d } }) => ({ editors: E, currentEditorName: s, markers: d }), {})(Pa);
         function xi({ name: E, start: s, end: d, affectsData: m, managedUsingOperations: S }) {
           return { name: { value: E }, start: { value: s.path }, end: { value: d.path }, affectsData: { value: m }, managedUsingOperations: { value: S } };
         }
@@ -10857,8 +10870,8 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             return this.props.currentEditorName ? r.a.createElement(Et, { splitVertically: "true" }, r.a.createElement(Kn, null), r.a.createElement(vn, null, r.a.createElement(Qt, { onTabChange: this.props.setModelActiveTab, activeTab: this.props.activeTab }, r.a.createElement(ki, { label: "Inspect" }), r.a.createElement(_i, { label: "Selection" }), r.a.createElement(qo, { label: "Markers" })))) : r.a.createElement(Et, { isEmpty: "true" }, r.a.createElement("p", null, "Nothing to show. Attach another editor instance to start inspecting."));
           }
         }
-        var Na = Re(({ currentEditorName: E, model: { ui: { activeTab: s } } }) => ({ currentEditorName: E, activeTab: s }), { setModelActiveTab: He })(Yo);
-        class Da extends c.Component {
+        var Na = De(({ currentEditorName: E, model: { ui: { activeTab: s } } }) => ({ currentEditorName: E, activeTab: s }), { setModelActiveTab: He })(Yo);
+        class Ra extends c.Component {
           constructor(s) {
             super(s), this.handleTreeClick = this.handleTreeClick.bind(this), this.handleRootChange = this.handleRootChange.bind(this);
           }
@@ -10873,13 +10886,13 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             return r.a.createElement(Wt, null, [r.a.createElement("div", { className: "ck-inspector-tree__config", key: "root-cfg" }, r.a.createElement(rn, { id: "view-root-select", label: "Root", value: this.props.currentRootName, options: Object(en.d)(s).map((d) => d.rootName), onChange: this.handleRootChange })), r.a.createElement("span", { className: "ck-inspector-separator", key: "separator" }), r.a.createElement("div", { className: "ck-inspector-tree__config", key: "types-cfg" }, r.a.createElement(Ht, { label: "Show element types", id: "view-show-types", isChecked: this.props.showElementTypes, onChange: this.props.toggleViewShowElementTypes }))], r.a.createElement(Ut.a, { definition: this.props.treeDefinition, textDirection: s.locale.contentLanguageDirection, onClick: this.handleTreeClick, showCompactText: "true", showElementTypes: this.props.showElementTypes, activeNode: this.props.currentNode }));
           }
         }
-        var Co = Re(({ editors: E, currentEditorName: s, view: { treeDefinition: d, currentRootName: m, currentNode: S, ui: { showElementTypes: O } } }) => ({ treeDefinition: d, editors: E, currentEditorName: s, currentRootName: m, currentNode: S, showElementTypes: O }), { setViewCurrentRootName: function(E) {
+        var Co = De(({ editors: E, currentEditorName: s, view: { treeDefinition: d, currentRootName: m, currentNode: S, ui: { showElementTypes: O } } }) => ({ treeDefinition: d, editors: E, currentEditorName: s, currentRootName: m, currentNode: S, showElementTypes: O }), { setViewCurrentRootName: function(E) {
           return { type: "SET_VIEW_CURRENT_ROOT_NAME", currentRootName: E };
         }, toggleViewShowElementTypes: function() {
           return { type: "TOGGLE_VIEW_SHOW_ELEMENT_TYPES" };
         }, setViewCurrentNode: function(E) {
           return { type: "SET_VIEW_CURRENT_NODE", currentNode: E };
-        }, setViewActiveTab: _r })(Da);
+        }, setViewActiveTab: _r })(Ra);
         class mt extends c.Component {
           constructor(s) {
             super(s), this.handleNodeLogButtonClick = this.handleNodeLogButtonClick.bind(this);
@@ -10892,9 +10905,9 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             return s ? r.a.createElement(Vn, { header: [r.a.createElement("span", { key: "link" }, r.a.createElement("a", { href: s.url, target: "_blank", rel: "noopener noreferrer" }, r.a.createElement("b", null, s.type), ":"), s.type === "Text" ? r.a.createElement("em", null, s.name) : s.name), r.a.createElement(yt, { key: "log", icon: r.a.createElement(kn, null), text: "Log in console", onClick: this.handleNodeLogButtonClick })], lists: [{ name: "Attributes", url: s.url, itemDefinitions: s.attributes }, { name: "Properties", url: s.url, itemDefinitions: s.properties }, { name: "Custom Properties", url: en.a + "_element-Element.html#function-getCustomProperty", itemDefinitions: s.customProperties }] }) : r.a.createElement(Et, { isEmpty: "true" }, r.a.createElement("p", null, "Select a node in the tree to inspect"));
           }
         }
-        var Jr = Re(({ view: { currentNodeDefinition: E } }) => ({ currentNodeDefinition: E }), {})(mt);
+        var Jr = De(({ view: { currentNodeDefinition: E } }) => ({ currentNodeDefinition: E }), {})(mt);
         const eo = "https://ckeditor.com/docs/ckeditor5/latest/api/module_engine_view_selection-Selection.html";
-        class Ra extends c.Component {
+        class Da extends c.Component {
           constructor(s) {
             super(s), this.handleSelectionLogButtonClick = this.handleSelectionLogButtonClick.bind(this), this.handleScrollToSelectionButtonClick = this.handleScrollToSelectionButtonClick.bind(this);
           }
@@ -10908,10 +10921,10 @@ https://fb.me/react-async-component-lifecycle-hooks`);
           }
           render() {
             const s = this.props.editor, d = this.props.info;
-            return r.a.createElement(Vn, { header: [r.a.createElement("span", { key: "link" }, r.a.createElement("a", { href: eo, target: "_blank", rel: "noopener noreferrer" }, r.a.createElement("b", null, "Selection"))), r.a.createElement(yt, { key: "log", icon: r.a.createElement(kn, null), text: "Log in console", onClick: this.handleSelectionLogButtonClick }), r.a.createElement(yt, { key: "scroll", icon: r.a.createElement(Dr, null), text: "Scroll to selection", onClick: this.handleScrollToSelectionButtonClick })], lists: [{ name: "Properties", url: "" + eo, itemDefinitions: d.properties }, { name: "Anchor", url: eo + "#member-anchor", buttons: [{ type: "log", text: "Log in console", onClick: () => Nt.a.log(s.editing.view.document.selection.anchor) }], itemDefinitions: d.anchor }, { name: "Focus", url: eo + "#member-focus", buttons: [{ type: "log", text: "Log in console", onClick: () => Nt.a.log(s.editing.view.document.selection.focus) }], itemDefinitions: d.focus }, { name: "Ranges", url: eo + "#function-getRanges", buttons: [{ type: "log", text: "Log in console", onClick: () => Nt.a.log(...s.editing.view.document.selection.getRanges()) }], itemDefinitions: d.ranges, presentation: { expandCollapsibles: !0 } }] });
+            return r.a.createElement(Vn, { header: [r.a.createElement("span", { key: "link" }, r.a.createElement("a", { href: eo, target: "_blank", rel: "noopener noreferrer" }, r.a.createElement("b", null, "Selection"))), r.a.createElement(yt, { key: "log", icon: r.a.createElement(kn, null), text: "Log in console", onClick: this.handleSelectionLogButtonClick }), r.a.createElement(yt, { key: "scroll", icon: r.a.createElement(Rr, null), text: "Scroll to selection", onClick: this.handleScrollToSelectionButtonClick })], lists: [{ name: "Properties", url: "" + eo, itemDefinitions: d.properties }, { name: "Anchor", url: eo + "#member-anchor", buttons: [{ type: "log", text: "Log in console", onClick: () => Nt.a.log(s.editing.view.document.selection.anchor) }], itemDefinitions: d.anchor }, { name: "Focus", url: eo + "#member-focus", buttons: [{ type: "log", text: "Log in console", onClick: () => Nt.a.log(s.editing.view.document.selection.focus) }], itemDefinitions: d.focus }, { name: "Ranges", url: eo + "#function-getRanges", buttons: [{ type: "log", text: "Log in console", onClick: () => Nt.a.log(...s.editing.view.document.selection.getRanges()) }], itemDefinitions: d.ranges, presentation: { expandCollapsibles: !0 } }] });
           }
         }
-        var To = Re(({ editors: E, currentEditorName: s, view: { ranges: d } }) => {
+        var To = De(({ editors: E, currentEditorName: s, view: { ranges: d } }) => {
           const m = E.get(s);
           return { editor: m, currentEditorName: s, info: function(S, O) {
             const L = S.editing.view.document.selection, re = { properties: { isCollapsed: { value: L.isCollapsed }, isBackward: { value: L.isBackward }, isFake: { value: L.isFake }, rangeCount: { value: L.rangeCount } }, anchor: Ar(Object(qt.a)(L.anchor)), focus: Ar(Object(qt.a)(L.focus)), ranges: {} };
@@ -10921,7 +10934,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             for (const fe in re) fe !== "ranges" && (re[fe] = Object(ut.b)(re[fe]));
             return re;
           }(m, d) };
-        }, {})(Ra);
+        }, {})(Da);
         function Ar({ offset: E, isAtEnd: s, isAtStart: d, parent: m }) {
           return { offset: { value: E }, isAtEnd: { value: s }, isAtStart: { value: d }, parent: { value: m } };
         }
@@ -10930,7 +10943,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             return this.props.currentEditorName ? r.a.createElement(Et, { splitVertically: "true" }, r.a.createElement(Co, null), r.a.createElement(vn, null, r.a.createElement(Qt, { onTabChange: this.props.setViewActiveTab, activeTab: this.props.activeTab }, r.a.createElement(Jr, { label: "Inspect" }), r.a.createElement(To, { label: "Selection" })))) : r.a.createElement(Et, { isEmpty: "true" }, r.a.createElement("p", null, "Nothing to show. Attach another editor instance to start inspecting."));
           }
         }
-        var Aa = Re(({ currentEditorName: E, view: { ui: { activeTab: s } } }) => ({ currentEditorName: E, activeTab: s }), { setViewActiveTab: _r, updateViewState: wo })(to);
+        var Aa = De(({ currentEditorName: E, view: { ui: { activeTab: s } } }) => ({ currentEditorName: E, activeTab: s }), { setViewActiveTab: _r, updateViewState: wo })(to);
         class Si extends c.Component {
           constructor(s) {
             super(s), this.handleTreeClick = this.handleTreeClick.bind(this);
@@ -10942,7 +10955,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             return r.a.createElement(Wt, null, r.a.createElement(Ut.a, { definition: this.props.treeDefinition, onClick: this.handleTreeClick, activeNode: this.props.currentCommandName }));
           }
         }
-        var Ci = Re(({ commands: { treeDefinition: E, currentCommandName: s } }) => ({ treeDefinition: E, currentCommandName: s }), { setCommandsCurrentCommandName: function(E) {
+        var Ci = De(({ commands: { treeDefinition: E, currentCommandName: s } }) => ({ treeDefinition: E, currentCommandName: s }), { setCommandsCurrentCommandName: function(E) {
           return { type: "SET_COMMANDS_CURRENT_COMMAND_NAME", currentCommandName: E };
         } })(Si);
         function Ti() {
@@ -10970,13 +10983,13 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             return s ? r.a.createElement(Vn, { header: [r.a.createElement("span", { key: "link" }, r.a.createElement("a", { href: s.url, target: "_blank", rel: "noopener noreferrer" }, r.a.createElement("b", null, s.type)), ":", this.props.currentCommandName), r.a.createElement(yt, { key: "exec", icon: r.a.createElement(Ko, null), text: "Execute command", onClick: this.handleCommandExecuteButtonClick }), r.a.createElement(yt, { key: "log", icon: r.a.createElement(kn, null), text: "Log in console", onClick: this.handleCommandLogButtonClick })], lists: [{ name: "Properties", url: s.url, itemDefinitions: s.properties }] }) : r.a.createElement(Et, { isEmpty: "true" }, r.a.createElement("p", null, "Select a command to inspect"));
           }
         }
-        var Oi = Re(({ editors: E, currentEditorName: s, commands: { currentCommandName: d, currentCommandDefinition: m } }) => ({ editors: E, currentEditorName: s, currentCommandName: d, currentCommandDefinition: m }), {})(Qo);
+        var Oi = De(({ editors: E, currentEditorName: s, commands: { currentCommandName: d, currentCommandDefinition: m } }) => ({ editors: E, currentEditorName: s, currentCommandName: d, currentCommandDefinition: m }), {})(Qo);
         class Wn extends c.Component {
           render() {
             return this.props.currentEditorName ? r.a.createElement(Et, { splitVertically: "true" }, r.a.createElement(Ci, null), r.a.createElement(vn, null, r.a.createElement(Qt, { activeTab: "Inspect" }, r.a.createElement(Oi, { label: "Inspect" })))) : r.a.createElement(Et, { isEmpty: "true" }, r.a.createElement("p", null, "Nothing to show. Attach another editor instance to start inspecting."));
           }
         }
-        var Oo = Re(({ currentEditorName: E }) => ({ currentEditorName: E }), { updateCommandsState: Sr })(Wn);
+        var Oo = De(({ currentEditorName: E }) => ({ currentEditorName: E }), { updateCommandsState: Sr })(Wn);
         class Go extends c.Component {
           constructor(s) {
             super(s), this.handleTreeClick = this.handleTreeClick.bind(this);
@@ -10988,7 +11001,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             return r.a.createElement(Wt, null, r.a.createElement(Ut.a, { definition: this.props.treeDefinition, onClick: this.handleTreeClick, activeNode: this.props.currentSchemaDefinitionName }));
           }
         }
-        var Pi = Re(({ schema: { treeDefinition: E, currentSchemaDefinitionName: s } }) => ({ treeDefinition: E, currentSchemaDefinitionName: s }), { setSchemaCurrentDefinitionName: ir })(Go);
+        var Pi = De(({ schema: { treeDefinition: E, currentSchemaDefinitionName: s } }) => ({ treeDefinition: E, currentSchemaDefinitionName: s }), { setSchemaCurrentDefinitionName: ir })(Go);
         class Ni extends c.Component {
           render() {
             const s = this.props.currentSchemaDefinition;
@@ -10999,13 +11012,13 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             } }] }) : r.a.createElement(Et, { isEmpty: "true" }, r.a.createElement("p", null, "Select a schema definition to inspect"));
           }
         }
-        var Di = Re(({ editors: E, currentEditorName: s, schema: { currentSchemaDefinitionName: d, currentSchemaDefinition: m } }) => ({ editors: E, currentEditorName: s, currentSchemaDefinitionName: d, currentSchemaDefinition: m }), { setSchemaCurrentDefinitionName: ir })(Ni);
+        var Ri = De(({ editors: E, currentEditorName: s, schema: { currentSchemaDefinitionName: d, currentSchemaDefinition: m } }) => ({ editors: E, currentEditorName: s, currentSchemaDefinitionName: d, currentSchemaDefinition: m }), { setSchemaCurrentDefinitionName: ir })(Ni);
         class Xo extends c.Component {
           render() {
-            return this.props.currentEditorName ? r.a.createElement(Et, { splitVertically: "true" }, r.a.createElement(Pi, null), r.a.createElement(vn, null, r.a.createElement(Qt, { activeTab: "Inspect" }, r.a.createElement(Di, { label: "Inspect" })))) : r.a.createElement(Et, { isEmpty: "true" }, r.a.createElement("p", null, "Nothing to show. Attach another editor instance to start inspecting."));
+            return this.props.currentEditorName ? r.a.createElement(Et, { splitVertically: "true" }, r.a.createElement(Pi, null), r.a.createElement(vn, null, r.a.createElement(Qt, { activeTab: "Inspect" }, r.a.createElement(Ri, { label: "Inspect" })))) : r.a.createElement(Et, { isEmpty: "true" }, r.a.createElement("p", null, "Nothing to show. Attach another editor instance to start inspecting."));
           }
         }
-        var Zo = Re(({ currentEditorName: E }) => ({ currentEditorName: E }))(Xo), Jo = u(47), Ri = u.n(Jo), ei = u(48), ti = u.n(ei);
+        var Zo = De(({ currentEditorName: E }) => ({ currentEditorName: E }))(Xo), Jo = u(47), Di = u.n(Jo), ei = u(48), ti = u.n(ei);
         function Ai() {
           return (Ai = Object.assign ? Object.assign.bind() : function(E) {
             for (var s = 1; s < arguments.length; s++) {
@@ -11081,8 +11094,8 @@ https://fb.me/react-async-component-lifecycle-hooks`);
           }).apply(this, arguments);
         }
         var ni = ({ styles: E = {}, ...s }) => r.a.createElement("svg", Gn({ viewBox: "0 0 20 20", xmlns: "http://www.w3.org/2000/svg" }, s), r.a.createElement("path", { d: "M2.284 2.498c-.239.266-.184.617-.184 1.002V4H2a.5.5 0 00-.492.41L1.5 4.5V17a1 1 0 00.883.993L2.5 18h10a1 1 0 00.97-.752l-.081-.062c.438.368.976.54 1.507.526a2.5 2.5 0 01-2.232 1.783l-.164.005h-10a2.5 2.5 0 01-2.495-2.336L0 17V4.5a2 2 0 011.85-1.995L2 2.5l.284-.002zm10.532 0L13 2.5a2 2 0 011.995 1.85L15 4.5v2.28a2.243 2.243 0 00-1.5.404V4.5a.5.5 0 00-.41-.492L13 4v-.5l-.007-.144c-.031-.329.032-.626-.177-.858z" }), r.a.createElement("path", { d: "M6 .49l-.144.006a1.75 1.75 0 00-1.41.94l-.029.058.083-.004c-.69 0-1.25.56-1.25 1.25v1c0 .69.56 1.25 1.25 1.25h6c.69 0 1.25-.56 1.25-1.25v-1l-.006-.128a1.25 1.25 0 00-1.116-1.116l-.046-.002-.027-.058A1.75 1.75 0 009 .49H6zm0 1.5h3a.25.25 0 01.25.25l.007.102A.75.75 0 0010 2.99h.25v.5h-5.5v-.5H5a.75.75 0 00.743-.648l.007-.102A.25.25 0 016 1.99zm9.374 6.55a.75.75 0 01-.093 1.056l-2.33 1.954h6.127a.75.75 0 010 1.501h-5.949l2.19 1.837a.75.75 0 11-.966 1.15l-3.788-3.18a.747.747 0 01-.21-.285.75.75 0 01.17-.945l3.792-3.182a.75.75 0 011.057.093z" }));
-        function Rn() {
-          return (Rn = Object.assign ? Object.assign.bind() : function(E) {
+        function Dn() {
+          return (Dn = Object.assign ? Object.assign.bind() : function(E) {
             for (var s = 1; s < arguments.length; s++) {
               var d = arguments[s];
               for (var m in d) Object.prototype.hasOwnProperty.call(d, m) && (E[m] = d[m]);
@@ -11090,7 +11103,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             return E;
           }).apply(this, arguments);
         }
-        var Mi = ({ styles: E = {}, ...s }) => r.a.createElement("svg", Rn({ viewBox: "0 0 20 20", xmlns: "http://www.w3.org/2000/svg" }, s), r.a.createElement("path", { fill: "#4fa800", d: "M6.972 16.615a.997.997 0 01-.744-.292l-4.596-4.596a1 1 0 111.414-1.414l3.926 3.926 9.937-9.937a1 1 0 011.414 1.415L7.717 16.323a.997.997 0 01-.745.292z" }));
+        var Mi = ({ styles: E = {}, ...s }) => r.a.createElement("svg", Dn({ viewBox: "0 0 20 20", xmlns: "http://www.w3.org/2000/svg" }, s), r.a.createElement("path", { fill: "#4fa800", d: "M6.972 16.615a.997.997 0 01-.744-.292l-4.596-4.596a1 1 0 111.414-1.414l3.926 3.926 9.937-9.937a1 1 0 011.414 1.415L7.717 16.323a.997.997 0 01-.745.292z" }));
         u(88);
         class ji extends c.Component {
           constructor(s) {
@@ -11112,7 +11125,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             return this.state.wasEditorDataJustCopied ? (s = r.a.createElement(Mi, null), d = "Data copied to clipboard.") : (s = this.state.isShiftKeyPressed ? r.a.createElement(ni, null) : r.a.createElement(Qn, null), d = "Log editor data (press with Shift to copy)"), r.a.createElement(yt, { text: d, icon: s, className: this.state.wasEditorDataJustCopied ? "ck-inspector-button_data-copied" : "", isEnabled: !!this.props.editor, onClick: this._handleLogEditorDataClick.bind(this) });
           }
           _handleLogEditorDataClick({ shiftKey: s }) {
-            s ? (Ri()(this.props.editor.getData()), this.setState({ wasEditorDataJustCopied: !0 }), clearTimeout(this._editorDataJustCopiedTimeout), this._editorDataJustCopiedTimeout = setTimeout(() => {
+            s ? (Di()(this.props.editor.getData()), this.setState({ wasEditorDataJustCopied: !0 }), clearTimeout(this._editorDataJustCopiedTimeout), this._editorDataJustCopiedTimeout = setTimeout(() => {
               this.setState({ wasEditorDataJustCopied: !1 });
             }, 3e3)) : console.log(this.props.editor.getData());
           }
@@ -11126,7 +11139,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             this.props.editor.isReadOnly ? this.props.editor.disableReadOnlyMode("Lock from Inspector (@ckeditor/ckeditor5-inspector)") : this.props.editor.enableReadOnlyMode("Lock from Inspector (@ckeditor/ckeditor5-inspector)");
           }
         }
-        var Ia = Re(({ editors: E, currentEditorName: s, currentEditorGlobals: { isReadOnly: d } }) => ({ editor: E.get(s), isReadOnly: d }), {})(ji);
+        var Ia = De(({ editors: E, currentEditorName: s, currentEditorGlobals: { isReadOnly: d } }) => ({ editor: E.get(s), isReadOnly: d }), {})(ji);
         function No() {
           return (No = Object.assign ? Object.assign.bind() : function(E) {
             for (var s = 1; s < arguments.length; s++) {
@@ -11148,16 +11161,16 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             this.props.setHeight(S), Li(S);
           }
           render() {
-            return this.props.isCollapsed ? (document.body.classList.remove("ck-inspector-body-expanded"), document.body.classList.add("ck-inspector-body-collapsed")) : (document.body.classList.remove("ck-inspector-body-collapsed"), document.body.classList.add("ck-inspector-body-expanded")), r.a.createElement(Or, { bounds: "window", enableResizing: { top: !this.props.isCollapsed }, disableDragging: !0, minHeight: "100", maxHeight: "100%", style: jr, className: ["ck-inspector", this.props.isCollapsed ? "ck-inspector_collapsed" : ""].join(" "), position: { x: 0, y: "100%" }, size: { width: "100%", height: this.props.isCollapsed ? 30 : this.props.height }, onResizeStop: this.handleInspectorResize }, r.a.createElement(Qt, { onTabChange: this.props.setActiveTab, contentBefore: r.a.createElement(Do, { key: "docs" }), activeTab: this.props.activeTab, contentAfter: [r.a.createElement(an, { key: "selector" }), r.a.createElement("span", { className: "ck-inspector-separator", key: "separator-a" }), r.a.createElement(Ia, { key: "quick-actions" }), r.a.createElement("span", { className: "ck-inspector-separator", key: "separator-b" }), r.a.createElement(Ro, { key: "inspector-toggle" })] }, r.a.createElement(Na, { label: "Model" }), r.a.createElement(Aa, { label: "View" }), r.a.createElement(Oo, { label: "Commands" }), r.a.createElement(Zo, { label: "Schema" })));
+            return this.props.isCollapsed ? (document.body.classList.remove("ck-inspector-body-expanded"), document.body.classList.add("ck-inspector-body-collapsed")) : (document.body.classList.remove("ck-inspector-body-collapsed"), document.body.classList.add("ck-inspector-body-expanded")), r.a.createElement(Or, { bounds: "window", enableResizing: { top: !this.props.isCollapsed }, disableDragging: !0, minHeight: "100", maxHeight: "100%", style: jr, className: ["ck-inspector", this.props.isCollapsed ? "ck-inspector_collapsed" : ""].join(" "), position: { x: 0, y: "100%" }, size: { width: "100%", height: this.props.isCollapsed ? 30 : this.props.height }, onResizeStop: this.handleInspectorResize }, r.a.createElement(Qt, { onTabChange: this.props.setActiveTab, contentBefore: r.a.createElement(Ro, { key: "docs" }), activeTab: this.props.activeTab, contentAfter: [r.a.createElement(an, { key: "selector" }), r.a.createElement("span", { className: "ck-inspector-separator", key: "separator-a" }), r.a.createElement(Ia, { key: "quick-actions" }), r.a.createElement("span", { className: "ck-inspector-separator", key: "separator-b" }), r.a.createElement(Do, { key: "inspector-toggle" })] }, r.a.createElement(Na, { label: "Model" }), r.a.createElement(Aa, { label: "View" }), r.a.createElement(Oo, { label: "Commands" }), r.a.createElement(Zo, { label: "Schema" })));
           }
           componentWillUnmount() {
             document.body.classList.remove("ck-inspector-body-expanded"), document.body.classList.remove("ck-inspector-body-collapsed");
           }
         }
-        var ri = Re(({ editors: E, currentEditorName: s, ui: { isCollapsed: d, height: m, activeTab: S } }) => ({ isCollapsed: d, height: m, editors: E, currentEditorName: s, activeTab: S }), { toggleIsCollapsed: At, setHeight: function(E) {
+        var ri = De(({ editors: E, currentEditorName: s, ui: { isCollapsed: d, height: m, activeTab: S } }) => ({ isCollapsed: d, height: m, editors: E, currentEditorName: s, activeTab: S }), { toggleIsCollapsed: At, setHeight: function(E) {
           return { type: "SET_HEIGHT", newHeight: E };
         }, setEditors: kt, setCurrentEditorName: Jt, setActiveTab: wt })(hr);
-        class Do extends c.Component {
+        class Ro extends c.Component {
           render() {
             return r.a.createElement("a", { className: "ck-inspector-navbox__navigation__logo", title: "Go to the documentation", href: "https://ckeditor.com/docs/ckeditor5/latest/", target: "_blank", rel: "noopener noreferrer" }, "CKEditor documentation");
           }
@@ -11181,13 +11194,13 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             })(s) && this.props.toggleIsCollapsed();
           }
         }
-        const Ro = Re(({ ui: { isCollapsed: E } }) => ({ isCollapsed: E }), { toggleIsCollapsed: At })(zi);
+        const Do = De(({ ui: { isCollapsed: E } }) => ({ isCollapsed: E }), { toggleIsCollapsed: At })(zi);
         class Ao extends c.Component {
           render() {
             return r.a.createElement("div", { className: "ck-inspector-editor-selector", key: "editor-selector" }, this.props.currentEditorName ? r.a.createElement(rn, { id: "inspector-editor-selector", label: "Instance", value: this.props.currentEditorName, options: [...this.props.editors].map(([s]) => s), onChange: (s) => this.props.setCurrentEditorName(s.target.value) }) : "");
           }
         }
-        const an = Re(({ currentEditorName: E, editors: s }) => ({ currentEditorName: E, editors: s }), { setCurrentEditorName: Jt })(Ao);
+        const an = De(({ currentEditorName: E, editors: s }) => ({ currentEditorName: E, editors: s }), { setCurrentEditorName: Jt })(Ao);
         function Li(E) {
           document.body.style.setProperty("--ck-inspector-height", E);
         }
@@ -11268,7 +11281,7 @@ const xu = /* @__PURE__ */ wu(_u);
  * @license GPL-3.0-or-later
  */
 const Su = function(xe) {
-  const R = xe.plugins.get(tc), p = $(xe.ui.view.element), i = $(xe.sourceElement), u = `ckeditor${Math.floor(Math.random() * 1e9)}`, c = [
+  const D = xe.plugins.get(tc), p = $(xe.ui.view.element), i = $(xe.sourceElement), u = `ckeditor${Math.floor(Math.random() * 1e9)}`, c = [
     "keypress",
     "keyup",
     "change",
@@ -11278,11 +11291,11 @@ const Su = function(xe) {
     "mousedown",
     "mouseup"
   ].map((r) => `${r}.${u}`).join(" ");
-  R.on("change:isSourceEditingMode", () => {
+  D.on("change:isSourceEditingMode", () => {
     const r = p.find(
       ".ck-source-editing-area"
     );
-    if (R.isSourceEditingMode) {
+    if (D.isSourceEditingMode) {
       let _ = r.attr("data-value");
       r.on(c, () => {
         _ !== (_ = r.attr("data-value")) && i.val(_);
@@ -11290,9 +11303,9 @@ const Su = function(xe) {
     } else
       r.off(`.${u}`);
   });
-}, Cu = function(xe, R) {
-  if (R.heading !== void 0) {
-    var p = R.heading.options;
+}, Cu = function(xe, D) {
+  if (D.heading !== void 0) {
+    var p = D.heading.options;
     p.find((i) => i.view === "h1") !== void 0 && xe.keystrokes.set(
       "Ctrl+Alt+1",
       () => xe.execute("heading", { value: "heading1" })
@@ -11313,7 +11326,7 @@ const Su = function(xe) {
       () => xe.execute("heading", { value: "heading6" })
     ), p.find((i) => i.model === "paragraph") !== void 0 && xe.keystrokes.set("Ctrl+Alt+p", "paragraph");
   }
-}, Tu = function(xe, R) {
+}, Tu = function(xe, D) {
   let p = null;
   const i = xe.editing.view.document, u = xe.plugins.get("ClipboardPipeline");
   i.on("clipboardOutput", (c, r) => {
@@ -11342,7 +11355,7 @@ const Su = function(xe) {
             const V = new RegExp('data-entry-id="' + M + '"');
             if (!(p === xe.id && !V.test(x))) {
               let A = null;
-              p !== xe.id && (R.includes(gu) ? A = xe.config.get("entryTypeOptions").map((J) => J.value) : (Craft.cp.displayError(
+              p !== xe.id && (D.includes(gu) ? A = xe.config.get("entryTypeOptions").map((J) => J.value) : (Craft.cp.displayError(
                 Craft.t(
                   "ckeditor",
                   "This field doesn’t allow nested entries."
@@ -11375,33 +11388,33 @@ const Su = function(xe) {
       }
     }
   });
-}, Au = async function(xe, R) {
-  typeof xe == "string" && (xe = document.querySelector(`#${xe}`)), R.licenseKey = "GPL";
-  const p = await ru.create(xe, R);
+}, Au = async function(xe, D) {
+  typeof xe == "string" && (xe = document.querySelector(`#${xe}`)), D.licenseKey = "GPL";
+  const p = await ru.create(xe, D);
   return Craft.showCkeditorInspector && Craft.userIsAdmin && xu.attach(p), p.editing.view.change((i) => {
     const u = p.editing.view.document.getRoot();
-    if (typeof R.accessibleFieldName < "u" && R.accessibleFieldName.length) {
+    if (typeof D.accessibleFieldName < "u" && D.accessibleFieldName.length) {
       let c = u.getAttribute("aria-label");
       i.setAttribute(
         "aria-label",
-        R.accessibleFieldName + ", " + c,
+        D.accessibleFieldName + ", " + c,
         u
       );
     }
-    typeof R.describedBy < "u" && R.describedBy.length && i.setAttribute(
+    typeof D.describedBy < "u" && D.describedBy.length && i.setAttribute(
       "aria-describedby",
-      R.describedBy,
+      D.describedBy,
       u
     );
   }), p.updateSourceElement(), p.model.document.on("change:data", () => {
     p.updateSourceElement();
-  }), R.plugins.includes(tc) && Su(p), R.plugins.includes(ou) && Cu(p, R), Tu(p, R.plugins), p;
+  }), D.plugins.includes(tc) && Su(p), D.plugins.includes(ou) && Cu(p, D), Tu(p, D.plugins), p;
 };
 export {
   gu as CraftEntries,
   Pu as CraftImageInsertUI,
-  Ru as CraftLink,
-  Du as ImageEditor,
+  Du as CraftLink,
+  Ru as ImageEditor,
   Nu as ImageTransform,
   Au as create
 };
