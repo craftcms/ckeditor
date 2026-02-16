@@ -176,13 +176,14 @@ export default class CraftImageInsertUI extends ImageInsertUI {
    * Attach the uploader with drag event handler
    */
   _attachUploader() {
-    let params = this.editor.config.get('assetUploadParams') ?? null;
+    let editor = this.editor;
+    let params = editor.config.get('assetUploadParams') ?? null;
 
     if (!params || !params['folderId']) {
       return;
     }
 
-    this.$container = $(this.editor.sourceElement).parents('.input');
+    this.$container = $(editor.sourceElement).parents('.input');
     this.progressBar = new Craft.ProgressBar(
       $('<div class="progress-shade"></div>').appendTo(this.$container),
     );
@@ -191,7 +192,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       type: 'file',
       class: 'hidden',
       multiple: false,
-    }).insertAfter(this.editor.sourceElement);
+    }).insertAfter(editor.sourceElement);
 
     var options = {
       dropZone: this.$container,
@@ -220,6 +221,29 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     delete params['volumeType'];
 
     this.uploader.setParams(params);
+
+    // this ensures the image is inserted where the drop-target suggests it will and not always at the start/end of the content
+    editor.editing.view.document.on(
+      'drop',
+      async (event, data) => {
+        const view = editor.editing.view;
+        const model = editor.model;
+        const mapper = editor.editing.mapper;
+
+        const dropRange = data.dropRange;
+
+        if (dropRange) {
+          // Convert the view position to a model position
+          const viewPosition = dropRange.start;
+          const modelPosition = mapper.toModelPosition(viewPosition);
+
+          editor.model.change((writer) => {
+            writer.setSelection(modelPosition, 0);
+          });
+        }
+      },
+      {priority: 'high'},
+    );
   }
 
   /**
