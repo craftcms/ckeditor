@@ -257,7 +257,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     const urls = [];
 
     queue.on('afterRun', () => {
-      this.editor.execute('insertImage', {source: urls});
+      this.editor.execute('insertImage', {source: urls, breakBlock: true});
     });
 
     queue.push(
