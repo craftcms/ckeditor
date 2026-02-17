@@ -11,6 +11,14 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     return 'CraftImageInsertUI';
   }
 
+  constructor() {
+    super(...arguments);
+    this.$container = null;
+    this.progressBar = null;
+    this.$fileInput = null;
+    this.uploader = null;
+  }
+
   init() {
     // Make sure there are linked volumes
     if (!this._assetSources) {
@@ -27,6 +35,8 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     };
     componentFactory.add('insertImage', componentCreator);
     componentFactory.add('imageInsert', componentCreator);
+
+    this._attachUploader();
   }
 
   get _assetSources() {
@@ -160,5 +170,168 @@ export default class CraftImageInsertUI extends ImageInsertUI {
           transform: matches[3] !== 'url' ? matches[4] : null,
         }
       : null;
+  }
+
+  /**
+   * Attach the uploader with drag event handler
+   */
+  _attachUploader() {
+    let editor = this.editor;
+    let params = editor.config.get('assetUploadParams') ?? null;
+
+    if (!params || !params['folderId']) {
+      return;
+    }
+
+    this.$container = $(editor.sourceElement).parents('.input');
+    this.progressBar = new Craft.ProgressBar(
+      $('<div class="progress-shade"></div>').appendTo(this.$container),
+    );
+
+    this.$fileInput = $('<input/>', {
+      type: 'file',
+      class: 'hidden',
+      multiple: false,
+    }).insertAfter(editor.sourceElement);
+
+    var options = {
+      dropZone: this.$container,
+      fileInput: this.$fileInput,
+    };
+
+    if (params.kind) {
+      options.allowedKinds = params.kind;
+    }
+
+    options.canAddMoreFiles = true;
+
+    options.events = {};
+    options.events.fileuploadstart = this._onUploadStart.bind(this);
+    options.events.fileuploadprogressall = this._onUploadProgress.bind(this);
+    options.events.fileuploaddone = this._onUploadComplete.bind(this);
+    options.events.fileuploadfail = this._onUploadFailure.bind(this);
+
+    this.uploader = Craft.createUploader(
+      params['volumeType'],
+      this.$container,
+      options,
+    );
+
+    delete params['volumeId'];
+    delete params['volumeType'];
+
+    this.uploader.setParams(params);
+
+    // this ensures the image is inserted where the drop-target suggests it will and not always at the start/end of the content
+    editor.editing.view.document.on(
+      'drop',
+      async (event, data) => {
+        const view = editor.editing.view;
+        const model = editor.model;
+        const mapper = editor.editing.mapper;
+
+        const dropRange = data.dropRange;
+
+        if (dropRange) {
+          // Convert the view position to a model position
+          const viewPosition = dropRange.start;
+          const modelPosition = mapper.toModelPosition(viewPosition);
+
+          editor.model.change((writer) => {
+            writer.setSelection(modelPosition, 0);
+          });
+        }
+      },
+      {priority: 'high'},
+    );
+  }
+
+  /**
+   * On upload start.
+   */
+  _onUploadStart() {
+    this.progressBar.$progressBar.css({
+      top: Math.round(this.$container.outerHeight() / 2) - 6,
+    });
+
+    this.$container.addClass('uploading');
+    this.progressBar.resetProgressBar();
+    this.progressBar.showProgressBar();
+  }
+
+  /**
+   * On upload progress.
+   */
+  _onUploadProgress(event, data = null) {
+    data = event instanceof CustomEvent ? event.detail : data;
+
+    var progress = parseInt(Math.min(data.loaded / data.total, 1) * 100, 10);
+    this.progressBar.setProgressPercentage(progress);
+  }
+
+  /**
+   * On a file being uploaded.
+   */
+  _onUploadComplete(event, data = null) {
+    const asset = event instanceof CustomEvent ? event.detail : data.result;
+    this.progressBar.hideProgressBar();
+    this.$container.removeClass('uploading');
+    const defaultTransform = this.editor.config.get('defaultTransform');
+    const queue = new Craft.Queue();
+    const urls = [];
+
+    queue.on('afterRun', () => {
+      this.editor.execute('insertImage', {source: urls, breakBlock: true});
+    });
+
+    queue.push(
+      () =>
+        new Promise((resolve) => {
+          const hasTransform = this._isTransformUrl(asset.url);
+          // Do we need to apply the default transform?
+          if (!hasTransform && defaultTransform) {
+            this._getTransformUrl(asset.assetId, defaultTransform, (url) => {
+              urls.push(url);
+              resolve();
+            });
+          } else {
+            const url = this._buildAssetUrl(
+              asset.assetId,
+              asset.url,
+              hasTransform ? transform : defaultTransform,
+            );
+            urls.push(url);
+            resolve();
+          }
+        }),
+    );
+  }
+
+  /**
+   * On Upload Failure.
+   */
+  _onUploadFailure(event, data = null) {
+    const response =
+      event instanceof CustomEvent ? event.detail : data?.jqXHR?.responseJSON;
+
+    let {message, filename, errors} = response || {};
+
+    filename = filename || data?.files?.[0].name;
+
+    let errorMessages = errors ? Object.values(errors).flat() : [];
+
+    if (!message) {
+      if (errorMessages.length) {
+        message = errorMessages.join('\n');
+      } else if (filename) {
+        message = Craft.t('app', 'Upload failed for “{filename}”.', {filename});
+      } else {
+        message = Craft.t('app', 'Upload failed.');
+      }
+    }
+
+    Craft.cp.displayError(message);
+    this.progressBar.hideProgressBar();
+    this.$container.removeClass('uploading');
   }
 }
