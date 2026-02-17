@@ -10,6 +10,7 @@
 - The link modal UI now reflects Craft’s native Link fields. ([#375](https://github.com/craftcms/ckeditor/pull/375))
 - Added support for drag-n-drop image uploading. ([#486](https://github.com/craftcms/ckeditor/pull/486))
 - Added the “Advanced Link Fields” setting to CKEditor configs. ([#375](https://github.com/craftcms/ckeditor/pull/375))
+- Custom editor styles now get registered with a higher specificity than the default editor styles. ([#433](https://github.com/craftcms/ckeditor/pull/433)) 
 - Added `craft\ckeditor\helpers\CkeditorConfig`. ([#363](https://github.com/craftcms/ckeditor/pull/363))
 - Added `craft\ckeditor\web\assets\BaseCkeditorPackageAsset::$namespace`. ([#363](https://github.com/craftcms/ckeditor/pull/363))
 - Added `craft\ckeditor\CkeConfig::$advancedLinkFields`.
