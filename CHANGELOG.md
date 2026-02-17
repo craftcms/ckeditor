@@ -5,8 +5,10 @@
 > [!IMPORTANT]
 > Third party CKEditor plugins are now registered as modules. See [#363](https://github.com/craftcms/ckeditor/pull/363) for details on how to update existing Craft plugins.
 
+- CKEditor now requires Craft CMS 5.9 or later.
 - Added support for fullscreen mode. ([#399](https://github.com/craftcms/ckeditor/pull/399))
 - The link modal UI now reflects Craft’s native Link fields. ([#375](https://github.com/craftcms/ckeditor/pull/375))
+- Added support for drag-n-drop image uploading. ([#486](https://github.com/craftcms/ckeditor/pull/486))
 - Added the “Advanced Link Fields” setting to CKEditor configs. ([#375](https://github.com/craftcms/ckeditor/pull/375))
 - Added `craft\ckeditor\helpers\CkeditorConfig`. ([#363](https://github.com/craftcms/ckeditor/pull/363))
 - Added `craft\ckeditor\web\assets\BaseCkeditorPackageAsset::$namespace`. ([#363](https://github.com/craftcms/ckeditor/pull/363))
