@@ -18,17 +18,17 @@ const ToolbarBuilder = Garnish.Base.extend({
   showingInsertion: !1,
   closestItem: null,
   init: function (t, e, s, r) {
-    (this.$sourceContainer = $(
+    ((this.$sourceContainer = $(
       `#${t} .ckeditor-tb--source .ck-toolbar__items`,
     )),
       (this.$targetContainer = $(
         `#${t} .ckeditor-tb--target .ck-toolbar__items`,
       )),
       (this.$input = $(`#${t} input`)),
-      (this.value = JSON.parse(this.$input.val()));
+      (this.value = JSON.parse(this.$input.val())));
     const a = document.createElement('DIV'),
       c = document.createElement('DIV');
-    a.appendChild(c),
+    (a.appendChild(c),
       create(c, {
         linkOptions: [{elementType: 'craft\\elements\\Asset'}],
         assetSources: ['*'],
@@ -48,7 +48,7 @@ const ToolbarBuilder = Garnish.Base.extend({
             if (o !== -1) {
               for (let l = 0; l < i.length; l++)
                 if (this.value[o + l] !== i[l].button) {
-                  f.splice(n, 1, ...i.map((d) => [d])), (n += i.length - 1);
+                  (f.splice(n, 1, ...i.map((d) => [d])), (n += i.length - 1));
                   break;
                 }
             }
@@ -61,7 +61,7 @@ const ToolbarBuilder = Garnish.Base.extend({
                 '<div class="offset-drag-helper ck ck-reset_all ck-editor ck-rounded-corners"/>',
               ),
               o = $('<div class="ck ck-toolbar"/>').appendTo(i);
-            return n.appendTo(o), i;
+            return (n.appendTo(o), i);
           },
           moveHelperToCursor: !0,
           onDragStart: () => {
@@ -92,9 +92,9 @@ const ToolbarBuilder = Garnish.Base.extend({
                 });
               }
             else
-              n.addClass('hidden'),
+              (n.addClass('hidden'),
                 this.$insertion.insertBefore(n),
-                (this.showingInsertion = !0);
+                (this.showingInsertion = !0));
             this.setMidpoints();
           },
           onDrag: () => {
@@ -115,11 +115,11 @@ const ToolbarBuilder = Garnish.Base.extend({
                     d && d.configOption && s.addSetting(d.configOption);
                   }
                 }
-                i.data('sourceItem', n[0]),
+                (i.data('sourceItem', n[0]),
                   i.css('visibility', 'hidden'),
                   this.$insertion.replaceWith(i),
-                  (this.drag.$draggee = i);
-              } else this.$insertion.replaceWith(n), n.removeClass('hidden');
+                  (this.drag.$draggee = i));
+              } else (this.$insertion.replaceWith(n), n.removeClass('hidden'));
             else {
               if (!this.draggingSourceItem) {
                 const i = $(n.data('sourceItem'));
@@ -142,15 +142,15 @@ const ToolbarBuilder = Garnish.Base.extend({
                   o = n.css(i);
                 n.css(i, '');
                 const l = n.css(i);
-                n.css(i, o),
+                (n.css(i, o),
                   n.stop().velocity({[i]: l}, 200, () => {
                     n.css(i, '');
-                  });
+                  }));
               }
             }
-            this.drag.returnHelpersToDraggees(),
+            (this.drag.returnHelpersToDraggees(),
               (this.$items = this.$targetContainer.children()),
-              (this.value = []);
+              (this.value = []));
             for (const i of this.$items.toArray()) {
               const o = $(i);
               o.hasClass('ckeditor-tb--separator')
@@ -168,30 +168,30 @@ const ToolbarBuilder = Garnish.Base.extend({
             (p[n.map((o) => o.button).join(',')] = i[0]),
             this.value.includes(n[0].button) && i.addClass('hidden'));
         }
-        (p['|'] = this.renderSeparator().appendTo(this.$sourceContainer)[0]),
-          (this.$items = $());
+        ((p['|'] = this.renderSeparator().appendTo(this.$sourceContainer)[0]),
+          (this.$items = $()));
         for (let n = 0; n < this.value.length; n++) {
           const i = this.value[n];
           let o, l;
           if (i === '|')
-            (o = this.renderSeparator().appendTo(this.$targetContainer)),
-              (l = '|');
+            ((o = this.renderSeparator().appendTo(this.$targetContainer)),
+              (l = '|'));
           else {
             const d = f.find((u) => u.some((C) => C.button === i));
             if (!d || ((o = this.renderComponentGroup(d)), !o)) continue;
-            o.appendTo(this.$targetContainer),
+            (o.appendTo(this.$targetContainer),
               (l = d.map((u) => u.button).join(',')),
-              (n += d.length - 1);
+              (n += d.length - 1));
           }
-          o.data('sourceItem', p[l]), (this.$items = this.$items.add(o));
+          (o.data('sourceItem', p[l]), (this.$items = this.$items.add(o)));
         }
-      });
+      }));
   },
   renderSeparator: function () {
     const t = $(
       '<div class="ckeditor-tb--item ckeditor-tb--separator" data-cke-tooltip-text="Separator"><span class="ck ck-toolbar__separator"/></div>',
     );
-    return this.drag.addItems(t), t;
+    return (this.drag.addItems(t), t);
   },
   renderComponentGroup: function (t) {
     t = t.map((a) => (typeof a == 'string' ? a : a.button));
@@ -227,7 +227,7 @@ const ToolbarBuilder = Garnish.Base.extend({
     if (!e) throw `Missing component: ${t}`;
     e.isRendered || e.render();
     const s = $(e.element.outerHTML);
-    return s.data('componentName', t), s;
+    return (s.data('componentName', t), s);
   },
   getClosestItem: function () {
     if (
@@ -297,19 +297,19 @@ const ConfigOptions = Garnish.Base.extend({
   jsEditor: null,
   defaults: null,
   init: function (id, jsonSchemaUri) {
-    (this.jsonSchemaUri = jsonSchemaUri),
+    ((this.jsonSchemaUri = jsonSchemaUri),
       (this.$container = $(`#${id}`)),
       (this.$jsonContainer = $(`#${id}-json-container`)),
       (this.$jsContainer = $(`#${id}-js-container`)),
       (this.jsonEditor = window.monacoEditorInstances[`${id}-json`]),
-      (this.jsEditor = window.monacoEditorInstances[`${id}-js`]);
+      (this.jsEditor = window.monacoEditorInstances[`${id}-js`]));
     const $languagePicker = this.$container.children('.btngroup');
-    this.$jsonContainer.hasClass('hidden')
+    (this.$jsonContainer.hasClass('hidden')
       ? (this.language = 'js')
       : (this.language = 'json'),
-      (this.defaults = {});
+      (this.defaults = {}));
     let lastJsValue = null;
-    new Craft.Listbox($languagePicker, {
+    (new Craft.Listbox($languagePicker, {
       onChange: (t) => {
         switch (((this.language = t.data('language')), this.language)) {
           case 'json':
@@ -329,23 +329,23 @@ const ConfigOptions = Garnish.Base.extend({
                 .trigger('click');
               break;
             }
-            this.$jsonContainer.removeClass('hidden'),
-              this.$jsContainer.addClass('hidden');
+            (this.$jsonContainer.removeClass('hidden'),
+              this.$jsContainer.addClass('hidden'));
             const e = this.js2json(lastJsValue);
-            (lastJsValue = null),
+            ((lastJsValue = null),
               this.jsonEditor.getModel().setValue(
                 e ||
                   `{
   
 }`,
               ),
-              this.jsEditor.getModel().setValue('');
+              this.jsEditor.getModel().setValue(''));
             break;
           case 'js':
-            this.$jsonContainer.addClass('hidden'),
-              this.$jsContainer.removeClass('hidden');
+            (this.$jsonContainer.addClass('hidden'),
+              this.$jsContainer.removeClass('hidden'));
             let s;
-            lastJsValue !== null
+            (lastJsValue !== null
               ? ((s = lastJsValue), (lastJsValue = null))
               : (s = this.json2js(this.jsonEditor.getModel().getValue())),
               this.jsEditor.getModel().setValue(
@@ -354,7 +354,7 @@ const ConfigOptions = Garnish.Base.extend({
   
 }`,
               ),
-              this.jsonEditor.getModel().setValue('');
+              this.jsonEditor.getModel().setValue(''));
             break;
         }
       },
@@ -378,7 +378,7 @@ const ConfigOptions = Garnish.Base.extend({
               text: trimmed,
             },
           ]);
-      });
+      }));
   },
   getConfig: function () {
     let t;
