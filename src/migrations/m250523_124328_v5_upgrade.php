@@ -41,8 +41,8 @@ class m250523_124328_v5_upgrade extends Migration
                 foreach ($fields as $field) {
                     // compare entry types for each field
                     $pcFieldConfig = $projectConfig->get($projectConfig::PATH_FIELDS . '.' . $field->uid);
-                    $fieldEntryTypeConfigs[$field->uid] = ProjectConfig::unpackAssociativeArrays($pcFieldConfig['settings']['entryTypes']);
-                    $fieldEntryTypeConfigs[$field->uid]['expandEntryButtons'] = $pcFieldConfig['settings']['expandEntryButtons'];
+                    $fieldEntryTypeConfigs[$field->uid] = ProjectConfig::unpackAssociativeArrays($pcFieldConfig['settings']['entryTypes'] ?? []);
+                    $fieldEntryTypeConfigs[$field->uid]['expandEntryButtons'] = $pcFieldConfig['settings']['expandEntryButtons'] ?? false;
                 }
                 // get the list of the unique entry types configs
                 $uniqueFieldEntryTypeConfigs = Collection::make($fieldEntryTypeConfigs)
@@ -122,7 +122,7 @@ class m250523_124328_v5_upgrade extends Migration
             $pcCkeConfig['entryTypes'] = $entryTypesConfig;
             unset($pcFieldConfig['settings']['entryTypes']);
 
-            if ($pcFieldConfig['settings']['expandEntryButtons']) {
+            if ($pcFieldConfig['settings']['expandEntryButtons'] ?? false) {
                 foreach ($entryTypesConfig as $key => $item) {
                     try {
                         $entryType = Craft::$app->getEntries()->getEntryType($item['uid']);
