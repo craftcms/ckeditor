@@ -2,8 +2,8 @@
 
 return [
     'Add nested content' => 'Add nested content',
-    'Advanced' => 'Advanced',
     'Advanced Link Fields' => 'Advanced Link Fields',
+    'Advanced' => 'Advanced',
     'Available Transforms' => 'Available Transforms',
     'CKEditor Config' => 'CKEditor Config',
     'CKEditor Configs' => 'CKEditor Configs',
