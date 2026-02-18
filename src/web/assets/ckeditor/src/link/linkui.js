@@ -13,8 +13,8 @@ import {
   createLabeledInputText,
   LabeledFieldView,
   LinkUI,
-  Plugin,
   ModelRange,
+  Plugin,
   SwitchButtonView,
   View,
   ViewModel,
@@ -439,6 +439,7 @@ export default class CraftLinkUI extends Plugin {
           editor.editing.view.focus();
 
           if ((!isCollapsed || currentLinkElement) && range) {
+            // this is the path when modifying an existing link or adding one to a selected text
             // Restore the previous range
             model.change((writer) => {
               writer.setSelection(range);
@@ -449,6 +450,8 @@ export default class CraftLinkUI extends Plugin {
             let values = this._getAdvancedFieldValues();
             linkCommand.execute(url, values);
           } else {
+            // this is the path when adding a link without anything being pre-selected;
+            // e.g. you only have a cursor flashing
             model.change((writer) => {
               // get all the advanced link fields and pass them along with linkHref
               let values = this._getAdvancedFieldValues();
