@@ -1,6 +1,11 @@
 {% import '_includes/forms.twig' as forms %}
 {% import 'codeeditor/codeEditor.twig' as codeEditor %}
 
+
+{#{% script with {type: 'module'} %}#}
+{#import {CkeEntryTypeSelectInput} from '@craftcms/ckeditor-config';#}
+{#{% endscript %}#}
+
 {% set readOnly = readOnly ?? false %}
 
 {% set baseMonacoOptions = {
@@ -69,6 +74,21 @@
     </div>
   {% endblock %}
 {% endembed %}
+
+{% set config = {
+  label: 'Entry Types'|t('app'),
+  instructions: 'Choose the types of entries that can be created in this field.'|t('app'),
+  id: 'entry-types',
+  name: 'entryTypes[]',
+  values: ckeConfig.getEntryTypes(),
+  allowOverrides: true,
+  create: true,
+  sortable: true,
+  errors: ckeConfig.getErrors('entryTypes'),
+  data: {'error-key': 'entryTypes'},
+} %}
+{% set config = config|merge({id: config.id ?? "entrytypeselect#{random()}"}) %}
+{{ forms.field(config, 'template:ckeditor/cke-configs/entryTypeSelect') }}
 
 {{ forms.checkboxSelectField({
   label: 'Heading Levels'|t('ckeditor'),
@@ -186,30 +206,46 @@
   {% endblock %}
 {% endembed %}
 
-{% script with {type: 'module'} %}
-import {ConfigOptions, ToolbarBuilder} from '@craftcms/ckeditor-config';
-{{ importStatements|raw }}
+<script type="module">
+  import {ConfigOptions, ToolbarBuilder} from '@craftcms/ckeditor-config';
+  {{ importStatements|raw }}
 
-const configOptions = new ConfigOptions("{{ configOptionsId }}", "{{ jsonSchemaUri }}");
-new ToolbarBuilder("{{  toolbarBuilderId }}", "{{ containerId }}", configOptions, [{{ plugins | join(',') }}]);
+  function initializeConfig() {
+    const configOptions = new ConfigOptions("{{ configOptionsId }}", "{{ jsonSchemaUri }}");
+    new ToolbarBuilder("{{ toolbarBuilderId }}", "{{ containerId }}", configOptions, [{{ plugins | join(',') }}]);
 
-(() => {
-  // Register the config options JSON schema
-  const jsonSchemaUri = {{ jsonSchemaUri|json_encode|raw }};
-  const schema = JSON.parse(JSON.stringify({{jsonSchema|json_encode|raw}}));
+    (() => {
+      // Register the config options JSON schema
+      const jsonSchemaUri = {{ jsonSchemaUri|json_encode|raw }};
+      const schema = JSON.parse(JSON.stringify({{ jsonSchema|json_encode|raw }}));
 
-  monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
-    validate: true,
-    schemas: [
-      {
-        uri: jsonSchemaUri,
-        fileMatch: [jsonSchemaUri],
-        schema: schema,
-      },
-    ],
-  });
-})()
-{% endscript %}
+      monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+        validate: true,
+        schemas: [
+          {
+            uri: jsonSchemaUri,
+            fileMatch: [jsonSchemaUri],
+            schema: schema,
+          },
+        ],
+      });
+    })();
+  }
+
+  /**
+   * This is not ideal, but when loading the config in a slideout (seemingly only in FireFox)
+   * this module code can run `window.monacoEditorInstances` has been created.
+   */
+  function checkWindow() {
+    if (typeof window.monacoEditorInstances === 'undefined') {
+      setTimeout(checkWindow, 100);
+    } else {
+      initializeConfig();
+    }
+  }
+
+  checkWindow();
+</script>
 
 {{ codeEditor.textareaField(
   {

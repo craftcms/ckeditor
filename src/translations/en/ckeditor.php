@@ -2,8 +2,8 @@
 
 return [
     'Add nested content' => 'Add nested content',
-    'Advanced' => 'Advanced',
     'Advanced Link Fields' => 'Advanced Link Fields',
+    'Advanced' => 'Advanced',
     'Available Transforms' => 'Available Transforms',
     'CKEditor Config' => 'CKEditor Config',
     'CKEditor Configs' => 'CKEditor Configs',
@@ -39,7 +39,9 @@ return [
     'Purify HTML' => 'Purify HTML',
     'Raw content only' => 'Raw content only',
     'Removes any potentially-malicious code on save, by running the submitted data through {link}.' => 'Removes any potentially-malicious code on save, by running the submitted data through {link}.',
-    'Show toolbar buttons for entry types with icons' => 'Show toolbar buttons for entry types with icons',
+    'Show as a separate button' => 'Show as a separate button',
+    'Show as a separate button' => 'Show as a separate button',
+    'Show in a dropdown' => 'Show in a dropdown',
     'Show word count' => 'Show word count',
     'Site: {name}' => 'Site: {name}',
     'The default transform that should be applied when inserting an image.' => 'The default transform that should be applied when inserting an image.',

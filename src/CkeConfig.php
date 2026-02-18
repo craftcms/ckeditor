@@ -11,6 +11,9 @@ use Craft;
 use craft\base\Actionable;
 use craft\base\Chippable;
 use craft\base\Model;
+use craft\ckeditor\helpers\CkeditorConfig;
+use craft\ckeditor\models\EntryType as CkeEntryType;
+use craft\helpers\Cp;
 use craft\helpers\Json;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
@@ -82,6 +85,13 @@ class CkeConfig extends Model implements Chippable, Actionable
      */
     public ?string $css = null;
 
+    /**
+     * @var CkeEntryType[] The field’s available entry types
+     * @see getEntryTypes()
+     * @see setEntryTypes()
+     */
+    private array $_entryTypes = [];
+
     public function __construct($config = [])
     {
         if (isset($config['toolbar']) && is_array($config['toolbar'])) {
@@ -116,6 +126,10 @@ class CkeConfig extends Model implements Chippable, Actionable
             if ($config['css'] === '') {
                 unset($config['css']);
             }
+        }
+
+        if (isset($config['entryTypes']) && $config['entryTypes'] === '') {
+            $config['entryTypes'] = [];
         }
 
         unset($config['listPlugin']);
@@ -306,5 +320,66 @@ JS, [
                 'when' => fn() => isset($this->_json),
             ],
         ];
+    }
+
+    /**
+     * Returns the available entry types.
+     *
+     * @return CkeEntryType[]
+     * @since 5.0.0
+     */
+    public function getEntryTypes(): array
+    {
+        return $this->_entryTypes;
+    }
+
+    /**
+     * Sets the available entry types.
+     *
+     * @param array<string> $entryTypes The entry types, or their IDs or UUIDs
+     * @since 5.0.0
+     */
+    public function setEntryTypes(array $entryTypes): void
+    {
+        // normalize the $entryTypes; when saving the config, it'll be an array of json strings, like so:
+        foreach ($entryTypes as &$entryType) {
+            if (is_string($entryType)) {
+                try {
+                    $entryType = Json::decode($entryType);
+                } catch (InvalidArgumentException) {
+                    // do nothing?
+                }
+            }
+        }
+        unset($entryType);
+
+        foreach ($entryTypes as $entryType) {
+            /** @var array $entryType */
+            $this->_entryTypes[] = CkeditorConfig::getCkeEntryType($entryType);
+        }
+    }
+
+    /**
+     * Returns entry type options in form of an array with 'label' and 'value' keys for each option.
+     *
+     * @return array
+     * @since 5.0.0
+     */
+    public function getEntryTypeOptions(): array
+    {
+        $entryTypeOptions = [];
+
+        foreach ($this->getEntryTypes() as $entryType) {
+            $entryTypeOptions[] = [
+                'color' => $entryType->getColor()?->value,
+                'expanded' => $entryType['expanded'] ?? false,
+                'icon' => $entryType->icon ? Cp::iconSvg($entryType->icon) : null,
+                'label' => Craft::t('site', $entryType->name),
+                'uid' => $entryType->uid,
+                'value' => $entryType->id,
+            ];
+        }
+
+        return $entryTypeOptions;
     }
 }

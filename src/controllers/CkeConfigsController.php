@@ -13,11 +13,14 @@ use craft\ckeditor\helpers\CkeditorConfig;
 use craft\ckeditor\helpers\CkeditorConfigSchema;
 use craft\ckeditor\Plugin;
 use craft\ckeditor\web\assets\ckeconfig\CkeConfigAsset;
+use craft\helpers\Cp;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\web\assets\admintable\AdminTableAsset;
 use craft\web\Controller;
 use craft\web\CpScreenResponseBehavior;
 use yii\base\InvalidArgumentException;
+use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -55,7 +58,7 @@ class CkeConfigsController extends Controller
         if (!$ckeConfig) {
             if ($uid !== null) {
                 try {
-                    $ckeConfig = Plugin::getInstance()->getCkeConfigs()->getByUid($uid);
+                    $ckeConfig = Plugin::getInstance()->getCkeConfigs()->getByUid($uid, true);
                 } catch (InvalidArgumentException $e) {
                     throw new NotFoundHttpException($e->getMessage());
                 }
@@ -101,6 +104,7 @@ class CkeConfigsController extends Controller
                     'jsonSchema' => CkeditorConfigSchema::create(),
                     'jsonSchemaUri' => $jsonSchemaUri,
                     'advanceLinkOptions' => CkeditorConfig::advanceLinkOptions(),
+                    'entryTypes' => $ckeConfig->getEntryTypes(),
                 ]);
             });
 
@@ -135,6 +139,7 @@ class CkeConfigsController extends Controller
             'json' => $this->request->getBodyParam('json'),
             'js' => $this->request->getBodyParam('js'),
             'css' => $this->request->getBodyParam('css'),
+            'entryTypes' => $this->request->getBodyParam('entryTypes'),
         ]);
 
         if (!Plugin::getInstance()->getCkeConfigs()->save($ckeConfig)) {
@@ -158,5 +163,35 @@ class CkeConfigsController extends Controller
         $uid = $this->request->getBodyParam('uid') ?? $this->request->getBodyParam('id');
         Plugin::getInstance()->getCkeConfigs()->delete($uid);
         return $this->asSuccess(Craft::t('ckeditor', 'CKEditor config deleted.'));
+    }
+
+    /**
+     * Applies an entry type indicators depending on config.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @since 5.0.0
+     */
+    public function actionApplyEntryTypeIndicators(): Response
+    {
+        $config = $this->request->getRequiredBodyParam('config');
+
+        // get entry type by id
+        $entryType = CkeditorConfig::getCkeEntryType($config);
+
+        $chip = Cp::chipHtml($entryType, [
+            'inputName' => 'entryTypes[]',
+            'inputValue' => Json::encode($entryType->toArray(['id', 'name', 'handle', 'expanded'])),
+            'checkbox' => false,
+            'showActionMenu' => true,
+            'showHandle' => true,
+            'showIndicators' => true,
+            'hyperlink' => true,
+            'sortable' => true,
+        ]);
+
+        return $this->asJson([
+            'chip' => $chip,
+        ]);
     }
 }

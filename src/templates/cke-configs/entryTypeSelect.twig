@@ -1,0 +1,63 @@
+{% set allowOverrides = allowOverrides ?? false %}
+
+{% embed '_includes/forms/componentSelect.twig' with {
+    options: options ?? craft.app.entries.getAllEntryTypes(),
+    showHandles: true,
+    showIndicators: showIndicators ?? allowOverrides,
+    inputValueFn: et => allowOverrides ? et.toArray(['id', 'name', 'handle', 'expanded']) : null,
+    createAction: (create ?? false) ? 'entry-types/edit' : null,
+    registerJs: false,
+    jsSettings: {
+        allowOverrides,
+    }|merge(jsSettings ?? {}),
+} %}
+    {% block chips %}
+        {% for entryType in values %}
+            <li>
+                {% set chip = chip(entryType, {
+                    inputName: inputName ?? name ?? null,
+                    inputValue: allowOverrides ? entryType.toArray(['id', 'name', 'handle', 'expanded'])|json_encode : null,
+                    checkbox: selectable ?? false,
+                    showActionMenu: showActionMenus,
+                    showHandle: showHandles,
+                    showIndicators: showIndicators,
+                    hyperlink: hyperlinks,
+                }) %}
+                {% if disabled %}
+                    {% set chip = chip|removeClass('removable') %}
+                {% endif %}
+                {{ chip|raw }}
+            </li>
+        {% endfor %}
+    {% endblock %}
+{% endembed %}
+{% set limit = limit ?? null %}
+{% set showHandles = showHandles ?? false %}
+{% set showIndicators = showIndicators ?? false %}
+{% set sortable = (not limit or limit > 1) and (sortable ?? true) %}
+{% set showActionMenus = showActionMenus ?? true %}
+{% set hyperlinks = hyperlinks ?? true %}
+{% set withSearchInput = withSearchInput ?? true %}
+{% set createAction = createAction ?? null %}
+{% set disabled = (disabled ?? false) ? true : false %}
+
+{% set jsSettings = {
+    id: id|namespaceInputId,
+    name: name|namespaceInputName,
+    limit,
+    showHandles,
+    sortable,
+    showActionMenus,
+    hyperlinks,
+    createAction,
+    allowOverrides: true,
+}|merge(jsSettings ?? {}) %}
+
+
+{% script with {type: 'module'} %}
+import {CkeEntryTypeSelectInput} from '@craftcms/ckeditor-config';
+
+(() => {
+    new CkeEntryTypeSelectInput({{ jsSettings|json_encode|raw }});
+})();
+{% endscript %}

@@ -54,7 +54,6 @@ use craft\htmlfield\HtmlField;
 use craft\htmlfield\HtmlFieldData;
 use craft\i18n\Locale;
 use craft\models\CategoryGroup;
-use craft\models\EntryType;
 use craft\models\ImageTransform;
 use craft\models\Section;
 use craft\models\Volume;
@@ -467,26 +466,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     public bool $fullGraphqlData = true;
 
     /**
-     * @var string|null The “New entry” button label.
-     * @since 4.0.0
-     * @deprecated in 4.8.0
-     */
-    public ?string $createButtonLabel = null;
-
-    /**
-     * @var bool Whether entry types with icons should be shown as separate buttons in the toolbar.
-     * @since 4.9.0
-     */
-    public bool $expandEntryButtons = false;
-
-    /**
-     * @var EntryType[] The field’s available entry types
-     * @see getEntryTypes()
-     * @see setEntryTypes()
-     */
-    private array $_entryTypes = [];
-
-    /**
      * @inheritdoc
      */
     public function __construct($config = [])
@@ -496,6 +475,9 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             $config['removeInlineStyles'],
             $config['removeEmptyTags'],
             $config['removeNbsp'],
+            $config['createButtonLabel'],
+            $config['entryTypes'],
+            $config['expandEntryButtons'],
         );
 
         if (isset($config['enableSourceEditingForNonAdmins'])) {
@@ -512,10 +494,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
                 $config['wordLimit'] = (int)$config['fieldLimit'] ?: null;
             }
             unset($config['limitUnit'], $config['fieldLimit']);
-        }
-
-        if (isset($config['entryTypes']) && $config['entryTypes'] === '') {
-            $config['entryTypes'] = [];
         }
 
         if (isset($config['graphqlMode'])) {
@@ -633,6 +611,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     /**
      * @inheritdoc
      */
+
     public function getUriFormatForElement(NestedElementInterface $element): ?string
     {
         return null;
@@ -770,36 +749,11 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     }
 
     /**
-     * Returns the available entry types.
-     *
-     * @return EntryType[]
-     */
-    public function getEntryTypes(): array
-    {
-        return $this->_entryTypes;
-    }
-
-    /**
-     * Sets the available entry types.
-     *
-     * @param array<int|string|EntryType> $entryTypes The entry types, or their IDs or UUIDs
-     */
-    public function setEntryTypes(array $entryTypes): void
-    {
-        $entriesService = Craft::$app->getEntries();
-
-        $this->_entryTypes = array_values(array_filter(array_map(
-            fn($entryType) => $entriesService->getEntryType($entryType),
-            $entryTypes,
-        )));
-    }
-
-    /**
      * @inheritdoc
      */
     public function getFieldLayoutProviders(): array
     {
-        return $this->getEntryTypes();
+        return $this->_ckeConfig()->getEntryTypes();
     }
 
     /**
@@ -814,11 +768,8 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             $settings['removeInlineStyles'],
             $settings['removeEmptyTags'],
             $settings['removeNbsp'],
-        );
-
-        $settings['entryTypes'] = array_map(
-            fn(EntryType $entryType) => $entryType->getUsageConfig(),
-            $this->getEntryTypes(),
+            $settings['entryTypes'],
+            $settings['createButtonLabel'],
         );
 
         return $settings;
@@ -1039,7 +990,8 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         $toolbar = array_merge($ckeConfig->toolbar);
 
         if (!$element?->id) {
-            ArrayHelper::removeValue($toolbar, 'createEntry');
+            // remove all toolbar items that start with 'createEntry'
+            $toolbar = array_filter($toolbar, fn($item) => !str_starts_with($item, 'createEntry'));
         }
 
         if (!$this->isSourceEditingAllowed(Craft::$app->getUser()->getIdentity())) {
@@ -1058,8 +1010,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             'elementSiteId' => $element?->siteId,
             'accessibleFieldName' => $this->_accessibleFieldName($element),
             'describedBy' => $this->_describedBy($view),
-            'entryTypeOptions' => $this->_getEntryTypeOptions(),
-            'expandEntryButtons' => $this->expandEntryButtons,
+            'entryTypeOptions' => $ckeConfig->getEntryTypeOptions(),
             'findAndReplace' => [
                 'uiType' => 'dropdown',
             ],
@@ -1308,11 +1259,8 @@ JS,
             ['type' => 'module']
         );
 
-        if ($ckeConfig->css) {
-            $view->registerCss($ckeConfig->css);
-        }
-
         $value = $this->prepValueForInput($value, $element);
+        $inputId = Html::id('input-ckeditor-' . $id);
         $html = Html::textarea($this->handle, $value, [
             'id' => $id,
             'class' => 'hidden',
@@ -1325,10 +1273,15 @@ JS,
             ]);
         }
 
+        if ($ckeConfig->css) {
+            $view->registerCss("#{$view->namespaceInputId($inputId)} { $ckeConfig->css }");
+        }
+
         return Html::tag('div', $html, [
             'class' => array_filter([
                 $this->showWordCount ? 'ck-with-show-word-count' : null,
             ]),
+            'id' => $inputId,
             'data' => [
                 'element-id' => $element?->id,
                 'config' => $this->ckeConfig,
@@ -1490,26 +1443,6 @@ JS,
         $keywords .= self::entryManager($this)->getSearchKeywords($element);
 
         return $keywords;
-    }
-
-    /**
-     * Returns entry type options in form of an array with 'label' and 'value' keys for each option.
-     *
-     * @return array
-     */
-    private function _getEntryTypeOptions(): array
-    {
-        $entryTypeOptions = array_map(
-            fn(EntryType $entryType) => [
-                'icon' => $entryType->icon ? Cp::iconSvg($entryType->icon) : null,
-                'color' => $entryType->getColor()?->value,
-                'label' => Craft::t('site', $entryType->name),
-                'value' => $entryType->id,
-            ],
-            $this->getEntryTypes(),
-        );
-
-        return $entryTypeOptions;
     }
 
     /**
@@ -2001,7 +1934,8 @@ JS,
             $def?->addAttribute('ul', 'style', 'Text');
         }
 
-        if (in_array('createEntry', $ckeConfig->toolbar)) {
+        $createEntryToolbarItems = array_filter($ckeConfig->toolbar, fn($item) => str_starts_with($item, 'createEntry'));
+        if (!empty($createEntryToolbarItems)) {
             $def?->addElement('craft-entry', 'Inline', 'Inline', '', [
                 'data-entry-id' => 'Number',
                 'data-site-id' => 'Number',

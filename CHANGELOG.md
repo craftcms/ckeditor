@@ -8,12 +8,15 @@
 - CKEditor now requires Craft CMS 5.9 or later.
 - Added support for fullscreen mode. ([#399](https://github.com/craftcms/ckeditor/pull/399))
 - The link modal UI now reflects Craft’s native Link fields. ([#375](https://github.com/craftcms/ckeditor/pull/375))
+- It’s now possible to choose which entry types should get a dedicated toolbar button versus be listed within the “Add nested content” menu. ([#423](https://github.com/craftcms/ckeditor/pull/423))
 - Added support for drag-n-drop image uploading. ([#486](https://github.com/craftcms/ckeditor/pull/486))
 - Added the “Advanced Link Fields” setting to CKEditor configs. ([#375](https://github.com/craftcms/ckeditor/pull/375))
+- Custom editor styles now get registered with a higher specificity than the default editor styles. ([#433](https://github.com/craftcms/ckeditor/pull/433)) 
 - Added `craft\ckeditor\helpers\CkeditorConfig`. ([#363](https://github.com/craftcms/ckeditor/pull/363))
 - Added `craft\ckeditor\web\assets\BaseCkeditorPackageAsset::$namespace`. ([#363](https://github.com/craftcms/ckeditor/pull/363))
 - Added `craft\ckeditor\CkeConfig::$advancedLinkFields`.
 - Added `craft\ckeditor\CkeConfig::advanceLinkOptions()`.
+- Fixed a JavaScript error that could occur when editing an element in a slideout. ([#429](https://github.com/craftcms/ckeditor/pull/429))
 
 ## Unreleased
 
@@ -48,7 +51,7 @@
 - Added the “Parse embeds” field setting. ([#409](https://github.com/craftcms/ckeditor/pull/409))
 - Added the “Show toolbar buttons for entry types with icons” field settings. ([#413](https://github.com/craftcms/ckeditor/pull/413))
 - Fixed an error that occurred when copy/pasting a nested entry from a top-level element’s CKEditor field into a nested element’s CKEditor field. ([#408](https://github.com/craftcms/ckeditor/issues/408))
-- Fixed an error that could occur when generating a GraphQL introspection schema, if a CKEditor field’s GraphQL Mode setting was set to “Full data”. ([#414](https://github.com/craftcms/ckeditor/issues/414))  
+- Fixed an error that could occur when generating a GraphQL introspection schema, if a CKEditor field’s GraphQL Mode setting was set to “Full data”. ([#414](https://github.com/craftcms/ckeditor/issues/414))
 
 ## 4.8.0 - 2025-04-30
 
