@@ -86,7 +86,7 @@ Suppose we wanted to give editors more control over the layout and appearance of
 
 Some of these additional buttons can be customized further. For example, to modify the colors available for a cell’s background (within the “[Table Cell Properties](https://ckeditor.com/docs/ckeditor5/latest/api/module_table_tableconfig-TableConfig.html#member-tableCellProperties)” balloon), you would provide an array compatible with the [`TableColorConfig` schema](https://ckeditor.com/docs/ckeditor5/latest/api/module_table_tableconfig-TableColorConfig.html) under `table.tableCellProperties.backgroundColors`.
 
-#### External Links
+#### Font Colors
 
 Multiple configuration concerns can coexist in one **Config options** object! You might have a `table` key at the top level to customize table controls (as we've done above), as well as a `fontColor` key that lets you control a pre-defined set of available font colors:
 
@@ -115,6 +115,14 @@ Multiple configuration concerns can coexist in one **Config options** object! Yo
   }
 }
 ```
+
+#### External Links
+
+You no longer have to use the `link` configuration concern to allow authors to choose whether links should open in new tabs. The manual decorator that added this option can now be made available simply by checking a relevant checkbox under “Advanced Link Fields”.
+
+> [!TIP]  
+> An automatic version of this feature is available natively, via the [`link.addTargetToExternalLinks`](https://ckeditor.com/docs/ckeditor5/latest/api/module_link_linkconfig-LinkConfig.html#member-addTargetToExternalLinks) option.
+
 
 ### Registering Custom Styles
 
@@ -155,15 +163,6 @@ You can then register custom CSS styles that should be applied within the editor
     color: #e5422b;
 }
 ```
-
-### Advanced Link Options
-
-You can choose what advanced link options should be available to any links added to your CKEditor field under the "Advanced Link Fields" section of your CKEditor Config.
-
-Note that you no longer have to use the `link` configuration concern to allow authors to choose whether links should open in new tabs. The manual decorator that added this option can now be made available simply by checking a checkbox. 
-
-> [!TIP]  
-> An automatic version of this feature is available natively, via the [`link.addTargetToExternalLinks`](https://ckeditor.com/docs/ckeditor5/latest/api/module_link_linkconfig-LinkConfig.html#member-addTargetToExternalLinks) option.
 
 ### HTML Purifier Configs
 
