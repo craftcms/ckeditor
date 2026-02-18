@@ -88,28 +88,33 @@ Some of these additional buttons can be customized further. For example, to modi
 
 #### External Links
 
-Multiple configuration concerns can coexist in one **Config options** object! You might have a `table` key at the top level to customize table controls (as we've done above), as well as a `link` key that introduces “external” link support:
+Multiple configuration concerns can coexist in one **Config options** object! You might have a `table` key at the top level to customize table controls (as we've done above), as well as a `fontColor` key that lets you control a pre-defined set of available font colors:
 
 ```json
 {
   "table": { /* ... */ },
-  "link": {
-    "decorators": {
-      "openInNewTab": {
-        "mode": "manual",
-        "label": "Open in new tab?",
-        "attributes": {
-          "target": "_blank",
-          "rel": "noopener noreferrer"
-        }
+  "fontColor": {
+    "colors": [
+      {
+        "color": "#181818",
+        "label": "Black"
+      },
+      {
+        "color": "#d64036",
+        "label": "Red"
+      },
+      {
+        "color": "#24b559",
+        "label": "Green"
+      },
+      {
+        "color": "#4fa0b0",
+        "label": "Blue"
       }
-    }
+    ]
   }
 }
 ```
-
-> [!TIP]  
-> An automatic version of this feature is available natively, via the [`link.addTargetToExternalLinks`](https://ckeditor.com/docs/ckeditor5/latest/api/module_link_linkconfig-LinkConfig.html#member-addTargetToExternalLinks) option.
 
 ### Registering Custom Styles
 
@@ -150,6 +155,15 @@ You can then register custom CSS styles that should be applied within the editor
     color: #e5422b;
 }
 ```
+
+### Advanced Link Options
+
+You can choose what advanced link options should be available to any links added to your CKEditor field under the "Advanced Link Fields" section of your CKEditor Config.
+
+Note that you no longer have to use the `link` configuration concern to allow authors to choose whether links should open in new tabs. The manual decorator that added this option can now be made available simply by checking a checkbox. 
+
+> [!TIP]  
+> An automatic version of this feature is available natively, via the [`link.addTargetToExternalLinks`](https://ckeditor.com/docs/ckeditor5/latest/api/module_link_linkconfig-LinkConfig.html#member-addTargetToExternalLinks) option.
 
 ### HTML Purifier Configs
 
@@ -232,18 +246,17 @@ Nested entries can be created anywhere within your content, and they can be move
 
 To configure a CKEditor field to manage nested entries, follow these steps:
 
-1. Go to **Settings** → **Fields** and click on your CKEditor field’s name (or create a new one).
-2. Double-click on the selected CKEditor config to open its settings.
-3. Drag the “+” menu button into the toolbar, and save the CKEditor config.
-4. Back on the field’s settings, select one or more entry types which should be available within CKEditor fields.
-5. Save the field’s settings.
+1. Go to **Settings** → **CKEditor** and click on the config you wish to edit (or create a new one).
+2. Drag the “+” menu button into the toolbar.
+3. Select one or more entry types which should be available within CKEditor fields that use this config.
+4. And save.
 
-Now the field is set up to manage nested entries! The next time you edit an element with that CKEditor field, the “+” button will be shown in the toolbar, and when you choose an entry type from its menu, a slideout will open where you can enter content for the nested entry.
+Now all the CKEditor fields that use this config are set up to manage nested entries! The next time you edit an element with that CKEditor field, the “+” button will be shown in the toolbar, and when you choose an entry type from its menu, a slideout will open where you can enter content for the nested entry.
 
 An entry card will appear within the rich text content after you press **Save** within the slideout. The card can be moved via drag-n-drop or cut/paste from there.
 
 > [!TIP]
-> Enable the “Show toolbar buttons for entry types with icons” field setting to replace the “+” button with individual toolbar buttons for each selected entry type which has an icon.
+> You can choose which entry types should show as individual toolbar buttons and which should be nested under the “+” button. The ones selected to show as individual buttons will be displayed as an icon if the entry type is configured to have one and as text if no icon is specified. Use the 3-dots (actions) menu to toggle this behavior.
 
 You can also copy/paste the card to duplicate the nested entry.
 
@@ -406,7 +419,7 @@ Finally, ensure your asset bundle is registered whenever the core CKEditor asset
 \craft\ckeditor\Plugin::registerCkeditorPackage(TokensAsset::class, 'tokens.js');
 ```
 
-The second parameter should point to the main entry file for your javascript. In most cases, it will be the same as the only item in you `$js` array.
+The second parameter should point to the main entry file for your JavaScript. In most cases, it will be the same as the only item in your `$js` array.
 
 ## Front-end use
 
