@@ -4,7 +4,6 @@ import {
   Collection,
   createDropdown,
   IconPlus,
-  ViewModel,
   View,
 } from 'ckeditor5';
 

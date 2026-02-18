@@ -7,14 +7,7 @@
 /* global Garnish, $ */
 import './ckeconfig.css';
 import * as CKEditor5 from 'ckeditor5';
-import {
-  create,
-  ImageTransform,
-  ImageEditor,
-  CraftLink,
-  CraftImageInsertUI,
-  CraftEntries,
-} from '@craftcms/ckeditor';
+import {create} from '@craftcms/ckeditor';
 
 export default Garnish.Base.extend({
   $sourceContainer: null,
