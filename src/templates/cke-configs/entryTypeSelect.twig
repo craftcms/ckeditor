@@ -36,7 +36,7 @@
 {% set showIndicators = showIndicators ?? false %}
 {% set sortable = (not limit or limit > 1) and (sortable ?? true) %}
 {% set showActionMenus = showActionMenus ?? true %}
-{% set hyperlinks = hyperlinks ?? true %}
+{% set hyperlinks = hyperlinks ?? false %}
 {% set withSearchInput = withSearchInput ?? true %}
 {% set createAction = createAction ?? null %}
 {% set disabled = (disabled ?? false) ? true : false %}
