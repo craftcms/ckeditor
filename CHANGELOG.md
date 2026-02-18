@@ -8,6 +8,7 @@
 - CKEditor now requires Craft CMS 5.9 or later.
 - Added support for fullscreen mode. ([#399](https://github.com/craftcms/ckeditor/pull/399))
 - The link modal UI now reflects Craft’s native Link fields. ([#375](https://github.com/craftcms/ckeditor/pull/375))
+- It’s now possible to choose which entry types should get a dedicated toolbar button versus be listed within the “Add nested content” menu. ([#423](https://github.com/craftcms/ckeditor/pull/423))
 - Added support for drag-n-drop image uploading. ([#486](https://github.com/craftcms/ckeditor/pull/486))
 - Added the “Advanced Link Fields” setting to CKEditor configs. ([#375](https://github.com/craftcms/ckeditor/pull/375))
 - Custom editor styles now get registered with a higher specificity than the default editor styles. ([#433](https://github.com/craftcms/ckeditor/pull/433)) 
