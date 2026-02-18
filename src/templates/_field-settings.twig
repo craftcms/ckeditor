@@ -82,6 +82,41 @@
     showAllOption: volumeOptions|length ? true : false
   }) }}
 
+  {% embed '_includes/forms/field.twig' with {
+      id: 'default-upload-location',
+      label: 'Default Upload Location'|t('app'),
+      instructions: 'Where images should be stored when they are uploaded directly to the field via drag & drop.'|t('ckeditor'),
+  } %}
+    {% block input %}
+      {% import '_includes/forms.twig' as forms %}
+        <div class="flex flex-nowrap">
+          <div>
+            {{ forms.select({
+              id: "default-upload-location-volume",
+              name: "defaultUploadLocationVolume",
+              options: [
+                {
+                  label: 'None'|t('app'),
+                  value: '',
+                },
+                ...volumeOptions,
+              ],
+              value: field.defaultUploadLocationVolume,
+            }) }}
+          </div>
+          <div id="default-upload-location-subpath-container" class="flex-grow {{ not field.defaultUploadLocationVolume ? 'hidden' }}">
+            {{ forms.text({
+              class: 'ltr',
+              id: "default-upload-location-subpath",
+              name: "defaultUploadLocationSubpath",
+              value: field.defaultUploadLocationSubpath,
+              placeholder: "path/to/subfolder"|t('app'),
+            }) }}
+          </div>
+        </div>
+    {% endblock %}
+  {% endembed %}
+
   {{ forms.checkboxSelectField({
     id: 'availableTransforms',
     name: 'availableTransforms',
@@ -163,3 +198,20 @@
     }) }}
   {% endif %}
 </div>
+
+{% js %}
+(() => {
+  new Craft.AssetsFieldSettings(
+    null,
+    {{ 'availableVolumes'|namespaceInputId|json_encode|raw }},
+    {{ 'default-upload-location-volume'|namespaceInputId|json_encode|raw }},
+    null,
+  );
+
+  const $volumeSelect = $("#{{ 'default-upload-location-volume'|namespaceInputId }}");
+  const $subpathContainer = $("#{{ 'default-upload-location-subpath-container'|namespaceInputId }}");
+  $volumeSelect.on('change', () => {
+    $subpathContainer.toggleClass('hidden', !$volumeSelect.val());
+  });
+})();
+{% endjs %}

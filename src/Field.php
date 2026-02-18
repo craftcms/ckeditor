@@ -41,6 +41,7 @@ use craft\errors\InvalidHtmlTagException;
 use craft\events\CancelableEvent;
 use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -271,6 +272,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
 
         // Existing element?
         if ($owner && $owner->id) {
+            /** @phpstan-ignore-next-line */
             $query->attachBehavior(self::class, new EventBehavior([
                 ElementQuery::EVENT_BEFORE_PREPARE => function(
                     CancelableEvent $event,
@@ -373,7 +375,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
 
         if ($resave) {
             if (version_compare(Craft::$app->getVersion(), '5.9.0', '>=')) {
-                /** @phpstan-ignore-next-line */
                 $owner->propagateRequired = false;
             }
             Craft::$app->getElements()->saveElement($owner, false, $propagate, false);
@@ -415,6 +416,18 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
      * @since 1.2.0
      */
     public string|array|null $availableVolumes = '*';
+
+    /**
+     * @var string|null The default volume used to upload images into field via drag & drop mechanism
+     * @since 4.12.0
+     */
+    public string|null $defaultUploadLocationVolume = null;
+
+    /**
+     * @var string|null The default subpath used to upload images into field via drag & drop mechanism
+     * @since 4.12.0
+     */
+    public string|null $defaultUploadLocationSubpath = null;
 
     /**
      * @var string|array|null The transforms available when selecting an image.
@@ -1033,6 +1046,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             ],
             'assetSources' => $this->_assetSources(),
             'assetSelectionCriteria' => $this->_assetSelectionCriteria(),
+            'assetUploadParams' => $this->_assetUploadParams(),
             'linkOptions' => $this->_linkOptions($element),
             'advancedLinkFields' => $this->_advancedLinkFields($ckeConfig),
             'table' => [
@@ -1245,11 +1259,8 @@ JS,
             ['type' => 'module']
         );
 
-        if ($ckeConfig->css) {
-            $view->registerCss($ckeConfig->css);
-        }
-
         $value = $this->prepValueForInput($value, $element);
+        $inputId = Html::id('input-ckeditor-' . $id);
         $html = Html::textarea($this->handle, $value, [
             'id' => $id,
             'class' => 'hidden',
@@ -1262,10 +1273,15 @@ JS,
             ]);
         }
 
+        if ($ckeConfig->css) {
+            $view->registerCss("#{$view->namespaceInputId($inputId)} { $ckeConfig->css }");
+        }
+
         return Html::tag('div', $html, [
             'class' => array_filter([
                 $this->showWordCount ? 'ck-with-show-word-count' : null,
             ]),
+            'id' => $inputId,
             'data' => [
                 'element-id' => $element?->id,
                 'config' => $this->ckeConfig,
@@ -1765,7 +1781,40 @@ JS,
         if ($this->showUnpermittedFiles) {
             $criteria['uploaderId'] = null;
         }
+
         return $criteria;
+    }
+
+    /**
+     * Returns the asset drag & drop upload parameters.
+     *
+     * @return array
+     */
+    private function _assetUploadParams(): array
+    {
+        $params = [];
+
+        $params['siteId'] = Craft::$app->getSites()->getCurrentSite()->id;
+        $params['kind'] = 'image';
+
+        if ($this->defaultUploadLocationVolume) {
+            $volume = Craft::$app->getVolumes()->getVolumeByUid($this->defaultUploadLocationVolume);
+            if ($volume) {
+                $subpath = trim($this->defaultUploadLocationSubpath ?? '', '/');
+                [$subpath, $folder] = AssetsHelper::resolveSubpath($volume, $subpath);
+
+                // Ensure that the folder exists
+                if (!$folder) {
+                    $folder = Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($subpath, $volume);
+                }
+
+                $params['volumeId'] = $volume->id;
+                $params['volumeType'] = $volume::class;
+                $params['folderId'] = $folder->id;
+            }
+        }
+
+        return $params;
     }
 
     /**
@@ -1951,13 +2000,11 @@ JS,
      */
     public function propagateValue(ElementInterface $from, ElementInterface $to): void
     {
-        /** @phpstan-ignore-next-line */
         parent::propagateValue($from, $to);
 
         if (!$from->propagateAll) {
             // NestedElementManager won't duplicate the nested entries automatically,
             // because the field has a value in the target site (the HTML content), so isValueEmpty() is false.
-            /** @phpstan-ignore-next-line */
             self::entryManager($this)->duplicateNestedElements($from, $to, force: true);
         }
     }
