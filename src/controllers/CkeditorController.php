@@ -8,10 +8,12 @@
 namespace craft\ckeditor\controllers;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\ckeditor\Field;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\fieldlayoutelements\CustomField;
+use craft\helpers\ElementHelper;
 use craft\web\Controller;
 use Throwable;
 use yii\web\BadRequestHttpException;
@@ -207,6 +209,43 @@ class CkeditorController extends Controller
         return $this->asJson([
             'previewable' => $previewable,
             'editable' => $editable,
+        ]);
+    }
+
+    /**
+     * Return element rendered for the control panel and the IDs of the sites it supports.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws \yii\base\Exception
+     * @since 5.0.0
+     */
+    public function actionRenderElementWithSupportedSites(): Response
+    {
+        $renderResponse = $this->run('/app/render-elements');
+        $siteIds = [];
+
+        $elementParam = $this->request->getRequiredBodyParam('elements')[0];
+
+        /** @var ElementInterface|null $element */
+        $element = $elementParam['type']::find()
+            ->id($elementParam['id'])
+            ->drafts(null)
+            ->revisions(null)
+            ->siteId($elementParam['siteId'])
+            ->status(null)
+            ->one();
+
+        if ($element) {
+            $sites = ElementHelper::supportedSitesForElement($element);
+            $siteIds = array_map(fn($site) => $site['siteId'], $sites);
+        }
+
+        return $this->asJson([
+            'elements' => $renderResponse->data['elements'],
+            'headHtml' => $renderResponse->data['headHtml'],
+            'bodyHtml' => $renderResponse->data['bodyHtml'],
+            'siteIds' => $siteIds,
         ]);
     }
 }
