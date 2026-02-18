@@ -60,5 +60,4 @@ class CkeConfigAsset extends AssetBundle
             ]);
         }
     }
-
 }
