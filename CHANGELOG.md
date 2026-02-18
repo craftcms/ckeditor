@@ -15,6 +15,7 @@
 - Added `craft\ckeditor\web\assets\BaseCkeditorPackageAsset::$namespace`. ([#363](https://github.com/craftcms/ckeditor/pull/363))
 - Added `craft\ckeditor\CkeConfig::$advancedLinkFields`.
 - Added `craft\ckeditor\CkeConfig::advanceLinkOptions()`.
+- Fixed a JavaScript error that could occur when editing an element in a slideout. ([#429](https://github.com/craftcms/ckeditor/pull/429))
 
 ## Unreleased
 
