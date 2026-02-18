@@ -21,6 +21,12 @@ export default class CraftEntryTypesButtonView extends View {
 
     let textButtons = new Collection();
     entryTypes.forEach((item) => {
+      if (item.model.color) {
+        if (!item.model.class) {
+          item.model.class = '';
+        }
+        item.model.class += 'icon ' + item.model.color; // the icon class is needed for the color to work
+      }
       textButtons.add(item);
     });
 

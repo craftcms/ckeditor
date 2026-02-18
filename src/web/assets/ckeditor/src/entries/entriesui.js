@@ -185,7 +185,7 @@ export default class CraftEntriesUI extends Plugin {
         type: 'button',
         model: new ViewModel({
           commandValue: option.value, //entry type id
-          color: option.color,
+          color: !option.expanded ? option.color : null,
           expanded: option.expanded,
           icon: option.icon,
           label: option.label || option.value,
