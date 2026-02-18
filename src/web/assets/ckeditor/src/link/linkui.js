@@ -14,7 +14,7 @@ import {
   LabeledFieldView,
   LinkUI,
   Plugin,
-  Range,
+  ModelRange,
   SwitchButtonView,
   View,
   ViewModel,
@@ -461,7 +461,7 @@ export default class CraftLinkUI extends Plugin {
                 selection.getFirstPosition(),
                 values,
               );
-              if (range instanceof Range) {
+              if (range instanceof ModelRange) {
                 try {
                   const newRange = range.clone();
                   newRange.end.path[1] += element.label.length;
