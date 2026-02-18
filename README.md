@@ -23,7 +23,7 @@ This plugin adds a “CKEditor” field type to Craft CMS, which provides a deep
 
 ## Requirements
 
-This plugin requires Craft CMS 5.6.0 or later.
+This plugin requires Craft CMS 5.9.0 or later.
 
 ## Installation
 
