@@ -9,6 +9,7 @@ namespace craft\ckeditor\web\assets\ckeconfig;
 
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
 use craft\web\AssetBundle;
+use craft\web\View;
 use nystudio107\codeeditor\assetbundles\codeeditor\CodeEditorAsset;
 
 /**
@@ -44,4 +45,20 @@ class CkeConfigAsset extends AssetBundle
     public $css = [
         'ckeditor.css',
     ];
+
+    /**
+     * @inheritdoc
+     */
+    public function registerAssetFiles($view): void
+    {
+        parent::registerAssetFiles($view);
+
+        if ($view instanceof View) {
+            $view->registerTranslations('ckeditor', [
+                'Collapse to a dropdown',
+                'Expand to a separate button',
+            ]);
+        }
+    }
+
 }
