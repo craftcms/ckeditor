@@ -601,16 +601,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     /**
      * @inheritdoc
      */
-    public function settingsAttributes(): array
-    {
-        $attributes = ArrayHelper::without(parent::settingsAttributes(), 'createButtonLabel');
-        $attributes[] = 'entryTypes';
-        return $attributes;
-    }
-
-    /**
-     * @inheritdoc
-     */
 
     public function getUriFormatForElement(NestedElementInterface $element): ?string
     {
