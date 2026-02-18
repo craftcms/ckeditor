@@ -389,7 +389,12 @@ export default class CraftLinkUI extends Plugin {
       }
     }
 
-    // only add sites dropdown if this is a multisite install
+    let linkTypeWrapperViewChildren = [
+      this.linkTypeDropdownView,
+      this.elementInputView,
+    ];
+
+    // only add sites dropdown if this is a multisite install and we haven't done so already
     if (Craft.isMultiSite && this.sitesView == null) {
       this.sitesView = new CraftLinkSitesView(formView.locale, {
         linkUi: this,
@@ -397,25 +402,25 @@ export default class CraftLinkUI extends Plugin {
       });
     }
 
-    // force the sitesView to always be on the new line
-    let breakItem = new View();
-    breakItem.setTemplate({
-      tag: 'span',
-      attributes: {
-        class: ['break'],
-      },
-    });
+    // if we have sitesView, add it to the view's children, ensuring it's always on a new line
+    if (this.sitesView != null) {
+      // force the sitesView to always be on the new line
+      let breakItem = new View();
+      breakItem.setTemplate({
+        tag: 'span',
+        attributes: {
+          class: ['break'],
+        },
+      });
+
+      linkTypeWrapperViewChildren.push(breakItem, this.sitesView);
+    }
 
     // and now we can construct the container that has the link type dropdown and the corresponding input field
     this.linkTypeWrapperView = new View();
     this.linkTypeWrapperView.setTemplate({
       tag: 'div',
-      children: [
-        this.linkTypeDropdownView,
-        this.elementInputView,
-        breakItem,
-        this.sitesView,
-      ],
+      children: linkTypeWrapperViewChildren,
       attributes: {
         class: [
           'ck',

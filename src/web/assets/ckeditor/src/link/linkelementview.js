@@ -99,17 +99,19 @@ export default class CraftLinkElementView extends View {
       )
         .then((response) => {
           if (Object.keys(response.data.elements).length > 0) {
-            // disable sites that are not in the response
-            for (const [siteId, model] of Object.entries(
-              this.linkUi.sitesView.siteDropdownItemModels,
-            )) {
-              if (
-                response.data.siteIds.includes(parseInt(siteId)) ||
-                siteId == 'current'
-              ) {
-                model.set('isEnabled', true);
-              } else {
-                model.set('isEnabled', false);
+            // if it's a multisite, disable sites that are not in the response
+            if (Craft.isMultiSite && this.linkUi.sitesView != null) {
+              for (const [siteId, model] of Object.entries(
+                this.linkUi.sitesView.siteDropdownItemModels,
+              )) {
+                if (
+                  response.data.siteIds.includes(parseInt(siteId)) ||
+                  siteId == 'current'
+                ) {
+                  model.set('isEnabled', true);
+                } else {
+                  model.set('isEnabled', false);
+                }
               }
             }
 
