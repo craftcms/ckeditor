@@ -15,9 +15,8 @@
   }) %}
 {% endif %}
 
-{% set baseCodeEditorOptions = {
-  wrapperClass: 'monaco-editor-background-frame',
-} %}
+{% set wrapperClasses = ['monaco-editor-background-frame'] %}
+{% set baseCodeEditorOptions = {} %}
 
 {% if ckeConfig.uid %}
   {{ hiddenInput('uid', ckeConfig.uid) }}
@@ -124,16 +123,17 @@
 
     {% set classes = [] %}
     {% if not isJson %}
-      {% set classes = classes|merge(['hidden']) %}
+      {% set classes = classes|push('hidden') %}
     {% endif %}
     {% if readOnly %}
-      {% set classes = classes|merge(['disabled']) %}
+      {% set classes = classes|push('disabled') %}
     {% endif %}
 
     {% tag 'div' with {
       id: 'config-options-json-container',
       class: classes|join(' '),
     } %}
+      {% set wrapperClasses = wrapperClasses|push(ckeConfig.hasErrors('json') ? 'has-errors') %}
       {{ codeEditor.textarea(
         {
           id: 'config-options-json',
@@ -144,17 +144,17 @@
         baseMonacoOptions|merge({
           language: 'json',
         }),
-        baseCodeEditorOptions|push(ckeConfig.hasErrors('json') ? 'has-errors'),
+        baseCodeEditorOptions|merge({wrapperClass: wrapperClasses|join(' ')}),
       ) }}
     {% endtag %}
 
 
     {% set classes = [] %}
     {% if not isJs %}
-      {% set classes = classes|merge(['hidden']) %}
+      {% set classes = classes|push('hidden') %}
     {% endif %}
     {% if readOnly %}
-      {% set classes = classes|merge(['disabled']) %}
+      {% set classes = classes|push('disabled') %}
     {% endif %}
     {% tag 'div' with {
       id: 'config-options-js-container',
@@ -170,7 +170,7 @@
         baseMonacoOptions|merge({
           language: 'javascript',
         }),
-        baseCodeEditorOptions,
+        baseCodeEditorOptions|merge({wrapperClass: wrapperClasses|join(' ')}),
       ) }}
       {% endtag %}
   {% endblock %}
@@ -201,6 +201,7 @@
 })()
 {% endjs %}
 
+{% set wrapperClasses = wrapperClasses|push(readOnly ? 'disabled') %}
 {{ codeEditor.textareaField(
   {
     label: 'Custom Styles'|t('ckeditor'),
@@ -215,7 +216,5 @@
   baseMonacoOptions|merge({
     language: 'css',
   }),
-  baseCodeEditorOptions|merge({
-    wrapperClass: readOnly ? 'disabled' : null,
-  }),
+  baseCodeEditorOptions|merge({wrapperClass: wrapperClasses|join(' ')}),
 ) }}
