@@ -1,12 +1,8 @@
 import {
-  addListToDropdown,
   ButtonView,
   Collection,
-  createDropdown,
-  IconPlus,
   isWidget,
   Plugin,
-  Range,
   ViewModel,
   WidgetToolbarRepository,
 } from 'ckeditor5';

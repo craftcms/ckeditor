@@ -4,7 +4,7 @@
  * @license GPL-3.0-or-later
  */
 
-import {findAttributeRange, Plugin, Range, ViewElement} from 'ckeditor5';
+import {findAttributeRange, Plugin} from 'ckeditor5';
 
 /**
  * These imports aren't ideal but are necessary for now because the main
