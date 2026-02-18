@@ -162,14 +162,16 @@ export default class CraftEntriesUI extends Plugin {
         );
       });
 
-      this.editor.ui.componentFactory.add(
-        `createEntry`,
-        (locale) =>
-          new CraftEntryTypeDropdownView(this.editor.locale, {
-            entriesUi: this,
-            entryTypes: collapsedButtons,
-          }),
-      );
+      if (collapsedButtons.length) {
+        this.editor.ui.componentFactory.add(
+          `createEntry`,
+          (locale) =>
+            new CraftEntryTypeDropdownView(this.editor.locale, {
+              entriesUi: this,
+              entryTypes: collapsedButtons,
+            }),
+        );
+      }
     }
   }
 

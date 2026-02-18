@@ -925,7 +925,7 @@ class yu extends Bn {
               entryType: r
             })
           );
-        }), this.editor.ui.componentFactory.add(
+        }), c.length && this.editor.ui.componentFactory.add(
           "createEntry",
           (r) => new mu(this.editor.locale, {
             entriesUi: this,
