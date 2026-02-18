@@ -192,9 +192,8 @@ export default class CraftEntriesUI extends Plugin {
           icon: option.icon,
           label: option.label || option.value,
           uid: option.uid,
-          withColor: option.withColor,
-          withIcon: option.withIcon,
-          withText: option.expanded ? option.withText : true, // items in a dropdown should always have text
+          withIcon: option.icon,
+          withText: option.expanded ? !option.icon : true, // items in a dropdown should always have text
         }),
       };
       itemDefinitions.add(definition);

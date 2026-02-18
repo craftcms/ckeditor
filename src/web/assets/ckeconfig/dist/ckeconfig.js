@@ -25,27 +25,27 @@ const ToolbarBuilder = Garnish.Base.extend({
     ), this.$targetContainer = this.$container.find(
       ".ckeditor-tb--target .ck-toolbar__items"
     ), this.$input = this.$container.find("input"), this.value = JSON.parse(this.$input.val()), this.readOnly = $(`#${t}`).hasClass("disabled");
-    const l = document.createElement("DIV"), c = document.createElement("DIV");
-    l.appendChild(c), create(c, {
+    const a = document.createElement("DIV"), r = document.createElement("DIV");
+    a.appendChild(r), create(r, {
       linkOptions: [{ elementType: "craft\\elements\\Asset" }],
       assetSources: ["*"],
       entryTypeOptions: [{ label: "fake", value: "fake" }],
       plugins: o
-    }).then((f) => {
-      const g = f.ui.componentFactory;
-      for (const s of g.names())
-        this.components[s] = g.create(s);
-      const d = JSON.parse(this.$container.attr("data-available-items"));
-      for (let s = 0; s < d.length; s++) {
-        const i = d[s];
-        if (i.length > 1) {
-          const a = this.value.findIndex(
-            (r) => i.some((h) => h.button === r)
+    }).then((u) => {
+      const h = u.ui.componentFactory;
+      for (const i of h.names())
+        this.components[i] = h.create(i);
+      const f = JSON.parse(this.$container.attr("data-available-items"));
+      for (let i = 0; i < f.length; i++) {
+        const s = f[i];
+        if (s.length > 1) {
+          const l = this.value.findIndex(
+            (c) => s.some((d) => d.button === c)
           );
-          if (a !== -1) {
-            for (let r = 0; r < i.length; r++)
-              if (this.value[a + r] !== i[r].button) {
-                d.splice(s, 1, ...i.map((h) => [h])), s += i.length - 1;
+          if (l !== -1) {
+            for (let c = 0; c < s.length; c++)
+              if (this.value[l + c] !== s[c].button) {
+                f.splice(i, 1, ...s.map((d) => [d])), i += s.length - 1;
                 break;
               }
           }
@@ -53,37 +53,37 @@ const ToolbarBuilder = Garnish.Base.extend({
       }
       this.readOnly ? this.drag = $() : this.drag = new Garnish.DragDrop({
         dropTargets: this.$targetContainer,
-        helper: (s) => {
-          const i = $(
+        helper: (i) => {
+          const s = $(
             '<div class="offset-drag-helper ck ck-reset_all ck-editor ck-rounded-corners"/>'
-          ), a = $(
+          ), l = $(
             '<div class="ck ck-toolbar"/>'
-          ).appendTo(i);
-          return s.appendTo(a), i;
+          ).appendTo(s);
+          return i.appendTo(l), s;
         },
         moveHelperToCursor: !0,
         onDragStart: () => {
           Garnish.$bod.addClass("dragging");
-          const s = this.drag.$draggee;
+          const i = this.drag.$draggee;
           if (this.draggingSourceItem = $.contains(
             this.$sourceContainer[0],
-            s[0]
-          ), this.draggingSeparator = s.hasClass(
+            i[0]
+          ), this.draggingSeparator = i.hasClass(
             "ckeditor-tb--separator"
           ), this.$insertion = $('<div class="ckeditor-tb--insertion"/>').css({
-            width: s.outerWidth(),
-            height: s.outerHeight()
+            width: i.outerWidth(),
+            height: i.outerHeight()
           }), this.draggingSourceItem)
             if (this.draggingSeparator)
-              s.css("visibility", "");
+              i.css("visibility", "");
             else {
-              const i = Craft.orientation === "ltr" ? "margin-right" : "margin-left", a = -1 * s.outerWidth();
-              s.stop().velocity({ [i]: a }, 200, () => {
-                s.addClass("hidden");
+              const s = Craft.orientation === "ltr" ? "margin-right" : "margin-left", l = -1 * i.outerWidth();
+              i.stop().velocity({ [s]: l }, 200, () => {
+                i.addClass("hidden");
               });
             }
           else
-            s.addClass("hidden"), this.$insertion.insertBefore(s), this.showingInsertion = !0;
+            i.addClass("hidden"), this.$insertion.insertBefore(i), this.showingInsertion = !0;
           this.setMidpoints();
         },
         onDrag: () => {
@@ -91,72 +91,72 @@ const ToolbarBuilder = Garnish.Base.extend({
         },
         onDragStop: () => {
           Garnish.$bod.removeClass("dragging");
-          let s = this.drag.$draggee;
+          let i = this.drag.$draggee;
           if (this.checkForNewClosestItem(), this.showingInsertion)
             if (this.draggingSourceItem) {
-              let i;
+              let s;
               if (this.draggingSeparator)
-                i = this.renderSeparator();
+                s = this.renderSeparator();
               else {
-                const a = s.data("componentNames");
-                i = this.renderComponentGroup(a);
-                for (const r of a) {
-                  const h = d.flat().find(({ button: p }) => p === r);
-                  h && h.configOption && n.addSetting(h.configOption);
+                const l = i.data("componentNames");
+                s = this.renderComponentGroup(l);
+                for (const c of l) {
+                  const d = f.flat().find(({ button: p }) => p === c);
+                  d && d.configOption && n.addSetting(d.configOption);
                 }
               }
-              i.data("sourceItem", s[0]), i.css("visibility", "hidden"), this.$insertion.replaceWith(i), this.drag.$draggee = i;
+              s.data("sourceItem", i[0]), s.css("visibility", "hidden"), this.$insertion.replaceWith(s), this.drag.$draggee = s;
             } else
-              this.$insertion.replaceWith(s), s.removeClass("hidden");
+              this.$insertion.replaceWith(i), i.removeClass("hidden");
           else {
             if (!this.draggingSourceItem) {
-              const i = $(s.data("sourceItem"));
-              if (s.remove(), this.drag.$draggee = s = i, !this.draggingSeparator)
-                for (const a of i.data("componentNames")) {
-                  const r = d.flat().find(({ button: h }) => h === a);
-                  r && r.configOption && n.removeSetting(r.configOption);
+              const s = $(i.data("sourceItem"));
+              if (i.remove(), this.drag.$draggee = i = s, !this.draggingSeparator)
+                for (const l of s.data("componentNames")) {
+                  const c = f.flat().find(({ button: d }) => d === l);
+                  c && c.configOption && n.removeSetting(c.configOption);
                 }
             }
             if (!this.draggingSeparator) {
-              s.removeClass("hidden");
-              const i = Craft.orientation === "ltr" ? "margin-right" : "margin-left", a = s.css(i);
-              s.css(i, "");
-              const r = s.css(i);
-              s.css(i, a), s.stop().velocity({ [i]: r }, 200, () => {
-                s.css(i, "");
+              i.removeClass("hidden");
+              const s = Craft.orientation === "ltr" ? "margin-right" : "margin-left", l = i.css(s);
+              i.css(s, "");
+              const c = i.css(s);
+              i.css(s, l), i.stop().velocity({ [s]: c }, 200, () => {
+                i.css(s, "");
               });
             }
           }
           this.drag.returnHelpersToDraggees(), this.$items = this.$targetContainer.children(), this.value = [];
-          for (const i of this.$items.toArray()) {
-            const a = $(i);
-            a.hasClass("ckeditor-tb--separator") ? this.value.push("|") : this.value.push(...a.data("componentNames"));
+          for (const s of this.$items.toArray()) {
+            const l = $(s);
+            l.hasClass("ckeditor-tb--separator") ? this.value.push("|") : this.value.push(...l.data("componentNames"));
           }
           this.$input.val(JSON.stringify(this.value));
         }
       });
-      const u = {};
-      for (let s of d) {
-        const i = this.renderComponentGroup(s);
-        i && (i.appendTo(this.$sourceContainer), u[s.map((a) => a.button).join(",")] = i[0], this.value.includes(s[0].button) && i.addClass("hidden"));
+      const g = {};
+      for (let i of f) {
+        const s = this.renderComponentGroup(i);
+        s && (s.appendTo(this.$sourceContainer), g[i.map((l) => l.button).join(",")] = s[0], this.value.includes(i[0].button) && s.addClass("hidden"));
       }
-      u["|"] = this.renderSeparator().appendTo(
+      g["|"] = this.renderSeparator().appendTo(
         this.$sourceContainer
       )[0], this.$items = $();
-      for (let s = 0; s < this.value.length; s++) {
-        const i = this.value[s];
-        let a, r;
-        if (i === "|")
-          a = this.renderSeparator().appendTo(this.$targetContainer), r = "|";
+      for (let i = 0; i < this.value.length; i++) {
+        const s = this.value[i];
+        let l, c;
+        if (s === "|")
+          l = this.renderSeparator().appendTo(this.$targetContainer), c = "|";
         else {
-          const h = d.find(
-            (p) => p.some((C) => C.button === i)
+          const d = f.find(
+            (p) => p.some((C) => C.button === s)
           );
-          if (!h || (a = this.renderComponentGroup(h), !a))
+          if (!d || (l = this.renderComponentGroup(d), !l))
             continue;
-          a.appendTo(this.$targetContainer), r = h.map((p) => p.button).join(","), s += h.length - 1;
+          l.appendTo(this.$targetContainer), c = d.map((p) => p.button).join(","), i += d.length - 1;
         }
-        a.data("sourceItem", u[r]), this.$items = this.$items.add(a);
+        l.data("sourceItem", g[c]), this.$items = this.$items.add(l);
       }
     }).catch(console.error);
   },
@@ -168,21 +168,21 @@ const ToolbarBuilder = Garnish.Base.extend({
   },
   renderComponentGroup: function(t) {
     t = t.map(
-      (l) => typeof l == "string" ? l : l.button
+      (a) => typeof a == "string" ? a : a.button
     );
     const e = [], n = [];
-    for (const l of t) {
-      let c;
+    for (const a of t) {
+      let r;
       try {
-        c = this.renderComponent(l);
-      } catch (g) {
-        console.warn(g);
+        r = this.renderComponent(a);
+      } catch (h) {
+        console.warn(h);
         continue;
       }
-      e.push(c);
-      const f = (c.is("[data-cke-tooltip-text]") ? c : c.find("[data-cke-tooltip-text]")).attr("data-cke-tooltip-text");
+      e.push(r);
+      const u = (r.is("[data-cke-tooltip-text]") ? r : r.find("[data-cke-tooltip-text]")).attr("data-cke-tooltip-text");
       n.push(
-        f ? f.replace(/ \(.*\)$/, "") : `${l[0].toUpperCase()}${l.slice(1)}`
+        u ? u.replace(/ \(.*\)$/, "") : `${a[0].toUpperCase()}${a.slice(1)}`
       );
     }
     if (!e.length)
@@ -209,11 +209,11 @@ const ToolbarBuilder = Garnish.Base.extend({
       return null;
     const t = this.$items.toArray();
     this.showingInsertion && t.push(this.$insertion[0]);
-    const e = t.map((l) => {
-      const c = $.data(l, "midpoint");
+    const e = t.map((a) => {
+      const r = $.data(a, "midpoint");
       return Garnish.getDist(
-        c.left,
-        c.top,
+        r.left,
+        r.top,
         this.drag.mouseX,
         this.drag.mouseY
       );
@@ -232,8 +232,8 @@ const ToolbarBuilder = Garnish.Base.extend({
     const t = this.$items.toArray();
     this.showingInsertion && t.push(this.$insertion[0]);
     for (const e of t) {
-      const n = $(e), o = n.offset(), l = o.left + n.outerWidth() / 2, c = o.top + n.outerHeight() / 2;
-      n.data("midpoint", { left: l, top: c });
+      const n = $(e), o = n.offset(), a = o.left + n.outerWidth() / 2, r = o.top + n.outerHeight() / 2;
+      n.data("midpoint", { left: a, top: r });
     }
   }
 });
@@ -340,10 +340,10 @@ const ConfigOptions = Garnish.Base.extend({
     let e;
     try {
       e = window.monaco.languages.json.jsonDefaults.diagnosticsOptions.schemas.find(
-        (c) => c.uri === this.jsonSchemaUri
+        (r) => r.uri === this.jsonSchemaUri
       ).schema;
-    } catch (c) {
-      console.warn("Couldn’t get config options JSON schema.", c);
+    } catch (r) {
+      console.warn("Couldn’t get config options JSON schema.", r);
       return;
     }
     if (!e.$defs || !e.$defs.EditorConfig || !e.$defs.EditorConfig.properties) {
@@ -364,8 +364,8 @@ const ConfigOptions = Garnish.Base.extend({
     const o = n.$ref.match(/^#\/\$defs\/(\w+)/);
     if (!o)
       return;
-    const l = o[1];
-    !e.$defs[l] || !e.$defs[l].default || (this.defaults[t] = e.$defs[l].default);
+    const a = o[1];
+    !e.$defs[a] || !e.$defs[a].default || (this.defaults[t] = e.$defs[a].default);
   },
   replacer: function(t, e) {
     return typeof e == "function" ? "__HAS__FUNCTION__" : e;
@@ -423,8 +423,8 @@ const ConfigOptions = Garnish.Base.extend({
     } else if ($.isPlainObject(t)) {
       n = `{
 `;
-      for (const [o, l] of Object.entries(t))
-        n += `${e}  ${o}: ${this.jsify(l, e + "  ")},
+      for (const [o, a] of Object.entries(t))
+        n += `${e}  ${o}: ${this.jsify(a, e + "  ")},
 `;
       n += `${e}}`;
     } else typeof t == "string" && !t.match(/[\r\n']/) ? n = `'${t}'` : n = JSON.stringify(t);
@@ -448,26 +448,21 @@ const ConfigOptions = Garnish.Base.extend({
     this.on("applySettings", () => {
       this.applyIndicators(t, this.getConfigFromComponent(t));
     });
-    let e = this.getInput(t), o = t.find(".action-btn").disclosureMenu().data("disclosureMenu"), [
-      l,
-      c,
-      f,
-      g,
-      d,
-      u,
-      s,
-      i
-    ] = this.getButtons(o, t, e);
+    let e = this.getInput(t), o = t.find(".action-btn").disclosureMenu().data("disclosureMenu"), [a, r] = this.getButtons(
+      o,
+      t,
+      e
+    );
     o.on("show", () => {
-      let a = o.$trigger.parents(".chip"), r = this.getConfigFromComponent(a);
-      o.toggleItem(l, !r.expanded), o.toggleItem(c, r.expanded), o.toggleItem(f, !r.withColor), o.toggleItem(g, r.withColor), o.toggleItem(d, !r.withIcon), o.toggleItem(u, r.withIcon), o.toggleItem(s, !r.withText), o.toggleItem(i, r.withText);
+      let u = o.$trigger.parents(".chip"), h = this.getConfigFromComponent(u);
+      o.toggleItem(a, !h.expanded), o.toggleItem(r, h.expanded);
     }), this.applyIndicators(t, this.getConfig(e)), this.base(t);
   },
   async applyConfigChange(t, e, n) {
     this.applyIndicators(t, n);
   },
   async applyIndicators(t, e) {
-    var d, u;
+    var f, g;
     let n;
     try {
       n = (await Craft.sendActionRequest(
@@ -479,16 +474,16 @@ const ConfigOptions = Garnish.Base.extend({
           }
         }
       )).data;
-    } catch (s) {
-      throw Craft.cp.displayError((u = (d = s == null ? void 0 : s.response) == null ? void 0 : d.data) == null ? void 0 : u.message), s;
+    } catch (i) {
+      throw Craft.cp.displayError((g = (f = i == null ? void 0 : i.response) == null ? void 0 : f.data) == null ? void 0 : g.message), i;
     }
     let o = t.find(".indicators");
-    const l = this.getInput(t), c = $(n.chip).find(".indicators"), f = this.getInput($(n.chip)), g = this.getConfig(f);
+    const a = this.getInput(t), r = $(n.chip).find(".indicators"), u = this.getInput($(n.chip)), h = this.getConfig(u);
     if (o.length == 0) {
-      const s = t.find(".chip-label");
-      o = $('<div class="indicators">').appendTo(s);
+      const i = t.find(".chip-label");
+      o = $('<div class="indicators">').appendTo(i);
     }
-    o.replaceWith(c), this.updateConfig(l, g);
+    o.replaceWith(r), this.updateConfig(a, h);
   },
   updateConfig: function(t, e) {
     t.val(JSON.stringify(e));
@@ -498,69 +493,18 @@ const ConfigOptions = Garnish.Base.extend({
       icon: async () => await Craft.ui.icon("eye"),
       label: Craft.t("ckeditor", "Expand to a separate button"),
       callback: () => {
-        let i = this.getConfig(n);
-        i.expanded = !0, this.applyConfigChange(e, n, i);
+        let r = this.getConfig(n);
+        r.expanded = !0, this.applyConfigChange(e, n, r);
       }
-    }), l = t.addItem({
+    }), a = t.addItem({
       icon: async () => await Craft.ui.icon("eye-slash"),
       label: Craft.t("ckeditor", "Collapse to a dropdown"),
       callback: () => {
-        let i = this.getConfig(n);
-        i.expanded = !1, this.applyConfigChange(e, n, i);
-      }
-    }), c = t.addItem({
-      icon: async () => await Craft.ui.icon("brush"),
-      label: Craft.t("ckeditor", "Show with color"),
-      callback: () => {
-        let i = this.getConfig(n);
-        i.withColor = !0, this.applyConfigChange(e, n, i);
-      }
-    }), f = t.addItem({
-      icon: async () => await Craft.ui.icon("xmark"),
-      label: Craft.t("ckeditor", "Show without color"),
-      callback: () => {
-        let i = this.getConfig(n);
-        i.withColor = !1, this.applyConfigChange(e, n, i);
-      }
-    }), g = t.addItem({
-      icon: async () => await Craft.ui.icon("image"),
-      label: Craft.t("ckeditor", "Show with icon"),
-      callback: () => {
-        let i = this.getConfig(n);
-        i.withIcon = !0, this.applyConfigChange(e, n, i);
-      }
-    }), d = t.addItem({
-      icon: async () => await Craft.ui.icon("xmark"),
-      label: Craft.t("ckeditor", "Show without icon"),
-      callback: () => {
-        let i = this.getConfig(n);
-        i.withIcon = !1, this.applyConfigChange(e, n, i);
-      }
-    }), u = t.addItem({
-      icon: async () => await Craft.ui.icon("t"),
-      label: Craft.t("ckeditor", "Show with text"),
-      callback: () => {
-        let i = this.getConfig(n);
-        i.withText = !0, this.applyConfigChange(e, n, i);
-      }
-    }), s = t.addItem({
-      icon: async () => await Craft.ui.icon("xmark"),
-      label: Craft.t("ckeditor", "Show without text"),
-      callback: () => {
-        let i = this.getConfig(n);
-        i.withText = !1, this.applyConfigChange(e, n, i);
+        let r = this.getConfig(n);
+        r.expanded = !1, this.applyConfigChange(e, n, r);
       }
     });
-    return [
-      o,
-      l,
-      c,
-      f,
-      g,
-      d,
-      u,
-      s
-    ];
+    return [o, a];
   }
 });
 export {

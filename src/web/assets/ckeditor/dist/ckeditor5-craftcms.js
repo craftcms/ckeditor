@@ -760,12 +760,12 @@ class hu extends Gr {
       commandValue: this.entryType.model.commandValue,
       //entry type id
       label: this.entryType.model.label,
-      withText: this.entryType.model.withText,
+      withText: !this.entryType.model.icon,
       tooltip: Craft.t("app", "New {type}", {
         type: this.entryType.model.label
       })
     }, r = ["btn", "ck-reset_all-excluded"];
-    this.entryType.model.icon && r.push(["icon"]), this.entryType.model.icon && this.entryType.model.withIcon && !this.entryType.model.withText && r.push(["cp-icon"]), this.entryType.model.color && this.entryType.model.withColor && r.push([this.entryType.model.color]), c.class = r.join(" "), this.entryType.model.withIcon && (c.icon = this.entryType.model.icon), u.set(c), this.listenTo(u, "execute", (_) => {
+    this.entryType.model.icon && r.push(["icon", "cp-icon"]), c.class = r.join(" "), this.entryType.model.withIcon && (c.icon = this.entryType.model.icon), u.set(c), this.listenTo(u, "execute", (_) => {
       this.entriesUi._showCreateEntrySlideout(_.source.commandValue);
     }), u.bind("isEnabled").to(i), this.setTemplate({
       tag: "div",
@@ -787,7 +787,7 @@ class mu extends Gr {
     const i = p.entryTypes, u = this.editor.commands.get("insertEntry");
     let c = new Sa();
     i.forEach((_) => {
-      _.model.color && _.model.withColor && (_.model.class || (_.model.class = ""), _.model.class += "icon " + _.model.color), c.add(_);
+      c.add(_);
     });
     const r = Ca(D);
     r.buttonView.set({
@@ -954,9 +954,8 @@ class yu extends Bn {
           icon: i.icon,
           label: i.label || i.value,
           uid: i.uid,
-          withColor: i.withColor,
-          withIcon: i.withIcon,
-          withText: i.expanded ? i.withText : !0
+          withIcon: i.icon,
+          withText: i.expanded ? !i.icon : !0
           // items in a dropdown should always have text
         })
       };

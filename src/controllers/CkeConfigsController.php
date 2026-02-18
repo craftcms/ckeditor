@@ -181,7 +181,7 @@ class CkeConfigsController extends Controller
 
         $chip = Cp::chipHtml($entryType, [
             'inputName' => 'entryTypes[]',
-            'inputValue' => Json::encode($entryType->toArray(['id', 'name', 'handle', 'expanded', 'withColor', 'withIcon', 'withText'])),
+            'inputValue' => Json::encode($entryType->toArray(['id', 'name', 'handle', 'expanded'])),
             'checkbox' => false,
             'showActionMenu' => true,
             'showHandle' => true,

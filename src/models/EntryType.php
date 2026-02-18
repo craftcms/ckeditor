@@ -20,9 +20,6 @@ use craft\models\EntryType as CraftEntryType;
  */
 class EntryType extends CraftEntryType
 {
-    public bool $withColor = true;
-    public bool $withIcon = true;
-    public bool $withText = true;
     public bool $expanded = false;
 
 
@@ -39,30 +36,6 @@ class EntryType extends CraftEntryType
             'iconColor' => $this->expanded ? 'teal' : 'gray',
         ];
 
-        if ($this->withColor) {
-            $indicators[] = [
-                'label' => Craft::t('ckeditor', 'Show with color'),
-                'icon' => 'brush',
-                'iconColor' => 'teal',
-            ];
-        }
-
-        if ($this->withIcon) {
-            $indicators[] = [
-                'label' => Craft::t('ckeditor', 'Show with icon'),
-                'icon' => 'image',
-                'iconColor' => 'teal',
-            ];
-        }
-
-        if ($this->withText) {
-            $indicators[] = [
-                'label' => Craft::t('ckeditor', 'Show with text'),
-                'icon' => 't',
-                'iconColor' => 'teal',
-            ];
-        }
-
         return $indicators;
     }
 
@@ -75,18 +48,6 @@ class EntryType extends CraftEntryType
 
         if (isset($this->expanded)) {
             $config['expanded'] = $this->expanded;
-        }
-
-        if (isset($this->withColor)) {
-            $config['withColor'] = $this->withColor;
-        }
-
-        if (isset($this->withIcon)) {
-            $config['withIcon'] = $this->withIcon;
-        }
-
-        if (isset($this->withText)) {
-            $config['withText'] = $this->withText;
         }
 
         return $config;

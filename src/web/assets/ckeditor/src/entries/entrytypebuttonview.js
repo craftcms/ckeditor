@@ -18,7 +18,7 @@ export default class CraftEntryTypeButtonView extends View {
     let btnConfig = {
       commandValue: this.entryType.model.commandValue, //entry type id
       label: this.entryType.model.label,
-      withText: this.entryType.model.withText,
+      withText: !this.entryType.model.icon,
       tooltip: Craft.t('app', 'New {type}', {
         type: this.entryType.model.label,
       }),
@@ -27,19 +27,7 @@ export default class CraftEntryTypeButtonView extends View {
     let classes = ['btn', 'ck-reset_all-excluded'];
 
     if (this.entryType.model.icon) {
-      classes.push(['icon']);
-    }
-
-    if (
-      this.entryType.model.icon &&
-      this.entryType.model.withIcon &&
-      !this.entryType.model.withText
-    ) {
-      classes.push(['cp-icon']);
-    }
-
-    if (this.entryType.model.color && this.entryType.model.withColor) {
-      classes.push([this.entryType.model.color]);
+      classes.push(['icon', 'cp-icon']);
     }
 
     btnConfig.class = classes.join(' ');
