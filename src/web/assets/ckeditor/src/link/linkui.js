@@ -20,6 +20,7 @@ import {
   ViewModel,
 } from 'ckeditor5';
 import CraftLinkElementView from './linkelementview.js';
+import CraftLinkSitesView from './linksitesview.js';
 import CraftLinkAdvancedView from './linkadvancedview.js';
 
 export default class CraftLinkUI extends Plugin {
@@ -36,6 +37,9 @@ export default class CraftLinkUI extends Plugin {
 
     this.linkTypeWrapperView = null;
     this.advancedView = null;
+    this.elementInputView = null;
+    this.sitesView = null;
+    this.previousLinkValue = null;
 
     this.linkTypeDropdownView = null;
     this.linkTypeDropdownItemModels = [];
@@ -348,7 +352,6 @@ export default class CraftLinkUI extends Plugin {
    * Place the link type fields in the form.
    */
   _showLinkTypeForm(linkOption) {
-    let inputView = null;
     const {formView} = this._linkUI;
     const {children} = formView;
     const {urlInputView} = formView;
@@ -365,24 +368,59 @@ export default class CraftLinkUI extends Plugin {
 
     // if default URL was selected, we need to give it extra classes
     if (linkOption === 'default') {
-      inputView = urlInputView;
+      this.elementInputView = urlInputView;
+      if (this.sitesView !== null) {
+        if (this.sitesView?.siteDropdownView?.buttonView) {
+          this.sitesView.siteDropdownView.buttonView.set('isVisible', false);
+        }
+      }
     } else {
       // otherwise we need to create the Element view,
       // which will be either the button to choose an element or an element card
-      let siteId = this._getLinkSiteId();
-      let elementId = this._getLinkElementId();
-      inputView = new CraftLinkElementView(formView.locale, {
+      this.elementInputView = new CraftLinkElementView(formView.locale, {
         linkUi: this,
         linkOption: linkOption,
         value: this._urlInputValue(),
       });
+      if (this.sitesView !== null) {
+        if (this.sitesView?.siteDropdownView?.buttonView) {
+          this.sitesView.siteDropdownView.buttonView.set('isVisible', true);
+        }
+      }
+    }
+
+    let linkTypeWrapperViewChildren = [
+      this.linkTypeDropdownView,
+      this.elementInputView,
+    ];
+
+    // only add sites dropdown if this is a multisite install and we haven't done so already
+    if (Craft.isMultiSite && this.sitesView == null) {
+      this.sitesView = new CraftLinkSitesView(formView.locale, {
+        linkUi: this,
+        linkOption: linkOption,
+      });
+    }
+
+    // if we have sitesView, add it to the view's children, ensuring it's always on a new line
+    if (this.sitesView != null) {
+      // force the sitesView to always be on the new line
+      let breakItem = new View();
+      breakItem.setTemplate({
+        tag: 'span',
+        attributes: {
+          class: ['break'],
+        },
+      });
+
+      linkTypeWrapperViewChildren.push(breakItem, this.sitesView);
     }
 
     // and now we can construct the container that has the link type dropdown and the corresponding input field
     this.linkTypeWrapperView = new View();
     this.linkTypeWrapperView.setTemplate({
       tag: 'div',
-      children: [this.linkTypeDropdownView, inputView],
+      children: linkTypeWrapperViewChildren,
       attributes: {
         class: [
           'ck',
@@ -471,9 +509,17 @@ export default class CraftLinkUI extends Plugin {
             });
           }
 
-          this._linkUI._hideFakeVisualSelection();
           setTimeout(() => {
-            this._linkUI._showUI(true);
+            // once element has been selected, show the form view so content authors can change the selected site
+            // copied from https://github.com/ckeditor/ckeditor5/blob/v45.0.0/packages/ckeditor5-link/src/linkui.ts#L965-L976
+            this._linkUI._addToolbarView();
+
+            // Be sure panel with link is visible.
+            this._linkUI._balloon.showStack('main');
+
+            this._linkUI._addFormView();
+            this._linkUI._startUpdatingUI();
+            // end copied
           }, 100);
         } else {
           onCancel();
