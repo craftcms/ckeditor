@@ -152,95 +152,9 @@
   margin-inline: auto; /* same as images */
   border-radius: var(--large-border-radius);
 }
+/* end nested entries */
 
-/* minimum color variations that meet the 3:1 colour contrast requirement against the white bg and #d7dfe7 hover bg */
 .ck-toolbar .entry-type-button {
-  .icon.orange {
-    --icon-color: var(--orange-600);
-
-    &:hover {
-      --icon-color: var(--orange-700);
-    }
-  }
-
-  .icon.amber {
-    --icon-color: var(--amber-600);
-
-    &:hover {
-      --icon-color: var(--amber-700);
-    }
-  }
-
-  .icon.yellow {
-    --icon-color: var(--yellow-700);
-  }
-
-  .icon.lime {
-    --icon-color: var(--lime-600);
-
-    &:hover {
-      --icon-color: var(--lime-700);
-    }
-  }
-
-  .icon.green {
-    --icon-color: var(--green-600);
-
-    &:hover {
-      --icon-color: var(--green-700);
-    }
-  }
-
-  .icon.emerald {
-    --icon-color: var(--emerald-600);
-
-    &:hover {
-      --icon-color: var(--emerald-700);
-    }
-  }
-
-  .icon.teal {
-    &:hover {
-      --icon-color: var(--teal-700);
-    }
-  }
-
-  .icon.cyan {
-    --icon-color: var(--cyan-600);
-
-    &:hover {
-      --icon-color: var(--cyan-700);
-    }
-  }
-
-  .icon.sky {
-    --icon-color: var(--sky-600);
-  }
-
-  .icon.purple {
-    &:hover {
-      --icon-color: var(--purple-600);
-    }
-  }
-
-  .icon.fuchsia {
-    &:hover {
-      --icon-color: var(--fuchsia-600);
-    }
-  }
-
-  .icon.pink {
-    &:hover {
-      --icon-color: var(--pink-600);
-    }
-  }
-
-  .icon.rose {
-    &:hover {
-      --icon-color: var(--rose-600);
-    }
-  }
-
   .icon {
     color: var(--icon-color);
 
@@ -253,7 +167,6 @@
     }
   }
 }
-/* end nested entries
 
 /* start fix for https://github.com/craftcms/ckeditor/issues/345 and https://github.com/craftcms/ckeditor/issues/417 */
 form[class^='lp-editor'] .ck-toolbar_grouping,
