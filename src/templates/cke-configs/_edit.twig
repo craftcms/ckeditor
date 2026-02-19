@@ -1,11 +1,6 @@
 {% import '_includes/forms.twig' as forms %}
 {% import 'codeeditor/codeEditor.twig' as codeEditor %}
 
-
-{#{% script with {type: 'module'} %}#}
-{#import {CkeEntryTypeSelectInput} from '@craftcms/ckeditor-config';#}
-{#{% endscript %}#}
-
 {% set readOnly = readOnly ?? false %}
 
 {% set baseMonacoOptions = {
