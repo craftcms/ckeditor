@@ -568,6 +568,7 @@ for the changes to take effect.\n", Console::FG_GREEN);
             switch ($button) {
                 case 'alignment':
                 case 'bold':
+                case 'fullscreen':
                 case 'italic':
                 case 'link':
                 case 'underline':
@@ -636,10 +637,6 @@ for the changes to take effect.\n", Console::FG_GREEN);
                 case 'video':
                     $ckeConfig->addButton('mediaEmbed');
                     break;
-                case 'fullscreen':
-                    // ignore
-                    break;
-
                 default:
                     $unsupportedItems['buttons'][] = $button;
             }
