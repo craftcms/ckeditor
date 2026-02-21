@@ -10,7 +10,6 @@ namespace craft\ckeditor\data;
 
 use Craft;
 use craft\htmlfield\HtmlFieldData;
-use League\HTMLToMarkdown\HtmlConverter;
 use yii\base\UnknownPropertyException;
 
 /**

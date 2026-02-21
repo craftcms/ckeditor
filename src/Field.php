@@ -68,6 +68,7 @@ use HTMLPurifier_Config;
 use HTMLPurifier_Exception;
 use HTMLPurifier_HTMLDefinition;
 use Illuminate\Support\Collection;
+use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\validators\Validator;
@@ -1153,7 +1154,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
      * @param bool $static
      * @return string
      * @throws InvalidConfigException
-     * @throws \Throwable
+     * @throws Throwable
      */
     private function _inputHtml(mixed $value, ?ElementInterface $element, bool $static): string
     {
@@ -1675,7 +1676,7 @@ JS,
 
         $previewsInData = $this->options['mediaEmbed']['previewsInData'] ?? false;
 
-        $value = preg_replace_callback(
+        return preg_replace_callback(
             '/(<figure\b[^>]*>\s*)(<iframe\b([^>]*)src="([^"]+)"([^>]*)>(.*?)<\/iframe>)/i',
             function(array $match) use ($previewsInData) {
                 $absUrl = UrlHelper::isProtocolRelativeUrl($match[4]) ? "https:$match[4]" : $match[4];
@@ -1697,8 +1698,6 @@ JS,
             },
             $value,
         );
-
-        return $value;
     }
 
     /**

@@ -11,11 +11,12 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\ckeditor\Field;
 use craft\elements\Asset;
-use craft\elements\Entry;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ElementHelper;
 use craft\web\Controller;
 use Throwable;
+use yii\base\Exception;
+use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -64,7 +65,7 @@ class CkeditorController extends Controller
      * Return card html for entry based on entryId and siteId params.
      *
      * @return Response
-     * @throws \yii\web\BadRequestHttpException
+     * @throws BadRequestHttpException
      */
     public function actionEntryCardHtml(): Response
     {
@@ -180,8 +181,8 @@ class CkeditorController extends Controller
      *
      * @return Response
      * @throws NotFoundHttpException
-     * @throws \yii\base\InvalidConfigException
-     * @throws \yii\web\BadRequestHttpException
+     * @throws InvalidConfigException
+     * @throws BadRequestHttpException
      */
     public function actionImagePermissions(): Response
     {
@@ -217,7 +218,7 @@ class CkeditorController extends Controller
      *
      * @return Response
      * @throws BadRequestHttpException
-     * @throws \yii\base\Exception
+     * @throws Exception
      * @since 5.0.0
      */
     public function actionRenderElementWithSupportedSites(): Response

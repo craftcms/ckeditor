@@ -50,7 +50,7 @@ class Plugin extends \craft\base\Plugin
     public bool $hasCpSettings = true;
     public bool $hasReadOnlyCpSettings = true;
 
-    public function init()
+    public function init(): void
     {
         parent::init();
 
