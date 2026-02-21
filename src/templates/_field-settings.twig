@@ -52,7 +52,7 @@
   {% endblock %}
 {% endembed %}
 
-{% set config = {
+{{ forms.field({
   label: 'Entry Types'|t('app'),
   instructions: 'Choose the types of entries that can be created in this field.'|t('app'),
   id: 'entry-types',
@@ -63,9 +63,8 @@
   sortable: true,
   errors: field.getErrors('entryTypes'),
   data: {'error-key': 'entryTypes'},
-} %}
-{% set config = config|merge({id: config.id ?? "entrytypeselect#{random()}"}) %}
-{{ forms.field(config, 'template:ckeditor/_entryTypeSelect.twig') }}
+  disabled: readOnly,
+}, 'template:ckeditor/_entryTypeSelect.twig') }}
 
 {{ forms.checkboxSelectField({
   label: 'Heading Levels'|t('ckeditor'),
@@ -92,6 +91,7 @@
   options: advanceLinkOptions,
   values: field.advancedLinkFields,
   sortable: true,
+  disabled: readOnly,
 }) }}
 
 {% embed '_includes/forms/field' with {
@@ -108,6 +108,7 @@
         name: 'fieldLimit',
         value: field.wordLimit ?? field.characterLimit,
         size: 3,
+        disabled: readOnly,
       }) }}
       {{ forms.select({
         id: 'limitUnit',
@@ -116,7 +117,8 @@
           { value: 'words', label: 'Words'|t('ckeditor') },
           { value: 'chars', label: 'Characters'|t('app') },
         ],
-        value: field.characterLimit ? 'chars' : 'words'
+        value: field.characterLimit ? 'chars' : 'words',
+        disabled: readOnly,
       }) }}
     </div>
   {% endblock %}
@@ -126,7 +128,8 @@
   id: 'show-word-count',
   name: 'showWordCount',
   label: 'Show word count'|t('ckeditor'),
-  on: field.showWordCount
+  on: field.showWordCount,
+  disabled: readOnly,
 }) }}
 
 <hr>
@@ -140,7 +143,8 @@
     instructions: 'The volumes that should be available when selecting assets.'|t('ckeditor'),
     options: volumeOptions,
     values: field.availableVolumes,
-    showAllOption: volumeOptions|length ? true : false
+    showAllOption: volumeOptions|length ? true : false,
+    disabled: readOnly,
   }) }}
 
   {% embed '_includes/forms/field.twig' with {
@@ -163,6 +167,7 @@
                 ...volumeOptions,
               ],
               value: field.defaultUploadLocationVolume,
+              disabled: readOnly,
             }) }}
           </div>
           <div id="default-upload-location-subpath-container" class="flex-grow {{ not field.defaultUploadLocationVolume ? 'hidden' }}">
@@ -172,6 +177,7 @@
               name: "defaultUploadLocationSubpath",
               value: field.defaultUploadLocationSubpath,
               placeholder: "path/to/subfolder"|t('app'),
+              disabled: readOnly,
             }) }}
           </div>
         </div>
@@ -185,7 +191,8 @@
     instructions: 'The transforms that should be available when inserting images.'|t('ckeditor'),
     options: transformOptions,
     values: field.availableTransforms,
-    showAllOption: transformOptions|length ? true : false
+    showAllOption: transformOptions|length ? true : false,
+    disabled: readOnly,
   }) }}
 
   {{ forms.selectField({
@@ -195,6 +202,7 @@
     instructions: 'The default transform that should be applied when inserting an image.'|t('ckeditor'),
     options: defaultTransformOptions,
     value: field.defaultTransform,
+    disabled: readOnly,
   }) }}
 
   {{ forms.lightswitchField({
@@ -203,6 +211,7 @@
     id: 'showUnpermittedVolumes',
     name: 'showUnpermittedVolumes',
     on: field.showUnpermittedVolumes,
+    disabled: readOnly,
   }) }}
 
   {{ forms.lightswitchField({
@@ -211,6 +220,7 @@
     id: 'showUnpermittedFiles',
     name: 'showUnpermittedFiles',
     on: field.showUnpermittedFiles,
+    disabled: readOnly,
   }) }}
 </div>
 
@@ -375,7 +385,8 @@
     id: 'purify-html',
     name: 'purifyHtml',
     on: field.purifyHtml,
-    toggle: 'purifier-config-container'
+    toggle: 'purifier-config-container',
+    disabled: readOnly,
   }) }}
 
   <div id="purifier-config-container"{% if not field.purifyHtml %} class="hidden"{% endif %}>
@@ -390,7 +401,8 @@
       id: 'purifier-config',
       name: 'purifierConfig',
       options: purifierConfigOptions,
-      value: field.purifierConfig
+      value: field.purifierConfig,
+      disabled: readOnly,
     }) }}
   </div>
 
@@ -401,6 +413,7 @@
     instructions: 'Whether `<oembed>` tags should be parsed and replaced with the provider’s embed code.'|t('ckeditor'),
     warning: 'This should only be enabled if the field output is cached.'|t('ckeditor'),
     on: field.parseEmbeds,
+    disabled: readOnly,
   }) }}
 
   {% if userGroupOptions|length %}
@@ -413,6 +426,7 @@
         values: field.sourceEditingGroups,
         allLabel: 'All users'|t('app'),
         showAllOption: true,
+        disabled: readOnly,
       }) }}
     </div>
   {% endif %}
@@ -427,11 +441,13 @@
         {label: 'Raw content only'|t('ckeditor'), value: 'raw'},
       ],
       value: field.fullGraphqlData ? 'full' : 'raw',
+      disabled: readOnly,
     }) }}
   {% endif %}
 </div>
 
-{% js %}
+{% if not readOnly %}
+  {% js %}
 (() => {
   new Craft.AssetsFieldSettings(
     null,
@@ -446,4 +462,5 @@
     $subpathContainer.toggleClass('hidden', !$volumeSelect.val());
   });
 })();
-{% endjs %}
+  {% endjs %}
+{% endif %}

@@ -32,7 +32,7 @@ class FieldSettingsController extends Controller
      */
     public function actionApplyEntryTypeIndicators(): Response
     {
-        $this->requireAdmin();
+        $this->requireAdmin(false);
 
         $config = Component::cleanseConfig($this->request->getRequiredBodyParam('config'));
 
