@@ -30,11 +30,13 @@ class EntryType extends CraftEntryType
     {
         $indicators = parent::getIndicators();
 
-        $indicators[] = [
-            'label' => $this->expanded ? Craft::t('ckeditor', 'Show as a separate button') : Craft::t('ckeditor', 'Show in a dropdown'),
-            'icon' => $this->expanded ? 'eye' : 'eye-slash',
-            'iconColor' => $this->expanded ? 'teal' : 'gray',
-        ];
+        if ($this->expanded) {
+            $indicators[] = [
+                'label' => Craft::t('ckeditor', 'Show as a separate button'),
+                'icon' => 'eye',
+                'iconColor' => 'teal',
+            ];
+        }
 
         return $indicators;
     }

@@ -32,7 +32,6 @@ return [
     'Raw content only' => 'Raw content only',
     'Removes any potentially-malicious code on save, by running the submitted data through {link}.' => 'Removes any potentially-malicious code on save, by running the submitted data through {link}.',
     'Show as a separate button' => 'Show as a separate button',
-    'Show in a dropdown' => 'Show in a dropdown',
     'Show word count' => 'Show word count',
     'Site: {name}' => 'Site: {name}',
     'The default transform that should be applied when inserting an image.' => 'The default transform that should be applied when inserting an image.',
