@@ -569,8 +569,8 @@ for the changes to take effect.\n", Console::FG_GREEN);
                 case 'alignment':
                 case 'bold':
                 case 'italic':
-                case 'underline':
                 case 'link':
+                case 'underline':
                     $ckeConfig->addButton($button);
                     break;
                 case 'codebutton':
