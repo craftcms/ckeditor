@@ -136,20 +136,20 @@
     value: field.defaultTransform,
   }) }}
 
-  {{ forms.checkboxField({
+  {{ forms.lightswitchField({
     label: 'Show unpermitted volumes'|t('ckeditor'),
     instructions: 'Whether to show volumes that the user doesn’t have permission to view.'|t('ckeditor'),
     id: 'showUnpermittedVolumes',
     name: 'showUnpermittedVolumes',
-    checked: field.showUnpermittedVolumes,
+    on: field.showUnpermittedVolumes,
   }) }}
 
-  {{ forms.checkboxField({
+  {{ forms.lightswitchField({
     label: 'Show unpermitted files'|t('ckeditor'),
     instructions: 'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'|t('ckeditor'),
     id: 'showUnpermittedFiles',
     name: 'showUnpermittedFiles',
-    checked: field.showUnpermittedFiles,
+    on: field.showUnpermittedFiles,
   }) }}
 </div>
 
@@ -157,7 +157,7 @@
 
 <a class="fieldtoggle" data-target="advanced">{{ "Advanced"|t('ckeditor') }}</a>
 <div id="advanced" class="hidden">
-  {{ forms.checkboxField({
+  {{ forms.lightswitchField({
     label: "Purify HTML"|t('ckeditor'),
     instructions: 'Removes any potentially-malicious code on save, by running the submitted data through {link}.'|t('ckeditor', {
       link: '<a href="http://htmlpurifier.org/" rel="noopener" target="_blank">HTML Purifier</a>',
@@ -165,7 +165,7 @@
     warning: 'Disable this at your own risk!'|t('ckeditor'),
     id: 'purify-html',
     name: 'purifyHtml',
-    checked: field.purifyHtml,
+    on: field.purifyHtml,
     toggle: 'purifier-config-container'
   }) }}
 
