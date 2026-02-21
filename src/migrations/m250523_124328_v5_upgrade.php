@@ -11,6 +11,7 @@ use craft\helpers\ProjectConfig;
 use craft\helpers\StringHelper;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Throwable;
 
 /**
  * m250523_124328_v5_upgrade migration.
@@ -131,7 +132,7 @@ class m250523_124328_v5_upgrade extends Migration
                             $entryTypesConfig[$key]['expanded'] = true;
                         }
                         // otherwise, the default expanded => false will be used
-                    } catch (\Throwable $e) {
+                    } catch (Throwable) {
                         // if something went wrong, the default expanded => false will be used
                     }
                 }
