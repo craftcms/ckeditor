@@ -9,8 +9,8 @@ namespace craft\ckeditor\console\actions;
 
 use Craft;
 use craft\ckeditor\console\controllers\ConvertController;
-use craft\ckeditor\Field;
 use craft\ckeditor\console\ToolbarBuilder;
+use craft\ckeditor\Field;
 use craft\errors\OperationAbortedException;
 use craft\fields\MissingField;
 use craft\helpers\Console;
@@ -441,7 +441,7 @@ for the changes to take effect.\n", Console::FG_GREEN);
                     $ckeToolbar->addButton($button);
                     break;
                 case 'codebutton':
-                    $ckeToolbar->replaceButtonAt('code');
+                    $ckeToolbar->addButton('code');
                     break;
                 case 'file':
                     // this was just a shortcut for "Link → Link to an asset"

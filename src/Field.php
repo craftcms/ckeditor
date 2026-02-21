@@ -26,8 +26,8 @@ use craft\ckeditor\helpers\CkeditorConfig;
 use craft\ckeditor\helpers\CkeditorConfigSchema;
 use craft\ckeditor\models\EntryType as CkeEntryType;
 use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
-use craft\ckeditor\web\assets\fieldsettings\FieldSettingsAsset;
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
+use craft\ckeditor\web\assets\fieldsettings\FieldSettingsAsset;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\Table;
@@ -860,7 +860,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         return $this->settingsHtml(true);
     }
 
-    private function settingsHtml(bool $readOnly): ?string
+    private function settingsHtml(bool $readOnly): string
     {
         $view = Craft::$app->getView();
         $view->registerAssetBundle(FieldSettingsAsset::class);

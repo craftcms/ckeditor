@@ -8,7 +8,6 @@
 namespace craft\ckeditor\console;
 
 use ArrayIterator;
-use IteratorAggregate;
 use Traversable;
 
 /**
