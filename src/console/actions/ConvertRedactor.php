@@ -176,7 +176,7 @@ class ConvertRedactor extends Action
         // Find Redactor fields
         $fields = null;
         $this->controller->do('Looking for Redactor fields in the project config', function() use (&$fields) {
-            $fields = $this->findFields($this->projectConfig->get(), 'craft\\redactor\\Field');
+            $fields = $this->findFields('craft\\redactor\\Field');
         });
 
         if (empty($fields)) {
@@ -313,32 +313,15 @@ for the changes to take effect.\n", Console::FG_GREEN);
         return ExitCode::OK;
     }
 
-    private function findFields(array $config, string $type, string $path = ''): array
+    private function findFields(string $type): array
     {
-        $configs = [];
-
-        if (
-            ($config['type'] ?? null) === $type ||
+        return $this->projectConfig->find(fn(array $config) => (
+            (($config['type'] ?? null) === $type) ||
             (
                 ($config['type'] ?? null) === MissingField::class &&
                 ($config['settings']['expectedType'] ?? null) === $type
             )
-        ) {
-            // found one
-            $configs[$path] = $config;
-        } else {
-            // keep looking
-            foreach ($config as $key => $value) {
-                if (is_array($value)) {
-                    $configs = array_merge(
-                        $configs,
-                        $this->findFields($value, $type, ($path ? "$path." : '') . $key)
-                    );
-                }
-            }
-        }
-
-        return $configs;
+        ));
     }
 
     private function outputFields(array $fields, string $typeName): void
