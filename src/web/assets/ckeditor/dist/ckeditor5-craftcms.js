@@ -10756,7 +10756,7 @@ const qu = function(Te) {
         await D.ensureIsDraftOrRevision();
         let L = N.parents(".input");
         if (L.length > 0) {
-          let se = $(L[0]).find("div[data-config]");
+          let se = $(L[0]).find("div.ckeditor-container");
           se.length > 0 && (C = $(se[0]).data("element-id"));
         }
         C == null && (C = D.settings.elementId), m = N.parents(".field").data("layoutElement");

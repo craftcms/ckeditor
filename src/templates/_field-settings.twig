@@ -1,13 +1,97 @@
 {% import '_includes/forms.twig' as forms %}
+{% import 'codeeditor/codeEditor.twig' as codeEditor %}
 
-{{ forms.componentSelectField({
-  label: 'CKEditor Config'|t('ckeditor'),
-  id: 'cke-config',
-  name: 'ckeConfig',
-  options: plugin('ckeditor').ckeConfigs.getAll(),
-  value: ckeConfig ?? null,
-  limit: 1,
-  createAction: 'ckeditor/cke-configs/edit',
+{% set readOnly = readOnly ?? false %}
+
+{% set baseMonacoOptions = {
+  tabSize: 2,
+  showUnused: false,
+} %}
+
+{% if readOnly %}
+  {% set baseMonacoOptions = baseMonacoOptions|merge({
+    domReadOnly: true,
+    readOnly: true
+  }) %}
+{% endif %}
+
+{% set wrapperClasses = ['monaco-editor-background-frame'] %}
+{% set baseCodeEditorOptions = {} %}
+
+{% embed '_includes/forms/field.twig' with {
+  label: 'Toolbar'|t('ckeditor'),
+  instructions: 'Drag toolbar items into the editor.'|t('ckeditor'),
+  id: 'toolbar',
+  field,
+  errors: field.getErrors('toolbar'),
+  data: {'error-key': 'toolbar'},
+} %}
+  {% block input %}
+    <div id="toolbar-builder" class="ckeditor-tb pane{{ readOnly ? ' disabled' : '' }}" data-available-items="{{ toolbarItems|json_encode|e('html_attr') }}">
+      <div class="ck ck-reset_all">
+        <div class="ckeditor-tb--items ckeditor-tb--source ck ck-reset ck-editor ck-rounded-corners">
+          <div class="ck ck-toolbar">
+            <div class="ck ck-toolbar__items"></div>
+          </div>
+        </div>
+
+        <div class="ckeditor-tb--items ckeditor-tb--target ck ck-reset ck-editor ck-rounded-corners">
+          <div class="ck ck-editor__top">
+            <div class="ck ck-toolbar">
+              <div class="ck ck-toolbar__items"></div>
+            </div>
+          </div>
+          <div class="ck ck-editor__main">
+            <div class="ck ck-content ck-editor__editable ck-editor__editable_inline"></div>
+          </div>
+        </div>
+      </div>
+
+      {{ hiddenInput('toolbar', field.toolbar|json_encode) }}
+    </div>
+  {% endblock %}
+{% endembed %}
+
+{% set config = {
+  label: 'Entry Types'|t('app'),
+  instructions: 'Choose the types of entries that can be created in this field.'|t('app'),
+  id: 'entry-types',
+  name: 'entryTypes[]',
+  values: field.getEntryTypes(),
+  allowOverrides: true,
+  create: true,
+  sortable: true,
+  errors: field.getErrors('entryTypes'),
+  data: {'error-key': 'entryTypes'},
+} %}
+{% set config = config|merge({id: config.id ?? "entrytypeselect#{random()}"}) %}
+{{ forms.field(config, 'template:ckeditor/_entryTypeSelect.twig') }}
+
+{{ forms.checkboxSelectField({
+  label: 'Heading Levels'|t('ckeditor'),
+  instructions: 'Choose which heading levels should be available to this field.'|t('ckeditor'),
+  id: 'heading-levels',
+  name: 'headingLevels',
+  options: [
+    {label: 'Heading {level}'|t('ckeditor', {level: 1}), value: '1'},
+    {label: 'Heading {level}'|t('ckeditor', {level: 2}), value: '2'},
+    {label: 'Heading {level}'|t('ckeditor', {level: 3}), value: '3'},
+    {label: 'Heading {level}'|t('ckeditor', {level: 4}), value: '4'},
+    {label: 'Heading {level}'|t('ckeditor', {level: 5}), value: '5'},
+    {label: 'Heading {level}'|t('ckeditor', {level: 6}), value: '6'},
+  ],
+  values: field.headingLevels,
+  disabled: readOnly,
+}) }}
+
+{{ forms.checkboxSelectField({
+  label: 'Advanced Link Fields'|t('ckeditor'),
+  id: 'advanced-link-fields',
+  name: 'advancedLinkFields',
+  showAllOption: false,
+  options: advanceLinkOptions,
+  values: field.advancedLinkFields,
+  sortable: true,
 }) }}
 
 {% embed '_includes/forms/field' with {
@@ -44,29 +128,6 @@
   label: 'Show word count'|t('ckeditor'),
   on: field.showWordCount
 }) }}
-
-{{ forms.lightswitchField({
-  id: 'parse-embeds',
-  name: 'parseEmbeds',
-  label: 'Parse embeds'|t('ckeditor'),
-  instructions: 'Whether `<oembed>` tags should be parsed and replaced with the provider’s embed code.'|t('ckeditor'),
-  warning: 'This should only be enabled if the field output is cached.'|t('ckeditor'),
-  on: field.parseEmbeds,
-}) }}
-
-{% if userGroupOptions|length %}
-<div id="source-editing-groups">
-  {{ forms.checkboxSelectField({
-    id: 'sourceEditingGroups',
-    name: 'sourceEditingGroups',
-    label: 'Who should see the “Source” button?'|t('ckeditor'),
-    options: userGroupOptions,
-    values: field.sourceEditingGroups,
-    allLabel: 'All users'|t('app'),
-    showAllOption: true,
-  }) }}
-</div>
-{% endif %}
 
 <hr>
 
@@ -157,6 +218,154 @@
 
 <a class="fieldtoggle" data-target="advanced">{{ "Advanced"|t('ckeditor') }}</a>
 <div id="advanced" class="hidden">
+  {% embed '_includes/forms/field.twig' with {
+    label: 'Config Options'|t('ckeditor'),
+    instructions: 'Define custom [config options]({link}) which should be merged with the default config.'|t('ckeditor', {
+      link: 'https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html',
+    }),
+    id: 'config-options',
+    field,
+    errors: field.getErrors('json')|merge(field.getErrors('js')),
+    data: {'error-key': 'json'},
+  } %}
+    {% block input %}
+      {% import 'codeeditor/codeEditor.twig' as codeEditor %}
+      {% set lang = field.js ? 'js' : 'json' %}
+      {% set isJson = lang == 'json' %}
+      {% set isJs = lang == 'js' %}
+
+      <div id="config-options">
+        <section class="btngroup btngroup--exclusive small" aria-label="{{ 'Config option code language options' }}">
+          {{ tag('button', {
+            type: 'button',
+            class: ['btn', 'small', isJson ? 'active']|filter,
+            aria: {pressed: isJson ? 'true'}|filter,
+            data: {language: 'json'},
+            text: 'JSON',
+          }) }}
+          {{ tag('button', {
+            type: 'button',
+            class: ['btn', 'small', isJs ? 'active' : null]|filter,
+            aria: {pressed: isJs ? 'true'}|filter,
+            data: {language: 'js'},
+            text: 'JavaScript',
+          }) }}
+        </section>
+      </div>
+
+      {% set classes = [] %}
+      {% if not isJson %}
+        {% set classes = classes|push('hidden') %}
+      {% endif %}
+      {% if readOnly %}
+        {% set classes = classes|push('disabled') %}
+      {% endif %}
+
+      {% tag 'div' with {
+        id: 'config-options-json-container',
+        class: classes|join(' '),
+      } %}
+        {% set wrapperClasses = wrapperClasses|push(field.hasErrors('json') ? 'has-errors') %}
+        {{ codeEditor.textarea(
+          {
+            id: 'config-options-json',
+            name: 'json',
+            value: isJson ? (field.json ?? "{\n  \n}"),
+          },
+          'ckeditor:EditorConfigJson',
+          baseMonacoOptions|merge({
+            language: 'json',
+          }),
+          baseCodeEditorOptions|merge({wrapperClass: wrapperClasses|join(' ')}),
+        ) }}
+      {% endtag %}
+
+      {% set classes = [] %}
+      {% if not isJs %}
+        {% set classes = classes|push('hidden') %}
+      {% endif %}
+      {% if readOnly %}
+        {% set classes = classes|push('disabled') %}
+      {% endif %}
+      {% tag 'div' with {
+        id: 'config-options-js-container',
+        class: classes|join(' ')
+      } %}
+        {{ codeEditor.textarea(
+          {
+            id: 'config-options-js',
+            name: 'js',
+            value: isJs ? (field.js ?? "return {\n  \n}"),
+          },
+          'ckeditor:EditorConfigJs',
+          baseMonacoOptions|merge({
+            language: 'javascript',
+          }),
+          baseCodeEditorOptions|merge({wrapperClass: wrapperClasses|join(' ')}),
+        ) }}
+      {% endtag %}
+    {% endblock %}
+  {% endembed %}
+
+  <script type="module">
+    import {ConfigOptions, ToolbarBuilder} from '@craftcms/ckeditor-config';
+    {{ importStatements|raw }}
+
+    function initializeConfig() {
+      const configOptions = new ConfigOptions("{{ configOptionsId }}", "{{ jsonSchemaUri }}");
+      new ToolbarBuilder("{{ toolbarBuilderId }}", configOptions, [{{ plugins | join(',') }}]);
+
+      (() => {
+        // Register the config options JSON schema
+        const jsonSchemaUri = {{ jsonSchemaUri|json_encode|raw }};
+        const schema = JSON.parse(JSON.stringify({{ jsonSchema|json_encode|raw }}));
+
+        monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+          validate: true,
+          schemas: [
+            {
+              uri: jsonSchemaUri,
+              fileMatch: [jsonSchemaUri],
+              schema: schema,
+            },
+          ],
+        });
+      })();
+    }
+
+    /**
+     * This is not ideal, but when loading the config in a slideout (seemingly only in FireFox)
+     * this module code can run `window.monacoEditorInstances` has been created.
+     */
+    function checkWindow() {
+      if (typeof window.monacoEditorInstances === 'undefined') {
+        setTimeout(checkWindow, 100);
+      } else {
+        initializeConfig();
+      }
+    }
+
+    checkWindow();
+  </script>
+
+  {% set wrapperClasses = wrapperClasses|push(readOnly ? 'disabled') %}
+  {{ codeEditor.textareaField(
+    {
+      label: 'Custom Styles'|t('ckeditor'),
+      instructions: 'Define CSS styles that should be registered for editors, such as [style classes]({url}).'|t('ckeditor', {
+      url: 'https://ckeditor.com/docs/ckeditor5/latest/features/style.html',
+    }),
+      id: 'css',
+      name: 'css',
+      value: field.css,
+    },
+    'CodeEditor',
+    baseMonacoOptions|merge({
+      language: 'css',
+    }),
+    baseCodeEditorOptions|merge({wrapperClass: wrapperClasses|join(' ')}),
+  ) }}
+
   {{ forms.lightswitchField({
     label: "Purify HTML"|t('ckeditor'),
     instructions: 'Removes any potentially-malicious code on save, by running the submitted data through {link}.'|t('ckeditor', {
@@ -184,6 +393,29 @@
       value: field.purifierConfig
     }) }}
   </div>
+
+  {{ forms.lightswitchField({
+    id: 'parse-embeds',
+    name: 'parseEmbeds',
+    label: 'Parse embeds'|t('ckeditor'),
+    instructions: 'Whether `<oembed>` tags should be parsed and replaced with the provider’s embed code.'|t('ckeditor'),
+    warning: 'This should only be enabled if the field output is cached.'|t('ckeditor'),
+    on: field.parseEmbeds,
+  }) }}
+
+  {% if userGroupOptions|length %}
+    <div id="source-editing-groups">
+      {{ forms.checkboxSelectField({
+        id: 'sourceEditingGroups',
+        name: 'sourceEditingGroups',
+        label: 'Who should see the “Source” button?'|t('ckeditor'),
+        options: userGroupOptions,
+        values: field.sourceEditingGroups,
+        allLabel: 'All users'|t('app'),
+        showAllOption: true,
+      }) }}
+    </div>
+  {% endif %}
 
   {% if craft.app.config.general.enableGql %}
     {{ forms.selectField({

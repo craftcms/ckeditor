@@ -21,7 +21,7 @@
   },
   "scripts": {
     "prebuild": "npm run fix-prettier",
-    "build:config": "vite build -c ./src/web/assets/ckeconfig/vite.config.js",
+    "build:config": "vite build -c ./src/web/assets/fieldsettings/vite.config.js",
     "build:field": "vite build -c ./src/web/assets/ckeditor/vite.config.js",
     "build": "npm-run-all -p build:*",
     "postbuild": "npm run copy",

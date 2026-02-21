@@ -167,7 +167,7 @@ const handleClipboard = function (editor, plugins) {
         // this way if the CKE field we're pasting into is nested in a matrixblock (or similar), we'll get the correct owner ID
         let inputContainer = $editorElement.parents('.input');
         if (inputContainer.length > 0) {
-          let divWrapper = $(inputContainer[0]).find('div[data-config]');
+          let divWrapper = $(inputContainer[0]).find('div.ckeditor-container');
           if (divWrapper.length > 0) {
             ownerId = $(divWrapper[0]).data('element-id');
           }

@@ -5,7 +5,7 @@
  * @license GPL-3.0-or-later
  */
 
-namespace craft\ckeditor\web\assets\ckeconfig;
+namespace craft\ckeditor\web\assets\fieldsettings;
 
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
 use craft\web\AssetBundle;
@@ -17,7 +17,7 @@ use nystudio107\codeeditor\assetbundles\codeeditor\CodeEditorAsset;
  *
  * @since 3.0.0
  */
-class CkeConfigAsset extends AssetBundle
+class FieldSettingsAsset extends AssetBundle
 {
     /**
      * @inheritdoc
@@ -36,7 +36,7 @@ class CkeConfigAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        ['ckeconfig.js', 'type' => 'module'],
+        ['fieldsettings.js', 'type' => 'module'],
     ];
 
     /**

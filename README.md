@@ -50,15 +50,9 @@ php craft plugin/install ckeditor
 
 ## Configuration
 
-CKEditor configs are managed globally from **Settings** → **CKEditor**.
+Each CKEditor field allows you to choose the available toolbar buttons, as well as any custom [config options](https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html) and CSS styles that should be registered with the field.
 
-Configurations define the available toolbar buttons, as well as any custom [config options](https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html) and CSS styles that should be registered with the field.
-
-New configs can also be created inline from CKEditor field settings.
-
-![A “Create a new field” page within the Craft CMS control panel, with “CKEditor” as the chosen field type. A slideout is open with CKEditor config settings.](images/field-settings.png)
-
-Once you have selected which toolbar buttons should be available in fields using a given configuration, additional settings may be applied via **Config options**. Options can be defined as static JSON, or a dynamically-evaluated JavaScript snippet; the latter is used as the body of an [immediately-invoked function expression](https://developer.mozilla.org/en-US/docs/Glossary/IIFE), and does not receive any arguments.
+Once you have selected which toolbar buttons should be available, additional settings may be applied via **Config options**. Options can be defined as static JSON, or a dynamically-evaluated JavaScript snippet; the latter is used as the body of an [immediately-invoked function expression](https://developer.mozilla.org/en-US/docs/Glossary/IIFE), and does not receive any arguments.
 
 > [!NOTE]  
 > Available options can be found in the [CKEditor's documentation](https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html). Craft will auto-complete config properties for most bundled CKEditor extensions.
@@ -128,7 +122,7 @@ You no longer have to use the `link` configuration concern to allow authors to c
 
 CKEditor’s [Styles](https://ckeditor.com/docs/ckeditor5/latest/features/style.html) plugin makes it easy to apply custom styles to your content via CSS classes.
 
-You can define custom styles within CKEditor configs using the [`style`](https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html#member-style) config option:
+You can define custom styles using the [`style`](https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html#member-style) config option:
 
 ```js
 return {
@@ -245,12 +239,12 @@ Nested entries can be created anywhere within your content, and they can be move
 
 To configure a CKEditor field to manage nested entries, follow these steps:
 
-1. Go to **Settings** → **CKEditor** and click on the config you wish to edit (or create a new one).
+1. Go to **Settings** → **Fields** and click on the field you wish to edit (or create a new one).
 2. Drag the “+” menu button into the toolbar.
-3. Select one or more entry types which should be available within CKEditor fields that use this config.
+3. Select one or more entry types which should be available within the field.
 4. And save.
 
-Now all the CKEditor fields that use this config are set up to manage nested entries! The next time you edit an element with that CKEditor field, the “+” button will be shown in the toolbar, and when you choose an entry type from its menu, a slideout will open where you can enter content for the nested entry.
+Now the field is set up to manage nested entries! The next time you edit an element with that CKEditor field, the “+” button will be shown in the toolbar, and when you choose an entry type from its menu, a slideout will open where you can enter content for the nested entry.
 
 An entry card will appear within the rich text content after you press **Save** within the slideout. The card can be moved via drag-n-drop or cut/paste from there.
 
@@ -334,7 +328,7 @@ The example above treats both chunk types as strings. For entry chunks, this is 
 
 ## Converting Redactor Fields
 
-You can use the `ckeditor/convert/redactor` command to convert any existing Redactor fields over to CKEditor. For each unique Redactor config, a new CKEditor config will be created and associated with the appropriate field(s).
+You can use the `ckeditor/convert/redactor` command to convert any existing Redactor fields over to CKEditor.
 
 The command will make changes to your project config. You should commit them, and run `craft up` on other environments for the changes to take effect.
 
@@ -431,10 +425,6 @@ If you wish to use CKEditor on the front end, the safest option is to [bring you
 
 {# Load the field definition via the field and CKEditor APIs: #}
 {% set field = craft.app.fields.getFieldByHandle('primer') %}
-{% set plugin = craft.app.plugins.getPlugin('ckeditor') %}
-
-{# Grab the config object using the field’s settings: #}
-{% set config = plugin.ckeConfigs.getByUid(field.ckeConfig) %}
 
 <div id="editor">
     {{ entry.myCkEditorField }}
@@ -456,11 +446,11 @@ If you wish to use CKEditor on the front end, the safest option is to [bring you
             licenseKey: '<YOUR_LICENSE_KEY>',
             plugins: [Essentials, Bold, Italic, Font, Paragraph],
             // Configure dynamically from settings:
-            toolbar: {{ config.toolbar|json_encode|raw }},
+            toolbar: {{ field.toolbar|json_encode|raw }},
         })
         .then()
         .catch();
 </script>
 ```
 
-You may need to build up the top-level config object from `conifg.options`, `config.headingLevels`, and so on to get a complete, functional editor—be mindful that configurations may rely on plugins that are only available in the control panel! Refer to [`craft\ckeditor\Field::inputHtml()`](src/Field.php) for additional steps the CKEditor plugin when normalizing configuration, for control panel editor instances.
+You may need to build up the top-level config object from `field.options`, `field.headingLevels`, and so on to get a complete, functional editor—be mindful that configurations may rely on plugins that are only available in the control panel! Refer to [`craft\ckeditor\Field::inputHtml()`](src/Field.php) for additional steps the CKEditor plugin when normalizing configuration, for control panel editor instances.

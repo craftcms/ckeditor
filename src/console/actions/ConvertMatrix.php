@@ -9,17 +9,14 @@ namespace craft\ckeditor\console\actions;
 
 use Craft;
 use craft\base\FieldInterface;
-use craft\ckeditor\CkeConfig;
 use craft\ckeditor\console\controllers\ConvertController;
 use craft\ckeditor\Field;
-use craft\ckeditor\Plugin;
 use craft\enums\PropagationMethod;
 use craft\errors\OperationAbortedException;
 use craft\fields\Matrix;
 use craft\fields\PlainText;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
-use craft\helpers\StringHelper;
 use craft\models\EntryType;
 use Illuminate\Support\Collection;
 use yii\base\Action;
@@ -76,9 +73,6 @@ class ConvertMatrix extends Action
             return ExitCode::OK;
         }
 
-        // get the CKEditor config
-        $ckeConfig = $this->ckeConfig($matrixField->name, $htmlField);
-
         $this->controller->stdout("\n");
 
         // create the CKEditor field
@@ -101,17 +95,23 @@ class ConvertMatrix extends Action
             'entryTypes' => $matrixField->getEntryTypes(),
         ]);
 
-        // ensure the CKEditor config has a "New entry" button
-        if (!in_array('createEntry', $ckeConfig->toolbar)) {
-            $this->controller->do("Adding the `New entry` button to the `$ckeConfig->name` CKEditor config", function() use ($ckeConfig) {
-                $ckeConfig->toolbar[] = '|';
-                $ckeConfig->toolbar[] = 'createEntry';
-                if (!Plugin::getInstance()->getCkeConfigs()->save($ckeConfig)) {
-                    throw new Exception('Couldn’t save the CKEditor config.');
-                }
-            });
+        if ($htmlField instanceof Field) {
+            // copy over its settings
+            $ckeField->toolbar = $htmlField->toolbar;
+            $ckeField->headingLevels = $htmlField->headingLevels;
+            $ckeField->advancedLinkFields = $htmlField->advancedLinkFields;
+            $ckeField->options = $htmlField->options;
+            $ckeField->js = $htmlField->js;
+            $ckeField->css = $htmlField->css;
         }
-        $ckeField->ckeConfig = $ckeConfig->uid;
+
+        // ensure the CKEditor config has a "New entry" button
+        if (!in_array('createEntry', $ckeField->toolbar)) {
+            if (!empty($ckeField->toolbar)) {
+                $ckeField->toolbar[] = '|';
+            }
+            $ckeField->toolbar[] = 'createEntry';
+        }
 
         $this->controller->do("Saving the `$ckeField->name` field", function() use ($fieldsService, $ckeField) {
             if (!$fieldsService->saveField($ckeField)) {
@@ -250,39 +250,5 @@ EOD,
         $this->controller->stdout("\n");
         $choice = $this->controller->select('Choose:', $eligibleFields->map(fn(Field|PlainText $field) => $field->name)->all());
         return $eligibleFields->get($choice);
-    }
-
-    private function ckeConfig(string $fieldName, Field|PlainText|null $htmlField = null): CkeConfig
-    {
-        $ckeConfigsService = Plugin::getInstance()->getCkeConfigs();
-
-        // if a CKEditor field was chosen to populate the converted field's content, use its CKEditor config
-        if ($htmlField instanceof Field && $htmlField->ckeConfig) {
-            return $ckeConfigsService->getByUid($htmlField->ckeConfig);
-        }
-
-        $ckeConfigs = Collection::make($ckeConfigsService->getAll())
-            ->keyBy(fn(CkeConfig $ckeConfig) => StringHelper::slugify($ckeConfig->name))
-            ->all();
-
-        // if existing CKEditor configs exist, ask which one they'd like to use
-        if (!empty($ckeConfigs)) {
-            $name = $this->controller->select('Which CKEditor config should be used for this field?', $ckeConfigs);
-            return $ckeConfigs[$name];
-        }
-
-        // otherwise, just create one with the default settings plus "New entry" button
-        $ckeConfig = new CkeConfig([
-            'uid' => StringHelper::UUID(),
-            'name' => $fieldName,
-        ]);
-        $ckeConfig->toolbar[] = '|';
-        $ckeConfig->toolbar[] = 'createEntry';
-        $this->controller->do("Creating a CKEditor config", function() use ($ckeConfigsService, $ckeConfig) {
-            if (!$ckeConfigsService->save($ckeConfig)) {
-                throw new Exception('Couldn’t save the CKEditor config.');
-            }
-        });
-        return $ckeConfig;
     }
 }
