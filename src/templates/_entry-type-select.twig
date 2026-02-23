@@ -56,8 +56,5 @@
 
 {% script with {type: 'module'} %}
 import {CkeEntryTypeSelectInput} from '@craftcms/ckeditor-config';
-
-(() => {
-    new CkeEntryTypeSelectInput({{ jsSettings|json_encode|raw }});
-})();
+new CkeEntryTypeSelectInput({{ jsSettings|json_encode|raw }});
 {% endscript %}
