@@ -28,7 +28,6 @@ class FieldSettingsController extends Controller
      *
      * @return Response
      * @throws BadRequestHttpException
-     * @since 5.0.0
      */
     public function actionApplyEntryTypeIndicators(): Response
     {
