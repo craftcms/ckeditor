@@ -16,9 +16,7 @@ use craft\elements\NestedElementManager;
 use craft\events\AssetBundleEvent;
 use craft\events\ModelEvent;
 use craft\events\RegisterComponentTypesEvent;
-use craft\events\RegisterUrlRulesEvent;
 use craft\services\Fields;
-use craft\web\UrlManager;
 use craft\web\View;
 use yii\base\Event;
 
@@ -47,8 +45,6 @@ class Plugin extends \craft\base\Plugin
     private static array $ckeditorImports = [];
 
     public string $schemaVersion = '5.0.0.1';
-    public bool $hasCpSettings = true;
-    public bool $hasReadOnlyCpSettings = true;
 
     public function init(): void
     {
@@ -81,14 +77,6 @@ class Plugin extends \craft\base\Plugin
 
         Event::on(Fields::class, Fields::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES, function(RegisterComponentTypesEvent $event) {
             $event->types[] = Field::class;
-        });
-
-        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
-            $event->rules += [
-                'settings/ckeditor' => 'ckeditor/cke-configs/index',
-                'settings/ckeditor/new' => 'ckeditor/cke-configs/edit',
-                'settings/ckeditor/<uid:{uid}>' => 'ckeditor/cke-configs/edit',
-            ];
         });
 
         Event::on(View::class, View::EVENT_AFTER_REGISTER_ASSET_BUNDLE, function(AssetBundleEvent $event) {
@@ -144,21 +132,5 @@ class Plugin extends \craft\base\Plugin
             }
         }
         return array_values($entryManagers);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSettingsResponse(): mixed
-    {
-        return Craft::$app->controller->redirect('settings/ckeditor');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getReadOnlySettingsResponse(): mixed
-    {
-        return Craft::$app->getResponse()->redirect('settings/ckeditor');
     }
 }
