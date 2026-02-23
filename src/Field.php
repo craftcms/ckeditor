@@ -563,7 +563,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             $config['removeEmptyTags'],
             $config['removeNbsp'],
             $config['createButtonLabel'],
-            $config['entryTypes'],
             $config['expandEntryButtons'],
             $config['ckeConfig'],
         );
