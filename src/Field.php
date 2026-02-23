@@ -557,6 +557,17 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
      */
     public function __construct($config = [])
     {
+        unset(
+            $config['initJs'],
+            $config['removeInlineStyles'],
+            $config['removeEmptyTags'],
+            $config['removeNbsp'],
+            $config['createButtonLabel'],
+            $config['entryTypes'],
+            $config['expandEntryButtons'],
+            $config['ckeConfig'],
+        );
+
         if (!array_key_exists('options', $config)) {
             // Only use `json` or `js`, not both
             if (!empty($config['json'])) {
