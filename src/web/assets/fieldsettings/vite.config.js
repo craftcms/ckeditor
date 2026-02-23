@@ -8,9 +8,9 @@ export default defineConfig({
     assetsDir: '',
     lib: {
       entry: {
-        ckeconfig: resolve(__dirname, 'src/ckeconfig.js'),
+        fieldsettings: resolve(__dirname, 'src/fieldsettings.js'),
       },
-      name: 'ckeconfig',
+      name: 'fieldsettings',
       formats: ['es'],
     },
     rollupOptions: {

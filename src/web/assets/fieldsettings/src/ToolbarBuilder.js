@@ -5,7 +5,7 @@
  */
 
 /* global Garnish, $ */
-import './ckeconfig.css';
+import './fieldsettings.css';
 import * as CKEditor5 from 'ckeditor5';
 import {create} from '@craftcms/ckeditor';
 
@@ -24,7 +24,7 @@ export default Garnish.Base.extend({
   closestItem: null,
   readOnly: false,
 
-  init: function (id, containerId, configOptions, plugins = []) {
+  init: function (id, configOptions, plugins = []) {
     this.$container = $(`#${id}`);
     this.$sourceContainer = this.$container.find(
       '.ckeditor-tb--source .ck-toolbar__items',

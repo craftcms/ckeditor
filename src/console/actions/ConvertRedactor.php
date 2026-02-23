@@ -8,14 +8,11 @@
 namespace craft\ckeditor\console\actions;
 
 use Craft;
-use craft\ckeditor\CkeConfig;
-use craft\ckeditor\CkeConfigs;
 use craft\ckeditor\console\controllers\ConvertController;
+use craft\ckeditor\console\ToolbarBuilder;
 use craft\ckeditor\Field;
-use craft\ckeditor\Plugin;
 use craft\errors\OperationAbortedException;
 use craft\fields\MissingField;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
@@ -37,7 +34,6 @@ use yii\helpers\Inflector;
 class ConvertRedactor extends Action
 {
     private ProjectConfig $projectConfig;
-    private CkeConfigs $ckeConfigs;
 
     private array $defaultRedactorConfig = [
         'buttons' => ['html', 'format', 'bold', 'italic', 'deleted', 'lists', 'image', 'file', 'link'],
@@ -189,10 +185,8 @@ class ConvertRedactor extends Action
         $this->controller->stdout(PHP_EOL);
 
         // Map the Redactor configs to CKEditor configs
-        $this->ckeConfigs = Plugin::getInstance()->getCkeConfigs();
-        $ckeConfigs = $this->ckeConfigs->getAll();
-        $fieldSettingsByConfig = [];
-        $configMap = [];
+        /** @var array<string,array> $redactorConfigs */
+        $redactorConfigs = [];
         $convertedFields = [];
 
         foreach ($fields as $path => $field) {
@@ -201,51 +195,25 @@ class ConvertRedactor extends Action
             $this->controller->stdout(' …', Console::FG_GREY);
 
             if ($field['type'] === MissingField::class) {
-                $field['settings'] = ProjectConfigHelper::unpackAssociativeArray($field['settings']['settings'] ?? []);
+                $field['settings'] = $field['settings']['settings'] ?? [];
             }
+
+            $field['settings'] = ProjectConfigHelper::unpackAssociativeArray($field['settings']);
 
             try {
                 if (($field['settings']['configSelectionMode'] ?? null) === 'manual') {
-                    $this->controller->stdout(PHP_EOL . PHP_EOL);
                     try {
                         $redactorConfig = Json::decode($field['settings']['manualConfig'] ?? '') ?? [];
                     } catch (InvalidArgumentException) {
                         throw new Exception('`manualConfig` contains invalid JSON.');
                     }
-                    $configName = $field['name'] ?? (!empty($field['handle']) ? Inflector::camel2words($field['handle']) : 'Untitled');
-                    $ckeConfig = $this->generateCkeConfig($configName, $redactorConfig, $ckeConfigs, $fieldSettingsByConfig, $field);
-                    $this->controller->stdout(PHP_EOL);
                 } else {
                     $basename = ($field['settings']['redactorConfig'] ?? $field['settings']['configFile'] ?? null) ?: 'Default.json';
-                    if (!isset($configMap[$basename])) {
-                        $this->controller->stdout(PHP_EOL . PHP_EOL);
-                        $configMap[$basename] = $this->resolveRedactorConfig($basename, $ckeConfigs, $fieldSettingsByConfig);
-                        $this->controller->stdout(PHP_EOL);
-                    }
-                    $ckeConfig = $configMap[$basename];
+                    $redactorConfig = $redactorConfigs[$basename] ??= $this->resolveRedactorConfig($basename);
                 }
 
                 $field['type'] = Field::class;
-                $field['settings']['ckeConfig'] = $ckeConfig;
-
-                if (isset($fieldSettingsByConfig[$ckeConfig])) {
-                    $field['settings'] = array_merge($field['settings'], $fieldSettingsByConfig[$ckeConfig]);
-                }
-
-                $field['settings']['enableSourceEditingForNonAdmins'] = (bool)($field['settings']['showHtmlButtonForNonAdmins'] ?? false);
-
-                unset(
-                    $field['settings']['cleanupHtml'],
-                    $field['settings']['configFile'],
-                    $field['settings']['configSelectionMode'],
-                    $field['settings']['manualConfig'],
-                    $field['settings']['redactorConfig'],
-                    $field['settings']['removeEmptyTags'],
-                    $field['settings']['removeInlineStyles'],
-                    $field['settings']['removeNbsp'],
-                    $field['settings']['showHtmlButtonForNonAdmins'],
-                    $field['settings']['uiMode'],
-                );
+                $this->updateFieldSettings($field['settings'], $redactorConfig);
 
                 // if the converted field's path is just fields.<uid> - set PC
                 if (str_starts_with($path, 'fields.')) {
@@ -348,149 +316,64 @@ for the changes to take effect.\n", Console::FG_GREEN);
 
     /**
      * @param string $basename
-     * @param CkeConfig[] $ckeConfigs
-     * @param array[] $fieldSettingsByConfig
-     * @return string
+     * @return array
      * @throws \Exception
      */
-    private function resolveRedactorConfig(
-        string $basename,
-        array &$ckeConfigs,
-        array &$fieldSettingsByConfig,
-    ): string {
-        $filename = pathinfo($basename, PATHINFO_FILENAME);
-        $this->controller->stdout('   ');
-        if ($this->controller->confirm($this->controller->markdownToAnsi("Do you already have a CKEditor config that should be used in place of the `$filename` Redactor config?"))) {
-            $choice = $this->controller->select('   Which CKEditor config?', array_map(fn(CkeConfig $ckeConfig) => $ckeConfig->name, $ckeConfigs));
-            return $ckeConfigs[$choice]->uid;
-        }
-
+    private function resolveRedactorConfig(string $basename): array
+    {
         $redactorConfigPath = sprintf('%s/redactor/%s', Craft::$app->getPath()->getConfigPath(), $basename);
-        if (is_file($redactorConfigPath)) {
-            $redactorConfig = Json::decodeFromFile($redactorConfigPath);
-        } else {
-            $redactorConfig = [];
+
+        if (!is_file($redactorConfigPath)) {
+            return [];
         }
 
-        return $this->generateCkeConfig(Inflector::camel2words($filename), $redactorConfig, $ckeConfigs, $fieldSettingsByConfig);
+        return Json::decodeFromFile($redactorConfigPath);
     }
 
-    /**
-     * @param string $configName
-     * @param array $redactorConfig
-     * @param CkeConfig[] $ckeConfigs
-     * @param array[] $fieldSettingsByConfig
-     * @return string
-     * @throws OperationAbortedException
-     */
-    private function generateCkeConfig(
-        string $configName,
-        array $redactorConfig,
-        array &$ckeConfigs,
-        array &$fieldSettingsByConfig,
-        ?array $redactorField = null,
-    ): string {
-        // Make sure the name is unique
-        $baseConfigName = $configName;
-        $attempt = 1;
-        while (ArrayHelper::contains($ckeConfigs, fn(CkeConfig $ckeConfig) => $ckeConfig->name === $configName)) {
-            $configName = sprintf('%s %s', $baseConfigName, ++$attempt);
-        }
-
-        $this->controller->stdout('    → ', Console::FG_GREY);
-        $this->controller->stdout($this->controller->markdownToAnsi("Generating `$configName` CKEditor config"));
-        $this->controller->stdout(' …', Console::FG_GREY);
-
-        $ckeConfig = new CkeConfig([
-            'uid' => StringHelper::UUID(),
-            'name' => $configName,
-            'toolbar' => [],
-        ]);
-
+    private function updateFieldSettings(array &$settings, array $redactorConfig): void
+    {
         // Merge in the default Redactor config settings
         $fullRedactorConfig = array_merge($this->defaultRedactorConfig, $redactorConfig);
 
         // Track things we don’t know what to do with
         $unsupportedItems = [];
 
-        // Buttons
+        // Build the CKE toolbar
         // ---------------------------------------------------------------------
 
-        $buttons = $fullRedactorConfig['buttons'] ?: [];
+        $redactorToolbar = new ToolbarBuilder($fullRedactorConfig['buttons'] ?: []);
         $lastFormattingButton = 'heading';
 
-        // helpers
-        $hasButton = fn(string $button): bool => in_array($button, $buttons, true);
-        $getButtonPos = fn(string $button): int|false => array_search($button, $buttons);
-        $addButton = function(string $button) use (&$buttons, $hasButton): void {
-            if (!$hasButton($button)) {
-                $buttons[] = $button;
-            }
-        };
-        $addButtonAt = function(string $button, int $pos) use (&$buttons, $hasButton): void {
-            if (!$hasButton($button)) {
-                array_splice($buttons, $pos, 0, [$button]);
-            }
-        };
-        $addButtonBefore = function(string $button, string $before) use (
-            $getButtonPos,
-            $addButtonAt,
-            $addButton,
-        ): void {
-            $beforePos = $getButtonPos($before);
-            if ($beforePos !== false) {
-                $addButtonAt($button, $beforePos);
-            } else {
-                $addButton($button);
-            }
-        };
-        $addButtonAfter = function(string $button, string $after) use (
-            $getButtonPos,
-            $addButtonAt,
-            $addButton,
-        ): void {
-            $afterPos = $getButtonPos($after);
-            if ($afterPos !== false) {
-                $addButtonAt($button, $afterPos + 1);
-            } else {
-                $addButton($button);
-            }
-        };
-
         // `formatting` => `format`
-        $formattingPos = $getButtonPos('formatting');
+        $formattingPos = $redactorToolbar->getButtonPos('formatting');
         if ($formattingPos !== false) {
-            array_splice($buttons, $formattingPos, 1, ['format']);
+            $redactorToolbar->replaceButtonAt($formattingPos, 'format');
         }
 
         // apply `buttonsHide` to `buttons`
         if (!empty($fullRedactorConfig['buttonsHide'])) {
             foreach ($fullRedactorConfig['buttonsHide'] as $button) {
-                $pos = array_search($button, $buttons);
-                if ($pos !== false) {
-                    array_splice($buttons, $pos, 1);
-                }
+                $redactorToolbar->removeButton($button);
             }
-            $buttons = array_values($buttons);
         }
 
         // apply `buttonsAddFirst` and `buttonsAdd` to `buttons`
-        $buttons = array_unique(array_merge(
+        $redactorToolbar->buttons = array_values(array_unique(array_merge(
             $fullRedactorConfig['buttonsAddFirst'] ?: [],
-            $buttons ?: [],
+            $redactorToolbar->buttons,
             $fullRedactorConfig['buttonsAdd'] ?: [],
-        ));
+        )));
 
         // apply `buttonsAddAfter` to `buttons`
         if (
             !empty($fullRedactorConfig['buttonsAddAfter']['after']) &&
             !empty($fullRedactorConfig['buttonsAddAfter']['buttons'])
         ) {
-            $pos = array_search($fullRedactorConfig['buttonsAddAfter']['after'], $buttons);
+            $pos = $redactorToolbar->getButtonPos($fullRedactorConfig['buttonsAddAfter']['after']);
             if ($pos !== false) {
-                array_splice($buttons, $pos + 1, 0, $fullRedactorConfig['buttonsAddAfter']['buttons']);
+                array_splice($redactorToolbar->buttons, $pos + 1, 0, $fullRedactorConfig['buttonsAddAfter']['buttons']);
             } else {
-                array_push($buttons, ...$fullRedactorConfig['buttonsAddAfter']['buttons']);
+                array_push($redactorToolbar->buttons, ...$fullRedactorConfig['buttonsAddAfter']['buttons']);
             }
         }
 
@@ -499,12 +382,12 @@ for the changes to take effect.\n", Console::FG_GREEN);
             !empty($fullRedactorConfig['buttonsAddBefore']['after']) &&
             !empty($fullRedactorConfig['buttonsAddBefore']['buttons'])
         ) {
-            $pos = array_search($fullRedactorConfig['buttonsAddBefore']['after'], $buttons);
+            $pos = $redactorToolbar->getButtonPos($fullRedactorConfig['buttonsAddBefore']['after']);
             if ($pos !== false) {
-                array_splice($buttons, $pos, 0, $fullRedactorConfig['buttonsAddBefore']['buttons']);
+                array_splice($redactorToolbar->buttons, $pos, 0, $fullRedactorConfig['buttonsAddBefore']['buttons']);
             } else {
                 // (intentionally not using array_unshift() here!)
-                array_push($buttons, ...$fullRedactorConfig['buttonsAddBefore']['buttons']);
+                array_push($redactorToolbar->buttons, ...$fullRedactorConfig['buttonsAddBefore']['buttons']);
             }
         }
 
@@ -516,38 +399,38 @@ for the changes to take effect.\n", Console::FG_GREEN);
                 }
 
                 switch ($plugin) {
-                    case 'alignment': $addButton('alignment'); break;
-                    case 'clips': $addButton('clips'); break;
-                    case 'counter':
-                        $fieldSettingsByConfig[$ckeConfig->uid]['showWordCount'] = true;
-                        break;
-                    case 'fontcolor': $addButton('fontcolor'); break;
-                    case 'fontfamily': $addButton('fontfamily'); break;
-                    case 'fontsize': $addButton('fontsize'); break;
-                    case 'fullscreen': $addButton('fullscreen'); break;
-                    case 'inlinestyle': $addButtonAfter('inline', 'format'); break;
-                    case 'pagebreak': $addButton('pagebreak'); break;
-                    case 'properties': $addButton('properties'); break;
-                    case 'specialchars': $addButton('specialchars'); break;
-                    case 'table': $addButtonBefore('table', 'link'); break;
-                    case 'textdirection': $addButton('textdirection'); break;
-                    case 'variable': $addButton('variable'); break;
-                    case 'video': $addButtonAfter('video', 'image'); break;
-                    case 'widget': $addButton('widget'); break;
+                    case 'alignment': $redactorToolbar->addButton('alignment'); break;
+                    case 'clips': $redactorToolbar->addButton('clips'); break;
+                    case 'counter': $settings['showWordCount'] = true; break;
+                    case 'fontcolor': $redactorToolbar->addButton('fontcolor'); break;
+                    case 'fontfamily': $redactorToolbar->addButton('fontfamily'); break;
+                    case 'fontsize': $redactorToolbar->addButton('fontsize'); break;
+                    case 'fullscreen': $redactorToolbar->addButton('fullscreen'); break;
+                    case 'inlinestyle': $redactorToolbar->addButtonAfter('inline', 'format'); break;
+                    case 'pagebreak': $redactorToolbar->addButton('pagebreak'); break;
+                    case 'properties': $redactorToolbar->addButton('properties'); break;
+                    case 'specialchars': $redactorToolbar->addButton('specialchars'); break;
+                    case 'table': $redactorToolbar->addButtonBefore('table', 'link'); break;
+                    case 'textdirection': $redactorToolbar->addButton('textdirection'); break;
+                    case 'variable': $redactorToolbar->addButton('variable'); break;
+                    case 'video': $redactorToolbar->addButtonAfter('video', 'image'); break;
+                    case 'widget': $redactorToolbar->addButton('widget'); break;
                     default: $unsupportedItems['plugins'][] = $plugin;
                 }
             }
         }
 
-        if (empty($buttons)) {
+        if (empty($redactorToolbar->buttons)) {
             // can't have an empty toolbar
-            $buttons[] = 'format';
+            $redactorToolbar->addButton('format');
             $fullRedactorConfig['formatting'] = ['p'];
             $fullRedactorConfig['formattingAdd'] = false;
             $fullRedactorConfig['formattingHide'] = false;
         }
 
-        foreach ($buttons as $button) {
+        $ckeToolbar = new ToolbarBuilder([]);
+
+        foreach ($redactorToolbar->buttons as $button) {
             switch ($button) {
                 case 'alignment':
                 case 'bold':
@@ -555,70 +438,70 @@ for the changes to take effect.\n", Console::FG_GREEN);
                 case 'italic':
                 case 'link':
                 case 'underline':
-                    $ckeConfig->addButton($button);
+                    $ckeToolbar->addButton($button);
                     break;
                 case 'codebutton':
-                    $ckeConfig->addButton('code');
+                    $ckeToolbar->addButton('code');
                     break;
                 case 'file':
                     // this was just a shortcut for "Link → Link to an asset"
-                    $ckeConfig->addButton('link');
+                    $ckeToolbar->addButton('link');
                     break;
                 case 'format':
-                    $ckeConfig->addButton('heading');
+                    $ckeToolbar->addButton('heading');
                     break;
                 case 'deleted':
-                    $ckeConfig->addButton('strikethrough');
+                    $ckeToolbar->addButton('strikethrough');
                     break;
                 case 'sub':
-                    $ckeConfig->addButton('subscript');
+                    $ckeToolbar->addButton('subscript');
                     break;
                 case 'sup':
-                    $ckeConfig->addButton('superscript');
+                    $ckeToolbar->addButton('superscript');
                     break;
                 case 'table':
-                    $ckeConfig->addButton('insertTable');
+                    $ckeToolbar->addButton('insertTable');
                     break;
                 case 'html':
-                    $ckeConfig->addButton('sourceEditing');
+                    $ckeToolbar->addButton('sourceEditing');
                     break;
                 case 'image':
-                    $ckeConfig->addButton('insertImage');
+                    $ckeToolbar->addButton('insertImage');
                     break;
                 case 'indent':
                     // force [outdent, indent] order
-                    $ckeConfig->addButtonAfter('indent', 'outdent');
+                    $ckeToolbar->addButtonAfter('indent', 'outdent');
                     break;
                 case 'line':
-                    $ckeConfig->addButton('horizontalLine');
+                    $ckeToolbar->addButton('horizontalLine');
                     break;
                 case 'lists':
-                    $ckeConfig->addButton('bulletedList');
-                    $ckeConfig->addButton('numberedList');
+                    $ckeToolbar->addButton('bulletedList');
+                    $ckeToolbar->addButton('numberedList');
                 // no break
                 case 'orderedlist':
-                    $ckeConfig->addButton('numberedList');
+                    $ckeToolbar->addButton('numberedList');
                     break;
                 case 'outdent':
                     // force [outdent, indent] order
-                    $ckeConfig->addButtonBefore('outdent', 'indent');
+                    $ckeToolbar->addButtonBefore('outdent', 'indent');
                     break;
                 case 'pagebreak':
-                    $ckeConfig->addButton('pageBreak');
+                    $ckeToolbar->addButton('pageBreak');
                     break;
                 case 'redo':
                     // force [undo, redo] order
-                    $ckeConfig->addButtonAfter('redo', 'undo');
+                    $ckeToolbar->addButtonAfter('redo', 'undo');
                     break;
                 case 'undo':
                     // force [undo, redo] order
-                    $ckeConfig->addButtonBefore('undo', 'redo');
+                    $ckeToolbar->addButtonBefore('undo', 'redo');
                     break;
                 case 'unorderedlist':
-                    $ckeConfig->addButton('bulletedList');
+                    $ckeToolbar->addButton('bulletedList');
                     break;
                 case 'video':
-                    $ckeConfig->addButton('mediaEmbed');
+                    $ckeToolbar->addButton('mediaEmbed');
                     break;
                 default:
                     $unsupportedItems['buttons'][] = $button;
@@ -629,7 +512,7 @@ for the changes to take effect.\n", Console::FG_GREEN);
         // ---------------------------------------------------------------------
 
         // Only deal with formatting options if the Redactor field had a `format` button
-        if ($ckeConfig->hasButton('heading')) {
+        if ($ckeToolbar->hasButton('heading')) {
             // Register custom formats as styles
             if (!empty($fullRedactorConfig['formattingAdd'])) {
                 foreach ($fullRedactorConfig['formattingAdd'] as $key => $customFormat) {
@@ -644,7 +527,7 @@ for the changes to take effect.\n", Console::FG_GREEN);
                         empty($customFormat['args']['attr']) &&
                         empty($customFormat['args']['style'])
                     ) {
-                        $ckeConfig->options['style']['definitions'][] = [
+                        $settings['options']['style']['definitions'][] = [
                             'name' => $customFormat['title'],
                             'element' => $customFormat['args']['tag'],
                             'classes' => StringHelper::split($customFormat['args']['class'], ' '),
@@ -663,7 +546,7 @@ for the changes to take effect.\n", Console::FG_GREEN);
                         // Do we have a button for toggling this tag?
                         $button = $this->ckeButtonForTag($customFormat['args']['tag']);
                         if ($button) {
-                            $ckeConfig->addButtonAfter($button, $lastFormattingButton);
+                            $ckeToolbar->addButtonAfter($button, $lastFormattingButton);
                             $lastFormattingButton = $button;
                             continue;
                         }
@@ -686,19 +569,19 @@ for the changes to take effect.\n", Console::FG_GREEN);
             }
 
             // Divide the formats into things supported by `heading` and everything else
-            $ckeConfig->headingLevels = [];
+            $settings['headingLevels'] = [];
 
             foreach ($formats as $format) {
                 if (in_array($format, ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'], true)) {
-                    $ckeConfig->headingLevels[] = (int)$format[1];
+                    $settings['headingLevels'][] = (int)$format[1];
                 } elseif ($format !== 'p') {
                     switch ($format) {
                         case 'blockquote':
-                            $ckeConfig->addButtonAfter('blockQuote', $lastFormattingButton);
+                            $ckeToolbar->addButtonAfter('blockQuote', $lastFormattingButton);
                             $lastFormattingButton = 'blockQuote';
                             break;
                         case 'pre':
-                            $ckeConfig->addButtonAfter('codeBlock', $lastFormattingButton);
+                            $ckeToolbar->addButtonAfter('codeBlock', $lastFormattingButton);
                             $lastFormattingButton = 'codeBlock';
                             break;
                         default:
@@ -710,18 +593,18 @@ for the changes to take effect.\n", Console::FG_GREEN);
 
         // if we added sourceEditing button, then to align with what Redactor allowed,
         // we need add this predefined htmlSupport.allow config
-        if ($ckeConfig->hasButton('sourceEditing')) {
+        if ($ckeToolbar->hasButton('sourceEditing')) {
             $htmlSupport = [
                 'attributes' => true,
                 'classes' => true,
                 'styles' => true,
             ];
 
-            if ($redactorField !== null && $redactorField['settings']['removeInlineStyles']) {
+            if ($settings['removeInlineStyles'] ?? false) {
                 unset($htmlSupport['styles']);
             }
 
-            $ckeConfig->options['htmlSupport']['allow'][] = $htmlSupport;
+            $settings['options']['htmlSupport']['allow'][] = $htmlSupport;
         }
 
         // redactor-link-styles
@@ -731,7 +614,7 @@ for the changes to take effect.\n", Console::FG_GREEN);
                     $unsupportedItems['linkClasses'][] = Json::encode($linkClass);
                     continue;
                 }
-                $ckeConfig->options['style']['definitions'][] = [
+                $settings['options']['style']['definitions'][] = [
                     'name' => $linkClass['label'],
                     'element' => 'a',
                     'classes' => StringHelper::split($linkClass['class'], ' '),
@@ -768,7 +651,7 @@ for the changes to take effect.\n", Console::FG_GREEN);
                         empty($customStyle['args']['attr']) &&
                         empty($customStyle['args']['style'])
                     ) {
-                        $ckeConfig->options['style']['definitions'][] = [
+                        $settings['options']['style']['definitions'][] = [
                             'name' => $customStyle['title'] ?? Inflector::camel2words($styleKey),
                             'element' => $customStyle['args']['tag'],
                             'classes' => StringHelper::split($customStyle['args']['class'], ' '),
@@ -798,7 +681,7 @@ for the changes to take effect.\n", Console::FG_GREEN);
                         $button = $this->ckeButtonForTag($tag);
 
                         if ($button) {
-                            $ckeConfig->addButtonAfter($button, $lastFormattingButton);
+                            $ckeToolbar->addButtonAfter($button, $lastFormattingButton);
                             $lastFormattingButton = $button;
                             continue;
                         }
@@ -809,8 +692,8 @@ for the changes to take effect.\n", Console::FG_GREEN);
             }
         }
 
-        if (!empty($ckeConfig->options['style']['definitions'])) {
-            $ckeConfig->addButtonAfter('style', 'heading');
+        if (!empty($settings['options']['style']['definitions'])) {
+            $ckeToolbar->addButtonAfter('style', 'heading');
         }
 
         unset(
@@ -829,18 +712,18 @@ for the changes to take effect.\n", Console::FG_GREEN);
             $fullRedactorConfig['plugins'],
         );
 
-        $headingPos = $ckeConfig->getButtonPos('heading');
+        $headingPos = $ckeToolbar->getButtonPos('heading');
         if ($headingPos !== false) {
-            $ckeConfig->addButtonAt('|', $headingPos + 1);
+            $ckeToolbar->addButtonAt('|', $headingPos + 1);
             if ($headingPos !== 0) {
                 // add one before too
-                $ckeConfig->addButtonAt('|', $headingPos);
+                $ckeToolbar->addButtonAt('|', $headingPos);
             }
         }
 
-        $stylePos = $ckeConfig->getButtonPos('style');
+        $stylePos = $ckeToolbar->getButtonPos('style');
         if ($stylePos !== false) {
-            $ckeConfig->addButtonAt('|', $stylePos + 1);
+            $ckeToolbar->addButtonAt('|', $stylePos + 1);
         }
 
         // Everything else
@@ -853,25 +736,25 @@ for the changes to take effect.\n", Console::FG_GREEN);
 
             switch ($key) {
                 case 'lang':
-                    $ckeConfig->options['language'] = [
+                    $settings['options']['language'] = [
                         'ui' => $value,
                         'content' => $value,
                     ];
                     break;
                 case 'placeholder':
                     if ($value) {
-                        $ckeConfig->options['placeholder'] = $value;
+                        $settings['options']['placeholder'] = $value;
                     }
                     break;
                 case 'preSpaces':
                     // `false` = Tab in Redactor, and CKEditor defaults to Tab
                     if ($value) {
-                        $ckeConfig->options['code']['indentSequence'] = str_repeat(' ', $value);
+                        $settings['options']['code']['indentSequence'] = str_repeat(' ', $value);
                     }
                     break;
                 case 'source':
                     if (!$value) {
-                        $ckeConfig->removeButton('sourceEditing');
+                        $ckeToolbar->removeButton('sourceEditing');
                     }
                     break;
 
@@ -908,14 +791,21 @@ for the changes to take effect.\n", Console::FG_GREEN);
             $this->controller->stdout('   ');
         }
 
-        if (!$this->ckeConfigs->save($ckeConfig)) {
-            throw new Exception(sprintf('Unable to save the CKEditor config: %s', implode(', ', $ckeConfig->getFirstErrors())));
-        }
+        $settings['toolbar'] = $ckeToolbar->buttons;
+        $settings['enableSourceEditingForNonAdmins'] = (bool)($settings['showHtmlButtonForNonAdmins'] ?? false);
 
-        $this->controller->stdout(" ✓ Config generated\n", Console::FG_GREEN);
-
-        $ckeConfigs[] = $ckeConfig;
-        return $ckeConfig->uid;
+        unset(
+            $settings['cleanupHtml'],
+            $settings['configFile'],
+            $settings['configSelectionMode'],
+            $settings['manualConfig'],
+            $settings['redactorConfig'],
+            $settings['removeEmptyTags'],
+            $settings['removeInlineStyles'],
+            $settings['removeNbsp'],
+            $settings['showHtmlButtonForNonAdmins'],
+            $settings['uiMode'],
+        );
     }
 
     private function ckeButtonForTag(string $tag): ?string

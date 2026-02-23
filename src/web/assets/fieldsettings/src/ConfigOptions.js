@@ -5,7 +5,7 @@
  */
 
 /** global: CKEditor5, Garnish, $ */
-import './ckeconfig.css';
+import './fieldsettings.css';
 
 export default Garnish.Base.extend({
   jsonSchemaUri: null,

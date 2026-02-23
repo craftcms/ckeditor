@@ -7,7 +7,6 @@
 
 namespace craft\ckeditor\events;
 
-use craft\ckeditor\CkeConfig;
 use yii\base\Event;
 
 /**
@@ -22,11 +21,6 @@ class ModifyConfigEvent extends Event
      * @var array The base field config array that the CKEditor config options will be merged into
      */
     public array $baseConfig;
-
-    /**
-     * @var CkeConfig $ckeConfig The CKEditor config
-     */
-    public CkeConfig $ckeConfig;
 
     /**
      * @var string[] $toolbar The toolbar config

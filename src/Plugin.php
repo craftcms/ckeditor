@@ -10,15 +10,13 @@ namespace craft\ckeditor;
 use Craft;
 use craft\base\Element;
 use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
-use craft\ckeditor\web\assets\ckeconfig\CkeConfigAsset;
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
+use craft\ckeditor\web\assets\fieldsettings\FieldSettingsAsset;
 use craft\elements\NestedElementManager;
 use craft\events\AssetBundleEvent;
 use craft\events\ModelEvent;
 use craft\events\RegisterComponentTypesEvent;
-use craft\events\RegisterUrlRulesEvent;
 use craft\services\Fields;
-use craft\web\UrlManager;
 use craft\web\View;
 use yii\base\Event;
 
@@ -27,19 +25,9 @@ use yii\base\Event;
  *
  * @method static Plugin getInstance()
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @property-read CkeConfigs $ckeConfigs
  */
 class Plugin extends \craft\base\Plugin
 {
-    public static function config(): array
-    {
-        return [
-            'components' => [
-                'ckeConfigs' => CkeConfigs::class,
-            ],
-        ];
-    }
-
     /**
      * Registers an asset bundle for a CKEditor package.
      *
@@ -56,9 +44,7 @@ class Plugin extends \craft\base\Plugin
     private static array $ckeditorPackages = [];
     private static array $ckeditorImports = [];
 
-    public string $schemaVersion = '5.0.0.0';
-    public bool $hasCpSettings = true;
-    public bool $hasReadOnlyCpSettings = true;
+    public string $schemaVersion = '5.0.0.1';
 
     public function init(): void
     {
@@ -74,8 +60,8 @@ class Plugin extends \craft\base\Plugin
             $view->registerJsImport('ckeditor5/translations/', $assetManager->getAssetUrl($ckBundle, 'lib/translations/', false));
             $view->registerJsImport('@craftcms/ckeditor', $assetManager->getAssetUrl($ckBundle, 'ckeditor5-craftcms.js', false));
 
-            $configBundle = $assetManager->getBundle(CkeConfigAsset::class);
-            $view->registerJsImport('@craftcms/ckeditor-config', $assetManager->getAssetUrl($configBundle, 'ckeconfig.js'));
+            $configBundle = $assetManager->getBundle(FieldSettingsAsset::class);
+            $view->registerJsImport('@craftcms/ckeditor-config', $assetManager->getAssetUrl($configBundle, 'fieldsettings.js'));
 
             foreach (self::$ckeditorImports as $bundleName => $entry) {
                 $bundle = $assetManager->getBundle($bundleName);
@@ -91,14 +77,6 @@ class Plugin extends \craft\base\Plugin
 
         Event::on(Fields::class, Fields::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES, function(RegisterComponentTypesEvent $event) {
             $event->types[] = Field::class;
-        });
-
-        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
-            $event->rules += [
-                'settings/ckeditor' => 'ckeditor/cke-configs/index',
-                'settings/ckeditor/new' => 'ckeditor/cke-configs/edit',
-                'settings/ckeditor/<uid:{uid}>' => 'ckeditor/cke-configs/edit',
-            ];
         });
 
         Event::on(View::class, View::EVENT_AFTER_REGISTER_ASSET_BUNDLE, function(AssetBundleEvent $event) {
@@ -154,26 +132,5 @@ class Plugin extends \craft\base\Plugin
             }
         }
         return array_values($entryManagers);
-    }
-
-    public function getCkeConfigs(): CkeConfigs
-    {
-        return $this->get('ckeConfigs');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSettingsResponse(): mixed
-    {
-        return Craft::$app->controller->redirect('settings/ckeditor');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getReadOnlySettingsResponse(): mixed
-    {
-        return Craft::$app->getResponse()->redirect('settings/ckeditor');
     }
 }

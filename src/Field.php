@@ -23,8 +23,11 @@ use craft\ckeditor\events\DefineLinkOptionsEvent;
 use craft\ckeditor\events\ModifyConfigEvent;
 use craft\ckeditor\gql\Generator;
 use craft\ckeditor\helpers\CkeditorConfig;
+use craft\ckeditor\helpers\CkeditorConfigSchema;
+use craft\ckeditor\models\EntryType as CkeEntryType;
 use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
+use craft\ckeditor\web\assets\fieldsettings\FieldSettingsAsset;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\Table;
@@ -54,6 +57,7 @@ use craft\htmlfield\HtmlField;
 use craft\htmlfield\HtmlFieldData;
 use craft\i18n\Locale;
 use craft\models\CategoryGroup;
+use craft\models\EntryType;
 use craft\models\ImageTransform;
 use craft\models\Section;
 use craft\models\Volume;
@@ -67,10 +71,13 @@ use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\validators\Validator;
 
 /**
  * CKEditor field type
  *
+ * @property string|null $json
+ * @property CkeEntryType[] $entryTypes
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
 class Field extends HtmlField implements ElementContainerFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
@@ -383,10 +390,75 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     }
 
     /**
-     * @var string|null The CKEditor config UUID
-     * @since 3.0.0
+     * Normalizes an entry type into a `craft\ckeditor\models\EntryType` object.
+     *
+     * @param EntryType|CkeEntryType|string|array $entryType
+     * @return CkeEntryType
+     * @since 5.0.0
      */
-    public ?string $ckeConfig = null;
+    public static function entryType(EntryType|CkeEntryType|string|array $entryType): CkeEntryType
+    {
+        if ($entryType instanceof CkeEntryType) {
+            return $entryType;
+        }
+
+        if (is_string($entryType)) {
+            $entryType = Json::decodeIfJson($entryType);
+        }
+
+        if ($entryType instanceof EntryType) {
+            $craftEntryType = $entryType;
+        } else {
+            $craftEntryType = Craft::$app->getEntries()->getEntryType($entryType);
+            if (!$craftEntryType) {
+                throw new InvalidArgumentException('Invalid entry type config');
+            }
+        }
+
+        $config = get_object_vars($craftEntryType);
+
+        if (is_array($entryType)) {
+            $config += $entryType;
+        }
+
+        return new CkeEntryType($config);
+    }
+
+    /**
+     * @var string[] Toolbar configuration
+     * @since 5.0.0
+     */
+    public array $toolbar = ['heading', '|', 'bold', 'italic', 'link'];
+
+    /**
+     * @var int[]|false The available heading levels
+     * @since 5.0.0
+     */
+    public array|false $headingLevels = [1, 2, 3, 4, 5, 6];
+
+    /**
+     * @var array|null The advanced link options available when adding a link
+     * @since 5.0.0
+     */
+    public ?array $advancedLinkFields = [];
+
+    /**
+     * @var array|null Additional CKEditor config options
+     * @since 5.0.0
+     */
+    public ?array $options = null;
+
+    /**
+     * @var string|null JavaScript code that returns additional CKEditor config properties as an object
+     * @since 5.0.0
+     */
+    public ?string $js = null;
+
+    /**
+     * @var string|null CSS styles that should be registered for the field.
+     * @since 5.0.0
+     */
+    public ?string $css = null;
 
     /**
      * @var int|null The total number of words allowed.
@@ -467,6 +539,20 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     public bool $fullGraphqlData = true;
 
     /**
+     * @var string|null JSON code that defines additional CKEditor config properties as an object
+     * @see getJson()
+     * @see setJson()
+     */
+    private ?string $_json = null;
+
+    /**
+     * @var CkeEntryType[] The field’s available entry types
+     * @see getEntryTypes()
+     * @see setEntryTypes()
+     */
+    private array $_entryTypes = [];
+
+    /**
      * @inheritdoc
      */
     public function __construct($config = [])
@@ -479,7 +565,38 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             $config['createButtonLabel'],
             $config['entryTypes'],
             $config['expandEntryButtons'],
+            $config['ckeConfig'],
         );
+
+        if (!array_key_exists('options', $config)) {
+            // Only use `json` or `js`, not both
+            if (!empty($config['json'])) {
+                unset($config['js']);
+                $config['json'] = trim($config['json']);
+                if ($config['json'] === '' || preg_match('/^\{\s*\}$/', $config['json'])) {
+                    unset($config['json']);
+                }
+            } else {
+                unset($config['json']);
+                if (isset($config['js'])) {
+                    $config['js'] = trim($config['js']);
+                    if ($config['js'] === '' || preg_match('/^return\s*\{\s*\}$/', $config['js'])) {
+                        unset($config['js']);
+                    }
+                }
+            }
+        }
+
+        if (isset($config['css'])) {
+            $config['css'] = trim($config['css']);
+            if ($config['css'] === '') {
+                unset($config['css']);
+            }
+        }
+
+        if (isset($config['entryTypes']) && $config['entryTypes'] === '') {
+            $config['entryTypes'] = [];
+        }
 
         if (isset($config['enableSourceEditingForNonAdmins'])) {
             $config['sourceEditingGroups'] = $config['enableSourceEditingForNonAdmins'] ? '*' : ['__ADMINS__'];
@@ -501,11 +618,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             $config['fullGraphqlData'] = ArrayHelper::remove($config, 'graphqlMode') === 'full';
         }
 
-        // Default fullGraphqlData to false for existing fields
-        if (isset($config['id']) && !isset($config['fullGraphqlData'])) {
-            $config['fullGraphqlData'] = false;
-        }
-
         parent::__construct($config);
     }
 
@@ -524,6 +636,66 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         }
     }
 
+    public function attributeLabels(): array
+    {
+        return [
+            'toolbar' => Craft::t('ckeditor', 'Toolbar'),
+            'json' => Craft::t('ckeditor', 'Config Options'),
+            'js' => Craft::t('ckeditor', 'Config Options'),
+            'css' => Craft::t('ckeditor', 'Custom Styles'),
+        ];
+    }
+
+    /**
+     * @since 5.0.0
+     */
+    public function getJson(): ?string
+    {
+        if (!isset($this->_json)) {
+            if (isset($this->options)) {
+                $json = Json::encode($this->options, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+                $this->_json = str_replace('    ', '  ', $json);
+            }
+        }
+        return $this->_json;
+    }
+
+    /**
+     * @since 5.0.0
+     */
+    public function setJson(?string $json): void
+    {
+        $this->_json = $json;
+
+        try {
+            $this->options = Json::decode($json);
+        } catch (InvalidArgumentException) {
+            $this->options = null;
+        }
+    }
+
+    /**
+     * Returns the available entry types.
+     *
+     * @return CkeEntryType[]
+     * @since 4.0.0
+     */
+    public function getEntryTypes(): array
+    {
+        return $this->_entryTypes;
+    }
+
+    /**
+     * Sets the available entry types.
+     *
+     * @param array<EntryType|CkeEntryType|string|array> $entryTypes The entry types, or their IDs or UUIDs
+     * @since 4.0.0
+     */
+    public function setEntryTypes(array $entryTypes): void
+    {
+        $this->_entryTypes = array_map(fn($config) => static::entryType($config), $entryTypes);
+    }
+
     /**
      * @inheritdoc
      */
@@ -532,6 +704,18 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         return array_merge(parent::defineRules(), [
             ['wordLimit', 'number', 'min' => 1],
             ['characterLimit', 'number', 'min' => 1],
+            [
+                'json',
+                function(string $attribute, ?array $params, Validator $validator) {
+                    try {
+                        $this->options = Json::decode($this->_json);
+                    } catch (InvalidArgumentException) {
+                        $validator->addError($this, $attribute, Craft::t('ckeditor', '{attribute} isn’t valid JSON.'));
+                        return;
+                    }
+                },
+                'when' => fn() => isset($this->_json),
+            ],
         ]);
     }
 
@@ -679,7 +863,18 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
      */
     public function getSettingsHtml(): ?string
     {
+        return $this->settingsHtml(false);
+    }
+
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
+    {
         $view = Craft::$app->getView();
+        $view->registerAssetBundle(FieldSettingsAsset::class);
 
         $userGroupOptions = [
             [
@@ -715,17 +910,19 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             ];
         }
 
-        $ckeConfig = null;
-        if ($this->ckeConfig) {
-            try {
-                $ckeConfig = Plugin::getInstance()->getCkeConfigs()->getByUid($this->ckeConfig);
-            } catch (InvalidArgumentException) {
-            }
-        }
+        $jsonSchemaUri = sprintf('https://craft-code-editor.com/%s', $view->namespaceInputId('config-options-json'));
 
         return $view->renderTemplate('ckeditor/_field-settings.twig', [
             'field' => $this,
-            'ckeConfig' => $ckeConfig,
+            'importStatements' => CkeditorConfig::getImportStatements(),
+            'toolbarBuilderId' => $view->namespaceInputId('toolbar-builder'),
+            'configOptionsId' => $view->namespaceInputId('config-options'),
+            'toolbarItems' => CkeditorConfig::normalizeToolbarItems(CkeditorConfig::$toolbarItems),
+            'plugins' => CkeditorConfig::getAllPlugins(),
+            'jsonSchema' => CkeditorConfigSchema::create(),
+            'jsonSchemaUri' => $jsonSchemaUri,
+            'advanceLinkOptions' => CkeditorConfig::advanceLinkOptions(),
+            'entryTypes' => $this->getEntryTypes(),
             'userGroupOptions' => $userGroupOptions,
             'purifierConfigOptions' => $this->configOptions('htmlpurifier'),
             'volumeOptions' => $volumeOptions,
@@ -736,6 +933,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
                     'value' => null,
                 ],
             ], $transformOptions),
+            'readOnly' => $readOnly,
         ]);
     }
 
@@ -744,7 +942,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
      */
     public function getFieldLayoutProviders(): array
     {
-        return $this->_ckeConfig()->getEntryTypes();
+        return $this->getEntryTypes();
     }
 
     /**
@@ -752,14 +950,20 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
      */
     public function getSettings(): array
     {
-        $settings = parent::getSettings();
+        $settings = [
+            ...parent::getSettings(),
+            'headingLevels' => $this->headingLevels ?: false,
+            'entryTypes' => array_map(
+                fn(CkeEntryType $entryType) => $entryType->getUsageConfig(),
+                $this->getEntryTypes(),
+            ),
+        ];
 
         // Cleanup
         unset(
             $settings['removeInlineStyles'],
             $settings['removeEmptyTags'],
             $settings['removeNbsp'],
-            $settings['entryTypes'],
             $settings['createButtonLabel'],
         );
 
@@ -968,7 +1172,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         $view = Craft::$app->getView();
         $view->registerAssetBundle(CkeditorAsset::class);
 
-        $ckeConfig = $this->_ckeConfig();
         $transforms = $this->_transforms();
 
         if ($this->defaultTransform) {
@@ -978,11 +1181,27 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         }
 
         // Toolbar cleanup
-        $toolbar = array_merge($ckeConfig->toolbar);
+        $toolbar = array_merge($this->toolbar);
 
-        if (!$element?->id) {
-            // remove all toolbar items that start with 'createEntry'
-            $toolbar = array_filter($toolbar, fn($item) => !str_starts_with($item, 'createEntry'));
+        if ($element?->id) {
+            // rewrite createEntry into per-entry-type buttons
+            $toolbar = array_merge($this->toolbar);
+            $createEntryBtnPos = array_search('createEntry', $toolbar);
+            if ($createEntryBtnPos !== false) {
+                $entryTypes = $this->getEntryTypes();
+                if (!empty($entryTypes)) {
+                    $buttons = [
+                        ...array_map(fn(CkeEntryType $entryType) => "createEntry-$entryType->uid", $entryTypes),
+                        'createEntry',
+                    ];
+                } else {
+                    $buttons = [];
+                }
+                array_splice($toolbar, $createEntryBtnPos, 1, $buttons);
+            }
+        } else {
+            // remove the createEntry button
+            ArrayHelper::removeValue($toolbar, 'createEntry');
         }
 
         if (!$this->isSourceEditingAllowed(Craft::$app->getUser()->getIdentity())) {
@@ -1001,7 +1220,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             'elementSiteId' => $element?->siteId,
             'accessibleFieldName' => $this->_accessibleFieldName($element),
             'describedBy' => $this->_describedBy($view),
-            'entryTypeOptions' => $ckeConfig->getEntryTypeOptions(),
+            'entryTypeOptions' => $this->_entryTypeOptions(),
             'findAndReplace' => [
                 'uiType' => 'dropdown',
             ],
@@ -1023,7 +1242,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
                         'view' => "h$level",
                         'title' => "Heading $level",
                         'class' => "ck-heading_heading$level",
-                    ], $ckeConfig->headingLevels ?: []),
+                    ], $this->headingLevels ?: []),
                 ],
             ],
             'image' => [
@@ -1039,7 +1258,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             'assetSelectionCriteria' => $this->_assetSelectionCriteria(),
             'assetUploadParams' => $this->_assetUploadParams(),
             'linkOptions' => $this->_linkOptions($element),
-            'advancedLinkFields' => $this->_advancedLinkFields($ckeConfig),
+            'advancedLinkFields' => $this->_advancedLinkFields(),
             'table' => [
                 'contentToolbar' => [
                     'tableRow',
@@ -1060,22 +1279,21 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         // Give plugins/modules a chance to modify the config
         $event = new ModifyConfigEvent([
             'baseConfig' => $baseConfig,
-            'ckeConfig' => $ckeConfig,
             'toolbar' => $toolbar,
         ]);
         $this->trigger(self::EVENT_MODIFY_CONFIG, $event);
 
-        if (isset($ckeConfig->options)) {
+        if (isset($this->options)) {
             // translate the placeholder text
-            if (isset($ckeConfig->options['placeholder']) && is_string($ckeConfig->options['placeholder'])) {
-                $ckeConfig->options['placeholder'] = Craft::t('site', $ckeConfig->options['placeholder']);
+            if (isset($this->options['placeholder']) && is_string($this->options['placeholder'])) {
+                $this->options['placeholder'] = Craft::t('site', $this->options['placeholder']);
             }
 
-            $configOptionsJs = Json::encode($ckeConfig->options);
-        } elseif (isset($ckeConfig->js)) {
+            $configOptionsJs = Json::encode($this->options);
+        } elseif (isset($this->js)) {
             $configOptionsJs = <<<JS
 (() => {
-  $ckeConfig->js
+  $this->js
 })()
 JS;
         } else {
@@ -1264,18 +1482,18 @@ JS,
             ]);
         }
 
-        if ($ckeConfig->css) {
-            $view->registerCss("#{$view->namespaceInputId($inputId)} { $ckeConfig->css }");
+        if ($this->css) {
+            $view->registerCss("#{$view->namespaceInputId($inputId)} { $this->css }");
         }
 
         return Html::tag('div', $html, [
-            'class' => array_filter([
-                $this->showWordCount ? 'ck-with-show-word-count' : null,
-            ]),
+            'class' => array_keys(array_filter([
+                'ckeditor-container' => true,
+                'ck-with-show-word-count' => $this->showWordCount,
+            ])),
             'id' => $inputId,
             'data' => [
                 'element-id' => $element?->id,
-                'config' => $this->ckeConfig,
             ],
         ]);
     }
@@ -1467,7 +1685,7 @@ JS,
             $offset = $startPos + strlen($tag);
         }
 
-        $previewsInData = $this->_ckeConfig()->options['mediaEmbed']['previewsInData'] ?? false;
+        $previewsInData = $this->options['mediaEmbed']['previewsInData'] ?? false;
 
         return preg_replace_callback(
             '/(<figure\b[^>]*>\s*)(<iframe\b([^>]*)src="([^"]+)"([^>]*)>(.*?)<\/iframe>)/i',
@@ -1527,45 +1745,27 @@ JS,
     }
 
     /**
-     * Returns the field’s CKEditor config.
-     *
-     * @return CkeConfig
-     */
-    private function _ckeConfig(): CkeConfig
-    {
-        if ($this->ckeConfig) {
-            try {
-                return Plugin::getInstance()->getCkeConfigs()->getByUid($this->ckeConfig);
-            } catch (InvalidArgumentException) {
-            }
-        }
-
-        return new CkeConfig();
-    }
-
-    /**
      * Returns an array of selected advanced link fields that the field should show to the author.
      * The fields are returned in the order defined in the field's settings.
      *
-     * @param CkeConfig $ckeConfig
      * @return array
      */
-    private function _advancedLinkFields(CkeConfig $ckeConfig): array
+    private function _advancedLinkFields(): array
     {
-        if (empty($ckeConfig->advancedLinkFields)) {
+        if (empty($this->advancedLinkFields)) {
             return [];
         }
 
         $fields = [];
         foreach (CkeditorConfig::advanceLinkOptions() as $option) {
-            if (in_array($option['value'], $ckeConfig->advancedLinkFields)) {
+            if (in_array($option['value'], $this->advancedLinkFields)) {
                 $fields[] = $option;
             }
         }
 
-        // sort by the order of $ckeConfig->advancedLinkFields
+        // sort by the order of $this->advancedLinkFields
         $fields = array_column($fields, null, 'value');
-        $order = array_flip($ckeConfig->advancedLinkFields);
+        $order = array_flip($this->advancedLinkFields);
         uksort($fields, function($a, $b) use ($order) {
             return $order[$a] <=> $order[$b];
         });
@@ -1857,15 +2057,13 @@ JS,
      */
     private function _adjustPurifierConfig(HTMLPurifier_Config $purifierConfig): HTMLPurifier_Config
     {
-        $ckeConfig = $this->_ckeConfig();
-
         // These will come back as indexed (key => true) arrays
         $allowedTargets = $purifierConfig->get('Attr.AllowedFrameTargets');
         $allowedRels = $purifierConfig->get('Attr.AllowedRel');
-        if (isset($ckeConfig->options['link']['addTargetToExternalLinks'])) {
+        if (isset($this->options['link']['addTargetToExternalLinks'])) {
             $allowedTargets['_blank'] = true;
         }
-        foreach ($ckeConfig->options['link']['decorators'] ?? [] as $decorator) {
+        foreach ($this->options['link']['decorators'] ?? [] as $decorator) {
             if (isset($decorator['attributes']['target'])) {
                 $allowedTargets[$decorator['attributes']['target']] = true;
             }
@@ -1879,8 +2077,8 @@ JS,
         $purifierConfig->set('Attr.AllowedRel', array_keys($allowedRels));
 
         // advanced link fields
-        if (!empty($ckeConfig->advancedLinkFields)) {
-            if (in_array('rel', $ckeConfig->advancedLinkFields)) {
+        if (!empty($this->advancedLinkFields)) {
+            if (in_array('rel', $this->advancedLinkFields)) {
                 $allowedRels = $purifierConfig->get('Attr.AllowedRel');
                 // allow any rel values
                 $allowedRels['*'] = true;
@@ -1890,7 +2088,7 @@ JS,
             // This is needed so that the noopener and noreferrer rel attributes
             // are not added by default on save when you turn on target="_blank".
             // This then messes with the ability to add rel attributes independently.
-            if (in_array('target', $ckeConfig->advancedLinkFields)) {
+            if (in_array('target', $this->advancedLinkFields)) {
                 $purifierConfig->set('HTML.TargetNoopener', false);
                 $purifierConfig->set('HTML.TargetNoreferrer', false);
             }
@@ -1901,11 +2099,11 @@ JS,
         /** @var HTMLPurifier_HTMLDefinition|null $def */
         $def = $purifierConfig->getDefinition('HTML', true);
 
-        if (!empty($ckeConfig->advancedLinkFields) && in_array('ariaLabel', $ckeConfig->advancedLinkFields)) {
+        if (!empty($this->advancedLinkFields) && in_array('ariaLabel', $this->advancedLinkFields)) {
             $def?->addAttribute('a', 'aria-label', 'Text');
         }
 
-        if (in_array('todoList', $ckeConfig->toolbar)) {
+        if (in_array('todoList', $this->toolbar)) {
             // Add input[type=checkbox][disabled][checked] to the definition
             $def?->addElement('input', 'Inline', 'Inline', '', [
                 'type' => 'Enum#checkbox',
@@ -1914,17 +2112,16 @@ JS,
             ]);
         }
 
-        if (in_array('numberedList', $ckeConfig->toolbar)) {
+        if (in_array('numberedList', $this->toolbar)) {
             $def?->addAttribute('ol', 'style', 'Text');
             $def?->addAttribute('ol', 'reversed', 'Text');
         }
 
-        if (in_array('bulletedList', $ckeConfig->toolbar)) {
+        if (in_array('bulletedList', $this->toolbar)) {
             $def?->addAttribute('ul', 'style', 'Text');
         }
 
-        $createEntryToolbarItems = array_filter($ckeConfig->toolbar, fn($item) => str_starts_with($item, 'createEntry'));
-        if (!empty($createEntryToolbarItems)) {
+        if (in_array('createEntry', $this->toolbar)) {
             $def?->addElement('craft-entry', 'Inline', 'Inline', '', [
                 'data-entry-id' => 'Number',
                 'data-site-id' => 'Number',
@@ -1966,6 +2163,18 @@ JS,
         }
 
         return '';
+    }
+
+    private function _entryTypeOptions(): array
+    {
+        return array_map(fn(CkeEntryType $entryType) => [
+            'color' => $entryType->getColor()?->value,
+            'expanded' => $entryType['expanded'] ?? false,
+            'icon' => $entryType->icon ? Cp::iconSvg($entryType->icon) : null,
+            'label' => Craft::t('site', $entryType->name),
+            'uid' => $entryType->uid,
+            'value' => $entryType->id,
+        ], $this->getEntryTypes());
     }
 
     /**

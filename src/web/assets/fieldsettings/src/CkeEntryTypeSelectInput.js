@@ -62,7 +62,7 @@ export default Craft.EntryTypeSelectInput.extend({
     try {
       const response = await Craft.sendActionRequest(
         'POST',
-        'ckeditor/cke-configs/apply-entry-type-indicators',
+        'ckeditor/field-settings/apply-entry-type-indicators',
         {
           data: {
             config,
