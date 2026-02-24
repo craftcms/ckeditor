@@ -754,7 +754,7 @@ class Du extends fu {
 }
 class Iu extends Tr {
   constructor(E, _ = {}) {
-    super(E), this.bindTemplate, this.set("isFocused", !1), this.entriesUi = _.entriesUi, this.editor = this.entriesUi.editor, this.entryType = _.entryType;
+    super(E), this.set("isFocused", !1), this.entriesUi = _.entriesUi, this.editor = this.entriesUi.editor, this.entryType = _.entryType;
     const T = this.editor.commands.get("insertEntry");
     let O = new gi(), Z = {
       commandValue: this.entryType.model.commandValue,

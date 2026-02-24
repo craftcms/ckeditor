@@ -4,8 +4,6 @@ export default class CraftEntryTypeButtonView extends View {
   constructor(locale, options = {}) {
     super(locale);
 
-    const bind = this.bindTemplate;
-
     this.set('isFocused', false);
 
     this.entriesUi = options.entriesUi;
