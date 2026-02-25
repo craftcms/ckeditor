@@ -85,49 +85,33 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     });
   }
 
-  _processAssetUrls(assets, transform) {
-    return new Promise((resolve) => {
-      if (!assets.length) {
-        resolve();
-        return;
-      }
+  async _processAssetUrls(assets, transform) {
+    if (!assets.length) {
+      return;
+    }
 
-      const editor = this.editor;
-      const defaultTransform = editor.config.get('defaultTransform');
-      const queue = new Craft.Queue();
-      const urls = [];
+    const editor = this.editor;
+    const defaultTransform = editor.config.get('defaultTransform');
+    const urls = [];
 
-      queue.on('afterRun', () => {
-        editor.execute('insertImage', {source: urls});
-        resolve();
-      });
+    for (const asset of assets) {
+      const hasTransform = this._isTransformUrl(asset.url);
 
-      for (const asset of assets) {
-        queue.push(
-          () =>
-            new Promise((resolve) => {
-              const hasTransform = this._isTransformUrl(asset.url);
-              // Do we need to apply the default transform?
-              if (!hasTransform && defaultTransform) {
-                this._getTransformUrl(asset.id, defaultTransform, (url) => {
-                  urls.push(url);
-                  // editor.execute('insertImage', {source: url});
-                  resolve();
-                });
-              } else {
-                const url = this._buildAssetUrl(
-                  asset.id,
-                  asset.url,
-                  hasTransform ? transform : defaultTransform,
-                );
-                urls.push(url);
-                // editor.execute('insertImage', {source: url});
-                resolve();
-              }
-            }),
+      // Do we need to apply the default transform?
+      if (!hasTransform && defaultTransform) {
+        const url = await this._getTransformUrl(asset.id, defaultTransform);
+        urls.push(url);
+      } else {
+        const url = this._buildAssetUrl(
+          asset.id,
+          asset.url,
+          hasTransform ? transform : defaultTransform,
         );
+        urls.push(url);
       }
-    });
+    }
+
+    editor.execute('insertImage', {source: urls});
   }
 
   _buildAssetUrl(assetId, assetUrl, transform) {
@@ -144,19 +128,24 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     return /(^|\/)_[^\/]+\/[^\/]+$/.test(url);
   }
 
-  _getTransformUrl(assetId, handle, callback) {
-    Craft.sendActionRequest('POST', 'ckeditor/ckeditor/image-url', {
-      data: {
-        assetId: assetId,
-        transform: handle,
-      },
-    })
-      .then(({data}) => {
-        callback(this._buildAssetUrl(assetId, data.url, handle));
-      })
-      .catch(() => {
-        alert('There was an error generating the transform URL.');
-      });
+  async _getTransformUrl(assetId, handle) {
+    let response;
+    try {
+      response = await Craft.sendActionRequest(
+        'POST',
+        'ckeditor/ckeditor/image-url',
+        {
+          data: {
+            assetId: assetId,
+            transform: handle,
+          },
+        },
+      );
+    } catch {
+      alert('There was an error generating the transform URL.');
+    }
+
+    return this._buildAssetUrl(assetId, response.data.url, handle);
   }
 
   _getAssetUrlComponents(url) {
@@ -290,10 +279,12 @@ export default class CraftImageInsertUI extends ImageInsertUI {
           const hasTransform = this._isTransformUrl(asset.url);
           // Do we need to apply the default transform?
           if (!hasTransform && defaultTransform) {
-            this._getTransformUrl(asset.assetId, defaultTransform, (url) => {
-              urls.push(url);
-              resolve();
-            });
+            this._getTransformUrl(asset.assetId, defaultTransform).then(
+              (url) => {
+                urls.push(url);
+                resolve();
+              },
+            );
           } else {
             const url = this._buildAssetUrl(
               asset.assetId,
