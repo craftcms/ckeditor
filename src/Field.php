@@ -1914,10 +1914,12 @@ JS,
      */
     public function propagateValue(ElementInterface $from, ElementInterface $to): void
     {
+        $wasValueEmpty = $this->isValueEmpty($to->getFieldValue($this->handle), $to);
+
         /** @phpstan-ignore-next-line */
         parent::propagateValue($from, $to);
 
-        if (!$from->propagateAll) {
+        if (!$from->propagateAll && $wasValueEmpty) {
             // NestedElementManager won't duplicate the nested entries automatically,
             // because the field has a value in the target site (the HTML content), so isValueEmpty() is false.
             /** @phpstan-ignore-next-line */
