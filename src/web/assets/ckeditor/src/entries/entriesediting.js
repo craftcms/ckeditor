@@ -156,14 +156,25 @@ export default class CraftEntriesEditing extends Plugin {
   async _getCardHtml(modelItem) {
     let cardHtml = modelItem.getAttribute('cardHtml') ?? null;
 
+    // Add a null check for cardHtml
+    if (cardHtml === null) {
+      console.warn('cardHtml attribute is null');
+      cardHtml = '';
+    }
+
+  async _getCardHtml(modelItem) {
+    let cardHtml = modelItem.getAttribute('cardHtml') ?? null;
+
     let parents = $(this.editor.sourceElement).parents('.field');
     const layoutElementUid = $(parents[0]).data('layout-element');
 
     // if there's no cardHtml attribute for any reason - get the markup from Craft
     // this can happen e.g. if you make changes in the source mode and then come back to the editing mode
-    if (cardHtml) {
+    // If cardHtml is not empty, return it
+    if (cardHtml && typeof cardHtml === 'string' && cardHtml.trim() !== '') {
       return {cardHtml};
     }
+
 
     const entryId = modelItem.getAttribute('entryId') ?? null;
     const siteId = modelItem.getAttribute('siteId') ?? null;
@@ -191,8 +202,14 @@ export default class CraftEntriesEditing extends Plugin {
           },
         },
       );
+      if (!data || typeof data.cardHtml !== 'string') {
+        throw new Error('Invalid card HTML data received from server');
+      }
+
       return data;
     } catch (e) {
+      console.error('Error fetching card HTML:', e);
+
       console.error(e?.response?.data);
 
       const cardHtml =
