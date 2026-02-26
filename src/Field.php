@@ -1933,7 +1933,7 @@ JS,
         // you create a new entry and add nested entry into a cke field while the entry is fresh
         // during autosave, that nested entry gets duplicated into the other site correctly (along with value adjustment)
         // however when you then fully save the owner,
-        // the duplication is triggered twice - during Drafts::applyDraft() and during Drafts::removeDraftData()
+        // the duplication is triggered twice - from ElementsController::actionApplyDraft() and from Drafts::removeDraftData()
         // the changes in 5.9.0 mean that the nested entries get duplicated and adjusted twice
         // (via NEM::saveNestedElements > duplicateNestedElements() route)
         // causing the nested entry in the site we propagated to, to have a wrong ID
