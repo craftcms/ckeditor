@@ -1938,7 +1938,7 @@ JS,
         // (via NEM::saveNestedElements > duplicateNestedElements() route)
         // causing the nested entry in the site we propagated to, to have a wrong ID
         // the CKE content references X, but X nested entry is marked as deleted and Y nested entry  was created in its place
-        Event::on(Drafts::class, Drafts::EVENT_BEFORE_APPLY_DRAFT, function (DraftEvent $event) {
+        Event::on(Drafts::class, Drafts::EVENT_BEFORE_APPLY_DRAFT, function(DraftEvent $event) {
             if ($event->draft->propagateAll && $event->draft->getIsUnpublishedDraft()) {
                 $event->draft->propagateAll = false;
             }
