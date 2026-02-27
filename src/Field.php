@@ -1996,7 +1996,7 @@ JS,
             : $this->getImageField()?->getInputSources() ?? [];
     }
 
-    private function _imageModalSettings(): ?array
+    private function _imageModalSettings(): array
     {
         $settings = [];
 
@@ -2085,7 +2085,7 @@ JS,
             $imageField = $this->getImageField();
             if (
                 !$imageField?->defaultUploadLocationSource ||
-                !preg_match('/^volume:(.+)$/', $imageField?->defaultUploadLocationSource, $matches)
+                !preg_match('/^volume:(.+)$/', $imageField->defaultUploadLocationSource, $matches)
             ) {
                 return null;
             }
