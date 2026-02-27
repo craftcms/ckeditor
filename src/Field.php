@@ -1364,22 +1364,22 @@ import {create} from '@craftcms/ckeditor';
     },
     removePlugins: []
   });
-  
+
 
   // special case for heading config, because of the Heading Levels
   // see https://github.com/craftcms/ckeditor/issues/431
   const baseHeadings = $baseConfigJs?.heading?.options;
   const configOptionHeadings = $configOptionsJs?.heading?.options;
   const nativeHeadingModels = ['paragraph', 'heading1', 'heading2', 'heading3', 'heading4', 'heading5', 'heading6'];
-  
+
   if (baseHeadings && configOptionHeadings && baseHeadings != configOptionHeadings) {
     let headings = new Object();
-    
+
     // allow all options from baseHeading
     baseHeadings.forEach((baseHeading) => {
       headings[baseHeading.model] = baseHeading;
     });
-    
+
     configOptionHeadings.forEach((configOptionHeading) => {
       // if a baseHeading option has a custom config in the configOptionHeadings - use that custom config
       if (typeof headings[configOptionHeading.model] !== 'undefined') {
@@ -1390,11 +1390,11 @@ import {create} from '@craftcms/ckeditor';
         headings[configOptionHeading.model] = configOptionHeading;
       }
     });
-      
+
     // use the headings
     config.heading.options = Object.values(headings);
   }
-  
+
   const extraRemovePlugins = [];
   if ($showWordCountJs) {
     if (typeof config.wordCount === 'undefined') {
@@ -1443,7 +1443,7 @@ import {create} from '@craftcms/ckeditor';
   }
 
   instance = create($idJs, config);
-  
+
   if (Boolean($static)) {
     instance.then((editor) => {
       editor.enableReadOnlyMode($idJs);
