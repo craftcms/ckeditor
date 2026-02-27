@@ -1,3 +1,5 @@
+{% set readOnly = readOnly ?? false %}
+
 {% embed '_includes/forms/field' with {
   id: 'image-field',
   label: 'Image Field'|t('ckeditor'),
@@ -21,6 +23,7 @@
           name: 'imageFieldPath',
           options: options|sort((a, b) => a.label <=> b.label),
           value: field.imageFieldUid ? "#{field.imageEntryTypeUid}.#{field.imageFieldUid}",
+          disabled: readOnly,
         }) }}
       {% else %}
         <p class="warning with-icon">{{ 'No entry types with an Assets field have been selected yet.'|t('ckeditor') }}</p>
