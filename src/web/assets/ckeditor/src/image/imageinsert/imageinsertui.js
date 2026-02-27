@@ -165,10 +165,10 @@ export default class CraftImageInsertUI extends ImageInsertUI {
    * Attach the uploader with drag event handler
    */
   _attachUploader() {
-    let editor = this.editor;
-    let params = editor.config.get('assetUploadParams') ?? null;
+    const editor = this.editor;
+    const folderId = editor.config.get('defaultUploadFolderId');
 
-    if (!params || !params['folderId']) {
+    if (!folderId) {
       return;
     }
 
@@ -183,33 +183,23 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       multiple: false,
     }).insertAfter(editor.sourceElement);
 
-    var options = {
+    this.uploader = Craft.createUploader(null, this.$container, {
       dropZone: this.$container,
       fileInput: this.$fileInput,
-    };
+      allowedKinds: ['image'],
+      canAddMoreFiles: true,
+      events: {
+        fileuploadstart: this._onUploadStart.bind(this),
+        fileuploadprogressall: this._onUploadProgress.bind(this),
+        fileuploaddone: this._onUploadComplete.bind(this),
+        fileuploadfail: this._onUploadFailure.bind(this),
+      },
+    });
 
-    if (params.kind) {
-      options.allowedKinds = params.kind;
-    }
-
-    options.canAddMoreFiles = true;
-
-    options.events = {};
-    options.events.fileuploadstart = this._onUploadStart.bind(this);
-    options.events.fileuploadprogressall = this._onUploadProgress.bind(this);
-    options.events.fileuploaddone = this._onUploadComplete.bind(this);
-    options.events.fileuploadfail = this._onUploadFailure.bind(this);
-
-    this.uploader = Craft.createUploader(
-      params['volumeType'],
-      this.$container,
-      options,
-    );
-
-    delete params['volumeId'];
-    delete params['volumeType'];
-
-    this.uploader.setParams(params);
+    this.uploader.setParams({
+      folderId,
+      siteId: editor.config.get('elementSiteId'),
+    });
 
     // this ensures the image is inserted where the drop-target suggests it will and not always at the start/end of the content
     editor.editing.view.document.on(
@@ -261,41 +251,26 @@ export default class CraftImageInsertUI extends ImageInsertUI {
   /**
    * On a file being uploaded.
    */
-  _onUploadComplete(event, data = null) {
+  async _onUploadComplete(event, data = null) {
     const asset = event instanceof CustomEvent ? event.detail : data.result;
     this.progressBar.hideProgressBar();
     this.$container.removeClass('uploading');
     const defaultTransform = this.editor.config.get('defaultTransform');
-    const queue = new Craft.Queue();
-    const urls = [];
+    const hasTransform = this._isTransformUrl(asset.url);
+    let url;
 
-    queue.on('afterRun', () => {
-      this.editor.execute('insertImage', {source: urls, breakBlock: true});
-    });
+    // Do we need to apply the default transform?
+    if (!hasTransform && defaultTransform) {
+      url = await this._getTransformUrl(asset.assetId, defaultTransform);
+    } else {
+      url = this._buildAssetUrl(
+        asset.assetId,
+        asset.url,
+        hasTransform ? transform : defaultTransform,
+      );
+    }
 
-    queue.push(
-      () =>
-        new Promise((resolve) => {
-          const hasTransform = this._isTransformUrl(asset.url);
-          // Do we need to apply the default transform?
-          if (!hasTransform && defaultTransform) {
-            this._getTransformUrl(asset.assetId, defaultTransform).then(
-              (url) => {
-                urls.push(url);
-                resolve();
-              },
-            );
-          } else {
-            const url = this._buildAssetUrl(
-              asset.assetId,
-              asset.url,
-              hasTransform ? transform : defaultTransform,
-            );
-            urls.push(url);
-            resolve();
-          }
-        }),
-    );
+    this.editor.execute('insertImage', {source: url, breakBlock: true});
   }
 
   /**

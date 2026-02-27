@@ -1255,7 +1255,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             ],
             'assetSources' => $this->_assetSources(),
             'assetSelectionCriteria' => $this->_assetSelectionCriteria(),
-            'assetUploadParams' => $this->_assetUploadParams(),
+            'defaultUploadFolderId' => $this->_defaultUploadFolderId(),
             'linkOptions' => $this->_linkOptions($element),
             'advancedLinkFields' => $this->_advancedLinkFields(),
             'table' => [
@@ -1974,35 +1974,30 @@ JS,
     }
 
     /**
-     * Returns the asset drag & drop upload parameters.
+     * Returns the default upload folder ID.
      *
-     * @return array
+     * @return int|null
      */
-    private function _assetUploadParams(): array
+    private function _defaultUploadFolderId(): ?int
     {
-        $params = [];
-
-        $params['siteId'] = Craft::$app->getSites()->getCurrentSite()->id;
-        $params['kind'] = 'image';
-
-        if ($this->defaultUploadLocationVolume) {
-            $volume = Craft::$app->getVolumes()->getVolumeByUid($this->defaultUploadLocationVolume);
-            if ($volume) {
-                $subpath = trim($this->defaultUploadLocationSubpath ?? '', '/');
-                [$subpath, $folder] = AssetsHelper::resolveSubpath($volume, $subpath);
-
-                // Ensure that the folder exists
-                if (!$folder) {
-                    $folder = Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($subpath, $volume);
-                }
-
-                $params['volumeId'] = $volume->id;
-                $params['volumeType'] = $volume::class;
-                $params['folderId'] = $folder->id;
-            }
+        if (!$this->defaultUploadLocationVolume) {
+            return null;
         }
 
-        return $params;
+        $volume = Craft::$app->getVolumes()->getVolumeByUid($this->defaultUploadLocationVolume);
+        if (!$volume) {
+            return null;
+        }
+
+        $subpath = trim($this->defaultUploadLocationSubpath ?? '', '/');
+        [$subpath, $folder] = AssetsHelper::resolveSubpath($volume, $subpath);
+
+        // Ensure that the folder exists
+        if (!$folder) {
+            $folder = Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($subpath, $volume);
+        }
+
+        return $folder->id;
     }
 
     /**
