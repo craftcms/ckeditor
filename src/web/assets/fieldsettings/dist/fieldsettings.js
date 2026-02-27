@@ -28,7 +28,7 @@ const ToolbarBuilder = Garnish.Base.extend({
     const o = document.createElement("DIV"), r = document.createElement("DIV");
     o.appendChild(r), create(r, {
       linkOptions: [{ elementType: "craft\\elements\\Asset" }],
-      assetSources: ["*"],
+      imageSources: ["*"],
       entryTypeOptions: [{ label: "fake", value: "fake" }],
       plugins: n
     }).then((a) => {

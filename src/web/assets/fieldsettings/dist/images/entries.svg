@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="80px" height="60px" viewBox="0 0 80 60" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>entries</title>
+    <defs>
+        <path d="M0,0 L80,0 L80,60 L0,60 L0,0 Z" id="path-1"></path>
+    </defs>
+    <g id="entries" stroke="none" fill="none" xlink:href="#path-1">
+        <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-1"></use>
+        <rect id="pane-copy" stroke="#CDD8E4" stroke-width="1" x="0.5" y="0.5" width="79" height="59" rx="5"></rect>
+        <rect id="chip-copy-3" fill="#CDD8E4" fill-rule="evenodd" x="6" y="6" width="56" height="4" rx="2"></rect>
+        <rect id="chip-copy-5" fill="#CDD8E4" fill-rule="evenodd" x="6" y="12" width="62" height="4" rx="2"></rect>
+        <rect id="chip-copy-4" fill="#CDD8E4" fill-rule="evenodd" x="6" y="50" width="56" height="4" rx="2"></rect>
+        <rect id="chip-copy-6" fill="#CDD8E4" fill-rule="evenodd" x="6" y="44" width="62" height="4" rx="2"></rect>
+        <rect id="chip" stroke="#5A6572" stroke-width="1" fill="#F3F7FD" fill-rule="evenodd" x="6.5" y="19.5" width="67" height="21" rx="2"></rect>
+        <g id="Group" stroke-width="1" fill-rule="evenodd" transform="translate(10, 23)">
+            <rect id="pane" stroke="#CDD8E4" fill="#FFFFFF" x="0.5" y="0.5" width="21" height="13" rx="2"></rect>
+            <path d="M12.9982607,3.33333333 C12.5982856,3.33333333 12.2233089,3.51388889 11.9983229,3.81631944 L9.19849683,7.60798611 L8.33355057,6.62847222 C8.10356486,6.37118056 7.76358598,6.22222222 7.39860866,6.22222222 C7.03363133,6.22222222 6.68865277,6.37118056 6.46366674,6.62847222 L3.26386555,10.2395833 C2.97388357,10.5645833 2.91888698,11.0114583 3.11887456,11.3861111 C3.31886213,11.7607639 3.73883604,12 4.19880746,12 L8.19855895,12 L10.5984099,12 L17.7979625,12 C18.2429349,12 18.6479097,11.7788194 18.8578967,11.4267361 C19.0678836,11.0746528 19.0428852,10.6458333 18.7979004,10.3163194 L13.9981986,3.81631944 C13.7732126,3.51388889 13.3982359,3.33333333 12.9982607,3.33333333 Z" id="Path" fill="#CDD8E4"></path>
+            <path d="M4.56521739,5 C5.42966309,5 6.13043478,4.32842712 6.13043478,3.5 C6.13043478,2.67157288 5.42966309,2 4.56521739,2 C3.7007717,2 3,2.67157288 3,3.5 C3,4.32842712 3.7007717,5 4.56521739,5 Z" id="Path" fill="#CDD8E4"></path>
+        </g>
+        <rect id="chip-copy-11" fill="#CDD8E4" fill-rule="evenodd" x="35" y="23" width="33" height="4" rx="2"></rect>
+        <rect id="chip-copy-12" fill="#CDD8E4" fill-rule="evenodd" x="35" y="29" width="27" height="4" rx="2"></rect>
+    </g>
+</svg>

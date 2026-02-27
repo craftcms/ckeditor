@@ -31,7 +31,7 @@ const ToolbarBuilder = Garnish.Base.extend({
     (a.appendChild(c),
       create(c, {
         linkOptions: [{elementType: 'craft\\elements\\Asset'}],
-        assetSources: ['*'],
+        imageSources: ['*'],
         entryTypeOptions: [{label: 'fake', value: 'fake'}],
       }).then((h) => {
         const g = h.ui.componentFactory,

@@ -43,6 +43,8 @@ use craft\enums\PropagationMethod;
 use craft\errors\InvalidHtmlTagException;
 use craft\events\CancelableEvent;
 use craft\events\DuplicateNestedElementsEvent;
+use craft\fieldlayoutelements\CustomField;
+use craft\fields\Assets;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Cp;
@@ -67,6 +69,7 @@ use GraphQL\Type\Definition\Type;
 use HTMLPurifier_Config;
 use HTMLPurifier_Exception;
 use HTMLPurifier_HTMLDefinition;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\InvalidArgumentException;
@@ -117,6 +120,11 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
      * @since 3.1.0
      */
     public const EVENT_MODIFY_CONFIG = 'modifyConfig';
+
+    /** @since 5.0.0 */
+    public const IMAGE_MODE_IMG = 'img';
+    /** @since 5.0.0 */
+    public const IMAGE_MODE_ENTRIES = 'entries';
 
     /**
      * @var NestedElementManager[]
@@ -485,6 +493,12 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     public bool $parseEmbeds = false;
 
     /**
+     * @var string How new images should be added to the field contents
+     * @since 5.0.0
+     */
+    public string $imageMode = self::IMAGE_MODE_IMG;
+
+    /**
      * @var string|array|null The volumes that should be available for image selection.
      * @since 1.2.0
      */
@@ -512,6 +526,20 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
      * @var string|null The default transform to use.
      */
     public ?string $defaultTransform = null;
+
+    /**
+     * @var string|null The entry type UUID used to store images.
+     * @see getImageEntryType()
+     * @since 5.0.0
+     */
+    public ?string $imageEntryTypeUid = null;
+
+    /**
+     * @var string|null The Assets field’s layout element UUID used to store images.
+     * @see getImageField()
+     * @since 5.0.0
+     */
+    public ?string $imageFieldUid = null;
 
     /**
      * @var string|string[]|null User groups whose members should be able to see the “Source” button
@@ -595,6 +623,11 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
 
         if (isset($config['entryTypes']) && $config['entryTypes'] === '') {
             $config['entryTypes'] = [];
+        }
+
+        if (isset($config['imageFieldPath'])) {
+            [$config['imageEntryTypeUid'], $config['imageFieldUid']] = explode('.', $config['imageFieldPath'], 2);
+            unset($config['imageFieldPath']);
         }
 
         if (isset($config['enableSourceEditingForNonAdmins'])) {
@@ -693,6 +726,40 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     public function setEntryTypes(array $entryTypes): void
     {
         $this->_entryTypes = array_map(fn($config) => static::entryType($config), $entryTypes);
+    }
+
+    /**
+     * Returns the entry type used to store images.
+     *
+     * @since 5.0.0
+     */
+    public function getImageEntryType(): ?CkeEntryType
+    {
+        if (!$this->imageEntryTypeUid) {
+            return null;
+        }
+
+        return Arr::first(
+            $this->getEntryTypes(),
+            fn(CkeEntryType $entryType) => $entryType->uid === $this->imageEntryTypeUid,
+        );
+    }
+
+    /**
+     * Returns the Assets field used to store images.
+     *
+     * @since 5.0.0
+     */
+    public function getImageField(): ?Assets
+    {
+        if (!$this->imageFieldUid) {
+            return null;
+        }
+
+        /** @var CustomField|null $layoutElement */
+        $layoutElement = $this->getImageEntryType()?->getFieldLayout()->getElementByUid($this->imageFieldUid);
+        $field = $layoutElement?->getField();
+        return $field instanceof Assets ? $field : null;
     }
 
     /**
@@ -873,7 +940,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     private function settingsHtml(bool $readOnly): string
     {
         $view = Craft::$app->getView();
-        $view->registerAssetBundle(FieldSettingsAsset::class);
+        $bundle = $view->registerAssetBundle(FieldSettingsAsset::class);
 
         $userGroupOptions = [
             [
@@ -924,6 +991,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             'entryTypes' => $this->getEntryTypes(),
             'userGroupOptions' => $userGroupOptions,
             'purifierConfigOptions' => $this->configOptions('htmlpurifier'),
+            'baseIconsUrl' => "$bundle->baseUrl/images",
             'volumeOptions' => $volumeOptions,
             'transformOptions' => $transformOptions,
             'defaultTransformOptions' => array_merge([
@@ -1253,7 +1321,11 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
                     'imageEditor',
                 ],
             ],
-            'assetSources' => $this->_assetSources(),
+            'imageMode' => $this->imageMode,
+            'imageSources' => $this->_imageSources(),
+            'imageModalSettings' => $this->_imageModalSettings(),
+            'imageEntryTypeId' => $this->getImageEntryType()?->id,
+            'imageFieldHandle' => $this->getImageField()?->handle,
             'assetSelectionCriteria' => $this->_assetSelectionCriteria(),
             'defaultUploadFolderId' => $this->_defaultUploadFolderId(),
             'linkOptions' => $this->_linkOptions($element),
@@ -1347,7 +1419,7 @@ JS;
         $uiLanguage = BaseCkeditorPackageAsset::uiLanguage();
         $uiTranslationImport = "import coreTranslations from 'ckeditor5/translations/$uiLanguage.js';";
 
-        $view->registerScriptWithVars(fn($baseConfigJs, $toolbarJs, $languageJs, $showWordCountJs, $wordLimitJs, $characterLimitJs) => <<<JS
+        $view->registerScriptWithVars(fn($baseConfigJs, $toolbarJs, $languageJs, $showWordCountJs, $wordLimitJs, $characterLimitJs, $imageMode) => <<<JS
 $imports
 $uiTranslationImport
 import {create} from '@craftcms/ckeditor';
@@ -1462,6 +1534,7 @@ JS,
                 $this->showWordCount,
                 $this->wordLimit ?: 0,
                 $this->characterLimit ?: 0,
+                $this->imageMode,
             ],
             View::POS_END,
             ['type' => 'module']
@@ -1916,6 +1989,34 @@ JS,
         return $sources;
     }
 
+    private function _imageSources(): array
+    {
+        return $this->imageMode === self::IMAGE_MODE_IMG
+            ? $this->_assetSources()
+            : $this->getImageField()?->getInputSources() ?? [];
+    }
+
+    private function _imageModalSettings(): ?array
+    {
+        $settings = [];
+
+        if ($this->imageMode === self::IMAGE_MODE_IMG) {
+            $settings['multiSelect'] = true;
+        } else {
+            $field = $this->getImageField();
+            if ($field) {
+                $settings += [
+                    'multiSelect' => !$field->maxRelations,
+                    'indexSettings' => [
+                        'showFolders' => !$field->restrictLocation || $field->allowSubfolders,
+                    ],
+                ];
+            }
+        }
+
+        return $settings;
+    }
+
     /**
      * Returns the available asset sources.
      *
@@ -1980,17 +2081,31 @@ JS,
      */
     private function _defaultUploadFolderId(): ?int
     {
-        if (!$this->defaultUploadLocationVolume) {
-            return null;
+        if ($this->imageMode === self::IMAGE_MODE_ENTRIES) {
+            $imageField = $this->getImageField();
+            if (
+                !$imageField?->defaultUploadLocationSource ||
+                !preg_match('/^volume:(.+)$/', $imageField?->defaultUploadLocationSource, $matches)
+            ) {
+                return null;
+            }
+
+            $volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1]);
+            $subpath = $imageField->defaultUploadLocationSubpath;
+        } else {
+            if (!$this->defaultUploadLocationVolume) {
+                return null;
+            }
+
+            $volume = Craft::$app->getVolumes()->getVolumeByUid($this->defaultUploadLocationVolume);
+            $subpath = $this->defaultUploadLocationSubpath;
         }
 
-        $volume = Craft::$app->getVolumes()->getVolumeByUid($this->defaultUploadLocationVolume);
         if (!$volume) {
             return null;
         }
 
-        $subpath = trim($this->defaultUploadLocationSubpath ?? '', '/');
-        [$subpath, $folder] = AssetsHelper::resolveSubpath($volume, $subpath);
+        [$subpath, $folder] = AssetsHelper::resolveSubpath($volume, trim($subpath ?? '', '/'));
 
         // Ensure that the folder exists
         if (!$folder) {
@@ -2026,7 +2141,7 @@ JS,
      */
     private function _transforms(): array
     {
-        if (!$this->availableTransforms) {
+        if ($this->imageMode !== self::IMAGE_MODE_IMG || !$this->availableTransforms) {
             return [];
         }
 
@@ -2115,7 +2230,7 @@ JS,
             $def?->addAttribute('ul', 'style', 'Text');
         }
 
-        if (in_array('createEntry', $this->toolbar)) {
+        if ($this->imageMode === self::IMAGE_MODE_ENTRIES || in_array('createEntry', $this->toolbar)) {
             $def?->addElement('craft-entry', 'Inline', 'Inline', '', [
                 'data-entry-id' => 'Number',
                 'data-site-id' => 'Number',
