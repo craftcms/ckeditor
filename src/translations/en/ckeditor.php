@@ -6,7 +6,7 @@ return [
     'Advanced' => 'Advanced',
     'Available Transforms' => 'Available Transforms',
     'Changing this may result in data loss.' => 'Changing this may result in data loss.',
-    'Choose which Assets field should be used to store images, from the selected enry types.' => 'Choose which Assets field should be used to store images, from the selected enry types.',
+    'Choose which Assets field should be used to store images, from the selected entry types.' => 'Choose which Assets field should be used to store images, from the selected entry types.',
     'Choose which heading levels should be available to this field.' => 'Choose which heading levels should be available to this field.',
     'Column Type' => 'Column Type',
     'Config Options' => 'Config Options',
