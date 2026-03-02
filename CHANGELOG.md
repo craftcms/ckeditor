@@ -13,8 +13,6 @@
 - Added support for inserting new images as nested entries. ([#509](https://github.com/craftcms/ckeditor/pull/509))
 - Added the “Advanced Link Fields” setting to CKEditor configs. ([#375](https://github.com/craftcms/ckeditor/pull/375))
 - Custom editor styles now get registered with a higher specificity than the default editor styles. ([#433](https://github.com/craftcms/ckeditor/pull/433)) 
-- Added `craft\ckeditor\helpers\CkeditorConfig`. ([#363](https://github.com/craftcms/ckeditor/pull/363))
-- Added `craft\ckeditor\web\assets\BaseCkeditorPackageAsset::$namespace`. ([#363](https://github.com/craftcms/ckeditor/pull/363))
 - Added `craft\ckeditor\CkeConfig::$advancedLinkFields`.
 - Added `craft\ckeditor\CkeConfig::advanceLinkOptions()`.
 - Added `craft\ckeditor\Field::$imageEntryTypeUid`.
@@ -24,6 +22,8 @@
 - Added `craft\ckeditor\Field::IMAGE_MODE_IMG`.
 - Added `craft\ckeditor\Field::getImageEntryType()`.
 - Added `craft\ckeditor\Field::getImageField()`.
+- Added `craft\ckeditor\helpers\CkeditorConfig`. ([#363](https://github.com/craftcms/ckeditor/pull/363))
+- Added `craft\ckeditor\web\assets\BaseCkeditorPackageAsset::$namespace`. ([#363](https://github.com/craftcms/ckeditor/pull/363))
 - Updated to CKEditor 5 47.5.0. ([#502](https://github.com/craftcms/ckeditor/pull/502))
 - Fixed a JavaScript error that could occur when editing an element in a slideout. ([#429](https://github.com/craftcms/ckeditor/pull/429))
 
