@@ -25,7 +25,6 @@
 - Added `craft\ckeditor\helpers\CkeditorConfig`. ([#363](https://github.com/craftcms/ckeditor/pull/363))
 - Added `craft\ckeditor\web\assets\BaseCkeditorPackageAsset::$namespace`. ([#363](https://github.com/craftcms/ckeditor/pull/363))
 - Updated to CKEditor 5 47.5.0. ([#502](https://github.com/craftcms/ckeditor/pull/502))
-- Fixed a bug where `&nbps;` briefly appeared below the editor on page load, if the “Show word count” setting was enabled. ([#507](https://github.com/craftcms/ckeditor/issues/507))
 - Fixed a JavaScript error that could occur when editing an element in a slideout. ([#429](https://github.com/craftcms/ckeditor/pull/429))
 
 ## 4.11.1 - 2026-02-18
