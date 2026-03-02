@@ -147,64 +147,6 @@
     disabled: readOnly,
   }) }}
 
-  {% embed '_includes/forms/field.twig' with {
-      id: 'default-upload-location',
-      label: 'Default Upload Location'|t('app'),
-      instructions: 'Where images should be stored when they are uploaded directly to the field via drag & drop.'|t('ckeditor'),
-  } %}
-    {% block input %}
-      {% import '_includes/forms.twig' as forms %}
-        <div class="flex flex-nowrap">
-          <div>
-            {{ forms.select({
-              id: "default-upload-location-volume",
-              name: "defaultUploadLocationVolume",
-              options: [
-                {
-                  label: 'None'|t('app'),
-                  value: '',
-                },
-                ...volumeOptions,
-              ],
-              value: field.defaultUploadLocationVolume,
-              disabled: readOnly,
-            }) }}
-          </div>
-          <div id="default-upload-location-subpath-container" class="flex-grow {{ not field.defaultUploadLocationVolume ? 'hidden' }}">
-            {{ forms.text({
-              class: 'ltr',
-              id: "default-upload-location-subpath",
-              name: "defaultUploadLocationSubpath",
-              value: field.defaultUploadLocationSubpath,
-              placeholder: "path/to/subfolder"|t('app'),
-              disabled: readOnly,
-            }) }}
-          </div>
-        </div>
-    {% endblock %}
-  {% endembed %}
-
-  {{ forms.checkboxSelectField({
-    id: 'availableTransforms',
-    name: 'availableTransforms',
-    label: 'Available Transforms'|t('ckeditor'),
-    instructions: 'The transforms that should be available when inserting images.'|t('ckeditor'),
-    options: transformOptions,
-    values: field.availableTransforms,
-    showAllOption: transformOptions|length ? true : false,
-    disabled: readOnly,
-  }) }}
-
-  {{ forms.selectField({
-    id: 'defaultTransform',
-    name: 'defaultTransform',
-    label: 'Default Transform'|t('ckeditor'),
-    instructions: 'The default transform that should be applied when inserting an image.'|t('ckeditor'),
-    options: defaultTransformOptions,
-    value: field.defaultTransform,
-    disabled: readOnly,
-  }) }}
-
   {{ forms.lightswitchField({
     label: 'Show unpermitted volumes'|t('ckeditor'),
     instructions: 'Whether to show volumes that the user doesn’t have permission to view.'|t('ckeditor'),
@@ -222,6 +164,106 @@
     on: field.showUnpermittedFiles,
     disabled: readOnly,
   }) }}
+
+  {% embed '_includes/forms/field.twig' with {
+    label: 'Image Mode'|t('ckeditor'),
+    instructions: 'How should new images be added to the field contents?'|t('ckeditor'),
+  } %}
+    {% block input %}
+      <div id="mode" class="flex items-start gap-l">
+        <label class="nowrap">
+          <img class="mb-xs" src="{{ baseIconsUrl }}/img.svg" width="80" height="60" alt="">
+          {{ input('radio', 'imageMode', 'img', {
+            checked: field.imageMode == 'img',
+            class: 'fieldtoggle',
+            disabled: readOnly,
+            data: {'target-prefix': 'image-mode--'},
+          }) }}
+          {{ 'Image tags'|t('ckeditor') }}
+        </label>
+        <label class="nowrap">
+          <img class="mb-xs" src="{{ baseIconsUrl }}/entries.svg" width="80" height="60" alt="">
+          {{ input('radio', 'imageMode', 'entries', {
+            checked: field.imageMode == 'entries',
+            class: 'fieldtoggle',
+            disabled: readOnly,
+            data: {'target-prefix': 'image-mode--'},
+          }) }}
+          {{ 'Nested entries'|t('ckeditor') }}
+        </label>
+      </div>
+    {% endblock %}
+  {% endembed %}
+
+  {% tag 'div' with {
+    id: 'image-mode--img',
+    class: field.imageMode != 'img' ? 'hidden' : null,
+  } %}
+    {% embed '_includes/forms/field.twig' with {
+        id: 'default-upload-location',
+        label: 'Default Upload Location'|t('app'),
+        instructions: 'Where images should be stored when they are uploaded directly to the field via drag & drop.'|t('ckeditor'),
+    } %}
+      {% block input %}
+        {% import '_includes/forms.twig' as forms %}
+          <div class="flex flex-nowrap">
+            <div>
+              {{ forms.select({
+                id: "default-upload-location-volume",
+                name: "defaultUploadLocationVolume",
+                options: [
+                  {
+                    label: 'None'|t('app'),
+                    value: '',
+                  },
+                  ...volumeOptions,
+                ],
+                value: field.defaultUploadLocationVolume,
+                disabled: readOnly,
+              }) }}
+            </div>
+            <div id="default-upload-location-subpath-container" class="flex-grow {{ not field.defaultUploadLocationVolume ? 'hidden' }}">
+              {{ forms.text({
+                class: 'ltr',
+                id: "default-upload-location-subpath",
+                name: "defaultUploadLocationSubpath",
+                value: field.defaultUploadLocationSubpath,
+                placeholder: "path/to/subfolder"|t('app'),
+                disabled: readOnly,
+              }) }}
+            </div>
+          </div>
+      {% endblock %}
+    {% endembed %}
+
+    {{ forms.checkboxSelectField({
+      id: 'availableTransforms',
+      name: 'availableTransforms',
+      label: 'Available Transforms'|t('ckeditor'),
+      instructions: 'The transforms that should be available when inserting images.'|t('ckeditor'),
+      options: transformOptions,
+      values: field.availableTransforms,
+      showAllOption: transformOptions|length ? true : false,
+      disabled: readOnly,
+    }) }}
+
+    {{ forms.selectField({
+      id: 'defaultTransform',
+      name: 'defaultTransform',
+      label: 'Default Transform'|t('ckeditor'),
+      instructions: 'The default transform that should be applied when inserting an image.'|t('ckeditor'),
+      options: defaultTransformOptions,
+      value: field.defaultTransform,
+      disabled: readOnly,
+    }) }}
+  {% endtag %}
+
+  {% tag 'div' with {
+    id: 'image-mode--entries',
+    class: field.imageMode != 'entries' ? 'hidden' : null,
+  } %}
+    {% include 'ckeditor/_image-field-select.twig' %}
+  {% endtag %}
 </div>
 
 <hr>
@@ -463,4 +505,25 @@
   });
 })();
   {% endjs %}
+
+  {# use script[type=module] so it executes after the entry type select initialization #}
+  {% script with {type: 'module'} %}
+const entryTypeSelect = $("#{{ 'entry-types'|namespaceInputId }}").data('componentSelect');
+
+const updateImageField = () => {
+  const entryTypes = Object.values(Garnish.getPostData(entryTypeSelect.$container));
+  Craft.sendActionRequest('POST', 'ckeditor/field-settings/render-image-field', {
+    data: {
+      namespace: {{ view.getNamespace()|json_encode|raw }},
+      entryTypes,
+      value: $("#{{ 'image-field'|namespaceInputId }}").val(),
+    },
+  }).then(({data}) => {
+    $("#{{ 'image-field-field'|namespaceInputId }}").replaceWith(data.html);
+  });
+};
+
+entryTypeSelect.on('change', () => updateImageField());
+entryTypeSelect.on('applySettings', () => updateImageField());
+  {% endscript %}
 {% endif %}

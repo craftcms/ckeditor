@@ -1,0 +1,32 @@
+{% set readOnly = readOnly ?? false %}
+
+{% embed '_includes/forms/field' with {
+  id: 'image-field',
+  label: 'Image Field'|t('ckeditor'),
+  instructions: 'Choose which Assets field should be used to store images, from the selected entry types.'|t('ckeditor'),
+} %}
+  {% block input %}
+    {% import "_includes/forms" as forms %}
+    <div class="flex">
+      {% set options = field.getEntryTypes()|map(
+        et => et.getFieldLayout().getCustomFields()|filter(
+          f => f is instance of('craft\\fields\\Assets')
+        )|map(f => {
+          label: "#{et.getUiLabel()} → #{f.getUiLabel()}",
+          value: "#{et.uid}.#{f.layoutElement.uid}",
+        })
+      )|flatten(1) %}
+      {% if options|length %}
+        {{ forms.select({
+          id: 'image-field',
+          name: 'imageFieldPath',
+          options: options|sort((a, b) => a.label <=> b.label),
+          value: field.imageFieldUid ? "#{field.imageEntryTypeUid}.#{field.imageFieldUid}",
+          disabled: readOnly,
+        }) }}
+      {% else %}
+        <p class="warning with-icon">{{ 'No entry types with an Assets field have been selected yet.'|t('ckeditor') }}</p>
+      {% endif %}
+    </div>
+  {% endblock %}
+{% endembed %}

@@ -161,7 +161,6 @@ final class CkeditorConfig
         ['plugins' => ['TextPartLanguage'], 'buttons' => ['textPartLanguage']],
         ['plugins' => ['TodoList'], 'buttons' => ['todoList']],
         ['plugins' => ['Underline'], 'buttons' => ['underline']],
-        ['plugins' => ['CraftEntries'], 'buttons' => ['createEntry']],
     ];
 
     public static array $toolbarItems = [

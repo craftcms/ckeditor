@@ -42,7 +42,7 @@ export default Garnish.Base.extend({
 
     create(editorElement, {
       linkOptions: [{elementType: 'craft\\elements\\Asset'}],
-      assetSources: ['*'],
+      imageSources: ['*'],
       entryTypeOptions: [{label: 'fake', value: 'fake'}],
       plugins,
     })

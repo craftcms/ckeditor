@@ -8,9 +8,11 @@
 namespace craft\ckeditor\controllers;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\ckeditor\Field;
 use craft\elements\Asset;
+use craft\elements\Entry;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ElementHelper;
 use craft\web\Controller;
@@ -18,6 +20,7 @@ use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
@@ -247,6 +250,61 @@ class CkeditorController extends Controller
             'headHtml' => $renderResponse->data['headHtml'],
             'bodyHtml' => $renderResponse->data['bodyHtml'],
             'siteIds' => $siteIds,
+        ]);
+    }
+
+    public function actionCreateImageEntry(): Response
+    {
+        $fieldId = $this->request->getRequiredBodyParam('fieldId');
+        $ownerId = $this->request->getRequiredBodyParam('ownerId');
+        $siteId = $this->request->getRequiredBodyParam('siteId');
+        $assetIds = $this->request->getRequiredBodyParam('assetIds');
+
+        $owner = Craft::$app->getElements()->getElementById($ownerId, siteId: $siteId);
+        if (!$owner) {
+            throw new BadRequestHttpException("Invalid owner ID: $ownerId");
+        }
+
+        $elementsService = Craft::$app->getElements();
+        if (!$elementsService->canSave($owner)) {
+            throw new ForbiddenHttpException('User not authorized to create this element.');
+        }
+
+        $field = Craft::$app->getFields()->getFieldById($fieldId);
+        if (!$field instanceof Field) {
+            throw new BadRequestHttpException("Invalid CKEditor field: $fieldId");
+        }
+
+        $imageEntryType = $field->getImageEntryType();
+        $imageField = $field->getImageField();
+
+        if (
+            $field->imageMode !== Field::IMAGE_MODE_ENTRIES ||
+            !$imageEntryType ||
+            !$imageField
+        ) {
+            throw new BadRequestHttpException("Invalid CKEditor field: $fieldId");
+        }
+
+        $entry = Craft::$app->getElements()->createElement([
+            'type' => Entry::class,
+            'siteId' => $siteId,
+            'fieldId' => $field->id,
+            'ownerId' => $ownerId,
+            'slug' => ElementHelper::tempSlug(),
+        ]);
+        $entry->setFieldValue($imageField->handle, $assetIds);
+
+        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+        if (!$elementsService->saveElement($entry)) {
+            throw new ServerErrorHttpException(
+                sprintf('Could not save the nested entry: %s', implode(', ', $entry->getFirstErrors()))
+            );
+        }
+
+        return $this->asJson([
+            'entryId' => $entry->id,
+            'siteId' => $siteId,
         ]);
     }
 }

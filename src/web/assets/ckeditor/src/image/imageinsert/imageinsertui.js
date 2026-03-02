@@ -21,11 +21,20 @@ export default class CraftImageInsertUI extends ImageInsertUI {
 
   init() {
     // Make sure there are linked volumes
-    if (!this._assetSources) {
+    if (!this._imageSources) {
       console.warn(
         'Omitting the "image" CKEditor toolbar button, because there aren’t any permitted volumes.',
       );
       return;
+    }
+
+    if (this._imageMode === 'entries') {
+      if (!this._imageEntryTypeId || !this._imageFieldHandle) {
+        console.warn(
+          'Omitting the "image" CKEditor toolbar button, because no image field was selected.',
+        );
+        return;
+      }
     }
 
     // Register `insertImage` dropdown and add `imageInsert` dropdown as an alias for consistency with ImageInsertUI
@@ -39,8 +48,36 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     this._attachUploader();
   }
 
-  get _assetSources() {
-    return this.editor.config.get('assetSources');
+  get _imageMode() {
+    return this.editor.config.get('imageMode');
+  }
+
+  get _imageSources() {
+    return this.editor.config.get('imageSources');
+  }
+
+  get _imageModalSettings() {
+    return this.editor.config.get('imageModalSettings') ?? {};
+  }
+
+  get _imageEntryTypeId() {
+    return this.editor.config.get('imageEntryTypeId');
+  }
+
+  get _imageFieldHandle() {
+    return this.editor.config.get('imageFieldHandle');
+  }
+
+  /**
+   * Returns Craft.ElementEditor instance that the CKEditor field belongs to.
+   *
+   * @returns {*}
+   */
+  get _elementEditor() {
+    const $editorContainer = $(this.editor.ui.view.element).closest(
+      'form,.lp-editor-container',
+    );
+    return $editorContainer.data('elementEditor');
   }
 
   _createToolbarImageButton(locale) {
@@ -58,7 +95,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
   }
 
   _showImageSelectModal() {
-    const sources = this._assetSources;
+    const sources = this._imageSources;
     const editor = this.editor;
     const config = editor.config;
     const criteria = Object.assign({}, config.get('assetSelectionCriteria'), {
@@ -66,15 +103,16 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     });
 
     Craft.createElementSelectorModal('craft\\elements\\Asset', {
+      ...this._imageModalSettings,
       storageKey: `ckeditor:${this.pluginName}:'craft\\elements\\Asset'`,
       sources,
       criteria,
       defaultSiteId: config.get('elementSiteId'),
       transforms: config.get('transforms'),
-      multiSelect: true,
       autoFocusSearchBox: false,
+      multiSelect: true,
       onSelect: (assets, transform) => {
-        this._processAssetUrls(assets, transform).then(() => {
+        this._processSelectedAssets(assets, transform).then(() => {
           editor.editing.view.focus();
         });
       },
@@ -85,8 +123,15 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     });
   }
 
-  async _processAssetUrls(assets, transform) {
+  async _processSelectedAssets(assets, transform) {
     if (!assets.length) {
+      return;
+    }
+
+    if (this._imageMode === 'entries') {
+      for (const asset of assets) {
+        await this._createImageEntry(asset.id);
+      }
       return;
     }
 
@@ -112,6 +157,55 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     }
 
     editor.execute('insertImage', {source: urls});
+  }
+
+  async _createImageEntry(assetId) {
+    const editor = this.editor;
+    const elementEditor = this._elementEditor;
+    const baseInputName = $(editor.sourceElement).attr('name');
+
+    // mark as dirty
+    if (elementEditor && baseInputName) {
+      await elementEditor.setFormValue(baseInputName, '*');
+    }
+
+    const nestedElementAttributes = editor.config.get(
+      'nestedElementAttributes',
+    );
+    const params = {
+      ...nestedElementAttributes,
+      typeId: this._imageEntryTypeId,
+    };
+
+    if (elementEditor) {
+      await elementEditor.markDeltaNameAsModified(editor.sourceElement.name);
+      // replace the owner ID with the new one, maybe?
+      params.ownerId = elementEditor.getDraftElementId(
+        nestedElementAttributes.ownerId,
+      );
+    }
+
+    let response;
+    try {
+      response = await Craft.sendActionRequest(
+        'POST',
+        'ckeditor/ckeditor/create-image-entry',
+        {
+          data: {
+            ...params,
+            assetIds: [assetId],
+          },
+        },
+      );
+    } catch (e) {
+      Craft.cp.displayError();
+      throw e;
+    }
+
+    editor.commands.execute('insertEntry', {
+      entryId: response.data.entryId,
+      siteId: response.data.siteId,
+    });
   }
 
   _buildAssetUrl(assetId, assetUrl, transform) {
@@ -180,7 +274,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     this.$fileInput = $('<input/>', {
       type: 'file',
       class: 'hidden',
-      multiple: false,
+      multiple: true,
     }).insertAfter(editor.sourceElement);
 
     this.uploader = Craft.createUploader(null, this.$container, {
@@ -255,6 +349,12 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     const asset = event instanceof CustomEvent ? event.detail : data.result;
     this.progressBar.hideProgressBar();
     this.$container.removeClass('uploading');
+
+    if (this._imageMode === 'entries') {
+      await this._createImageEntry(asset.assetId);
+      return;
+    }
+
     const defaultTransform = this.editor.config.get('defaultTransform');
     const hasTransform = this._isTransformUrl(asset.url);
     let url;
