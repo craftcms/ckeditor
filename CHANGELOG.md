@@ -10,12 +10,20 @@
 - The link modal UI now reflects Craft’s native Link fields. ([#375](https://github.com/craftcms/ckeditor/pull/375))
 - It’s now possible to choose which entry types should get a dedicated toolbar button versus be listed within the “Add nested content” menu. ([#423](https://github.com/craftcms/ckeditor/pull/423))
 - Added support for drag-n-drop image uploading. ([#486](https://github.com/craftcms/ckeditor/pull/486))
+- Added support for inserting new images as nested entries. ([#509](https://github.com/craftcms/ckeditor/pull/509))
 - Added the “Advanced Link Fields” setting to CKEditor configs. ([#375](https://github.com/craftcms/ckeditor/pull/375))
 - Custom editor styles now get registered with a higher specificity than the default editor styles. ([#433](https://github.com/craftcms/ckeditor/pull/433)) 
 - Added `craft\ckeditor\helpers\CkeditorConfig`. ([#363](https://github.com/craftcms/ckeditor/pull/363))
 - Added `craft\ckeditor\web\assets\BaseCkeditorPackageAsset::$namespace`. ([#363](https://github.com/craftcms/ckeditor/pull/363))
 - Added `craft\ckeditor\CkeConfig::$advancedLinkFields`.
 - Added `craft\ckeditor\CkeConfig::advanceLinkOptions()`.
+- Added `craft\ckeditor\Field::$imageEntryTypeUid`.
+- Added `craft\ckeditor\Field::$imageFieldUid`.
+- Added `craft\ckeditor\Field::$imageMode`.
+- Added `craft\ckeditor\Field::IMAGE_MODE_ENTRIES`.
+- Added `craft\ckeditor\Field::IMAGE_MODE_IMG`.
+- Added `craft\ckeditor\Field::getImageEntryType()`.
+- Added `craft\ckeditor\Field::getImageField()`.
 - Updated to CKEditor 5 47.5.0. ([#502](https://github.com/craftcms/ckeditor/pull/502))
 - Fixed a JavaScript error that could occur when editing an element in a slideout. ([#429](https://github.com/craftcms/ckeditor/pull/429))
 
