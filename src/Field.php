@@ -2000,13 +2000,10 @@ JS,
     {
         $settings = [];
 
-        if ($this->imageMode === self::IMAGE_MODE_IMG) {
-            $settings['multiSelect'] = true;
-        } else {
+        if ($this->imageMode === self::IMAGE_MODE_ENTRIES) {
             $field = $this->getImageField();
             if ($field) {
                 $settings += [
-                    'multiSelect' => !$field->maxRelations,
                     'indexSettings' => [
                         'showFolders' => !$field->restrictLocation || $field->allowSubfolders,
                     ],

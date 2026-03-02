@@ -70,6 +70,7 @@ class Xu extends au {
       defaultSiteId: O.get("elementSiteId"),
       transforms: O.get("transforms"),
       autoFocusSearchBox: !1,
+      multiSelect: !0,
       onSelect: (X, i) => {
         this._processSelectedAssets(X, i).then(() => {
           E.editing.view.focus();
@@ -85,7 +86,8 @@ class Xu extends au {
     if (!_.length)
       return;
     if (this._imageMode === "entries") {
-      await this._createImageEntry(_.map((i) => i.id));
+      for (const i of _)
+        await this._createImageEntry(i.id);
       return;
     }
     const O = this.editor, T = O.config.get("defaultTransform"), X = [];
@@ -125,7 +127,7 @@ class Xu extends au {
         {
           data: {
             ...i,
-            assetIds: _
+            assetIds: [_]
           }
         }
       );
@@ -184,7 +186,7 @@ class Xu extends au {
     ), this.$fileInput = $("<input/>", {
       type: "file",
       class: "hidden",
-      multiple: !1
+      multiple: !0
     }).insertAfter(_.sourceElement), this.uploader = Craft.createUploader(null, this.$container, {
       dropZone: this.$container,
       fileInput: this.$fileInput,
@@ -236,7 +238,7 @@ class Xu extends au {
   async _onUploadComplete(_, E = null) {
     const O = _ instanceof CustomEvent ? _.detail : E.result;
     if (this.progressBar.hideProgressBar(), this.$container.removeClass("uploading"), this._imageMode === "entries") {
-      await this._createImageEntry([O.assetId]);
+      await this._createImageEntry(O.assetId);
       return;
     }
     const T = this.editor.config.get("defaultTransform"), X = this._isTransformUrl(O.url);

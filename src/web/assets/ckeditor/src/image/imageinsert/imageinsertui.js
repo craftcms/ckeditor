@@ -110,6 +110,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       defaultSiteId: config.get('elementSiteId'),
       transforms: config.get('transforms'),
       autoFocusSearchBox: false,
+      multiSelect: true,
       onSelect: (assets, transform) => {
         this._processSelectedAssets(assets, transform).then(() => {
           editor.editing.view.focus();
@@ -128,7 +129,9 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     }
 
     if (this._imageMode === 'entries') {
-      await this._createImageEntry(assets.map((a) => a.id));
+      for (const asset of assets) {
+        await this._createImageEntry(asset.id);
+      }
       return;
     }
 
@@ -156,7 +159,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     editor.execute('insertImage', {source: urls});
   }
 
-  async _createImageEntry(assetIds) {
+  async _createImageEntry(assetId) {
     const editor = this.editor;
     const elementEditor = this._elementEditor;
     const baseInputName = $(editor.sourceElement).attr('name');
@@ -190,7 +193,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
         {
           data: {
             ...params,
-            assetIds,
+            assetIds: [assetId],
           },
         },
       );
@@ -271,7 +274,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     this.$fileInput = $('<input/>', {
       type: 'file',
       class: 'hidden',
-      multiple: false,
+      multiple: true,
     }).insertAfter(editor.sourceElement);
 
     this.uploader = Craft.createUploader(null, this.$container, {
@@ -348,7 +351,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     this.$container.removeClass('uploading');
 
     if (this._imageMode === 'entries') {
-      await this._createImageEntry([asset.assetId]);
+      await this._createImageEntry(asset.assetId);
       return;
     }
 
