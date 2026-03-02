@@ -1548,7 +1548,7 @@ JS,
         ]);
 
         if ($this->showWordCount) {
-            $html .= Html::tag('div', '&nbps;', [
+            $html .= Html::tag('div', '&nbsp;', [
                 'id' => $wordCountId,
                 'class' => ['ck-word-count', 'light', 'smalltext'],
             ]);
