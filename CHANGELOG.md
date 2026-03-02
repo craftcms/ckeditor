@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 4.11.2 - 2026-03-02
 
 - Fixed an error that could occur when creating a nested entry. ([#505](https://github.com/craftcms/ckeditor/issues/505))
 - Fixed a bug where `&nbps;` briefly appeared below the editor on page load, if the “Show word count” setting was enabled. ([#507](https://github.com/craftcms/ckeditor/issues/507))
