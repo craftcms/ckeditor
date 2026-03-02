@@ -31,5 +31,8 @@
 /.github/ export-ignore
 /.husky/ export-ignore
 
+# Identify generated files
+/src/web/assets/**/dist/**/* linguist-generated=true
+
 # Auto detect text files and perform LF normalization
 * text=auto
