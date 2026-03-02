@@ -5,7 +5,6 @@
  */
 
 import {ButtonView, IconImage, ImageInsertUI} from 'ckeditor5';
-import CraftEntriesCommand from '../../entries/entriescommand';
 
 export default class CraftImageInsertUI extends ImageInsertUI {
   static get pluginName() {
