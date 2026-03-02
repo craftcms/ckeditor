@@ -4,6 +4,13 @@ export default class CraftEntriesCommand extends Command {
   execute(options) {
     const editor = this.editor;
     const selection = editor.model.document.selection;
+    const hasSelection = !selection.isCollapsed && selection.getFirstRange();
+    if (hasSelection) {
+      const selectedElement = selection.getSelectedElement();
+      editor.execute('insertParagraph', {
+        position: editor.model.createPositionAfter(selectedElement),
+      });
+    }
 
     editor.model.change((writer) => {
       // Create a <craft-entry> element with the `data-entry-id` attribute
@@ -22,12 +29,6 @@ export default class CraftEntriesCommand extends Command {
   }
 
   refresh() {
-    const model = this.editor.model;
-    const selection = model.document.selection;
-
-    // disable craftEntries button if a selection is made in the editor
-    const hasSelection = !selection.isCollapsed && selection.getFirstRange();
-
-    this.isEnabled = !hasSelection;
+    this.isEnabled = true;
   }
 }

@@ -1,24 +1,4 @@
-import { Command as El, ImageInsertUI as au, ButtonView as gi, IconImage as su, Plugin as Hn, ImageUtils as Rc, Collection as na, ViewModel as yi, createDropdown as ra, DropdownButtonView as lu, IconObjectSizeMedium as cu, addListToDropdown as os, Widget as uu, viewToModelPositionOutsideModelElement as du, toWidget as pu, DomEventObserver as fu, View as Tr, IconPlus as Mc, WidgetToolbarRepository as Pc, isWidget as hu, findAttributeRange as mu, LinkUI as Dc, ContextualBalloon as gu, ModelRange as yu, SwitchButtonView as bu, LabeledFieldView as vu, createLabeledInputText as ku, ClassicEditor as wu, SourceEditing as zc, Heading as _u } from "ckeditor5";
-class Eu extends El {
-  execute(_) {
-    const E = this.editor, O = E.model.document.selection;
-    E.model.change((T) => {
-      const G = T.createElement("craftEntryModel", {
-        ...Object.fromEntries(O.getAttributes()),
-        cardHtml: _.cardHtml,
-        entryId: _.entryId,
-        siteId: _.siteId
-      });
-      E.model.insertObject(G, null, null, {
-        setSelection: "on"
-      });
-    });
-  }
-  refresh() {
-    const E = this.editor.model.document.selection, O = !E.isCollapsed && E.getFirstRange();
-    this.isEnabled = !O;
-  }
-}
+import { ImageInsertUI as au, ButtonView as gi, IconImage as su, Command as El, Plugin as Hn, ImageUtils as Rc, Collection as na, ViewModel as yi, createDropdown as ra, DropdownButtonView as lu, IconObjectSizeMedium as cu, addListToDropdown as os, Widget as uu, viewToModelPositionOutsideModelElement as du, toWidget as pu, DomEventObserver as fu, View as Tr, IconPlus as Mc, WidgetToolbarRepository as Pc, isWidget as hu, findAttributeRange as mu, LinkUI as Dc, ContextualBalloon as gu, ModelRange as yu, SwitchButtonView as bu, LabeledFieldView as vu, createLabeledInputText as ku, ClassicEditor as wu, SourceEditing as zc, Heading as _u } from "ckeditor5";
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -75,8 +55,8 @@ class Xu extends au {
   _createToolbarImageButton(_) {
     const E = this.editor, O = E.t, T = new gi(_);
     T.isEnabled = !0, T.label = O("Insert image"), T.icon = su, T.tooltip = !0;
-    const G = E.commands.get("insertImage");
-    return T.bind("isEnabled").to(G), this.listenTo(T, "execute", () => this._showImageSelectModal()), T;
+    const X = E.commands.get("insertImage");
+    return T.bind("isEnabled").to(X), this.listenTo(T, "execute", () => this._showImageSelectModal()), T;
   }
   _showImageSelectModal() {
     const _ = this._imageSources, E = this.editor, O = E.config, T = Object.assign({}, O.get("assetSelectionCriteria"), {
@@ -90,8 +70,8 @@ class Xu extends au {
       defaultSiteId: O.get("elementSiteId"),
       transforms: O.get("transforms"),
       autoFocusSearchBox: !1,
-      onSelect: (G, i) => {
-        this._processSelectedAssets(G, i).then(() => {
+      onSelect: (X, i) => {
+        this._processSelectedAssets(X, i).then(() => {
           E.editing.view.focus();
         });
       },
@@ -108,34 +88,34 @@ class Xu extends au {
       await this._createImageEntry(_.map((i) => i.id));
       return;
     }
-    const O = this.editor, T = O.config.get("defaultTransform"), G = [];
+    const O = this.editor, T = O.config.get("defaultTransform"), X = [];
     for (const i of _) {
       const u = this._isTransformUrl(i.url);
       if (!u && T) {
         const f = await this._getTransformUrl(i.id, T);
-        G.push(f);
+        X.push(f);
       } else {
         const f = this._buildAssetUrl(
           i.id,
           i.url,
           u ? E : T
         );
-        G.push(f);
+        X.push(f);
       }
     }
-    O.execute("insertImage", { source: G });
+    O.execute("insertImage", { source: X });
   }
   async _createImageEntry(_) {
     const E = this.editor, O = this._elementEditor, T = $(E.sourceElement).attr("name");
     O && T && await O.setFormValue(T, "*");
-    const G = E.config.get(
+    const X = E.config.get(
       "nestedElementAttributes"
     ), i = {
-      ...G,
+      ...X,
       typeId: this._imageEntryTypeId
     };
     O && (await O.markDeltaNameAsModified(E.sourceElement.name), i.ownerId = O.getDraftElementId(
-      G.ownerId
+      X.ownerId
     ));
     let u;
     try {
@@ -223,9 +203,9 @@ class Xu extends au {
       "drop",
       async (O, T) => {
         _.editing.view, _.model;
-        const G = _.editing.mapper, i = T.dropRange;
+        const X = _.editing.mapper, i = T.dropRange;
         if (i) {
-          const u = i.start, f = G.toModelPosition(u);
+          const u = i.start, f = X.toModelPosition(u);
           _.model.change((k) => {
             k.setSelection(f, 0);
           });
@@ -259,12 +239,12 @@ class Xu extends au {
       await this._createImageEntry([O.assetId]);
       return;
     }
-    const T = this.editor.config.get("defaultTransform"), G = this._isTransformUrl(O.url);
+    const T = this.editor.config.get("defaultTransform"), X = this._isTransformUrl(O.url);
     let i;
-    !G && T ? i = await this._getTransformUrl(O.assetId, T) : i = this._buildAssetUrl(
+    !X && T ? i = await this._getTransformUrl(O.assetId, T) : i = this._buildAssetUrl(
       O.assetId,
       O.url,
-      G ? transform : T
+      X ? transform : T
     ), this.editor.execute("insertImage", { source: i, breakBlock: !0 });
   }
   /**
@@ -273,11 +253,11 @@ class Xu extends au {
   _onUploadFailure(_, E = null) {
     var f, k;
     const O = _ instanceof CustomEvent ? _.detail : (f = E == null ? void 0 : E.jqXHR) == null ? void 0 : f.responseJSON;
-    let { message: T, filename: G, errors: i } = O || {};
-    G = G || ((k = E == null ? void 0 : E.files) == null ? void 0 : k[0].name);
+    let { message: T, filename: X, errors: i } = O || {};
+    X = X || ((k = E == null ? void 0 : E.files) == null ? void 0 : k[0].name);
     let u = i ? Object.values(i).flat() : [];
     T || (u.length ? T = u.join(`
-`) : G ? T = Craft.t("app", "Upload failed for “{filename}”.", { filename: G }) : T = Craft.t("app", "Upload failed.")), Craft.cp.displayError(T), this.progressBar.hideProgressBar(), this.$container.removeClass("uploading");
+`) : X ? T = Craft.t("app", "Upload failed for “{filename}”.", { filename: X }) : T = Craft.t("app", "Upload failed.")), Craft.cp.displayError(T), this.progressBar.hideProgressBar(), this.$container.removeClass("uploading");
   }
 }
 /**
@@ -285,7 +265,7 @@ class Xu extends au {
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license GPL-3.0-or-later
  */
-class xu extends El {
+class Eu extends El {
   refresh() {
     const _ = this._element(), E = this._srcInfo(_);
     this.isEnabled = !!E, E ? this.value = {
@@ -326,17 +306,17 @@ class xu extends El {
    * @fires execute
    */
   execute(_) {
-    const O = this.editor.model, T = this._element(), G = this._srcInfo(T);
+    const O = this.editor.model, T = this._element(), X = this._srcInfo(T);
     if (this.value = {
       transform: _.transform
-    }, G) {
-      const i = `#asset:${G.assetId}` + (_.transform ? `:transform:${_.transform}` : "");
+    }, X) {
+      const i = `#asset:${X.assetId}` + (_.transform ? `:transform:${_.transform}` : "");
       O.change((u) => {
-        const f = G.src.replace(/#.*/, "") + i;
+        const f = X.src.replace(/#.*/, "") + i;
         u.setAttribute("src", f, T);
       }), Craft.sendActionRequest("post", "ckeditor/ckeditor/image-url", {
         data: {
-          assetId: G.assetId,
+          assetId: X.assetId,
           transform: _.transform
         }
       }).then(({ data: u }) => {
@@ -364,7 +344,7 @@ class Ac extends Hn {
     super(_), _.config.define("transforms", []);
   }
   init() {
-    const _ = this.editor, E = new xu(_);
+    const _ = this.editor, E = new Eu(_);
     _.commands.add("transformImage", E);
   }
 }
@@ -373,8 +353,8 @@ class Ac extends Hn {
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license GPL-3.0-or-later
  */
-const Su = cu;
-class Cu extends Hn {
+const xu = cu;
+class Su extends Hn {
   static get requires() {
     return [Ac];
   }
@@ -395,7 +375,7 @@ class Cu extends Hn {
     const E = this.editor, O = E.t, T = {
       name: "transformImage:original",
       value: null
-    }, G = [
+    }, X = [
       T,
       ..._.map((u) => ({
         label: u.name,
@@ -407,7 +387,7 @@ class Cu extends Hn {
       return d.set({
         tooltip: O("Resize image"),
         commandValue: null,
-        icon: Su,
+        icon: xu,
         isToggleable: !0,
         label: this._getOptionLabelValue(T),
         withText: !0,
@@ -421,7 +401,7 @@ class Cu extends Hn {
         return m ? m.name : C.transform;
       }), k.bind("isEnabled").to(this), os(
         k,
-        () => this._getTransformDropdownListItemDefinitions(G, f),
+        () => this._getTransformDropdownListItemDefinitions(X, f),
         {
           ariaLabel: O("Image resize list")
         }
@@ -452,7 +432,7 @@ class Cu extends Hn {
   _getTransformDropdownListItemDefinitions(_, E) {
     const O = new na();
     return _.map((T) => {
-      const G = {
+      const X = {
         type: "button",
         model: new yi({
           commandName: "transformImage",
@@ -462,11 +442,11 @@ class Cu extends Hn {
           icon: null
         })
       };
-      G.model.bind("isOn").to(E, "value", Tu(T.value)), O.add(G);
+      X.model.bind("isOn").to(E, "value", Cu(T.value)), O.add(X);
     }), O;
   }
 }
-function Tu(Te) {
+function Cu(Te) {
   return (_) => {
     const E = _;
     return Te === null && E === Te ? !0 : E !== null && E.transform === Te;
@@ -479,7 +459,7 @@ function Tu(Te) {
  */
 class Gu extends Hn {
   static get requires() {
-    return [Ac, Cu];
+    return [Ac, Su];
   }
   static get pluginName() {
     return "ImageTransform";
@@ -490,7 +470,7 @@ class Gu extends Hn {
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license GPL-3.0-or-later
  */
-class Ou extends El {
+class Tu extends El {
   refresh() {
     const _ = this._element(), E = this._srcInfo(_);
     if (this.isEnabled = !!E, this.isEnabled) {
@@ -546,8 +526,8 @@ class Ou extends El {
       let T = {
         allowSavingAsNew: !1,
         // todo: we might want to change that, but currently we're doing the same functionality as in Redactor
-        onSave: (G) => {
-          this._reloadImage(O.assetId, G);
+        onSave: (X) => {
+          this._reloadImage(O.assetId, X);
         },
         allowDegreeFractions: Craft.isImagick
       };
@@ -593,11 +573,11 @@ class Ou extends El {
   _getAllImageAssets() {
     const E = this.editor.model, O = E.createRangeIn(E.document.getRoot());
     let T = [];
-    for (const G of O.getWalker({ ignoreElementEnd: !0 }))
-      if (G.item.is("element") && G.item.name === "imageBlock") {
-        let i = this._srcInfo(G.item);
+    for (const X of O.getWalker({ ignoreElementEnd: !0 }))
+      if (X.item.is("element") && X.item.name === "imageBlock") {
+        let i = this._srcInfo(X.item);
         i && T.push({
-          element: G.item,
+          element: X.item,
           srcInfo: i
         });
       }
@@ -617,7 +597,7 @@ class jc extends Hn {
     return "ImageEditorEditing";
   }
   init() {
-    const _ = this.editor, E = new Ou(_);
+    const _ = this.editor, E = new Tu(_);
     _.commands.add("imageEditor", E);
   }
 }
@@ -626,7 +606,7 @@ class jc extends Hn {
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license GPL-3.0-or-later
  */
-class Nu extends Hn {
+class Ou extends Hn {
   static get requires() {
     return [jc];
   }
@@ -642,13 +622,13 @@ class Nu extends Hn {
    */
   _registerImageEditorButton() {
     const _ = this.editor, E = _.t, O = _.commands.get("imageEditor"), T = () => {
-      const G = new gi();
-      return G.set({
+      const X = new gi();
+      return X.set({
         label: E("Edit Image"),
         withText: !0
-      }), G.bind("isEnabled").to(O), this.listenTo(G, "execute", (i) => {
+      }), X.bind("isEnabled").to(O), this.listenTo(X, "execute", (i) => {
         _.execute("imageEditor"), _.editing.view.focus();
-      }), G;
+      }), X;
     };
     _.ui.componentFactory.add("imageEditor", T);
   }
@@ -660,10 +640,35 @@ class Nu extends Hn {
  */
 class Zu extends Hn {
   static get requires() {
-    return [jc, Nu];
+    return [jc, Ou];
   }
   static get pluginName() {
     return "ImageEditor";
+  }
+}
+class Nu extends El {
+  execute(_) {
+    const E = this.editor, O = E.model.document.selection;
+    if (!O.isCollapsed && O.getFirstRange()) {
+      const X = O.getSelectedElement();
+      E.execute("insertParagraph", {
+        position: E.model.createPositionAfter(X)
+      });
+    }
+    E.model.change((X) => {
+      const i = X.createElement("craftEntryModel", {
+        ...Object.fromEntries(O.getAttributes()),
+        cardHtml: _.cardHtml,
+        entryId: _.entryId,
+        siteId: _.siteId
+      });
+      E.model.insertObject(i, null, null, {
+        setSelection: "on"
+      });
+    });
+  }
+  refresh() {
+    this.isEnabled = !0;
   }
 }
 class Pu extends Hn {
@@ -685,7 +690,7 @@ class Pu extends Hn {
   init() {
     this._defineSchema(), this._defineConverters();
     const _ = this.editor;
-    _.commands.add("insertEntry", new Eu(_)), _.editing.mapper.on(
+    _.commands.add("insertEntry", new Nu(_)), _.editing.mapper.on(
       "viewToModelPosition",
       du(_.model, (E) => {
         E.hasClass("cke-entry-card");
@@ -715,9 +720,9 @@ class Pu extends Hn {
         // has to be lower case
       },
       model: (O, { writer: T }) => {
-        const G = O.getAttribute("data-card-html"), i = O.getAttribute("data-entry-id"), u = O.getAttribute("data-site-id") ?? null;
+        const X = O.getAttribute("data-card-html"), i = O.getAttribute("data-entry-id"), u = O.getAttribute("data-site-id") ?? null;
         return T.createElement("craftEntryModel", {
-          cardHtml: G,
+          cardHtml: X,
           entryId: i,
           siteId: u
         });
@@ -725,9 +730,9 @@ class Pu extends Hn {
     }), _.for("editingDowncast").elementToElement({
       model: "craftEntryModel",
       view: (O, { writer: T }) => {
-        const G = O.getAttribute("entryId") ?? null, i = O.getAttribute("siteId") ?? null, u = T.createContainerElement("div", {
+        const X = O.getAttribute("entryId") ?? null, i = O.getAttribute("siteId") ?? null, u = T.createContainerElement("div", {
           class: "cke-entry-card",
-          "data-entry-id": G,
+          "data-entry-id": X,
           "data-site-id": i
         });
         return E(O, T, u), pu(u, T);
@@ -735,14 +740,14 @@ class Pu extends Hn {
     }), _.for("dataDowncast").elementToElement({
       model: "craftEntryModel",
       view: (O, { writer: T }) => {
-        const G = O.getAttribute("entryId") ?? null, i = O.getAttribute("siteId") ?? null;
+        const X = O.getAttribute("entryId") ?? null, i = O.getAttribute("siteId") ?? null;
         return T.createContainerElement("craft-entry", {
-          "data-entry-id": G,
+          "data-entry-id": X,
           "data-site-id": i
         });
       }
     });
-    const E = (O, T, G) => {
+    const E = (O, T, X) => {
       this._getCardHtml(O).then((i) => {
         const u = T.createRawElement(
           "div",
@@ -751,7 +756,7 @@ class Pu extends Hn {
             k.innerHTML = i.cardHtml, Craft.appendHeadHtml(i.headHtml), Craft.appendBodyHtml(i.bodyHtml);
           }
         );
-        T.insert(T.createPositionAt(G, 0), u);
+        T.insert(T.createPositionAt(X, 0), u);
         const f = this.editor;
         f.editing.view.focus(), setTimeout(() => {
           Craft.cp.elementThumbLoader.load($(f.ui.element));
@@ -774,7 +779,7 @@ class Pu extends Hn {
     const T = $(O[0]).data("layout-element");
     if (E)
       return { cardHtml: E };
-    const G = _.getAttribute("entryId") ?? null, i = _.getAttribute("siteId") ?? null;
+    const X = _.getAttribute("entryId") ?? null, i = _.getAttribute("siteId") ?? null;
     try {
       const d = this.editor, m = $(d.ui.view.element).closest(
         "form,.lp-editor-container"
@@ -785,7 +790,7 @@ class Pu extends Hn {
         "ckeditor/ckeditor/entry-card-html",
         {
           data: {
-            entryId: G,
+            entryId: X,
             siteId: i,
             layoutElementUid: T
           }
@@ -809,7 +814,7 @@ class Iu extends Tr {
   constructor(_, E = {}) {
     super(_), this.set("isFocused", !1), this.entriesUi = E.entriesUi, this.editor = this.entriesUi.editor, this.entryType = E.entryType;
     const O = this.editor.commands.get("insertEntry");
-    let T = new gi(), G = {
+    let T = new gi(), X = {
       commandValue: this.entryType.model.commandValue,
       //entry type id
       label: this.entryType.model.label,
@@ -818,7 +823,7 @@ class Iu extends Tr {
         type: this.entryType.model.label
       })
     }, i = ["btn", "ck-reset_all-excluded"];
-    this.entryType.model.icon && i.push(["icon", "cp-icon"]), G.class = i.join(" "), this.entryType.model.withIcon && (G.icon = this.entryType.model.icon), T.set(G), this.listenTo(T, "execute", (u) => {
+    this.entryType.model.icon && i.push(["icon", "cp-icon"]), X.class = i.join(" "), this.entryType.model.withIcon && (X.icon = this.entryType.model.icon), T.set(X), this.listenTo(T, "execute", (u) => {
       this.entriesUi._showCreateEntrySlideout(u.source.commandValue);
     }), T.bind("isEnabled").to(O), this.setTemplate({
       tag: "div",
@@ -838,9 +843,9 @@ class Ru extends Tr {
   constructor(_, E = {}) {
     super(_), this.bindTemplate, this.set("isFocused", !1), this.entriesUi = E.entriesUi, this.editor = this.entriesUi.editor;
     const O = E.entryTypes, T = this.editor.commands.get("insertEntry");
-    let G = new na();
+    let X = new na();
     O.forEach((u) => {
-      u.model.color && (u.model.class || (u.model.class = ""), u.model.class += "icon " + u.model.color), G.add(u);
+      u.model.color && (u.model.class || (u.model.class = ""), u.model.class += "icon " + u.model.color), X.add(u);
     });
     const i = ra(_);
     i.buttonView.set({
@@ -848,7 +853,7 @@ class Ru extends Tr {
       icon: Mc,
       tooltip: !0,
       withText: !1
-    }), i.bind("isEnabled").to(T), i.id = Craft.uuid(), os(i, () => G, {
+    }), i.bind("isEnabled").to(T), i.id = Craft.uuid(), os(i, () => X, {
       ariaLabel: Craft.t("ckeditor", "Entry types list")
     }), this.listenTo(i, "execute", (u) => {
       this.entriesUi._showCreateEntrySlideout(u.source.commandValue);
@@ -875,8 +880,8 @@ class Mu extends Tr {
       icon: Mc,
       tooltip: !0,
       withText: !1
-    }), T.bind("isEnabled").to(O), T.id = Craft.uuid(), this.listenTo(T, "execute", (G) => {
-      this.entriesUi._showCreateEntrySlideout(G.source.commandValue);
+    }), T.bind("isEnabled").to(O), T.id = Craft.uuid(), this.listenTo(T, "execute", (X) => {
+      this.entriesUi._showCreateEntrySlideout(X.source.commandValue);
     }), this.setTemplate({
       tag: "div",
       attributes: {
@@ -937,10 +942,10 @@ class zu extends Hn {
     const _ = this.editor.editing.view, E = _.document;
     _.addObserver(Du), this.editor.listenTo(E, "dblclick", (O, T) => {
       if (!this.editor.isReadOnly) {
-        const G = this.editor.editing.mapper.toModelElement(
+        const X = this.editor.editing.mapper.toModelElement(
           T.target.parent
         );
-        G.name === "craftEntryModel" && this._initEditEntrySlideout(T, G);
+        X.name === "craftEntryModel" && this._initEditEntrySlideout(T, X);
       }
     });
   }
@@ -969,7 +974,7 @@ class zu extends Hn {
       else {
         let O = this._getEntryTypeButtonsCollection(
           E ?? []
-        ), T = O.filter((i) => i.model.expanded), G = O.filter((i) => !i.model.expanded);
+        ), T = O.filter((i) => i.model.expanded), X = O.filter((i) => !i.model.expanded);
         T.forEach((i, u) => {
           this.editor.ui.componentFactory.add(
             `createEntry-${i.model.uid}`,
@@ -978,11 +983,11 @@ class zu extends Hn {
               entryType: i
             })
           );
-        }), G.length && this.editor.ui.componentFactory.add(
+        }), X.length && this.editor.ui.componentFactory.add(
           "createEntry",
           (i) => new Ru(this.editor.locale, {
             entriesUi: this,
-            entryTypes: G
+            entryTypes: X
           })
         );
       }
@@ -1063,7 +1068,7 @@ class zu extends Hn {
    * @private
    */
   _showEditEntrySlideout(_, E, O) {
-    const T = this.editor, G = T.model, i = this.getElementEditor();
+    const T = this.editor, X = T.model, i = this.getElementEditor();
     let u = this._getCardElement(_);
     const f = u.data("owner-id"), k = Craft.createElementEditor(this.elementType, null, {
       elementId: _,
@@ -1090,7 +1095,7 @@ class zu extends Hn {
       }
     });
     k.on("beforeClose", () => {
-      G.change((d) => {
+      X.change((d) => {
         d.setSelection(d.createPositionAfter(O)), T.editing.view.focus();
       });
     }), k.on("close", () => {
@@ -1105,7 +1110,7 @@ class zu extends Hn {
    */
   async _showCreateEntrySlideout(_) {
     var C, m;
-    const E = this.editor, O = E.model, G = O.document.selection.getFirstRange(), i = E.config.get(
+    const E = this.editor, O = E.model, X = O.document.selection.getFirstRange(), i = E.config.get(
       "nestedElementAttributes"
     ), u = Object.assign({}, i, {
       typeId: _
@@ -1144,7 +1149,7 @@ class zu extends Hn {
         b.setSelection(
           b.createPositionAt(
             E.model.document.getRoot(),
-            G.end.path[0]
+            X.end.path[0]
           )
         );
       }), E.editing.view.focus();
@@ -1188,12 +1193,12 @@ class ju extends Hn {
       _.for("downcast").attributeToElement({
         model: this.conversionData[E].model,
         view: (O, { writer: T }) => {
-          const G = T.createAttributeElement(
+          const X = T.createAttributeElement(
             "a",
             { [this.conversionData[E].view]: O },
             { priority: 5 }
           );
-          return T.setCustomProperty("link", !0, G), G;
+          return T.setCustomProperty("link", !0, X), X;
         }
       }), _.for("upcast").attributeToAttribute({
         view: {
@@ -1211,15 +1216,15 @@ class ju extends Hn {
     let O = !1;
     E.on(
       "execute",
-      (T, G) => {
+      (T, X) => {
         if (O) {
           O = !1;
           return;
         }
         T.stop(), O = !0;
-        const i = G[G.length - 1], u = _.model.document.selection;
+        const i = X[X.length - 1], u = _.model.document.selection;
         _.model.change((f) => {
-          _.execute("link", ...G);
+          _.execute("link", ...X);
           const k = u.getFirstPosition();
           this.conversionData.forEach((d) => {
             if (u.isCollapsed) {
@@ -1249,12 +1254,12 @@ class ju extends Hn {
   }
   _adjustUnlinkCommand() {
     const _ = this.editor, E = _.commands.get("unlink"), { model: O } = _, { selection: T } = O.document;
-    let G = !1;
+    let X = !1;
     E.on(
       "execute",
       (i) => {
-        G || (i.stop(), O.change(() => {
-          G = !0, _.execute("unlink"), G = !1, O.change((u) => {
+        X || (i.stop(), O.change(() => {
+          X = !0, _.execute("unlink"), X = !1, O.change((u) => {
             let f;
             this.conversionData.forEach((k) => {
               T.isCollapsed ? f = [
@@ -1332,7 +1337,7 @@ class Lu extends Tr {
         }
       }
     ).then((T) => {
-      var G;
+      var X;
       if (Object.keys(T.data.elements).length > 0) {
         if (Craft.isMultiSite && this.linkUi.sitesView != null)
           for (const [f, k] of Object.entries(
@@ -1358,7 +1363,7 @@ class Lu extends Tr {
           }
         ];
         Craft.addActionsToChip(i, u), _._alignFocus();
-      } else if (((G = this.linkUi.previousLinkValue) == null ? void 0 : G.length) > 0) {
+      } else if (((X = this.linkUi.previousLinkValue) == null ? void 0 : X.length) > 0) {
         const { formView: i } = this.linkUi._linkUI;
         i.urlInputView.fieldView.set(
           "value",
@@ -1371,8 +1376,8 @@ class Lu extends Tr {
           class: "btn add icon dashed"
         }), this.button.render(), this.element.innerHTML = this.button.element.outerHTML;
     }).catch((T) => {
-      var G, i, u, f;
-      throw Craft.cp.displayError((i = (G = T == null ? void 0 : T.response) == null ? void 0 : G.data) == null ? void 0 : i.message), ((f = (u = T == null ? void 0 : T.response) == null ? void 0 : u.data) == null ? void 0 : f.message) ?? T;
+      var X, i, u, f;
+      throw Craft.cp.displayError((i = (X = T == null ? void 0 : T.response) == null ? void 0 : X.data) == null ? void 0 : i.message), ((f = (u = T == null ? void 0 : T.response) == null ? void 0 : u.data) == null ? void 0 : f.message) ?? T;
     });
   }
 }
@@ -1431,17 +1436,17 @@ class Fu extends Tr {
         }
       ])
     ), this.siteDropdownView.on("execute", (T) => {
-      const G = this.linkUi._urlInputRefMatch(this.localizedRefHandleRE);
-      if (!G) {
+      const X = this.linkUi._urlInputRefMatch(this.localizedRefHandleRE);
+      if (!X) {
         console.warn(
           `No reference tag hash present in URL: ${this.linkUi._urlInputValue()}`
         );
         return;
       }
       const { siteId: i } = T.source;
-      let u = G[1];
+      let u = X[1];
       i && (u += `@${i}`), this.linkUi.previousLinkValue = this.linkUi._urlInputValue();
-      const f = this.linkUi._urlInputValue().replace(G[0], u);
+      const f = this.linkUi._urlInputValue().replace(X[0], u);
       _.urlInputView.fieldView.set("value", f), this._toggleSiteDropdownView();
     }), this.listenTo(O, "change:value", () => {
       this._toggleSiteDropdownView();
@@ -1501,8 +1506,8 @@ class Uu extends Tr {
     const { formView: E } = this.linkUi._linkUI;
     if (_.target.open) {
       const O = E._focusables.getIndex(this);
-      this.advancedChildren._items.forEach((T, G) => {
-        E._focusables.add(T, O + G + 1), E.focusTracker.add(T.element, O + G + 1);
+      this.advancedChildren._items.forEach((T, X) => {
+        E._focusables.add(T, O + X + 1), E.focusTracker.add(T.element, O + X + 1);
       });
     } else
       this.advancedChildren._items.forEach((O, T) => {
@@ -1535,9 +1540,9 @@ class Vu extends Hn {
       `(.+)(#((?:${E})):(\\d+))(?:@(\\d+))?`
     ), this._modifyFormViewTemplate(), this._balloon.on(
       "set:visibleView",
-      (O, T, G, i) => {
+      (O, T, X, i) => {
         const { formView: u } = this._linkUI;
-        G === i || G !== u || this._alignFocus();
+        X === i || X !== u || this._alignFocus();
       }
     );
   }
@@ -1596,8 +1601,8 @@ class Vu extends Hn {
       ])
     ), O.isEmpty && this._showLinkTypeForm("default"), this.linkTypeDropdownView.on("execute", (T) => {
       if (T.source.linkOption) {
-        const G = T.source.linkOption;
-        this._selectLinkTypeDropdownItem(G.refHandle), this._showLinkTypeForm(G, _);
+        const X = T.source.linkOption;
+        this._selectLinkTypeDropdownItem(X.refHandle), this._showLinkTypeForm(X, _);
       } else
         this._selectLinkTypeDropdownItem("default"), this._showLinkTypeForm("default");
     }), this.listenTo(O, "change:value", () => {
@@ -1677,8 +1682,8 @@ class Vu extends Hn {
    */
   _showLinkTypeForm(_) {
     var u, f, k, d;
-    const { formView: E } = this._linkUI, { children: O } = E, { urlInputView: T } = E, { displayedTextInputView: G } = E;
-    G.focus(), this.linkTypeWrapperView !== null && O.remove(this.linkTypeWrapperView), _ === "default" ? (this.elementInputView = T, this.sitesView !== null && (f = (u = this.sitesView) == null ? void 0 : u.siteDropdownView) != null && f.buttonView && this.sitesView.siteDropdownView.buttonView.set("isVisible", !1)) : (this.elementInputView = new Lu(E.locale, {
+    const { formView: E } = this._linkUI, { children: O } = E, { urlInputView: T } = E, { displayedTextInputView: X } = E;
+    X.focus(), this.linkTypeWrapperView !== null && O.remove(this.linkTypeWrapperView), _ === "default" ? (this.elementInputView = T, this.sitesView !== null && (f = (u = this.sitesView) == null ? void 0 : u.siteDropdownView) != null && f.buttonView && this.sitesView.siteDropdownView.buttonView.set("isVisible", !1)) : (this.elementInputView = new Lu(E.locale, {
       linkUi: this,
       linkOption: _,
       value: this._urlInputValue()
@@ -1717,8 +1722,8 @@ class Vu extends Hn {
    * Show element selector modal for given element type (link option).
    */
   _showElementSelectorModal(_) {
-    const E = this.editor, O = E.model, T = O.document.selection, G = T.isCollapsed, i = T.getFirstRange(), u = this._linkUI._getSelectedLinkElement(), f = () => {
-      E.editing.view.focus(), !G && i && O.change((k) => {
+    const E = this.editor, O = E.model, T = O.document.selection, X = T.isCollapsed, i = T.getFirstRange(), u = this._linkUI._getSelectedLinkElement(), f = () => {
+      E.editing.view.focus(), !X && i && O.change((k) => {
         k.setSelection(i);
       }), this._linkUI._hideFakeVisualSelection();
     };
@@ -1731,7 +1736,7 @@ class Vu extends Hn {
       onSelect: (k) => {
         if (k.length) {
           const d = k[0], C = `${d.url}#${_.refHandle}:${d.id}@${d.siteId}`;
-          if (E.editing.view.focus(), (!G || u) && i) {
+          if (E.editing.view.focus(), (!X || u) && i) {
             O.change((v) => {
               v.setSelection(i);
             });
@@ -1783,24 +1788,24 @@ class Vu extends Hn {
     this.advancedView = new Uu(E.locale, {
       linkUi: this
     }), O.add(this.advancedView, 3);
-    for (const G of this.advancedLinkFields) {
-      let i = (T = G.conversion) == null ? void 0 : T.model;
+    for (const X of this.advancedLinkFields) {
+      let i = (T = X.conversion) == null ? void 0 : T.model;
       if (i && typeof E[i] > "u")
-        if (G.conversion.type === "bool") {
+        if (X.conversion.type === "bool") {
           const u = new bu();
           u.set({
             withText: !0,
-            label: G.label,
+            label: X.label,
             isToggleable: !0
-          }), G.tooltip && (u.tooltip = G.tooltip), this.advancedView.advancedChildren.add(u), E[i] = u, E[i].bind("isOn").to(_, i, (f) => f === void 0 ? (E[i].element.value = "", !1) : (E[i].element.value = G.conversion.value, !0)), u.on("execute", () => {
-            u.isOn ? (u.isOn = !1, E[i].element.value = "") : (u.isOn = !0, E[i].element.value = G.conversion.value);
+          }), X.tooltip && (u.tooltip = X.tooltip), this.advancedView.advancedChildren.add(u), E[i] = u, E[i].bind("isOn").to(_, i, (f) => f === void 0 ? (E[i].element.value = "", !1) : (E[i].element.value = X.conversion.value, !0)), u.on("execute", () => {
+            u.isOn ? (u.isOn = !1, E[i].element.value = "") : (u.isOn = !0, E[i].element.value = X.conversion.value);
           });
         } else {
-          let u = this._addLabeledField(G);
+          let u = this._addLabeledField(X);
           E[i] = u, E[i].fieldView.bind("value").to(_, i), E[i].fieldView.element.value = _[i] || "";
         }
-      else if (G.value === "urlSuffix") {
-        let u = this._addLabeledField(G);
+      else if (X.value === "urlSuffix") {
+        let u = this._addLabeledField(X);
         this.listenTo(
           u.fieldView,
           "change:isFocused",
@@ -1862,7 +1867,7 @@ class Vu extends Hn {
       let T = null;
       O ? T = O[1] : T = this._urlInputValue();
       try {
-        let G = new URL(T), i = G.search, u = G.hash;
+        let X = new URL(T), i = X.search, u = X.hash;
         _.fieldView.set("value", i + u);
       } catch {
         let [i, u] = T.split("#"), [f, k] = i.split("?");
@@ -1881,7 +1886,7 @@ class Vu extends Hn {
         let T = this._getAdvancedFieldValues();
         E.once(
           "execute",
-          (G, i) => {
+          (X, i) => {
             i.length === 4 ? Object.assign(i[3], T) : i.push(T);
           },
           { priority: "highest" }
@@ -2232,18 +2237,18 @@ https://fb.me/react-async-component-lifecycle-hooks`);
         var ge = (function(S) {
           function j() {
             var A, ae, Z;
-            (function(X, le) {
-              if (!(X instanceof le)) throw new TypeError("Cannot call a class as a function");
+            (function(G, le) {
+              if (!(G instanceof le)) throw new TypeError("Cannot call a class as a function");
             })(this, j);
             for (var Ee = arguments.length, J = Array(Ee), U = 0; U < Ee; U++) J[U] = arguments[U];
             return ae = Z = R(this, (A = j.__proto__ || Object.getPrototypeOf(j)).call.apply(A, [this].concat(J))), Z.removePortal = function() {
               !ne && b.default.unmountComponentAtNode(Z.node);
-              var X = fe(Z.props.parentSelector);
-              X && X.contains(Z.node) ? X.removeChild(Z.node) : console.warn('React-Modal: "parentSelector" prop did not returned any DOM element. Make sure that the parent element is unmounted to avoid any memory leaks.');
-            }, Z.portalRef = function(X) {
-              Z.portal = X;
-            }, Z.renderPortal = function(X) {
-              var le = oe()(Z, m.default.createElement(N.default, k({ defaultStyles: j.defaultStyles }, X)), Z.node);
+              var G = fe(Z.props.parentSelector);
+              G && G.contains(Z.node) ? G.removeChild(Z.node) : console.warn('React-Modal: "parentSelector" prop did not returned any DOM element. Make sure that the parent element is unmounted to avoid any memory leaks.');
+            }, Z.portalRef = function(G) {
+              Z.portal = G;
+            }, Z.renderPortal = function(G) {
+              var le = oe()(Z, m.default.createElement(N.default, k({ defaultStyles: j.defaultStyles }, G)), Z.node);
               Z.portalRef(le);
             }, R(Z, ae);
           }
@@ -2258,8 +2263,8 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             if (D.canUseDOM) {
               var Ee = this.props, J = Ee.isOpen, U = Ee.portalClassName;
               A.portalClassName !== U && (this.node.className = U);
-              var X = Z.prevParent, le = Z.nextParent;
-              le !== X && (X.removeChild(this.node), le.appendChild(this.node)), (A.isOpen || J) && !ne && this.renderPortal(this.props);
+              var G = Z.prevParent, le = Z.nextParent;
+              le !== G && (G.removeChild(this.node), le.appendChild(this.node)), (A.isOpen || J) && !ne && this.renderPortal(this.props);
             }
           } }, { key: "componentWillUnmount", value: function() {
             if (D.canUseDOM && this.node && this.portal) {
@@ -2433,7 +2438,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
           n && oe();
         }
         var Z = !(typeof window > "u" || window.document === void 0 || window.document.createElement === void 0), Ee = null, J = null, U = null;
-        function X(e) {
+        function G(e) {
           if (e = R(e)) {
             if (typeof Ee != "function") throw Error(m(280));
             var t = e.stateNode;
@@ -2446,7 +2451,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
         function me() {
           if (J) {
             var e = J, t = U;
-            if (U = J = null, X(e), t) for (e = 0; e < t.length; e++) X(t[e]);
+            if (U = J = null, G(e), t) for (e = 0; e < t.length; e++) G(t[e]);
           }
         }
         function ke(e, t) {
@@ -6871,7 +6876,7 @@ ${D}`).join(`
           return typeof P == "object" && P !== null && P.$$typeof === C;
         }
         var J = /\/+/g, U = [];
-        function X(P, te, we, Se) {
+        function G(P, te, we, Se) {
           if (U.length) {
             var Pe = U.pop();
             return Pe.result = P, Pe.keyPrefix = te, Pe.func = we, Pe.context = Se, Pe.count = 0, Pe;
@@ -6931,7 +6936,7 @@ ${D}`).join(`
         }
         function Le(P, te, we, Se, Pe) {
           var _e = "";
-          we != null && (_e = ("" + we).replace(J, "$&/") + "/"), ke(P, Ae, te = X(te, _e, Se, Pe)), le(te);
+          we != null && (_e = ("" + we).replace(J, "$&/") + "/"), ke(P, Ae, te = G(te, _e, Se, Pe)), le(te);
         }
         var Ke = { current: null };
         function Je() {
@@ -6946,7 +6951,7 @@ ${D}`).join(`
           return Le(P, Se, null, te, we), Se;
         }, forEach: function(P, te, we) {
           if (P == null) return P;
-          ke(P, Ue, te = X(null, null, te, we)), le(te);
+          ke(P, Ue, te = G(null, null, te, we)), le(te);
         }, count: function(P) {
           return ke(P, function() {
             return null;
@@ -7069,12 +7074,12 @@ ${D}`).join(`
           if (J === null || ee(J) !== "object" && typeof J != "function") return { default: J };
           var U = se();
           if (U && U.has(J)) return U.get(J);
-          var X = {}, le = Object.defineProperty && Object.getOwnPropertyDescriptor;
+          var G = {}, le = Object.defineProperty && Object.getOwnPropertyDescriptor;
           for (var me in J) if (Object.prototype.hasOwnProperty.call(J, me)) {
             var ke = le ? Object.getOwnPropertyDescriptor(J, me) : null;
-            ke && (ke.get || ke.set) ? Object.defineProperty(X, me, ke) : X[me] = J[me];
+            ke && (ke.get || ke.set) ? Object.defineProperty(G, me, ke) : G[me] = J[me];
           }
-          return X.default = J, U && U.set(J, X), X;
+          return G.default = J, U && U.set(J, G), G;
         })(f(6540)), d = L(f(5556)), C = L(f(961)), m = L(f(6942)), b = f(1089), v = f(1726), N = f(7056), I = L(f(6888)), D = L(f(8696));
         function L(J) {
           return J && J.__esModule ? J : { default: J };
@@ -7096,15 +7101,15 @@ ${D}`).join(`
         function R() {
           return R = Object.assign || function(J) {
             for (var U = 1; U < arguments.length; U++) {
-              var X = arguments[U];
-              for (var le in X) Object.prototype.hasOwnProperty.call(X, le) && (J[le] = X[le]);
+              var G = arguments[U];
+              for (var le in G) Object.prototype.hasOwnProperty.call(G, le) && (J[le] = G[le]);
             }
             return J;
           }, R.apply(this, arguments);
         }
         function F(J, U) {
           if (J == null) return {};
-          var X, le, me = (function(Ne, Ue) {
+          var G, le, me = (function(Ne, Ue) {
             if (Ne == null) return {};
             var Ae, Le, Ke = {}, Je = Object.keys(Ne);
             for (Le = 0; Le < Je.length; Le++) Ae = Je[Le], Ue.indexOf(Ae) >= 0 || (Ke[Ae] = Ne[Ae]);
@@ -7112,18 +7117,18 @@ ${D}`).join(`
           })(J, U);
           if (Object.getOwnPropertySymbols) {
             var ke = Object.getOwnPropertySymbols(J);
-            for (le = 0; le < ke.length; le++) X = ke[le], U.indexOf(X) >= 0 || Object.prototype.propertyIsEnumerable.call(J, X) && (me[X] = J[X]);
+            for (le = 0; le < ke.length; le++) G = ke[le], U.indexOf(G) >= 0 || Object.prototype.propertyIsEnumerable.call(J, G) && (me[G] = J[G]);
           }
           return me;
         }
         function H(J, U) {
-          return (function(X) {
-            if (Array.isArray(X)) return X;
-          })(J) || (function(X, le) {
-            if (!(typeof Symbol > "u" || !(Symbol.iterator in Object(X)))) {
+          return (function(G) {
+            if (Array.isArray(G)) return G;
+          })(J) || (function(G, le) {
+            if (!(typeof Symbol > "u" || !(Symbol.iterator in Object(G)))) {
               var me = [], ke = !0, Ne = !1, Ue = void 0;
               try {
-                for (var Ae, Le = X[Symbol.iterator](); !(ke = (Ae = Le.next()).done) && (me.push(Ae.value), !le || me.length !== le); ke = !0) ;
+                for (var Ae, Le = G[Symbol.iterator](); !(ke = (Ae = Le.next()).done) && (me.push(Ae.value), !le || me.length !== le); ke = !0) ;
               } catch (Ke) {
                 Ne = !0, Ue = Ke;
               } finally {
@@ -7135,12 +7140,12 @@ ${D}`).join(`
               }
               return me;
             }
-          })(J, U) || (function(X, le) {
-            if (X) {
-              if (typeof X == "string") return ne(X, le);
-              var me = Object.prototype.toString.call(X).slice(8, -1);
-              if (me === "Object" && X.constructor && (me = X.constructor.name), me === "Map" || me === "Set") return Array.from(X);
-              if (me === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(me)) return ne(X, le);
+          })(J, U) || (function(G, le) {
+            if (G) {
+              if (typeof G == "string") return ne(G, le);
+              var me = Object.prototype.toString.call(G).slice(8, -1);
+              if (me === "Object" && G.constructor && (me = G.constructor.name), me === "Map" || me === "Set") return Array.from(G);
+              if (me === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(me)) return ne(G, le);
             }
           })(J, U) || (function() {
             throw new TypeError(`Invalid attempt to destructure non-iterable instance.
@@ -7149,42 +7154,42 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         }
         function ne(J, U) {
           (U == null || U > J.length) && (U = J.length);
-          for (var X = 0, le = new Array(U); X < U; X++) le[X] = J[X];
+          for (var G = 0, le = new Array(U); G < U; G++) le[G] = J[G];
           return le;
         }
         function pe(J, U) {
-          var X = Object.keys(J);
+          var G = Object.keys(J);
           if (Object.getOwnPropertySymbols) {
             var le = Object.getOwnPropertySymbols(J);
             U && (le = le.filter(function(me) {
               return Object.getOwnPropertyDescriptor(J, me).enumerable;
-            })), X.push.apply(X, le);
+            })), G.push.apply(G, le);
           }
-          return X;
+          return G;
         }
         function oe(J) {
           for (var U = 1; U < arguments.length; U++) {
-            var X = arguments[U] != null ? arguments[U] : {};
-            U % 2 ? pe(Object(X), !0).forEach(function(le) {
-              Z(J, le, X[le]);
-            }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(J, Object.getOwnPropertyDescriptors(X)) : pe(Object(X)).forEach(function(le) {
-              Object.defineProperty(J, le, Object.getOwnPropertyDescriptor(X, le));
+            var G = arguments[U] != null ? arguments[U] : {};
+            U % 2 ? pe(Object(G), !0).forEach(function(le) {
+              Z(J, le, G[le]);
+            }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(J, Object.getOwnPropertyDescriptors(G)) : pe(Object(G)).forEach(function(le) {
+              Object.defineProperty(J, le, Object.getOwnPropertyDescriptor(G, le));
             });
           }
           return J;
         }
         function fe(J, U) {
-          for (var X = 0; X < U.length; X++) {
-            var le = U[X];
+          for (var G = 0; G < U.length; G++) {
+            var le = U[G];
             le.enumerable = le.enumerable || !1, le.configurable = !0, "value" in le && (le.writable = !0), Object.defineProperty(J, le.key, le);
           }
         }
-        function ge(J, U, X) {
-          return U && fe(J.prototype, U), X && fe(J, X), J;
+        function ge(J, U, G) {
+          return U && fe(J.prototype, U), G && fe(J, G), J;
         }
         function S(J, U) {
-          return S = Object.setPrototypeOf || function(X, le) {
-            return X.__proto__ = le, X;
+          return S = Object.setPrototypeOf || function(G, le) {
+            return G.__proto__ = le, G;
           }, S(J, U);
         }
         function j(J) {
@@ -7199,14 +7204,14 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             }
           })();
           return function() {
-            var X, le = ae(J);
+            var G, le = ae(J);
             if (U) {
               var me = ae(this).constructor;
-              X = Reflect.construct(le, arguments, me);
-            } else X = le.apply(this, arguments);
+              G = Reflect.construct(le, arguments, me);
+            } else G = le.apply(this, arguments);
             return (function(ke, Ne) {
               return Ne && (ee(Ne) === "object" || typeof Ne == "function") ? Ne : A(ke);
-            })(this, X);
+            })(this, G);
           };
         }
         function A(J) {
@@ -7218,20 +7223,20 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             return U.__proto__ || Object.getPrototypeOf(U);
           }, ae(J);
         }
-        function Z(J, U, X) {
-          return U in J ? Object.defineProperty(J, U, { value: X, enumerable: !0, configurable: !0, writable: !0 }) : J[U] = X, J;
+        function Z(J, U, G) {
+          return U in J ? Object.defineProperty(J, U, { value: G, enumerable: !0, configurable: !0, writable: !0 }) : J[U] = G, J;
         }
         var Ee = (function(J) {
           (function(le, me) {
             if (typeof me != "function" && me !== null) throw new TypeError("Super expression must either be null or a function");
             le.prototype = Object.create(me && me.prototype, { constructor: { value: le, writable: !0, configurable: !0 } }), me && S(le, me);
-          })(X, J);
-          var U = j(X);
-          function X(le) {
+          })(G, J);
+          var U = j(G);
+          function G(le) {
             var me;
             return (function(ke, Ne) {
               if (!(ke instanceof Ne)) throw new TypeError("Cannot call a class as a function");
-            })(this, X), Z(A(me = U.call(this, le)), "onDragStart", function(ke, Ne) {
+            })(this, G), Z(A(me = U.call(this, le)), "onDragStart", function(ke, Ne) {
               if ((0, D.default)("Draggable: onDragStart: %j", Ne), me.props.onStart(ke, (0, v.createDraggableData)(A(me), Ne)) === !1) return !1;
               me.setState({ dragging: !0, dragged: !0 });
             }), Z(A(me), "onDrag", function(ke, Ne) {
@@ -7257,10 +7262,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               me.setState(Ue);
             }), me.state = { dragging: !1, dragged: !1, x: le.position ? le.position.x : le.defaultPosition.x, y: le.position ? le.position.y : le.defaultPosition.y, prevPropsPosition: oe({}, le.position), slackX: 0, slackY: 0, isElementSVG: !1 }, !le.position || le.onDrag || le.onStop || console.warn("A `position` was applied to this <Draggable>, without drag handlers. This will make this component effectively undraggable. Please attach `onDrag` or `onStop` handlers so you can adjust the `position` of this element."), me;
           }
-          return ge(X, null, [{ key: "getDerivedStateFromProps", value: function(le, me) {
+          return ge(G, null, [{ key: "getDerivedStateFromProps", value: function(le, me) {
             var ke = le.position, Ne = me.prevPropsPosition;
             return !ke || Ne && ke.x === Ne.x && ke.y === Ne.y ? null : ((0, D.default)("Draggable: getDerivedStateFromProps %j", { position: ke, prevPropsPosition: Ne }), { x: ke.x, y: ke.y, prevPropsPosition: oe({}, ke) });
-          } }]), ge(X, [{ key: "componentDidMount", value: function() {
+          } }]), ge(G, [{ key: "componentDidMount", value: function() {
             window.SVGElement !== void 0 && this.findDOMNode() instanceof window.SVGElement && this.setState({ isElementSVG: !0 });
           } }, { key: "componentWillUnmount", value: function() {
             this.setState({ dragging: !1 });
@@ -7271,7 +7276,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             this.state.isElementSVG ? te = (0, b.createSVGTransform)(Pe, Je) : P = (0, b.createCSSTransform)(Pe, Je);
             var _e = (0, m.default)(ke.props.className || "", Ue, (Z(le = {}, Ae, this.state.dragging), Z(le, Le, this.state.dragged), le));
             return k.createElement(I.default, R({}, ye, { onStart: this.onDragStart, onDrag: this.onDrag, onStop: this.onDragStop }), k.cloneElement(k.Children.only(ke), { className: _e, style: oe(oe({}, ke.props.style), P), transform: te }));
-          } }]), X;
+          } }]), G;
         })(k.Component);
         u.default = Ee, Z(Ee, "displayName", "Draggable"), Z(Ee, "propTypes", oe(oe({}, I.default.propTypes), {}, { axis: d.default.oneOf(["both", "x", "y", "none"]), bounds: d.default.oneOfType([d.default.shape({ left: d.default.number, right: d.default.number, top: d.default.number, bottom: d.default.number }), d.default.string, d.default.oneOf([!1])]), defaultClassName: d.default.string, defaultClassNameDragging: d.default.string, defaultClassNameDragged: d.default.string, defaultPosition: d.default.shape({ x: d.default.number, y: d.default.number }), positionOffset: d.default.shape({ x: d.default.oneOfType([d.default.number, d.default.string]), y: d.default.oneOfType([d.default.number, d.default.string]) }), position: d.default.shape({ x: d.default.number, y: d.default.number }), className: N.dontSetMe, style: N.dontSetMe, transform: N.dontSetMe })), Z(Ee, "defaultProps", oe(oe({}, I.default.defaultProps), {}, { axis: "both", bounds: !1, defaultClassName: "react-draggable", defaultClassNameDragging: "react-draggable-dragging", defaultClassNameDragged: "react-draggable-dragged", defaultPosition: { x: 0, y: 0 }, position: null, scale: 1 }));
       }, 6314: (i) => {
@@ -7419,16 +7424,16 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             if (Array.isArray(Z)) return Z;
           })(A) || (function(Z, Ee) {
             if (!(typeof Symbol > "u" || !(Symbol.iterator in Object(Z)))) {
-              var J = [], U = !0, X = !1, le = void 0;
+              var J = [], U = !0, G = !1, le = void 0;
               try {
                 for (var me, ke = Z[Symbol.iterator](); !(U = (me = ke.next()).done) && (J.push(me.value), !Ee || J.length !== Ee); U = !0) ;
               } catch (Ne) {
-                X = !0, le = Ne;
+                G = !0, le = Ne;
               } finally {
                 try {
                   U || ke.return == null || ke.return();
                 } finally {
-                  if (X) throw le;
+                  if (G) throw le;
                 }
               }
               return J;
@@ -7478,8 +7483,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               var J = pe(this).constructor;
               Z = Reflect.construct(Ee, arguments, J);
             } else Z = Ee.apply(this, arguments);
-            return (function(U, X) {
-              return X && (L(X) === "object" || typeof X == "function") ? X : ne(U);
+            return (function(U, G) {
+              return G && (L(G) === "object" || typeof G == "function") ? G : ne(U);
             })(this, Z);
           };
         }
@@ -7496,9 +7501,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           return ae in A ? Object.defineProperty(A, ae, { value: Z, enumerable: !0, configurable: !0, writable: !0 }) : A[ae] = Z, A;
         }
         var fe = { start: "touchstart", move: "touchmove", stop: "touchend" }, ge = { start: "mousedown", move: "mousemove", stop: "mouseup" }, S = ge, j = (function(A) {
-          (function(U, X) {
-            if (typeof X != "function" && X !== null) throw new TypeError("Super expression must either be null or a function");
-            U.prototype = Object.create(X && X.prototype, { constructor: { value: U, writable: !0, configurable: !0 } }), X && F(U, X);
+          (function(U, G) {
+            if (typeof G != "function" && G !== null) throw new TypeError("Super expression must either be null or a function");
+            U.prototype = Object.create(G && G.prototype, { constructor: { value: U, writable: !0, configurable: !0 } }), G && F(U, G);
           })(J, A);
           var ae, Z, Ee = H(J);
           function J() {
@@ -7506,7 +7511,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             (function(ke, Ne) {
               if (!(ke instanceof Ne)) throw new TypeError("Cannot call a class as a function");
             })(this, J);
-            for (var X = arguments.length, le = new Array(X), me = 0; me < X; me++) le[me] = arguments[me];
+            for (var G = arguments.length, le = new Array(G), me = 0; me < G; me++) le[me] = arguments[me];
             return oe(ne(U = Ee.call.apply(Ee, [this].concat(le))), "state", { dragging: !1, lastX: NaN, lastY: NaN, touchIdentifier: null }), oe(ne(U), "mounted", !1), oe(ne(U), "handleDragStart", function(ke) {
               if (U.props.onMouseDown(ke), !U.props.allowAnyClick && typeof ke.button == "number" && ke.button !== 0) return !1;
               var Ne = U.findDOMNode();
@@ -7568,8 +7573,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             this.mounted = !1;
             var U = this.findDOMNode();
             if (U) {
-              var X = U.ownerDocument;
-              (0, m.removeEvent)(X, ge.move, this.handleDrag), (0, m.removeEvent)(X, fe.move, this.handleDrag), (0, m.removeEvent)(X, ge.stop, this.handleDragStop), (0, m.removeEvent)(X, fe.stop, this.handleDragStop), (0, m.removeEvent)(U, fe.start, this.onTouchStart, { passive: !1 }), this.props.enableUserSelectHack && (0, m.removeUserSelectStyles)(X);
+              var G = U.ownerDocument;
+              (0, m.removeEvent)(G, ge.move, this.handleDrag), (0, m.removeEvent)(G, fe.move, this.handleDrag), (0, m.removeEvent)(G, ge.stop, this.handleDragStop), (0, m.removeEvent)(G, fe.stop, this.handleDragStop), (0, m.removeEvent)(U, fe.start, this.onTouchStart, { passive: !1 }), this.props.enableUserSelectHack && (0, m.removeUserSelectStyles)(G);
             }
           } }, { key: "findDOMNode", value: function() {
             return this.props.nodeRef ? this.props.nodeRef.current : C.default.findDOMNode(this);
@@ -7768,7 +7773,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           var te = ye.sortIndex - P.sortIndex;
           return te !== 0 ? te : ye.id - P.id;
         }
-        var Ee = [], J = [], U = 1, X = null, le = 3, me = !1, ke = !1, Ne = !1;
+        var Ee = [], J = [], U = 1, G = null, le = 3, me = !1, ke = !1, Ne = !1;
         function Ue(ye) {
           for (var P = A(J); P !== null; ) {
             if (P.callback === null) ae(J);
@@ -7790,23 +7795,23 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           ke = !1, Ne && (Ne = !1, d()), me = !0;
           var te = le;
           try {
-            for (Ue(P), X = A(Ee); X !== null && (!(X.expirationTime > P) || ye && !C()); ) {
-              var we = X.callback;
+            for (Ue(P), G = A(Ee); G !== null && (!(G.expirationTime > P) || ye && !C()); ) {
+              var we = G.callback;
               if (we !== null) {
-                X.callback = null, le = X.priorityLevel;
-                var Se = we(X.expirationTime <= P);
-                P = u.unstable_now(), typeof Se == "function" ? X.callback = Se : X === A(Ee) && ae(Ee), Ue(P);
+                G.callback = null, le = G.priorityLevel;
+                var Se = we(G.expirationTime <= P);
+                P = u.unstable_now(), typeof Se == "function" ? G.callback = Se : G === A(Ee) && ae(Ee), Ue(P);
               } else ae(Ee);
-              X = A(Ee);
+              G = A(Ee);
             }
-            if (X !== null) var Pe = !0;
+            if (G !== null) var Pe = !0;
             else {
               var _e = A(J);
               _e !== null && k(Ae, _e.startTime - P), Pe = !1;
             }
             return Pe;
           } finally {
-            X = null, le = te, me = !1;
+            G = null, le = te, me = !1;
           }
         }
         function Ke(ye) {
@@ -7879,7 +7884,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           var ye = u.unstable_now();
           Ue(ye);
           var P = A(Ee);
-          return P !== X && X !== null && P !== null && P.callback !== null && P.startTime <= ye && P.expirationTime < X.expirationTime || C();
+          return P !== G && G !== null && P !== null && P.callback !== null && P.startTime <= ye && P.expirationTime < G.expirationTime || C();
         }, u.unstable_wrapCallback = function(ye) {
           var P = le;
           return function() {
@@ -8006,9 +8011,9 @@ ${N}`);
         i = f.nmd(i);
         var k = "__lodash_hash_undefined__", d = 9007199254740991, C = "[object Arguments]", m = "[object Array]", b = "[object Boolean]", v = "[object Date]", N = "[object Error]", I = "[object Function]", D = "[object Map]", L = "[object Number]", se = "[object Object]", ee = "[object Promise]", R = "[object RegExp]", F = "[object Set]", H = "[object String]", ne = "[object Symbol]", pe = "[object WeakMap]", oe = "[object ArrayBuffer]", fe = "[object DataView]", ge = /^\[object .+?Constructor\]$/, S = /^(?:0|[1-9]\d*)$/, j = {};
         j["[object Float32Array]"] = j["[object Float64Array]"] = j["[object Int8Array]"] = j["[object Int16Array]"] = j["[object Int32Array]"] = j["[object Uint8Array]"] = j["[object Uint8ClampedArray]"] = j["[object Uint16Array]"] = j["[object Uint32Array]"] = !0, j[C] = j[m] = j[oe] = j[b] = j[fe] = j[v] = j[N] = j[I] = j[D] = j[L] = j[se] = j[R] = j[F] = j[H] = j[pe] = !1;
-        var A = typeof f.g == "object" && f.g && f.g.Object === Object && f.g, ae = typeof self == "object" && self && self.Object === Object && self, Z = A || ae || Function("return this")(), Ee = u && !u.nodeType && u, J = Ee && i && !i.nodeType && i, U = J && J.exports === Ee, X = U && A.process, le = (function() {
+        var A = typeof f.g == "object" && f.g && f.g.Object === Object && f.g, ae = typeof self == "object" && self && self.Object === Object && self, Z = A || ae || Function("return this")(), Ee = u && !u.nodeType && u, J = Ee && i && !i.nodeType && i, U = J && J.exports === Ee, G = U && A.process, le = (function() {
           try {
-            return X && X.binding && X.binding("util");
+            return G && G.binding && G.binding("util");
           } catch {
           }
         })(), me = le && le.isTypedArray;
@@ -8575,7 +8580,7 @@ ${k}`);
           } }, { key: "render", value: function() {
             var ge = this.props, S = ge.id, j = ge.className, A = ge.overlayClassName, ae = ge.defaultStyles, Z = ge.children, Ee = j ? {} : ae.content, J = A ? {} : ae.overlay;
             if (this.shouldBeClosed()) return null;
-            var U = { ref: this.setOverlayRef, className: this.buildClassName("overlay", A), style: k({}, J, this.props.style.overlay), onClick: this.handleOverlayOnClick, onMouseDown: this.handleOverlayOnMouseDown }, X = k({ id: S, ref: this.setContentRef, style: k({}, Ee, this.props.style.content), className: this.buildClassName("content", j), tabIndex: "-1", onKeyDown: this.handleKeyDown, onMouseDown: this.handleContentOnMouseDown, onMouseUp: this.handleContentOnMouseUp, onClick: this.handleContentOnClick, role: this.props.role, "aria-label": this.props.contentLabel }, this.attributesFromObject("aria", k({ modal: !0 }, this.props.aria)), this.attributesFromObject("data", this.props.data || {}), { "data-testid": this.props.testId }), le = this.props.contentElement(X, Z);
+            var U = { ref: this.setOverlayRef, className: this.buildClassName("overlay", A), style: k({}, J, this.props.style.overlay), onClick: this.handleOverlayOnClick, onMouseDown: this.handleOverlayOnMouseDown }, G = k({ id: S, ref: this.setContentRef, style: k({}, Ee, this.props.style.content), className: this.buildClassName("content", j), tabIndex: "-1", onKeyDown: this.handleKeyDown, onMouseDown: this.handleContentOnMouseDown, onMouseUp: this.handleContentOnMouseUp, onClick: this.handleContentOnClick, role: this.props.role, "aria-label": this.props.contentLabel }, this.attributesFromObject("aria", k({ modal: !0 }, this.props.aria)), this.attributesFromObject("data", this.props.data || {}), { "data-testid": this.props.testId }), le = this.props.contentElement(G, Z);
             return this.props.overlayElement(U, le);
           } }]), fe;
         })(m.Component);
@@ -8651,9 +8656,9 @@ ${k}`);
       })(), T.o = (i, u) => Object.prototype.hasOwnProperty.call(i, u), T.r = (i) => {
         typeof Symbol < "u" && Symbol.toStringTag && Object.defineProperty(i, Symbol.toStringTag, { value: "Module" }), Object.defineProperty(i, "__esModule", { value: !0 });
       }, T.nmd = (i) => (i.paths = [], i.children || (i.children = []), i), T.nc = void 0;
-      var G = {};
+      var X = {};
       return (() => {
-        T.d(G, { default: () => $e });
+        T.d(X, { default: () => $e });
         var i = T(6540), u = T(961);
         function f(l) {
           return "Minified Redux error #" + l + "; visit https://redux.js.org/Errors?code=" + l + " for the full message or use the non-minified dev environment for full errors. ";
@@ -8892,7 +8897,7 @@ ${k}`);
         function U(l, o) {
           return l === o ? l !== 0 || o !== 0 || 1 / l == 1 / o : l != l && o != o;
         }
-        function X(l, o) {
+        function G(l, o) {
           if (U(l, o)) return !0;
           if (typeof l != "object" || l === null || typeof o != "object" || o === null) return !1;
           var s = Object.keys(l), c = Object.keys(o);
@@ -9007,7 +9012,7 @@ ${k}`);
           var o = {}, s = o.connectHOC, c = s === void 0 ? J : s, g = o.mapStateToPropsFactories, y = g === void 0 ? Ue : g, x = o.mapDispatchToPropsFactories, z = x === void 0 ? Ne : x, K = o.mergePropsFactories, Y = K === void 0 ? Le : K, ie = o.selectorFactory, ue = ie === void 0 ? P : ie;
           return function(he, de, Oe, Ce) {
             Ce === void 0 && (Ce = {});
-            var ze = Ce, st = ze.pure, Be = st === void 0 || st, je = ze.areStatesEqual, dt = je === void 0 ? Se : je, vt = ze.areOwnPropsEqual, Bt = vt === void 0 ? X : vt, xt = ze.areStatePropsEqual, It = xt === void 0 ? X : xt, St = ze.areMergedPropsEqual, mt = St === void 0 ? X : St, En = F(ze, te), it = we(he, y, "mapStateToProps"), xn = we(de, z, "mapDispatchToProps"), jn = we(Oe, Y, "mergeProps");
+            var ze = Ce, st = ze.pure, Be = st === void 0 || st, je = ze.areStatesEqual, dt = je === void 0 ? Se : je, vt = ze.areOwnPropsEqual, Bt = vt === void 0 ? G : vt, xt = ze.areStatePropsEqual, It = xt === void 0 ? G : xt, St = ze.areMergedPropsEqual, mt = St === void 0 ? G : St, En = F(ze, te), it = we(he, y, "mapStateToProps"), xn = we(de, z, "mapDispatchToProps"), jn = we(Oe, Y, "mergeProps");
             return c(ue, R({ methodName: "connect", getDisplayName: function(lo) {
               return "Connect(" + lo + ")";
             }, shouldHandleStateChanges: !!he, initMapStateToProps: it, initMapDispatchToProps: xn, initMergeProps: jn, pure: Be, areStatesEqual: dt, areOwnPropsEqual: Bt, areStatePropsEqual: It, areMergedPropsEqual: mt }, En));
@@ -10733,7 +10738,7 @@ ${k}`);
           }
         }
         $e._editors = /* @__PURE__ */ new Map(), $e._wrapper = null;
-      })(), G = G.default;
+      })(), X = X.default;
     })());
   })(_l)), _l.exports;
 }
@@ -10745,7 +10750,7 @@ const Wu = /* @__PURE__ */ Hu(Bu);
  * @license GPL-3.0-or-later
  */
 const qu = function(Te) {
-  const _ = Te.plugins.get(zc), E = $(Te.ui.view.element), O = $(Te.sourceElement), T = `ckeditor${Math.floor(Math.random() * 1e9)}`, G = [
+  const _ = Te.plugins.get(zc), E = $(Te.ui.view.element), O = $(Te.sourceElement), T = `ckeditor${Math.floor(Math.random() * 1e9)}`, X = [
     "keypress",
     "keyup",
     "change",
@@ -10761,7 +10766,7 @@ const qu = function(Te) {
     );
     if (_.isSourceEditingMode) {
       let u = i.attr("data-value");
-      i.on(G, () => {
+      i.on(X, () => {
         u !== (u = i.attr("data-value")) && O.val(u);
       });
     } else
@@ -10793,9 +10798,9 @@ const qu = function(Te) {
 }, Qu = function(Te, _) {
   let E = null;
   const O = Te.editing.view.document, T = Te.plugins.get("ClipboardPipeline");
-  O.on("clipboardOutput", (G, i) => {
+  O.on("clipboardOutput", (X, i) => {
     E = Te.id;
-  }), O.on("clipboardInput", async (G, i) => {
+  }), O.on("clipboardInput", async (X, i) => {
     let u = i.dataTransfer.getData("text/html");
     if (u && u.includes("<craft-entry") && !(i.method == "drop" && E === Te.id)) {
       if (i.method == "paste" || i.method == "drop" && E !== Te.id) {
@@ -10803,7 +10808,7 @@ const qu = function(Te) {
         const d = Craft.siteId;
         let C = null, m = null;
         const b = Te.getData(), v = [...u.matchAll(/data-entry-id="([0-9]+)/g)];
-        G.stop();
+        X.stop();
         const N = $(Te.ui.view.element);
         let D = N.parents("form").data("elementEditor");
         await D.ensureIsDraftOrRevision();
@@ -10858,10 +10863,10 @@ const qu = function(Te) {
   return Craft.showCkeditorInspector && Craft.userIsAdmin && Wu.attach(E), E.editing.view.change((O) => {
     const T = E.editing.view.document.getRoot();
     if (typeof _.accessibleFieldName < "u" && _.accessibleFieldName.length) {
-      let G = T.getAttribute("aria-label");
+      let X = T.getAttribute("aria-label");
       O.setAttribute(
         "aria-label",
-        _.accessibleFieldName + ", " + G,
+        _.accessibleFieldName + ", " + X,
         T
       );
     }
