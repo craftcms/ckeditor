@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed a bug where `&nbps;` briefly appeared below the editor on page load, if the “Show word count” setting was enabled. ([#507](https://github.com/craftcms/ckeditor/issues/507)) 
+
 ## 3.15.0 - 2025-11-19
 
 - Statically-rendered CKEditor fields are now shown in read-only mode. ([#466](https://github.com/craftcms/ckeditor/pull/466))
