@@ -288,6 +288,7 @@ class CkeditorController extends Controller
 
         $entry = Craft::$app->getElements()->createElement([
             'type' => Entry::class,
+            'typeId' => $imageEntryType->id,
             'siteId' => $siteId,
             'fieldId' => $field->id,
             'ownerId' => $ownerId,

@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed a bug where new nested entries created for images weren’t always respecting the selected entry type. ([#510](https://github.com/craftcms/ckeditor/issues/510))
+
 ## 5.0.0 - 2026-03-03
 
 > [!IMPORTANT]
