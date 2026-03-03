@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased (5.0)
+## 5.0.0 - 2026-03-03
 
 > [!IMPORTANT]
 > Third party CKEditor plugins are now registered as modules. See [#363](https://github.com/craftcms/ckeditor/pull/363) for details on how to update existing Craft plugins.
