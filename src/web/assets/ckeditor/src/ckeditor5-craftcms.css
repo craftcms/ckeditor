@@ -36,7 +36,14 @@
   --ck-powered-by-padding-vertical: 0px;
   --ck-powered-by-padding-horizontal: 0px;
   --ck-color-base-background: var(--input-bg) !important;
+  /* fullscreen mode bg */
+  --ck-color-base-foreground: var(--body-bg) !important;
   --ck-color-toolbar-background: var(--white) !important;
+  --ck-content-font-color: var(--text-color);
+  --ck-content-font-family:
+    system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto',
+    'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+    'Helvetica Neue', sans-serif;
 }
 
 .ck.ck-sticky-panel .ck-sticky-panel__content_sticky .ck.ck-toolbar {
@@ -72,6 +79,12 @@
   border-end-end-radius: var(--ck-border-radius) !important;
 }
 
+.ck-rounded-corners .ck.ck-toolbar,
+.ck.ck-toolbar.ck-rounded-corners {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
 .ck.ck-dropdown__panel.ck-dropdown__panel_se,
 .ck.ck-dropdown .ck-dropdown__panel .ck-list.ck-rounded-corners,
 .ck.ck-dropdown
@@ -91,7 +104,7 @@
 
 /* content */
 .ck.ck-content {
-  color: var(--text-color);
+  background-clip: padding-box;
 }
 
 .ck.ck-content ul:last-child,
@@ -151,6 +164,7 @@
   margin-block: 0.9em;
   margin-inline: auto; /* same as images */
   border-radius: var(--large-border-radius);
+  font-size: var(--font-size);
 }
 /* end nested entries */
 
