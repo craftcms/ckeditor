@@ -506,9 +506,20 @@
 })();
   {% endjs %}
 
-  {# use script[type=module] so it executes after the entry type select initialization #}
   {% script with {type: 'module'} %}
-const entryTypeSelect = $("#{{ 'entry-types'|namespaceInputId }}").data('componentSelect');
+const $select = $("#{{ 'entry-types'|namespaceInputId }}");
+// the entry type select gets instantiated asynchronously
+const entryTypeSelect = await (() => {
+  return new Promise(resolve => {
+    const interval = setInterval(() => {
+      const entryTypeSelect = $select.data('componentSelect');
+      if (entryTypeSelect) {
+        clearInterval(interval);
+        resolve(entryTypeSelect);
+      }
+    }, 100);
+  });
+})();
 
 const updateImageField = () => {
   const entryTypes = Object.values(Garnish.getPostData(entryTypeSelect.$container));
