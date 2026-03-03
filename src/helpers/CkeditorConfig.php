@@ -329,7 +329,6 @@ final class CkeditorConfig
      * Returns the available advanced link
      *
      * @return array[]
-     * @since 5.0.0
      */
     public static function advanceLinkOptions(): array
     {
@@ -411,20 +410,5 @@ final class CkeditorConfig
                 ],
             ],
         ];
-    }
-
-    /**
-     * Get ckeditor's Entry Type based on provided config.
-     *
-     * @param array $config
-     * @return CkeEntryType
-     * @since 5.0.0
-     */
-    public static function getCkeEntryType(array $config): CkeEntryType
-    {
-        $craftEntryType = Craft::$app->getEntries()->getEntryType($config);
-        $properties = get_object_vars($craftEntryType) + $config;
-
-        return new CkeEntryType($properties);
     }
 }

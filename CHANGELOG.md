@@ -11,17 +11,24 @@
 - It’s now possible to choose which entry types should get a dedicated toolbar button versus be listed within the “Add nested content” menu. ([#423](https://github.com/craftcms/ckeditor/pull/423))
 - Added support for drag-n-drop image uploading. ([#486](https://github.com/craftcms/ckeditor/pull/486))
 - Added support for inserting new images as nested entries. ([#509](https://github.com/craftcms/ckeditor/pull/509))
-- Added the “Advanced Link Fields” setting to CKEditor configs. ([#375](https://github.com/craftcms/ckeditor/pull/375))
+- Added the “Advanced Link Fields” setting. ([#375](https://github.com/craftcms/ckeditor/pull/375))
 - Custom editor styles now get registered with a higher specificity than the default editor styles. ([#433](https://github.com/craftcms/ckeditor/pull/433)) 
-- Added `craft\ckeditor\CkeConfig::$advancedLinkFields`.
-- Added `craft\ckeditor\CkeConfig::advanceLinkOptions()`.
+- Added `craft\ckeditor\Field::$advancedLinkFields`.
+- Added `craft\ckeditor\Field::$css`.
+- Added `craft\ckeditor\Field::$headingLevels`.
 - Added `craft\ckeditor\Field::$imageEntryTypeUid`.
 - Added `craft\ckeditor\Field::$imageFieldUid`.
 - Added `craft\ckeditor\Field::$imageMode`.
+- Added `craft\ckeditor\Field::$js`.
+- Added `craft\ckeditor\Field::$options`.
+- Added `craft\ckeditor\Field::$toolbar`.
 - Added `craft\ckeditor\Field::IMAGE_MODE_ENTRIES`.
 - Added `craft\ckeditor\Field::IMAGE_MODE_IMG`.
+- Added `craft\ckeditor\Field::entryType()`.
 - Added `craft\ckeditor\Field::getImageEntryType()`.
 - Added `craft\ckeditor\Field::getImageField()`.
+- Added `craft\ckeditor\Field::getJson()`.
+- Added `craft\ckeditor\Field::setJson()`.
 - Added `craft\ckeditor\helpers\CkeditorConfig`. ([#363](https://github.com/craftcms/ckeditor/pull/363))
 - Added `craft\ckeditor\web\assets\BaseCkeditorPackageAsset::$namespace`. ([#363](https://github.com/craftcms/ckeditor/pull/363))
 - Updated to CKEditor 5 47.5.0. ([#502](https://github.com/craftcms/ckeditor/pull/502))
