@@ -1327,7 +1327,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             'imageMode' => $this->imageMode,
             'imageSources' => $this->_imageSources(),
             'imageModalSettings' => $this->_imageModalSettings(),
-            'imageEntryTypeId' => $this->getImageEntryType()?->id,
             'imageFieldHandle' => $this->getImageField()?->handle,
             'assetSelectionCriteria' => $this->_assetSelectionCriteria(),
             'defaultUploadFolderId' => $this->_defaultUploadFolderId(),

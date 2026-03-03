@@ -18,7 +18,7 @@ class Xu extends au {
       );
       return;
     }
-    if (this._imageMode === "entries" && (!this._imageEntryTypeId || !this._imageFieldHandle)) {
+    if (this._imageMode === "entries" && !this._imageFieldHandle) {
       console.warn(
         'Omitting the "image" CKEditor toolbar button, because no image field was selected.'
       );
@@ -35,9 +35,6 @@ class Xu extends au {
   }
   get _imageModalSettings() {
     return this.editor.config.get("imageModalSettings") ?? {};
-  }
-  get _imageEntryTypeId() {
-    return this.editor.config.get("imageEntryTypeId");
   }
   get _imageFieldHandle() {
     return this.editor.config.get("imageFieldHandle");
@@ -113,8 +110,7 @@ class Xu extends au {
     const X = E.config.get(
       "nestedElementAttributes"
     ), i = {
-      ...X,
-      typeId: this._imageEntryTypeId
+      ...X
     };
     O && (await O.markDeltaNameAsModified(E.sourceElement.name), i.ownerId = O.getDraftElementId(
       X.ownerId

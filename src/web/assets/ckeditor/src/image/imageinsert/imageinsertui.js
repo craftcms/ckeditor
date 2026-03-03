@@ -29,7 +29,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     }
 
     if (this._imageMode === 'entries') {
-      if (!this._imageEntryTypeId || !this._imageFieldHandle) {
+      if (!this._imageFieldHandle) {
         console.warn(
           'Omitting the "image" CKEditor toolbar button, because no image field was selected.',
         );
@@ -58,10 +58,6 @@ export default class CraftImageInsertUI extends ImageInsertUI {
 
   get _imageModalSettings() {
     return this.editor.config.get('imageModalSettings') ?? {};
-  }
-
-  get _imageEntryTypeId() {
-    return this.editor.config.get('imageEntryTypeId');
   }
 
   get _imageFieldHandle() {
@@ -174,7 +170,6 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     );
     const params = {
       ...nestedElementAttributes,
-      typeId: this._imageEntryTypeId,
     };
 
     if (elementEditor) {
