@@ -8,7 +8,6 @@
 namespace craft\ckeditor\helpers;
 
 use Craft;
-use craft\ckeditor\models\EntryType as CkeEntryType;
 use Illuminate\Support\Collection;
 
 /**
