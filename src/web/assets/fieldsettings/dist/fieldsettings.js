@@ -1,10 +1,5 @@
 import "ckeditor5";
 import { create } from "@craftcms/ckeditor";
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license GPL-3.0-or-later
- */
 const ToolbarBuilder = Garnish.Base.extend({
   $sourceContainer: null,
   $targetContainer: null,
@@ -237,11 +232,6 @@ const ToolbarBuilder = Garnish.Base.extend({
     }
   }
 });
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license GPL-3.0-or-later
- */
 const ConfigOptions = Garnish.Base.extend({
   jsonSchemaUri: null,
   language: null,
@@ -413,7 +403,7 @@ const ConfigOptions = Garnish.Base.extend({
   },
   jsify: function(t, e) {
     let n;
-    if ($.isArray(t)) {
+    if (Array.isArray(t)) {
       n = `[
 `;
       for (const o of t)
@@ -462,7 +452,6 @@ const ConfigOptions = Garnish.Base.extend({
     this.applyIndicators(t, n);
   },
   async applyIndicators(t, e) {
-    var u, i;
     let n;
     try {
       n = (await Craft.sendActionRequest(
@@ -474,14 +463,14 @@ const ConfigOptions = Garnish.Base.extend({
           }
         }
       )).data;
-    } catch (s) {
-      throw Craft.cp.displayError((i = (u = s == null ? void 0 : s.response) == null ? void 0 : u.data) == null ? void 0 : i.message), s;
+    } catch (u) {
+      throw Craft.cp.displayError(u?.response?.data?.message), u;
     }
     let o = t.find(".indicators");
     const r = this.getInput(t), a = $(n.chip).find(".indicators"), h = this.getInput($(n.chip)), d = this.getConfig(h);
     if (o.length == 0) {
-      const s = t.find(".chip-label");
-      o = $('<div class="indicators">').appendTo(s);
+      const u = t.find(".chip-label");
+      o = $('<div class="indicators">').appendTo(u);
     }
     o.replaceWith(a), this.updateConfig(r, d);
   },
