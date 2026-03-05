@@ -310,7 +310,7 @@ export default Garnish.Base.extend({
 
   jsify: function (value, indent) {
     let js;
-    if ($.isArray(value)) {
+    if (Array.isArray(value)) {
       js = '[\n';
       for (const v of value) {
         js += `${indent}  ${this.jsify(v, indent + '  ')},\n`;
