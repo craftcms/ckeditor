@@ -11,6 +11,7 @@ use Craft;
 use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
+use craft\base\Event;
 use craft\base\FieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\NestedElementInterface;
@@ -38,6 +39,7 @@ use craft\elements\User;
 use craft\enums\PropagationMethod;
 use craft\errors\InvalidHtmlTagException;
 use craft\events\CancelableEvent;
+use craft\events\DraftEvent;
 use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
@@ -56,6 +58,7 @@ use craft\models\EntryType;
 use craft\models\ImageTransform;
 use craft\models\Section;
 use craft\models\Volume;
+use craft\services\Drafts;
 use craft\services\ElementSources;
 use craft\web\View;
 use GraphQL\Type\Definition\Type;
@@ -1261,7 +1264,7 @@ JS,
         ]);
 
         if ($this->showWordCount) {
-            $html .= Html::tag('div', '&nbps;', [
+            $html .= Html::tag('div', '&nbsp;', [
                 'id' => $wordCountId,
                 'class' => ['ck-word-count', 'light', 'smalltext'],
             ]);
@@ -1919,14 +1922,31 @@ JS,
      */
     public function propagateValue(ElementInterface $from, ElementInterface $to): void
     {
+        $wasValueEmpty = $this->isValueEmpty($to->getFieldValue($this->handle), $to);
+
         /** @phpstan-ignore-next-line */
         parent::propagateValue($from, $to);
 
-        if (!$from->propagateAll) {
+        if (!$from->propagateAll && $wasValueEmpty) {
             // NestedElementManager won't duplicate the nested entries automatically,
             // because the field has a value in the target site (the HTML content), so isValueEmpty() is false.
             /** @phpstan-ignore-next-line */
             self::entryManager($this)->duplicateNestedElements($from, $to, force: true);
         }
+
+        // when the field is translatable (e.g. for each site);
+        // you create a new entry and add nested entry into a cke field while the entry is fresh
+        // during autosave, that nested entry gets duplicated into the other site correctly (along with value adjustment)
+        // however when you then fully save the owner,
+        // the duplication is triggered twice - from ElementsController::actionApplyDraft() and from Drafts::removeDraftData()
+        // the changes in 5.9.0 mean that the nested entries get duplicated and adjusted twice
+        // (via NEM::saveNestedElements > duplicateNestedElements() route)
+        // causing the nested entry in the site we propagated to, to have a wrong ID
+        // the CKE content references X, but X nested entry is marked as deleted and Y nested entry  was created in its place
+        Event::on(Drafts::class, Drafts::EVENT_BEFORE_APPLY_DRAFT, function(DraftEvent $event) {
+            if ($event->draft->propagateAll && $event->draft->getIsUnpublishedDraft()) {
+                $event->draft->propagateAll = false;
+            }
+        });
     }
 }

@@ -1,8 +1,14 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 4.11.2 - 2026-03-02
+
+- Fixed an error that could occur when creating a nested entry. ([#505](https://github.com/craftcms/ckeditor/issues/505))
+- Fixed a bug where `&nbps;` briefly appeared below the editor on page load, if the “Show word count” setting was enabled. ([#507](https://github.com/craftcms/ckeditor/issues/507))
+
+## 4.11.1 - 2026-02-18
 
 - Fixed a bug where CKEditor field values weren’t always getting propagated to other sites (with duplicated nested entries) when creating a new element. ([#479](https://github.com/craftcms/ckeditor/pull/479))
+- Fixed styling issues on CKEditor config edit screens. ([#494](https://github.com/craftcms/ckeditor/pull/494))
 
 ## 4.11.0 - 2025-11-19
 

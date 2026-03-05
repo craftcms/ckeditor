@@ -134,3 +134,7 @@ body:not(.dragging) .ckeditor-tb--item:hover {
   box-shadow: none !important;
   padding: 0 !important;
 }
+
+.monaco-editor.has-errors {
+  border: 1px solid var(--fg-error) !important;
+}
