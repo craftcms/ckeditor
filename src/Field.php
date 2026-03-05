@@ -729,7 +729,10 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
      */
     public function setEntryTypes(array $entryTypes): void
     {
-        $this->_entryTypes = array_map(fn($config) => static::entryType($config), $entryTypes);
+        $this->_entryTypes = array_values(array_filter(array_map(
+            fn($config) => static::entryType($config),
+            $entryTypes
+        )));
     }
 
     /**
