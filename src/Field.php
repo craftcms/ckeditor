@@ -628,6 +628,10 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             $config['entryTypes'] = [];
         }
 
+        if (isset($config['headingLevels']) && $config['headingLevels'] === '') {
+            $config['headingLevels'] = [];
+        }
+
         if (isset($config['imageFieldPath'])) {
             [$config['imageEntryTypeUid'], $config['imageFieldUid']] = explode('.', $config['imageFieldPath'], 2);
             unset($config['imageFieldPath']);
