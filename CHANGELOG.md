@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 5.1.0 - 2026-03-05
 
 - Updated CKEditor 5 to 47.6.0. ([#518](https://github.com/craftcms/ckeditor/pull/518))
 - Fixed an error that could occur if a CKEditor field’s value was instantiated without a known site ID. ([#500](https://github.com/craftcms/ckeditor/issues/500))
