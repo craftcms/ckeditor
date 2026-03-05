@@ -16,6 +16,7 @@ use craft\elements\NestedElementManager;
 use craft\events\AssetBundleEvent;
 use craft\events\ModelEvent;
 use craft\events\RegisterComponentTypesEvent;
+use craft\helpers\UrlHelper;
 use craft\services\Fields;
 use craft\web\View;
 use yii\base\Event;
@@ -56,8 +57,8 @@ class Plugin extends \craft\base\Plugin
 
             $ckBundle = $assetManager->getBundle(CkeditorAsset::class);
             $view->registerJsImport('ckeditor5', $assetManager->getAssetUrl($ckBundle, 'lib/ckeditor5.js', false));
-            $view->registerJsImport('ckeditor5/', $assetManager->getAssetUrl($ckBundle, 'lib/', false));
-            $view->registerJsImport('ckeditor5/translations/', $assetManager->getAssetUrl($ckBundle, 'lib/translations/', false));
+            $view->registerJsImport('ckeditor5/', UrlHelper::stripQueryString($assetManager->getAssetUrl($ckBundle, 'lib/', false)));
+            $view->registerJsImport('ckeditor5/translations/', UrlHelper::stripQueryString($assetManager->getAssetUrl($ckBundle, 'lib/translations/', false)));
             $view->registerJsImport('@craftcms/ckeditor', $assetManager->getAssetUrl($ckBundle, 'ckeditor5-craftcms.js', false));
 
             $configBundle = $assetManager->getBundle(FieldSettingsAsset::class);
