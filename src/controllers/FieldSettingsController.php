@@ -46,6 +46,10 @@ class FieldSettingsController extends Controller
         // get entry type by id
         $entryType = Field::entryType($config);
 
+        if (!$entryType) {
+            throw new BadRequestHttpException('Invalid entry type.');
+        }
+
         $chip = Cp::chipHtml($entryType, [
             'inputName' => 'entryTypes[]',
             'inputValue' => Json::encode($entryType->toArray(['id', 'name', 'handle', 'expanded'])),
