@@ -1,11 +1,12 @@
 {% set allowOverrides = allowOverrides ?? false %}
+{% set createAction = (create ?? false) ? 'entry-types/edit' : null %}
 
 {% embed '_includes/forms/componentSelect.twig' with {
     options: options ?? craft.app.entries.getAllEntryTypes(),
     showHandles: true,
     showIndicators: showIndicators ?? allowOverrides,
     inputValueFn: et => allowOverrides ? et.toArray(['id', 'name', 'handle', 'expanded']) : null,
-    createAction: (create ?? false) ? 'entry-types/edit' : null,
+    createAction,
     registerJs: false,
     jsSettings: {
         allowOverrides,
