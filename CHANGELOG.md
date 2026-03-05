@@ -6,6 +6,7 @@
 - Fixed an error that occurred if a CKEditor field was saved with no selected heading levels. ([#511](https://github.com/craftcms/ckeditor/issues/511))
 - Fixed a bug where inline entry type creation wasn’t working. ([#515](https://github.com/craftcms/ckeditor/pull/515))
 - Fixed a bug where import map URLs could have query strings appended to them. ([#516](https://github.com/craftcms/ckeditor/pull/516))
+- Fixed an arrer that could occur when applying project config changes, if a newly-added entry type was selected by a CKEditor field. ([#512](https://github.com/craftcms/ckeditor/issues/512))
 
 ## 5.0.1 - 2026-03-03
 
