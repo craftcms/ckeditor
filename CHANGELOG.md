@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## 4.11.3 - 2026-03-05
+
+- Fixed an error that could occur if a CKEditor field’s value was instantiated without a known site ID. ([#500](https://github.com/craftcms/ckeditor/issues/500))
+
 ## 4.11.2 - 2026-03-02
 
 - Fixed an error that could occur when creating a nested entry. ([#505](https://github.com/craftcms/ckeditor/issues/505))
