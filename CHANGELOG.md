@@ -43,7 +43,7 @@
 - Added the “Parse embeds” field setting. ([#409](https://github.com/craftcms/ckeditor/pull/409))
 - Added the “Show toolbar buttons for entry types with icons” field settings. ([#413](https://github.com/craftcms/ckeditor/pull/413))
 - Fixed an error that occurred when copy/pasting a nested entry from a top-level element’s CKEditor field into a nested element’s CKEditor field. ([#408](https://github.com/craftcms/ckeditor/issues/408))
-- Fixed an error that could occur when generating a GraphQL introspection schema, if a CKEditor field’s GraphQL Mode setting was set to “Full data”. ([#414](https://github.com/craftcms/ckeditor/issues/414))  
+- Fixed an error that could occur when generating a GraphQL introspection schema, if a CKEditor field’s GraphQL Mode setting was set to “Full data”. ([#414](https://github.com/craftcms/ckeditor/issues/414))
 
 ## 4.8.0 - 2025-04-30
 
@@ -53,7 +53,7 @@
 - Improved the styling of CKEditor fields. ([craftcms/cms#17164](https://github.com/craftcms/cms/discussions/17164))
 - The “Anchors” CKEditor plugin has been replaced with CKEditor’s new built-in [Bookmarks](https://ckeditor.com/docs/ckeditor5/latest/features/bookmarks.html) plugin. ([#397](https://github.com/craftcms/ckeditor/pull/397))
 - Removed the “‘New’ Button Label” field setting. ([#404](https://github.com/craftcms/ckeditor/pull/404))
-- Updated to CKEditor 5 45.0.0. ([#397](https://github.com/craftcms/ckeditor/pull/397))
+- Updated CKEditor 5 to 45.0.0. ([#397](https://github.com/craftcms/ckeditor/pull/397))
 - Added `craft\ckeditor\Field::$characterLimit`.
 - Added `craft\ckeditor\Field::$fullGraphqlData`.
 - Added `craft\ckeditor\data\FieldData::getEntries()`.
@@ -88,7 +88,7 @@
 - Added the ability to show the “Source” button for specific user groups. ([#318](https://github.com/craftcms/ckeditor/pull/318))
 - Added `craft\ckeditor\Field::$sourceEditingGroups`.
 - Deprecated `craft\ckeditor\Field::$enableSourceEditingForNonAdmins`.
-- Updated to CKEditor 5 44.0.0.
+- Updated CKEditor 5 to 44.0.0.
 - Fixed a bug where toolbar menus weren’t usable within slideouts. ([#345](https://github.com/craftcms/ckeditor/issues/345))
 - Fixed a bug where “Edit entry” buttons were only partially translated. ([#337](https://github.com/craftcms/ckeditor/issues/337))
 - Fixed a bug where copying and pasting nested entries wasn’t working on non-primary sites. ([#315](https://github.com/craftcms/ckeditor/issues/315))
@@ -202,7 +202,7 @@
 - Added the `RemoveFormat` CKEditor plugin. ([#143](https://github.com/craftcms/ckeditor/issues/143))
 - Added the `TodoDocumentList` CKEditor plugin. ([#148](https://github.com/craftcms/ckeditor/pull/148))
 - Removed the `List`, `ListProperties`, and `TodoList` CKEditor plugins. ([#148](https://github.com/craftcms/ckeditor/pull/148))
-- CKEditor fields now get a `not-allowed` cursor when viewing entry revisions. ([#142](https://github.com/craftcms/ckeditor/pull/142)) 
+- CKEditor fields now get a `not-allowed` cursor when viewing entry revisions. ([#142](https://github.com/craftcms/ckeditor/pull/142))
 - Fixed a bug where the CKEditor config-creation slideout could keep reappearing if canceled. ([#138](https://github.com/craftcms/ckeditor/pull/138))
 - Fixed a conflict with `nystudio107/craft-code-editor` 1.0.14 and 1.0.15. ([#150](https://github.com/craftcms/ckeditor/issues/150))
 
@@ -214,7 +214,7 @@
 
 ## 3.5.1 - 2023-08-29
 
-- Fixed a bug where CKEditor inputs weren’t getting any padding within slideouts. ([#126](https://github.com/craftcms/ckeditor/issues/126)) 
+- Fixed a bug where CKEditor inputs weren’t getting any padding within slideouts. ([#126](https://github.com/craftcms/ckeditor/issues/126))
 - Fixed a bug where the image transform menu wasn’t visible if only one transform was selected for the field. ([#131](https://github.com/craftcms/ckeditor/issues/131))
 
 ## 3.5.0 - 2023-08-22
@@ -225,7 +225,7 @@
 - Added the [Text part language](https://ckeditor.com/docs/ckeditor5/latest/features/language.html) feature.
 - Added keyboard shortcuts for switching the heading type for a given block. ([#106](https://github.com/craftcms/ckeditor/issues/106), [#116](https://github.com/craftcms/ckeditor/pull/116))
 - CKEditor config edit pages now have a “Save and continue editing” alternative submit action, and the <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>S</kbd> keyboard shortcut now redirects back to the edit page. ([#108](https://github.com/craftcms/ckeditor/discussions/108))
-- CKEditor config edit pages now have a “Save as a new config” alternative submit action. ([#110](https://github.com/craftcms/ckeditor/discussions/110)) 
+- CKEditor config edit pages now have a “Save as a new config” alternative submit action. ([#110](https://github.com/craftcms/ckeditor/discussions/110))
 - The `ckeditor/convert` action will now find and convert `craft\fields\MissingField` instances that were meant to be Redactor fields.
 - CKEditor fields with the “Insert table” button now include the `TableProperties` and `TableCellProperties` plugins. ([#103](https://github.com/craftcms/ckeditor/issues/103), [#115](https://github.com/craftcms/ckeditor/discussions/115))
 - Norwegian Bokmål and Nynorsk both now load the main Norwegian (no) UI translations. ([#113](https://github.com/craftcms/ckeditor/issues/113))
@@ -243,7 +243,7 @@
 - Added the ability to change an image’s transform. ([#94](https://github.com/craftcms/ckeditor/discussions/94))
 - Added support for [registering additional CKEditor plugins](https://github.com/craftcms/ckeditor#adding-ckeditor-plugins). ([#97](https://github.com/craftcms/ckeditor/pull/97))
 - CKEditor configs generated from Redactor fields no longer set `link.addTargetToExternalLinks = true` for Redactor fields that had `linkNewTab` enabled. ([#98](https://github.com/craftcms/ckeditor/issues/98))
-- Image and media markup defined by Redactor fields now gets updated to be consistent with how CKEditor likes it. ([#96](https://github.com/craftcms/ckeditor/issues/96), [#100](https://github.com/craftcms/ckeditor/pull/100)) 
+- Image and media markup defined by Redactor fields now gets updated to be consistent with how CKEditor likes it. ([#96](https://github.com/craftcms/ckeditor/issues/96), [#100](https://github.com/craftcms/ckeditor/pull/100))
 - Fixed a JavaScript error that occurred if there were no sections, category groups, or volumes.
 - Fixed a bug where inserted images were missing their ref tag hashes, if no transform was selected and the field was configured with a default transform.
 - Added `craft\ckeditor\web\assets\BaseCkeditorPackageAsset`.
@@ -279,7 +279,7 @@
 - “Config Options” settings can now be entered as JSON, with autocompletion and automatic JavaScript-to-JSON reformatting on paste. ([#66](https://github.com/craftcms/ckeditor/pull/66), [#67](https://github.com/craftcms/ckeditor/pull/67))
 - The `placeholder` config option now gets translated, when the config options are defined as JSON.
 - Images now have caption and alternative text toolbar items by default.
-- CKEditor instances no longer support editing features that aren’t explicitly allowed via toolbar items. ([#65](https://github.com/craftcms/ckeditor/discussions/65)) 
+- CKEditor instances no longer support editing features that aren’t explicitly allowed via toolbar items. ([#65](https://github.com/craftcms/ckeditor/discussions/65))
 - Added `craft\ckeditor\events\ModifyConfigEvent`.
 - Added `craft\ckeditor\Field::EVENT_MODIFY_CONFIG`. ([#70](https://github.com/craftcms/ckeditor/discussions/70))
 - Fixed a bug where editor toolbars would overlap the control panel header when scrolling.
@@ -288,7 +288,7 @@
 ## 3.0.0 - 2023-04-12
 
 > **Warning**
-> This is a major overhaul of the plugin. Your existing CKEditor fields and content will remain in-tact, however you’ll need to reconfigure your fields with a new CKEditor Config. 
+> This is a major overhaul of the plugin. Your existing CKEditor fields and content will remain in-tact, however you’ll need to reconfigure your fields with a new CKEditor Config.
 
 - CKEditor 5 now comes bundled with the plugin.
 - Dropped support for CKEditor 4 and custom builds.
@@ -396,11 +396,11 @@
 ## 1.0.0-beta.3 - 2020-03-27
 
 ### Changed
-- CKEditor fields’ default HTML Purifier config now allows `id` attributes. ([craftcms/redactor#82](https://github.com/craftcms/redactor/issues/82)) 
+- CKEditor fields’ default HTML Purifier config now allows `id` attributes. ([craftcms/redactor#82](https://github.com/craftcms/redactor/issues/82))
 
 ### Fixed
 - Fixed a bug where content changes weren’t getting saved in Craft 3.4. ([#22](https://github.com/craftcms/ckeditor/issues/22))
-- Fixed a deprecation error. ([#17](https://github.com/craftcms/ckeditor/issues/17)) 
+- Fixed a deprecation error. ([#17](https://github.com/craftcms/ckeditor/issues/17))
 - Fixed a bug where an empty CKEditor field would return some HTML content.
 
 ## 1.0.0-beta.2 - 2018-01-15
