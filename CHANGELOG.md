@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Updated CKEditor 5 to 47.6.0. ([#518](https://github.com/craftcms/ckeditor/pull/518))
+- Fixed an error that could occur if a CKEditor field’s value was instantiated without a known site ID. ([#500](https://github.com/craftcms/ckeditor/issues/500))
 - Fixed an error that occurred if a CKEditor field was saved with no selected heading levels. ([#511](https://github.com/craftcms/ckeditor/issues/511))
 - Fixed a bug where inline entry type creation wasn’t working. ([#515](https://github.com/craftcms/ckeditor/pull/515))
 - Fixed a bug where import map URLs could have query strings appended to them. ([#516](https://github.com/craftcms/ckeditor/pull/516))
@@ -45,6 +46,15 @@
 - Added `craft\ckeditor\web\assets\BaseCkeditorPackageAsset::$namespace`. ([#363](https://github.com/craftcms/ckeditor/pull/363))
 - Updated CKEditor 5 to 47.5.0. ([#502](https://github.com/craftcms/ckeditor/pull/502))
 - Fixed a JavaScript error that could occur when editing an element in a slideout. ([#429](https://github.com/craftcms/ckeditor/pull/429))
+
+## 4.11.3 - 2026-03-05
+
+- Fixed an error that could occur if a CKEditor field’s value was instantiated without a known site ID. ([#500](https://github.com/craftcms/ckeditor/issues/500))
+
+## 4.11.2 - 2026-03-02
+
+- Fixed an error that could occur when creating a nested entry. ([#505](https://github.com/craftcms/ckeditor/issues/505))
+- Fixed a bug where `&nbps;` briefly appeared below the editor on page load, if the “Show word count” setting was enabled. ([#507](https://github.com/craftcms/ckeditor/issues/507))
 
 ## 4.11.1 - 2026-02-18
 
