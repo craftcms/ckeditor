@@ -42,7 +42,7 @@
 - Added `craft\ckeditor\Field::setJson()`.
 - Added `craft\ckeditor\helpers\CkeditorConfig`. ([#363](https://github.com/craftcms/ckeditor/pull/363))
 - Added `craft\ckeditor\web\assets\BaseCkeditorPackageAsset::$namespace`. ([#363](https://github.com/craftcms/ckeditor/pull/363))
-- Updated to CKEditor 5 47.5.0. ([#502](https://github.com/craftcms/ckeditor/pull/502))
+- Updated CKEditor 5 to 47.5.0. ([#502](https://github.com/craftcms/ckeditor/pull/502))
 - Fixed a JavaScript error that could occur when editing an element in a slideout. ([#429](https://github.com/craftcms/ckeditor/pull/429))
 
 ## 4.11.1 - 2026-02-18
@@ -89,7 +89,7 @@
 - Improved the styling of CKEditor fields. ([craftcms/cms#17164](https://github.com/craftcms/cms/discussions/17164))
 - The “Anchors” CKEditor plugin has been replaced with CKEditor’s new built-in [Bookmarks](https://ckeditor.com/docs/ckeditor5/latest/features/bookmarks.html) plugin. ([#397](https://github.com/craftcms/ckeditor/pull/397))
 - Removed the “‘New’ Button Label” field setting. ([#404](https://github.com/craftcms/ckeditor/pull/404))
-- Updated to CKEditor 5 45.0.0. ([#397](https://github.com/craftcms/ckeditor/pull/397))
+- Updated CKEditor 5 to 45.0.0. ([#397](https://github.com/craftcms/ckeditor/pull/397))
 - Added `craft\ckeditor\Field::$characterLimit`.
 - Added `craft\ckeditor\Field::$fullGraphqlData`.
 - Added `craft\ckeditor\data\FieldData::getEntries()`.
@@ -124,7 +124,7 @@
 - Added the ability to show the “Source” button for specific user groups. ([#318](https://github.com/craftcms/ckeditor/pull/318))
 - Added `craft\ckeditor\Field::$sourceEditingGroups`.
 - Deprecated `craft\ckeditor\Field::$enableSourceEditingForNonAdmins`.
-- Updated to CKEditor 5 44.0.0.
+- Updated CKEditor 5 to 44.0.0.
 - Fixed a bug where toolbar menus weren’t usable within slideouts. ([#345](https://github.com/craftcms/ckeditor/issues/345))
 - Fixed a bug where “Edit entry” buttons were only partially translated. ([#337](https://github.com/craftcms/ckeditor/issues/337))
 - Fixed a bug where copying and pasting nested entries wasn’t working on non-primary sites. ([#315](https://github.com/craftcms/ckeditor/issues/315))
