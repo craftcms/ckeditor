@@ -404,10 +404,10 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
      * Normalizes an entry type into a `craft\ckeditor\models\EntryType` object.
      *
      * @param EntryType|CkeEntryType|string|array $entryType
-     * @return CkeEntryType
+     * @return CkeEntryType|null
      * @since 5.0.0
      */
-    public static function entryType(EntryType|CkeEntryType|string|array $entryType): CkeEntryType
+    public static function entryType(EntryType|CkeEntryType|string|array $entryType): ?CkeEntryType
     {
         if ($entryType instanceof CkeEntryType) {
             return $entryType;
@@ -421,9 +421,10 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             $craftEntryType = $entryType;
         } else {
             $craftEntryType = Craft::$app->getEntries()->getEntryType($entryType);
-            if (!$craftEntryType) {
-                throw new InvalidArgumentException('Invalid entry type config');
-            }
+        }
+
+        if (!$craftEntryType) {
+            return null;
         }
 
         $config = get_object_vars($craftEntryType);
