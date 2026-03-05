@@ -413,7 +413,7 @@ const ConfigOptions = Garnish.Base.extend({
   },
   jsify: function(t, e) {
     let n;
-    if ($.isArray(t)) {
+    if (Array.isArray(t)) {
       n = `[
 `;
       for (const o of t)
