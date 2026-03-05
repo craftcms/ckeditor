@@ -189,6 +189,11 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
                             if (!$value) {
                                 return [];
                             }
+                            // ensure the siteId is set;
+                            // see https://github.com/craftcms/ckeditor/issues/500 for details
+                            if ($value->getSiteId() === null) {
+                                $value->setSiteId($owner->siteId);
+                            }
                             return $value->getChunks(false)
                                 ->filter(fn(BaseChunk $chunk) => $chunk instanceof EntryChunk)
                                 ->map(fn(EntryChunk $chunk) => $chunk->entryId)
