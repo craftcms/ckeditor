@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed an error that occurred if a CKEditor field was saved with no selected heading levels. ([#511](https://github.com/craftcms/ckeditor/issues/511)) 
+
 ## 5.0.1 - 2026-03-03
 
 - Fixed a bug where new nested entries created for images weren’t always respecting the selected entry type. ([#510](https://github.com/craftcms/ckeditor/issues/510))
