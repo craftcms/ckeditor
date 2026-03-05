@@ -66,6 +66,16 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
         };
     }
 
+    public function getSiteId(): ?int
+    {
+        return $this->siteId;
+    }
+
+    public function setSiteId(int $siteId): void
+    {
+        $this->siteId = $siteId;
+    }
+
     public function getIterator(): Traversable
     {
         return new ArrayIterator($this->getChunks()->all());
