@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed an error that occurred if a CKEditor field was saved with no selected heading levels. ([#511](https://github.com/craftcms/ckeditor/issues/511)) 
+- Fixed a bug where inline entry type creation wasn’t working. ([#515](https://github.com/craftcms/ckeditor/pull/515))
 
 ## 5.0.1 - 2026-03-03
 
