@@ -23,6 +23,113 @@ use craft\web\AssetBundle;
  */
 abstract class BaseCkeditorPackageAsset extends AssetBundle
 {
+    // a list of languages supported by CKEditor
+    private static array $ckeSupportedLanguages = [
+        'af',
+        'ar',
+        'ast',
+        'az',
+        'be',
+        'bg',
+        'bn',
+        'bs',
+        'ca',
+        'cs',
+        'da',
+        'de',
+        'de-ch',
+        'el',
+        'en',
+        'en-au',
+        'en-gb',
+        'eo',
+        'es',
+        'es-co',
+        'et',
+        'eu',
+        'fa',
+        'fi',
+        'fr',
+        'gl',
+        'gu',
+        'he',
+        'hi',
+        'hr',
+        'hu',
+        'hy',
+        'id',
+        'it',
+        'ja',
+        'jv',
+        'kk',
+        'km',
+        'kn',
+        'ko',
+        'ku',
+        'lt',
+        'lv',
+        'ms',
+        'nb',
+        'ne',
+        'nl',
+        'no',
+        'oc',
+        'pl',
+        'pt',
+        'pt-br',
+        'ro',
+        'ru',
+        'si',
+        'sk',
+        'sl',
+        'sq',
+        'sr',
+        'sr-latn',
+        'sv',
+        'th',
+        'ti',
+        'tk',
+        'tr',
+        'tt',
+        'ug',
+        'uk',
+        'ur',
+        'uz',
+        'vi',
+        'zh',
+        'zh-cn',
+    ];
+
+    /**
+     * Returns import compliant language code.
+     *
+     * CKEditor doesn't support all the languages that Craft does.
+     * It also often only support the major version, not localized ones (e.g. they support fr but not fr-FR, fr-CA, fr-BE etc).
+     * Since we're now using imports to get the correct translation files, we need to know if the file exists before we import it,
+     * or the field won't render.
+     *
+     * @param string $language
+     * @return string
+     */
+    public static function getImportCompliantLanguage(string $language): string
+    {
+        // first check if we have an exact match
+        if (in_array($language, self::$ckeSupportedLanguages, true)) {
+            return $language;
+        }
+
+        // if not - check if there's a major version that we can use
+        if (str_contains($language, '-')) {
+            $language = substr($language, 0, strpos($language, '-'));
+            if (in_array($language, self::$ckeSupportedLanguages, true)) {
+                return $language;
+            }
+        }
+
+        // if not, default to plain English
+        return 'en';
+    }
+
     /**
      * Returns the CKEditor UI language that should be used based on the app language.
      *
