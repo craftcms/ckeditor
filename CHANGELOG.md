@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed a bug where custom `toolbar` config settings were getting ignored. ([#522](https://github.com/craftcms/ckeditor/issues/522))
+
 ## 5.1.0 - 2026-03-05
 
 - Updated CKEditor 5 to 47.6.0. ([#518](https://github.com/craftcms/ckeditor/pull/518))
