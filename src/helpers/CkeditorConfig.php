@@ -97,6 +97,7 @@ final class CkeditorConfig
         [
             'plugins' => [
                 'AutoImage',
+                'CraftEntries',
                 'CraftImageInsertUI',
                 'Image',
                 'ImageCaption',
@@ -106,7 +107,7 @@ final class CkeditorConfig
                 'ImageEditor',
                 'LinkImage',
             ],
-            'buttons' => ['insertImage'],
+            'buttons' => ['createEntry', 'insertImage'],
         ],
         [
             'plugins' => ['AutoLink', 'CraftLink', 'LinkEditing', 'LinkImage'],

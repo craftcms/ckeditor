@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- It’s now possible to drag-and-drop images into fields with the “Nested entries” image mode, if the “Add nested content” button is present, but not “Insert image”. ([#524](https://github.com/craftcms/ckeditor/issues/524))
 - Added `craft\ckeditor\web\assets\BaseCkeditorPackageAsset::getImportCompliantLanguage()`.
 - Fixed a bug where custom `toolbar` config settings were getting ignored. ([#522](https://github.com/craftcms/ckeditor/issues/522))
 - Fixed a bug where files uploaded to Assets fields could also be added to nearby CKEditor fields. ([#523](https://github.com/craftcms/ckeditor/issues/523))
