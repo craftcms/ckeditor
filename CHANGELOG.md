@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 5.2.0 - 2026-03-12
 
 - It’s now possible to drag-and-drop images into fields with the “Nested entries” image mode, if the “Add nested content” button is present, but not “Insert image”. ([#524](https://github.com/craftcms/ckeditor/issues/524))
 - Added `craft\ckeditor\web\assets\BaseCkeditorPackageAsset::getImportCompliantLanguage()`.
