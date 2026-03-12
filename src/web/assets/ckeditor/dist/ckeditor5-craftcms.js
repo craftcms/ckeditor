@@ -177,7 +177,7 @@ class Xu extends au {
    */
   _attachUploader() {
     const _ = this.editor, E = _.config.get("defaultUploadFolderId");
-    E && (this.$container = $(_.sourceElement).parents(".input"), this.progressBar = new Craft.ProgressBar(
+    E && (this.$container = $(_.sourceElement).closest(".input"), this.progressBar = new Craft.ProgressBar(
       $('<div class="progress-shade"></div>').appendTo(this.$container)
     ), this.$fileInput = $("<input/>", {
       type: "file",
