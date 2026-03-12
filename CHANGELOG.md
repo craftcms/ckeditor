@@ -4,6 +4,7 @@
 
 - Fixed a bug where custom `toolbar` config settings were getting ignored. ([#522](https://github.com/craftcms/ckeditor/issues/522))
 - Fixed a bug where files uploaded to Assets fields could also be added to nearby CKEditor fields. ([#523](https://github.com/craftcms/ckeditor/issues/523))
+- Fixed an error that could occur when registering a custom CKEditor plugin. ([#525](https://github.com/craftcms/ckeditor/issues/525))
 
 ## 5.1.0 - 2026-03-05
 
