@@ -261,7 +261,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       return;
     }
 
-    this.$container = $(editor.sourceElement).parents('.input');
+    this.$container = $(editor.sourceElement).closest('.input');
     this.progressBar = new Craft.ProgressBar(
       $('<div class="progress-shade"></div>').appendTo(this.$container),
     );
