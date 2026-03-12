@@ -1432,7 +1432,8 @@ JS;
 
         // Add the translation import
         $uiLanguage = BaseCkeditorPackageAsset::uiLanguage();
-        $uiTranslationImport = "import coreTranslations from 'ckeditor5/translations/$uiLanguage.js';";
+        $importCompliantUiLanguage = BaseCkeditorPackageAsset::getImportCompliantLanguage(BaseCkeditorPackageAsset::uiLanguage());
+        $uiTranslationImport = "import coreTranslations from 'ckeditor5/translations/$importCompliantUiLanguage.js';";
 
         $view->registerScriptWithVars(fn($baseConfigJs, $toolbarJs, $languageJs, $showWordCountJs, $wordLimitJs, $characterLimitJs, $imageMode) => <<<JS
 $imports
