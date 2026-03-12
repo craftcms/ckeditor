@@ -110,6 +110,7 @@ abstract class BaseCkeditorPackageAsset extends AssetBundle
      *
      * @param string $language
      * @return string
+     * @since 5.2.0
      */
     public static function getImportCompliantLanguage(string $language): string
     {
