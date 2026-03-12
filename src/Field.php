@@ -1446,12 +1446,14 @@ import {create} from '@craftcms/ckeditor';
     language: $languageJs,
   }, $baseConfigJs, $configOptionsJs, {
     plugins: $configPlugins,
-    toolbar: {
-      items: $toolbarJs
-    },
     removePlugins: []
   });
 
+
+  if (!jQuery.isPlainObject(config.toolbar)) {
+    config.toolbar = {};
+  }
+  config.toolbar.items = $toolbarJs;
 
   // special case for heading config, because of the Heading Levels
   // see https://github.com/craftcms/ckeditor/issues/431
