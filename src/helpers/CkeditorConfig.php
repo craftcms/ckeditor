@@ -215,7 +215,12 @@ final class CkeditorConfig
         $plugins = $config['plugins'] ?? [];
         $toolbarItems = $config['toolbarItems'] ?? [];
 
-        self::$pluginsByPackage[$name] = $plugins;
+        if (!isset(self::$pluginsByPackage[$name])) {
+            self::$pluginsByPackage[$name] = $plugins;
+        } else {
+            self::$pluginsByPackage[$name] = array_unique(array_merge(self::$pluginsByPackage[$name], $plugins));
+        }
+
         self::$toolbarItems[] = $toolbarItems;
         self::$pluginButtonMap[] = [
             'plugins' => $plugins,
