@@ -1573,7 +1573,17 @@ JS,
         }
 
         if ($this->css) {
-            $view->registerCss("#{$view->namespaceInputId($inputId)} { $this->css }");
+            preg_match_all('/@import .+;/', $this->css, $importStatements);
+            if (count($importStatements[0]) > 0) {
+                foreach ($importStatements[0] as $importStatement) {
+                    str_replace($importStatement, '', $this->css);
+                    $view->registerCss("$importStatement");
+                }
+            }
+            $this->css = trim($this->css);
+            if (!empty($this->css)) {
+                $view->registerCss("#{$view->namespaceInputId($inputId)} { $this->css }");
+            }
         }
 
         return Html::tag('div', $html, [
