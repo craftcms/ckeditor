@@ -1576,8 +1576,8 @@ JS,
             preg_match_all('/@import .+;/', $this->css, $importStatements);
             if (count($importStatements[0]) > 0) {
                 foreach ($importStatements[0] as $importStatement) {
-                    str_replace($importStatement, '', $this->css);
-                    $view->registerCss("$importStatement");
+                    $this->css = str_replace($importStatement, '', $this->css);
+                    $view->registerCss($importStatement);
                 }
             }
             $this->css = trim($this->css);
