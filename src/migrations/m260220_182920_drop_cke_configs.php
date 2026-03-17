@@ -73,7 +73,8 @@ class m260220_182920_drop_cke_configs extends Migration
                 );
             }
 
-            $projectConfig->set("$fieldPath.settings", ProjectConfig::packAssociativeArrays($settings));
+            $fieldConfig['settings'] = $settings;
+            $projectConfig->set($fieldPath, $fieldConfig);
         }
 
         $projectConfig->remove('ckeditor.configs');

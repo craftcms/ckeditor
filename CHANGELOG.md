@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where `@import` statements within custom styles weren’t working. ([#538](https://github.com/craftcms/ckeditor/pull/538))
+- Fixed a bug where CKEditor Config settings could be lost when updating to CKEditor 5. ([#517](https://github.com/craftcms/ckeditor/issues/517))
 
 ## 5.2.0 - 2026-03-12
 
