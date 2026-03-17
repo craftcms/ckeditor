@@ -1573,7 +1573,20 @@ JS,
         }
 
         if ($this->css) {
-            $view->registerCss("#{$view->namespaceInputId($inputId)} { $this->css }");
+            $css = $this->css;
+            $imports = [];
+            preg_match_all('/@import .+;?/m', $css, $importMatches);
+            for ($i = 0; $i < count($importMatches[0]); $i++) {
+                $imports[] = $importMatches[0][$i];
+                $css = str_replace($importMatches[0][$i], '', $css);
+            }
+            if (!empty($imports)) {
+                $view->registerCss(implode("\n", $imports));
+            }
+            $css = trim($css);
+            if ($css !== '') {
+                $view->registerCss("#{$view->namespaceInputId($inputId)} { $css }");
+            }
         }
 
         return Html::tag('div', $html, [
