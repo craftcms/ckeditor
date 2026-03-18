@@ -105,37 +105,15 @@ class m260220_182920_drop_cke_configs extends Migration
 
     private function getOldFieldSettings(string $fieldUid): ?array
     {
-        $query = (new Query())
-            ->select([
-                'fields.id',
-                'fields.dateCreated',
-                'fields.dateUpdated',
-                'fields.name',
-                'fields.handle',
-                'fields.context',
-                'fields.columnSuffix',
-                'fields.instructions',
-                'fields.searchable',
-                'fields.translationMethod',
-                'fields.translationKeyFormat',
-                'fields.type',
-                'fields.settings',
-                'fields.uid',
-            ])
-            ->from(['fields' => Table::FIELDS]);
+        $settings = (new Query())
+            ->select('settings')
+            ->from(['fields' => Table::FIELDS])
+            ->where(['uid' => $fieldUid])
+            ->scalar();
 
-        // todo: remove after the next breakpoint
-        if (Craft::$app->getDb()->columnExists(Table::FIELDS, 'dateDeleted')) {
-            $query->where(['fields.dateDeleted' => null]);
-        }
-
-        $query->andWhere(['fields.uid' => $fieldUid]);
-
-        $field = $query->one();
-
-        if ($field) {
+        if ($settings) {
             try {
-                return Json::decode($field['settings']);
+                return Json::decode($settings);
             } catch (Throwable $e) {
                 // fail silently
             }
