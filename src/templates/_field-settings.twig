@@ -305,17 +305,12 @@
         </section>
       </div>
 
-      {% set classes = [] %}
-      {% if not isJson %}
-        {% set classes = classes|push('hidden') %}
-      {% endif %}
-      {% if readOnly %}
-        {% set classes = classes|push('disabled') %}
-      {% endif %}
-
       {% tag 'div' with {
         id: 'config-options-json-container',
-        class: classes|join(' '),
+        class: {
+          hidden: not isJson,
+          disabled: readOnly,
+        }|filter|keys,
       } %}
         {% set wrapperClasses = wrapperClasses|push(field.hasErrors('json') ? 'has-errors') %}
         {{ codeEditor.textarea(
@@ -332,16 +327,12 @@
         ) }}
       {% endtag %}
 
-      {% set classes = [] %}
-      {% if not isJs %}
-        {% set classes = classes|push('hidden') %}
-      {% endif %}
-      {% if readOnly %}
-        {% set classes = classes|push('disabled') %}
-      {% endif %}
       {% tag 'div' with {
         id: 'config-options-js-container',
-        class: classes|join(' ')
+        class: {
+          hidden: not isJs,
+          disabled: readOnly,
+        }|filter|keys,
       } %}
         {{ codeEditor.textarea(
           {
