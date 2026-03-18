@@ -5,8 +5,12 @@ namespace craft\ckeditor\migrations;
 use Craft;
 use craft\ckeditor\Field;
 use craft\db\Migration;
+use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Json;
 use craft\helpers\ProjectConfig;
+use Throwable;
 
 /**
  * m260220_182920_drop_cke_configs migration.
@@ -29,6 +33,14 @@ class m260220_182920_drop_cke_configs extends Migration
             }
 
             $settings = ProjectConfig::unpackAssociativeArrays($fieldConfig['settings']);
+
+            // if we've already lost the ckeConfig and we have some new properties (e.g. toolbar)
+            // we need to get the "old" field's settings directly from the database (not from the memoized array)
+            if (!isset($settings['ckeConfig']) && isset($settings['toolbar'])) {
+                $fieldUid = str_replace('fields.', '', $fieldPath);
+                $settings = $this->getOldFieldSettings($fieldUid) ?? $settings;
+            }
+
             $ckeConfigUid = ArrayHelper::remove($settings, 'ckeConfig');
             $expandEntryButtons = ArrayHelper::remove($settings, 'expandEntryButtons') ?? false;
 
@@ -89,5 +101,24 @@ class m260220_182920_drop_cke_configs extends Migration
     {
         echo "m260220_182920_drop_cke_configs cannot be reverted.\n";
         return false;
+    }
+
+    private function getOldFieldSettings(string $fieldUid): ?array
+    {
+        $settings = (new Query())
+            ->select('settings')
+            ->from(['fields' => Table::FIELDS])
+            ->where(['uid' => $fieldUid])
+            ->scalar();
+
+        if ($settings) {
+            try {
+                return Json::decode($settings);
+            } catch (Throwable $e) {
+                // fail silently
+            }
+        }
+
+        return null;
     }
 }
