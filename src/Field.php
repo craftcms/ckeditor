@@ -405,6 +405,64 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         }
     }
 
+    /** @var array<string|false> */
+    private static array $cssFileContents = [];
+    /** @var array<array|false> */
+    private static array $jsonFileContents = [];
+    /** @var array<string|false> */
+    private static array $jsFileContents = [];
+
+    private static function cssFileContents(string $file): ?string
+    {
+        if (!isset(self::$cssFileContents[$file])) {
+            $path = self::configFilePath($file);
+            if (file_exists($path)) {
+                self::$cssFileContents[$file] = file_get_contents($path);
+            } else {
+                self::$cssFileContents[$file] = false;
+                Craft::warning("Could not load CKEditor CSS file \"$file\".", __METHOD__);
+            }
+        }
+        return self::$cssFileContents[$file] ?: null;
+    }
+
+    private static function jsonFileContents(string $file): array
+    {
+        if (!isset(self::$jsonFileContents[$file])) {
+            $path = self::configFilePath($file);
+            try {
+                self::$jsonFileContents[$file] = Json::decodeFromFile($path) ?? [];
+            } catch (InvalidArgumentException $e) {
+                Craft::warning("Could not decode JSON from CKEditor config file \"$file\": " . $e->getMessage(), __METHOD__);
+                self::$jsonFileContents[$file] = [];
+            }
+        }
+
+        return self::$jsonFileContents[$file];
+    }
+
+    private static function jsFileContents(string $file): ?string
+    {
+        if (!isset(self::$jsFileContents[$file])) {
+            $path = self::configFilePath($file);
+            if (file_exists($path)) {
+                self::$jsFileContents[$file] = file_get_contents($path);
+            } else {
+                self::$jsFileContents[$file] = false;
+                Craft::warning("Could not load CKEditor config JS file \"$file\".", __METHOD__);
+            }
+        }
+        return self::$jsFileContents[$file] ?: null;
+    }
+
+    /**
+     * @since 5.3.0
+     */
+    public static function configFilePath(string $file): string
+    {
+        return sprintf('%s/ckeditor/%s', Craft::$app->getPath()->getConfigPath(), $file);
+    }
+
     /**
      * Normalizes an entry type into a `craft\ckeditor\models\EntryType` object.
      *
@@ -472,10 +530,22 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     public ?string $js = null;
 
     /**
+     * @var string|null The config file that should be used to configure CKEditor.
+     * @since 5.3.0
+     */
+    public ?string $jsFile = null;
+
+    /**
      * @var string|null CSS styles that should be registered for the field.
      * @since 5.0.0
      */
     public ?string $css = null;
+
+    /**
+     * @var string|null The CSS file that should be used to style CKEditor contents.
+     * @since 5.3.0
+     */
+    public ?string $cssFile = null;
 
     /**
      * @var int|null The total number of words allowed.
@@ -604,30 +674,51 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             $config['ckeConfig'],
         );
 
-        if (!array_key_exists('options', $config)) {
-            // Only use `json` or `js`, not both
-            if (!empty($config['json'])) {
-                unset($config['js']);
-                $config['json'] = trim($config['json']);
-                if ($config['json'] === '' || preg_match('/^\{\s*\}$/', $config['json'])) {
-                    unset($config['json']);
-                }
-            } else {
-                unset($config['json']);
-                if (isset($config['js'])) {
+        if (isset($config['configMode'])) {
+            switch ($config['configMode']) {
+                case 'js':
                     $config['js'] = trim($config['js']);
                     if ($config['js'] === '' || preg_match('/^return\s*\{\s*\}$/', $config['js'])) {
                         unset($config['js']);
                     }
-                }
+                    unset($config['json'], $config['jsFile']);
+                    break;
+                case 'file':
+                    if (empty($config['jsFile'])) {
+                        $config['jsFile'] = null;
+                    }
+                    unset($config['json'], $config['js']);
+                    break;
+                default:
+                    $config['json'] = trim($config['json']);
+                    if ($config['json'] === '' || preg_match('/^\{\s*\}$/', $config['json'])) {
+                        unset($config['json']);
+                    }
+                    unset($config['js'], $config['file']);
+                    break;
             }
+
+            unset($config['configMode']);
         }
 
-        if (isset($config['css'])) {
-            $config['css'] = trim($config['css']);
-            if ($config['css'] === '') {
-                unset($config['css']);
+        if (isset($config['cssMode'])) {
+            switch ($config['cssMode']) {
+                case 'file':
+                    if (empty($config['cssFile'])) {
+                        $config['cssFile'] = null;
+                    }
+                    unset($config['css']);
+                    break;
+                default:
+                    $config['css'] = trim($config['css']);
+                    if ($config['css'] === '') {
+                        unset($config['css']);
+                    }
+                    unset($config['file']);
+                    break;
             }
+
+            unset($config['cssMode']);
         }
 
         if (isset($config['entryTypes']) && $config['entryTypes'] === '') {
@@ -994,11 +1085,23 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
 
         $jsonSchemaUri = sprintf('https://craft-code-editor.com/%s', $view->namespaceInputId('config-options-json'));
 
+        $configMode = match(true) {
+            !empty($this->js) => 'js',
+            !empty($this->jsFile) => 'file',
+            default => 'json',
+        };
+
+        $cssMode = match(true) {
+            !empty($this->cssFile) => 'file',
+            default => 'css',
+        };
+
         return $view->renderTemplate('ckeditor/_field-settings.twig', [
             'field' => $this,
             'importStatements' => CkeditorConfig::getImportStatements(),
             'toolbarBuilderId' => $view->namespaceInputId('toolbar-builder'),
             'configOptionsId' => $view->namespaceInputId('config-options'),
+            'cssOptionsId' => $view->namespaceInputId('css-options'),
             'toolbarItems' => CkeditorConfig::normalizeToolbarItems(CkeditorConfig::$toolbarItems),
             'plugins' => CkeditorConfig::getAllPlugins(),
             'jsonSchema' => CkeditorConfigSchema::create(),
@@ -1006,6 +1109,18 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             'advanceLinkOptions' => CkeditorConfig::advanceLinkOptions(),
             'entryTypes' => $this->getEntryTypes(),
             'userGroupOptions' => $userGroupOptions,
+            'jsFileOptions' => $this->configOptions(
+                dir: 'ckeditor',
+                only: ['*.json', '*.js'],
+                includeDefault: false,
+                includeExtensions: true,
+            ),
+            'cssFileOptions' => $this->configOptions(
+                dir: 'ckeditor',
+                only: ['*.css'],
+                includeDefault: false,
+                includeExtensions: true,
+            ),
             'purifierConfigOptions' => $this->configOptions('htmlpurifier'),
             'baseIconsUrl' => "$bundle->baseUrl/images",
             'volumeOptions' => $volumeOptions,
@@ -1016,6 +1131,8 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
                     'value' => null,
                 ],
             ], $transformOptions),
+            'configMode' => $configMode,
+            'cssMode' => $cssMode,
             'readOnly' => $readOnly,
         ]);
     }
@@ -1369,23 +1486,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         ]);
         $this->trigger(self::EVENT_MODIFY_CONFIG, $event);
 
-        if (isset($this->options)) {
-            // translate the placeholder text
-            if (isset($this->options['placeholder']) && is_string($this->options['placeholder'])) {
-                $this->options['placeholder'] = Craft::t('site', $this->options['placeholder']);
-            }
-
-            $configOptionsJs = Json::encode($this->options);
-        } elseif (isset($this->js)) {
-            $configOptionsJs = <<<JS
-(() => {
-  $this->js
-})()
-JS;
-        } else {
-            $configOptionsJs = '{}';
-        }
-
         $removePlugins = Collection::empty();
 
         // remove MediaEmbedToolbar for now
@@ -1435,17 +1535,28 @@ JS;
         $importCompliantUiLanguage = BaseCkeditorPackageAsset::getImportCompliantLanguage(BaseCkeditorPackageAsset::uiLanguage());
         $uiTranslationImport = "import coreTranslations from 'ckeditor5/translations/$importCompliantUiLanguage.js';";
 
-        $view->registerScriptWithVars(fn($baseConfigJs, $toolbarJs, $languageJs, $showWordCountJs, $wordLimitJs, $characterLimitJs, $imageMode) => <<<JS
+        $configJs = $this->configJs() ?? '{}';
+
+        $view->registerScriptWithVars(fn(
+            $baseConfigJs,
+            $toolbarJs,
+            $languageJs,
+            $showWordCountJs,
+            $wordLimitJs,
+            $characterLimitJs,
+            $imageMode,
+        ) => <<<JS
 $imports
 $uiTranslationImport
 import {create} from '@craftcms/ckeditor';
 
 (($) => {
   let instance;
+  const customConfig = $configJs;
   const config = Object.assign({
     translations: [coreTranslations],
     language: $languageJs,
-  }, $baseConfigJs, $configOptionsJs, {
+  }, $baseConfigJs, customConfig, {
     plugins: $configPlugins,
     removePlugins: []
   });
@@ -1459,7 +1570,7 @@ import {create} from '@craftcms/ckeditor';
   // special case for heading config, because of the Heading Levels
   // see https://github.com/craftcms/ckeditor/issues/431
   const baseHeadings = $baseConfigJs?.heading?.options;
-  const configOptionHeadings = $configOptionsJs?.heading?.options;
+  const configOptionHeadings = customConfig?.heading?.options;
   const nativeHeadingModels = ['paragraph', 'heading1', 'heading2', 'heading3', 'heading4', 'heading5', 'heading6'];
 
   if (baseHeadings && configOptionHeadings && baseHeadings != configOptionHeadings) {
@@ -1572,8 +1683,8 @@ JS,
             ]);
         }
 
-        if ($this->css) {
-            $css = $this->css;
+        $css = $this->css();
+        if ($css) {
             $imports = [];
             preg_match_all('/@import .+;?/m', $css, $importMatches);
             for ($i = 0; $i < count($importMatches[0]); $i++) {
@@ -1599,6 +1710,47 @@ JS,
                 'element-id' => $element?->id,
             ],
         ]);
+    }
+
+    private function configJs(): ?string
+    {
+        if (isset($this->jsFile) && strtolower(pathinfo($this->jsFile, PATHINFO_EXTENSION)) === 'json') {
+            $this->options = self::jsonFileContents($this->jsFile);
+        }
+
+        if (isset($this->options)) {
+            // translate the placeholder text
+            if (isset($this->options['placeholder']) && is_string($this->options['placeholder'])) {
+                $this->options['placeholder'] = Craft::t('site', $this->options['placeholder']);
+            }
+
+            return Json::encode($this->options);
+        }
+
+        if (isset($this->jsFile)) {
+            $js = self::jsFileContents($this->jsFile);
+        } else {
+            $js = $this->js;
+        }
+
+        if ($js === null) {
+            return '{}';
+        }
+
+        return <<<JS
+(() => {
+  $js
+})()
+JS;
+    }
+
+    private function css(): ?string
+    {
+        if (isset($this->cssFile)) {
+            return self::cssFileContents($this->cssFile);
+        }
+
+        return $this->css;
     }
 
     /**
