@@ -1085,13 +1085,13 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
 
         $jsonSchemaUri = sprintf('https://craft-code-editor.com/%s', $view->namespaceInputId('config-options-json'));
 
-        $configMode = match(true) {
+        $configMode = match (true) {
             !empty($this->js) => 'js',
             !empty($this->jsFile) => 'file',
             default => 'json',
         };
 
-        $cssMode = match(true) {
+        $cssMode = match (true) {
             !empty($this->cssFile) => 'file',
             default => 'css',
         };
@@ -1535,7 +1535,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         $importCompliantUiLanguage = BaseCkeditorPackageAsset::getImportCompliantLanguage(BaseCkeditorPackageAsset::uiLanguage());
         $uiTranslationImport = "import coreTranslations from 'ckeditor5/translations/$importCompliantUiLanguage.js';";
 
-        $configJs = $this->configJs() ?? '{}';
+        $configJs = $this->configJs();
 
         $view->registerScriptWithVars(fn(
             $baseConfigJs,
@@ -1712,7 +1712,7 @@ JS,
         ]);
     }
 
-    private function configJs(): ?string
+    private function configJs(): string
     {
         if (isset($this->jsFile) && strtolower(pathinfo($this->jsFile, PATHINFO_EXTENSION)) === 'json') {
             $this->options = self::jsonFileContents($this->jsFile);
