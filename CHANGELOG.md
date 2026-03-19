@@ -1,5 +1,11 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- It’s now possible to set the “Config Options” setting to a JS or JSON file within `config/ckeditor/`. ([#540](https://github.com/craftcms/ckeditor/pull/540))
+- It’s now possible to set the “Custom Styles” setting to a CSS file within `config/ckeditor/`. ([#540](https://github.com/craftcms/ckeditor/pull/540))
+- The v5 migration now automatically creates JS/JSON/CSS files within `config/ckeditor/` for any Config Options/Custom Styles from CKEditor Configs that were used by two or more fields. ([#540](https://github.com/craftcms/ckeditor/pull/540))
+
 ## 5.2.1 - 2026-03-18
 
 - Fixed a bug where `@import` statements within custom styles weren’t working. ([#538](https://github.com/craftcms/ckeditor/pull/538))
