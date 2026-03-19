@@ -12,6 +12,7 @@ export default Garnish.Base.extend({
   mode: null,
   lastCodeMode: null,
   $container: null,
+  $modeInput: null,
   $jsonContainer: null,
   $jsContainer: null,
   $fileContainer: null,
@@ -19,14 +20,14 @@ export default Garnish.Base.extend({
   jsEditor: null,
   defaults: null,
 
-  init: function (id, jsonSchemaUri, mode) {
+  init: function (id, jsonSchemaUri, mode, hasFiles) {
     this.jsonSchemaUri = jsonSchemaUri;
     this.mode = mode;
     if (this.mode !== 'file') {
       this.lastCodeMode = mode;
     }
     this.$container = $(`#${id}`);
-    this.$ckeConfigModeInput = $(`#${id}-mode`);
+    this.$modeInput = $(`#${id}-mode`);
     this.$jsonContainer = $(`#${id}-json-container`);
     this.$jsContainer = $(`#${id}-js-container`);
     this.$fileContainer = $(`#${id}-file-container`);
@@ -43,7 +44,9 @@ export default Garnish.Base.extend({
     new Craft.Listbox($modePicker, {
       onChange: ($selectedOption) => {
         this.mode = $selectedOption.data('mode');
-        this.$ckeConfigModeInput.val(this.mode);
+        if (this.mode !== 'file' || hasFiles) {
+          this.$modeInput.val(this.mode);
+        }
         $containers.addClass('hidden');
         switch (this.mode) {
           case 'json':

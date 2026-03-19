@@ -421,7 +421,7 @@
             text: 'File',
           }) }}
         </section>
-        <input type="hidden" id="css-mode" name="cssMode" value="{{ cssMode }}">
+        <input type="hidden" id="css-options-mode" name="cssMode" value="{{ cssMode }}">
       </div>
 
       {% tag 'div' with {
@@ -479,10 +479,24 @@
     {{ importStatements|raw }}
 
     function initializeConfig() {
-      const configOptions = new ConfigOptions("{{ configOptionsId }}", "{{ jsonSchemaUri }}", "{{ configMode }}");
-      new ToolbarBuilder("{{ toolbarBuilderId }}", configOptions, [{{ plugins | join(',') }}]);
+      const configOptions = new ConfigOptions(
+        {{ configOptionsId|json_encode|raw }},
+        {{ jsonSchemaUri|json_encode|raw }},
+        {{ configMode|json_encode|raw }},
+        {{ (jsFileOptions is not empty)|json_encode|raw }}
+      );
 
-      new CssOptions("{{ cssOptionsId }}", "{{ cssMode }}");
+      new ToolbarBuilder(
+        "{{ toolbarBuilderId }}",
+        configOptions,
+        [{{ plugins | join(',') }}]
+      );
+
+      new CssOptions(
+        {{ cssOptionsId|json_encode|raw }},
+        {{ cssMode|json_encode|raw }},
+        {{ (cssFileOptions is not empty)|json_encode|raw }}
+      );
 
       (() => {
         // Register the config options JSON schema

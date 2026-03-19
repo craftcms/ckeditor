@@ -35,17 +35,17 @@ const ToolbarBuilder = Garnish.Base.extend({
       const h = a.ui.componentFactory;
       for (const i of h.names())
         this.components[i] = h.create(i);
-      const l = JSON.parse(this.$container.attr("data-available-items"));
-      for (let i = 0; i < l.length; i++) {
-        const s = l[i];
+      const c = JSON.parse(this.$container.attr("data-available-items"));
+      for (let i = 0; i < c.length; i++) {
+        const s = c[i];
         if (s.length > 1) {
           const d = this.value.findIndex(
-            (c) => s.some((f) => f.button === c)
+            (l) => s.some((f) => f.button === l)
           );
           if (d !== -1) {
-            for (let c = 0; c < s.length; c++)
-              if (this.value[d + c] !== s[c].button) {
-                l.splice(i, 1, ...s.map((f) => [f])), i += s.length - 1;
+            for (let l = 0; l < s.length; l++)
+              if (this.value[d + l] !== s[l].button) {
+                c.splice(i, 1, ...s.map((f) => [f])), i += s.length - 1;
                 break;
               }
           }
@@ -100,8 +100,8 @@ const ToolbarBuilder = Garnish.Base.extend({
               else {
                 const d = i.data("componentNames");
                 s = this.renderComponentGroup(d);
-                for (const c of d) {
-                  const f = l.flat().find(({ button: g }) => g === c);
+                for (const l of d) {
+                  const f = c.flat().find(({ button: g }) => g === l);
                   f && f.configOption && e.addSetting(f.configOption);
                 }
               }
@@ -113,16 +113,16 @@ const ToolbarBuilder = Garnish.Base.extend({
               const s = $(i.data("sourceItem"));
               if (i.remove(), this.drag.$draggee = i = s, !this.draggingSeparator)
                 for (const d of s.data("componentNames")) {
-                  const c = l.flat().find(({ button: f }) => f === d);
-                  c && c.configOption && e.removeSetting(c.configOption);
+                  const l = c.flat().find(({ button: f }) => f === d);
+                  l && l.configOption && e.removeSetting(l.configOption);
                 }
             }
             if (!this.draggingSeparator) {
               i.removeClass("hidden");
               const s = Craft.orientation === "ltr" ? "margin-right" : "margin-left", d = i.css(s);
               i.css(s, "");
-              const c = i.css(s);
-              i.css(s, d), i.stop().velocity({ [s]: c }, 200, () => {
+              const l = i.css(s);
+              i.css(s, d), i.stop().velocity({ [s]: l }, 200, () => {
                 i.css(s, "");
               });
             }
@@ -136,7 +136,7 @@ const ToolbarBuilder = Garnish.Base.extend({
         }
       });
       const u = {};
-      for (let i of l) {
+      for (let i of c) {
         const s = this.renderComponentGroup(i);
         s && (s.appendTo(this.$sourceContainer), u[i.map((d) => d.button).join(",")] = s[0], this.value.includes(i[0].button) && s.addClass("hidden"));
       }
@@ -145,18 +145,18 @@ const ToolbarBuilder = Garnish.Base.extend({
       )[0], this.$items = $();
       for (let i = 0; i < this.value.length; i++) {
         const s = this.value[i];
-        let d, c;
+        let d, l;
         if (s === "|")
-          d = this.renderSeparator().appendTo(this.$targetContainer), c = "|";
+          d = this.renderSeparator().appendTo(this.$targetContainer), l = "|";
         else {
-          const f = l.find(
+          const f = c.find(
             (g) => g.some((p) => p.button === s)
           );
           if (!f || (d = this.renderComponentGroup(f), !d))
             continue;
-          d.appendTo(this.$targetContainer), c = f.map((g) => g.button).join(","), i += f.length - 1;
+          d.appendTo(this.$targetContainer), l = f.map((g) => g.button).join(","), i += f.length - 1;
         }
-        d.data("sourceItem", u[c]), this.$items = this.$items.add(d);
+        d.data("sourceItem", u[l]), this.$items = this.$items.add(d);
       }
     }).catch(console.error);
   },
@@ -175,8 +175,8 @@ const ToolbarBuilder = Garnish.Base.extend({
       let a;
       try {
         a = this.renderComponent(r);
-      } catch (l) {
-        console.warn(l);
+      } catch (c) {
+        console.warn(c);
         continue;
       }
       e.push(a);
@@ -247,20 +247,21 @@ const ConfigOptions = Garnish.Base.extend({
   mode: null,
   lastCodeMode: null,
   $container: null,
+  $modeInput: null,
   $jsonContainer: null,
   $jsContainer: null,
   $fileContainer: null,
   jsonEditor: null,
   jsEditor: null,
   defaults: null,
-  init: function(id, jsonSchemaUri, mode) {
-    this.jsonSchemaUri = jsonSchemaUri, this.mode = mode, this.mode !== "file" && (this.lastCodeMode = mode), this.$container = $(`#${id}`), this.$ckeConfigModeInput = $(`#${id}-mode`), this.$jsonContainer = $(`#${id}-json-container`), this.$jsContainer = $(`#${id}-js-container`), this.$fileContainer = $(`#${id}-file-container`), this.jsonEditor = window.monacoEditorInstances[`${id}-json`], this.jsEditor = window.monacoEditorInstances[`${id}-js`];
+  init: function(id, jsonSchemaUri, mode, hasFiles) {
+    this.jsonSchemaUri = jsonSchemaUri, this.mode = mode, this.mode !== "file" && (this.lastCodeMode = mode), this.$container = $(`#${id}`), this.$modeInput = $(`#${id}-mode`), this.$jsonContainer = $(`#${id}-json-container`), this.$jsContainer = $(`#${id}-js-container`), this.$fileContainer = $(`#${id}-file-container`), this.jsonEditor = window.monacoEditorInstances[`${id}-json`], this.jsEditor = window.monacoEditorInstances[`${id}-js`];
     const $modePicker = this.$container.children(".btngroup");
     this.defaults = {};
     const $containers = this.$jsonContainer.add(this.$jsContainer).add(this.$fileContainer);
     new Craft.Listbox($modePicker, {
       onChange: (t) => {
-        switch (this.mode = t.data("mode"), this.$ckeConfigModeInput.val(this.mode), $containers.addClass("hidden"), this.mode) {
+        switch (this.mode = t.data("mode"), (this.mode !== "file" || hasFiles) && this.$modeInput.val(this.mode), $containers.addClass("hidden"), this.mode) {
           case "json":
             if (this.lastCodeMode === "js") {
               const e = this.jsEditor.getModel().getValue();
@@ -450,14 +451,15 @@ const ConfigOptions = Garnish.Base.extend({
 const CssOptions = Garnish.Base.extend({
   mode: null,
   $container: null,
+  $modeInput: null,
   $cssContainer: null,
   $fileContainer: null,
-  init: function(t, e) {
-    this.mode = e, this.$container = $(`#${t}`), this.$ckeConfigModeInput = $(`#${t}-mode`), this.$cssContainer = $(`#${t}-css-container`), this.$fileContainer = $(`#${t}-file-container`);
-    const n = this.$container.children(".btngroup"), o = this.$cssContainer.add(this.$fileContainer);
-    new Craft.Listbox(n, {
-      onChange: (r) => {
-        switch (this.mode = r.data("mode"), this.$ckeConfigModeInput.val(this.mode), o.addClass("hidden"), this.mode) {
+  init: function(t, e, n) {
+    this.mode = e, this.$container = $(`#${t}`), this.$modeInput = $(`#${t}-mode`), this.$cssContainer = $(`#${t}-css-container`), this.$fileContainer = $(`#${t}-file-container`);
+    const o = this.$container.children(".btngroup"), r = this.$cssContainer.add(this.$fileContainer);
+    new Craft.Listbox(o, {
+      onChange: (a) => {
+        switch (this.mode = a.data("mode"), (this.mode !== "file" || n) && this.$modeInput.val(this.mode), r.addClass("hidden"), this.mode) {
           case "css":
             this.$cssContainer.removeClass("hidden");
             break;
@@ -492,8 +494,8 @@ const CssOptions = Garnish.Base.extend({
       e
     );
     o.on("show", () => {
-      let h = o.$trigger.parents(".chip"), l = this.getConfigFromComponent(h);
-      o.toggleItem(r, !l.expanded), o.toggleItem(a, l.expanded);
+      let h = o.$trigger.parents(".chip"), c = this.getConfigFromComponent(h);
+      o.toggleItem(r, !c.expanded), o.toggleItem(a, c.expanded);
     }), this.applyIndicators(t, this.getConfig(e)), this.base(t);
   },
   async applyConfigChange(t, e, n) {
@@ -516,12 +518,12 @@ const CssOptions = Garnish.Base.extend({
       throw Craft.cp.displayError((i = (u = s == null ? void 0 : s.response) == null ? void 0 : u.data) == null ? void 0 : i.message), s;
     }
     let o = t.find(".indicators");
-    const r = this.getInput(t), a = $(n.chip).find(".indicators"), h = this.getInput($(n.chip)), l = this.getConfig(h);
+    const r = this.getInput(t), a = $(n.chip).find(".indicators"), h = this.getInput($(n.chip)), c = this.getConfig(h);
     if (o.length == 0) {
       const s = t.find(".chip-label");
       o = $('<div class="indicators">').appendTo(s);
     }
-    o.replaceWith(a), this.updateConfig(r, l);
+    o.replaceWith(a), this.updateConfig(r, c);
   },
   updateConfig: function(t, e) {
     t.val(JSON.stringify(e));

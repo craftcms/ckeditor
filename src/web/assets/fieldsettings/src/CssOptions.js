@@ -8,13 +8,14 @@
 export default Garnish.Base.extend({
   mode: null,
   $container: null,
+  $modeInput: null,
   $cssContainer: null,
   $fileContainer: null,
 
-  init: function (id, mode) {
+  init: function (id, mode, hasFiles) {
     this.mode = mode;
     this.$container = $(`#${id}`);
-    this.$ckeConfigModeInput = $(`#${id}-mode`);
+    this.$modeInput = $(`#${id}-mode`);
     this.$cssContainer = $(`#${id}-css-container`);
     this.$fileContainer = $(`#${id}-file-container`);
     const $modePicker = this.$container.children('.btngroup');
@@ -24,7 +25,9 @@ export default Garnish.Base.extend({
     new Craft.Listbox($modePicker, {
       onChange: ($selectedOption) => {
         this.mode = $selectedOption.data('mode');
-        this.$ckeConfigModeInput.val(this.mode);
+        if (this.mode !== 'file' || hasFiles) {
+          this.$modeInput.val(this.mode);
+        }
         $containers.addClass('hidden');
         switch (this.mode) {
           case 'css':

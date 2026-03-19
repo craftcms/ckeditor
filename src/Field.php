@@ -694,7 +694,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
                     if ($config['json'] === '' || preg_match('/^\{\s*\}$/', $config['json'])) {
                         unset($config['json']);
                     }
-                    unset($config['js'], $config['file']);
+                    unset($config['js'], $config['jsFile']);
                     break;
             }
 
@@ -714,7 +714,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
                     if ($config['css'] === '') {
                         unset($config['css']);
                     }
-                    unset($config['file']);
+                    unset($config['cssFile']);
                     break;
             }
 
