@@ -9,81 +9,92 @@ import './fieldsettings.css';
 
 export default Garnish.Base.extend({
   jsonSchemaUri: null,
-  language: null,
+  mode: null,
+  lastCodeMode: null,
   $container: null,
+  $modeInput: null,
   $jsonContainer: null,
   $jsContainer: null,
+  $fileContainer: null,
   jsonEditor: null,
   jsEditor: null,
   defaults: null,
 
-  init: function (id, jsonSchemaUri) {
+  init: function (id, jsonSchemaUri, mode, hasFiles) {
     this.jsonSchemaUri = jsonSchemaUri;
+    this.mode = mode;
+    if (this.mode !== 'file') {
+      this.lastCodeMode = mode;
+    }
     this.$container = $(`#${id}`);
+    this.$modeInput = $(`#${id}-mode`);
     this.$jsonContainer = $(`#${id}-json-container`);
     this.$jsContainer = $(`#${id}-js-container`);
+    this.$fileContainer = $(`#${id}-file-container`);
     this.jsonEditor = window.monacoEditorInstances[`${id}-json`];
     this.jsEditor = window.monacoEditorInstances[`${id}-js`];
-    const $languagePicker = this.$container.children('.btngroup');
-
-    if (this.$jsonContainer.hasClass('hidden')) {
-      this.language = 'js';
-    } else {
-      this.language = 'json';
-    }
+    const $modePicker = this.$container.children('.btngroup');
 
     this.defaults = {};
 
-    let lastJsValue = null;
+    const $containers = this.$jsonContainer
+      .add(this.$jsContainer)
+      .add(this.$fileContainer);
 
-    new Craft.Listbox($languagePicker, {
+    new Craft.Listbox($modePicker, {
       onChange: ($selectedOption) => {
-        this.language = $selectedOption.data('language');
-        switch (this.language) {
+        this.mode = $selectedOption.data('mode');
+        if (this.mode !== 'file' || hasFiles) {
+          this.$modeInput.val(this.mode);
+        }
+        $containers.addClass('hidden');
+        switch (this.mode) {
           case 'json':
-            // get the js value
-            lastJsValue = this.jsEditor.getModel().getValue();
-            // check if the js value has any functions in it
-            if (this.jsContainsFunctions(lastJsValue)) {
-              // if it does - show the confirmation dialogue
-              if (
-                !confirm(
-                  Craft.t(
-                    'ckeditor',
-                    'Your JavaScript config contains functions. If you switch to JSON, they will be lost. Would you like to continue?',
-                  ),
-                )
-              ) {
-                // if user cancels - go back to the previous option (js)
-                let listbox = $languagePicker.data('listbox');
-                listbox.$options.not('[data-language="json"]').trigger('click');
-                break;
+            // was JS the previously-selected non-file mode?
+            if (this.lastCodeMode === 'js') {
+              // get the js value
+              const js = this.jsEditor.getModel().getValue();
+              // check if the js value has any functions in it
+              if (this.jsContainsFunctions(js)) {
+                // if it does - show the confirmation dialogue
+                if (
+                  !confirm(
+                    Craft.t(
+                      'ckeditor',
+                      'Your JavaScript config contains functions. If you switch to JSON, they will be lost. Would you like to continue?',
+                    ),
+                  )
+                ) {
+                  // if user cancels - go back to JS
+                  const listbox = $modePicker.data('listbox');
+                  listbox.$options.filter('[data-mode="js"]').trigger('click');
+                  break;
+                }
               }
+
+              const json = this.js2json(js);
+              this.jsonEditor.getModel().setValue(json || '{\n  \n}');
+              this.jsEditor.getModel().setValue('');
             }
-            // if user confirms that they want to proceed, or we don't have functions in the js value,
-            // go ahead and switch
+
             this.$jsonContainer.removeClass('hidden');
-            this.$jsContainer.addClass('hidden');
-            const json = this.js2json(lastJsValue);
-            lastJsValue = null;
-            this.jsonEditor.getModel().setValue(json || '{\n  \n}');
-            this.jsEditor.getModel().setValue('');
             break;
           case 'js':
-            this.$jsonContainer.addClass('hidden');
-            this.$jsContainer.removeClass('hidden');
-            let js;
-            // if we have the last remembered js value, it means we're switching back after cancelled confirmation,
-            // so let's use it
-            if (lastJsValue !== null) {
-              js = lastJsValue;
-              lastJsValue = null;
-            } else {
-              js = this.json2js(this.jsonEditor.getModel().getValue());
+            if (this.lastCodeMode === 'json') {
+              const json = this.jsonEditor.getModel().getValue();
+              const js = this.json2js(json);
+              this.jsEditor.getModel().setValue(js || 'return {\n  \n}');
+              this.jsonEditor.getModel().setValue('');
             }
-            this.jsEditor.getModel().setValue(js || 'return {\n  \n}');
-            this.jsonEditor.getModel().setValue('');
+            this.$jsContainer.removeClass('hidden');
             break;
+          case 'file':
+            this.$fileContainer.removeClass('hidden');
+            break;
+        }
+
+        if (this.mode !== 'file') {
+          this.lastCodeMode = this.mode;
         }
       },
     });
@@ -116,7 +127,7 @@ export default Garnish.Base.extend({
 
   getConfig: function () {
     let json;
-    if (this.language === 'json') {
+    if (this.mode === 'json') {
       json = Craft.trim(this.jsonEditor.getModel().getValue()) || '{}';
     } else {
       const value = Craft.trim(this.jsEditor.getModel().getValue());
@@ -137,7 +148,7 @@ export default Garnish.Base.extend({
   setConfig: function (config) {
     const json = this.config2json(config);
 
-    if (this.language === 'json') {
+    if (this.mode === 'json') {
       this.jsonEditor.getModel().setValue(json);
     } else {
       const js = this.json2js(json);

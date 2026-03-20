@@ -277,52 +277,58 @@
     }),
     id: 'config-options',
     field,
-    errors: field.getErrors('json')|merge(field.getErrors('js')),
+    errors: [
+      ...field.getErrors('json'),
+      ...field.getErrors('js'),
+      ...field.getErrors('jsFile'),
+    ],
     data: {'error-key': 'json'},
   } %}
     {% block input %}
       {% import 'codeeditor/codeEditor.twig' as codeEditor %}
-      {% set lang = field.js ? 'js' : 'json' %}
-      {% set isJson = lang == 'json' %}
-      {% set isJs = lang == 'js' %}
+      {% import '_includes/forms.twig' as forms %}
 
       <div id="config-options">
-        <section class="btngroup btngroup--exclusive small" aria-label="{{ 'Config option code language options' }}">
+        <section class="btngroup btngroup--exclusive small" aria-label="{{ 'CKEditor config option mode'|t('ckeditor') }}">
           {{ tag('button', {
             type: 'button',
-            class: ['btn', 'small', isJson ? 'active']|filter,
-            aria: {pressed: isJson ? 'true'}|filter,
-            data: {language: 'json'},
+            class: ['btn', 'small', configMode == 'json' ? 'active']|filter,
+            aria: {pressed: configMode == 'json' ? 'true'}|filter,
+            data: {mode: 'json'},
             text: 'JSON',
           }) }}
           {{ tag('button', {
             type: 'button',
-            class: ['btn', 'small', isJs ? 'active' : null]|filter,
-            aria: {pressed: isJs ? 'true'}|filter,
-            data: {language: 'js'},
+            class: ['btn', 'small', configMode == 'js' ? 'active' : null]|filter,
+            aria: {pressed: configMode == 'js' ? 'true'}|filter,
+            data: {mode: 'js'},
             text: 'JavaScript',
           }) }}
+          {{ tag('button', {
+            type: 'button',
+            class: ['btn', 'small', configMode == 'file' ? 'active' : null]|filter,
+            aria: {pressed: configMode == 'file' ? 'true'}|filter,
+            data: {mode: 'file'},
+            text: 'File',
+          }) }}
         </section>
+        <input type="hidden" id="config-options-mode" name="configMode" value="{{ configMode }}">
       </div>
-
-      {% set classes = [] %}
-      {% if not isJson %}
-        {% set classes = classes|push('hidden') %}
-      {% endif %}
-      {% if readOnly %}
-        {% set classes = classes|push('disabled') %}
-      {% endif %}
 
       {% tag 'div' with {
         id: 'config-options-json-container',
-        class: classes|join(' '),
+        class: {
+          'mt-s': true,
+          hidden: configMode != 'json',
+          disabled: readOnly,
+        }|filter|keys,
       } %}
         {% set wrapperClasses = wrapperClasses|push(field.hasErrors('json') ? 'has-errors') %}
         {{ codeEditor.textarea(
           {
             id: 'config-options-json',
             name: 'json',
-            value: isJson ? (field.json ?? "{\n  \n}"),
+            value: field.json ?? "{\n  \n}",
           },
           'ckeditor:EditorConfigJson',
           baseMonacoOptions|merge({
@@ -332,22 +338,19 @@
         ) }}
       {% endtag %}
 
-      {% set classes = [] %}
-      {% if not isJs %}
-        {% set classes = classes|push('hidden') %}
-      {% endif %}
-      {% if readOnly %}
-        {% set classes = classes|push('disabled') %}
-      {% endif %}
       {% tag 'div' with {
         id: 'config-options-js-container',
-        class: classes|join(' ')
+        class: {
+          'mt-s': true,
+          hidden: configMode != 'js',
+          disabled: readOnly,
+        }|filter|keys,
       } %}
         {{ codeEditor.textarea(
           {
             id: 'config-options-js',
             name: 'js',
-            value: isJs ? (field.js ?? "return {\n  \n}"),
+            value: field.js ?? "return {\n  \n}",
           },
           'ckeditor:EditorConfigJs',
           baseMonacoOptions|merge({
@@ -356,16 +359,144 @@
           baseCodeEditorOptions|merge({wrapperClass: wrapperClasses|join(' ')}),
         ) }}
       {% endtag %}
+
+      {% tag 'div' with {
+        id: 'config-options-file-container',
+        class: {
+          'mt-s': true,
+          hidden: configMode != 'file',
+          disabled: readOnly,
+        }|filter|keys,
+      } %}
+        {% if jsFileOptions|length %}
+          <p class="light mb-xs">
+            {{ 'Choose a JS/JSON file within `config/ckeditor/`.'|t('ckeditor')|md(inlineOnly=true) }}
+          </p>
+          {{ forms.select({
+            id: 'config-options-file',
+            name: 'jsFile',
+            options: jsFileOptions,
+            value: field.jsFile,
+          }) }}
+        {% else %}
+          <p class="warning with-icon">
+            {{ 'No JS/JSON files exist within `config/ckeditor/`.'|t('ckeditor')|md(inlineOnly=true) }}
+          </p>
+        {% endif %}
+      {% endtag %}
+    {% endblock %}
+  {% endembed %}
+
+  {% embed '_includes/forms/field.twig' with {
+    label: 'Custom Styles'|t('ckeditor'),
+    instructions: 'Define CSS styles that should be registered for editors, such as [style classes]({url}).'|t('ckeditor', {
+      url: 'https://ckeditor.com/docs/ckeditor5/latest/features/style.html',
+    }),
+    id: 'css',
+    field,
+    errors: [
+      ...field.getErrors('css'),
+      ...field.getErrors('cssFile'),
+    ],
+    data: {'error-key': 'css'},
+  } %}
+    {% block input %}
+      {% import 'codeeditor/codeEditor.twig' as codeEditor %}
+      {% import '_includes/forms.twig' as forms %}
+
+      <div id="css-options">
+        <section class="btngroup btngroup--exclusive small" aria-label="{{ 'CSS mode'|t('ckeditor') }}">
+          {{ tag('button', {
+            type: 'button',
+            class: ['btn', 'small', cssMode == 'css' ? 'active']|filter,
+            aria: {pressed: cssMode == 'css' ? 'true'}|filter,
+            data: {mode: 'css'},
+            text: 'CSS',
+          }) }}
+          {{ tag('button', {
+            type: 'button',
+            class: ['btn', 'small', cssMode == 'file' ? 'active' : null]|filter,
+            aria: {pressed: cssMode == 'file' ? 'true'}|filter,
+            data: {mode: 'file'},
+            text: 'File',
+          }) }}
+        </section>
+        <input type="hidden" id="css-options-mode" name="cssMode" value="{{ cssMode }}">
+      </div>
+
+      {% tag 'div' with {
+        id: 'css-options-css-container',
+        class: {
+          'mt-s': true,
+          hidden: cssMode != 'css',
+          disabled: readOnly,
+        }|filter|keys,
+      } %}
+        {% set wrapperClasses = wrapperClasses|push(field.hasErrors('css') ? 'has-errors') %}
+        {{ codeEditor.textarea(
+          {
+            id: 'css-options-css',
+            name: 'css',
+            value: cssMode == 'css' ? field.css,
+          },
+          'CodeEditor',
+          baseMonacoOptions|merge({
+            language: 'css',
+          }),
+          baseCodeEditorOptions|merge({wrapperClass: wrapperClasses|join(' ')}),
+        ) }}
+      {% endtag %}
+
+      {% tag 'div' with {
+        id: 'css-options-file-container',
+        class: {
+          'mt-s': true,
+          hidden: cssMode != 'file',
+          disabled: readOnly,
+        }|filter|keys,
+      } %}
+        {% if cssFileOptions|length %}
+          <p class="light mb-xs">
+            {{ 'Choose a CSS file within `config/ckeditor/`.'|t('ckeditor')|md(inlineOnly=true) }}
+          </p>
+          {{ forms.select({
+            id: 'css-options-file',
+            name: 'cssFile',
+            options: cssFileOptions,
+            value: field.cssFile,
+          }) }}
+        {% else %}
+          <p class="warning with-icon">
+            {{ 'No CSS files exist within `config/ckeditor/`.'|t('ckeditor')|md(inlineOnly=true) }}
+          </p>
+        {% endif %}
+      {% endtag %}
     {% endblock %}
   {% endembed %}
 
   <script type="module">
-    import {ConfigOptions, ToolbarBuilder} from '@craftcms/ckeditor-config';
+    import {ConfigOptions, CssOptions, ToolbarBuilder} from '@craftcms/ckeditor-config';
     {{ importStatements|raw }}
 
     function initializeConfig() {
-      const configOptions = new ConfigOptions("{{ configOptionsId }}", "{{ jsonSchemaUri }}");
-      new ToolbarBuilder("{{ toolbarBuilderId }}", configOptions, [{{ plugins | join(',') }}]);
+      const configOptions = new ConfigOptions(
+        {{ configOptionsId|json_encode|raw }},
+        {{ jsonSchemaUri|json_encode|raw }},
+        {{ configMode|json_encode|raw }},
+        {{ (jsFileOptions is not empty)|json_encode|raw }}
+      );
+
+      new ToolbarBuilder(
+        "{{ toolbarBuilderId }}",
+        configOptions,
+        [{{ plugins | join(',') }}]
+      );
+
+      new CssOptions(
+        {{ cssOptionsId|json_encode|raw }},
+        {{ cssMode|json_encode|raw }},
+        {{ (cssFileOptions is not empty)|json_encode|raw }}
+      );
 
       (() => {
         // Register the config options JSON schema
@@ -399,24 +530,6 @@
 
     checkWindow();
   </script>
-
-  {% set wrapperClasses = wrapperClasses|push(readOnly ? 'disabled') %}
-  {{ codeEditor.textareaField(
-    {
-      label: 'Custom Styles'|t('ckeditor'),
-      instructions: 'Define CSS styles that should be registered for editors, such as [style classes]({url}).'|t('ckeditor', {
-      url: 'https://ckeditor.com/docs/ckeditor5/latest/features/style.html',
-    }),
-      id: 'css',
-      name: 'css',
-      value: field.css,
-    },
-    'CodeEditor',
-    baseMonacoOptions|merge({
-      language: 'css',
-    }),
-    baseCodeEditorOptions|merge({wrapperClass: wrapperClasses|join(' ')}),
-  ) }}
 
   {{ forms.lightswitchField({
     label: "Purify HTML"|t('ckeditor'),
