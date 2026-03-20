@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## 5.3.1 - 2026-03-20
+
+- Fixed an error that could occur when updating to CKEditor 5.
+
 ## 5.3.0 - 2026-03-20
 
 - It’s now possible to set the “Config Options” setting to a JS or JSON file within `config/ckeditor/`. ([#540](https://github.com/craftcms/ckeditor/pull/540))
