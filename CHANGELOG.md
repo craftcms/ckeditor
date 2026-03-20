@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 5.3.0 - 2026-03-20
 
 - It’s now possible to set the “Config Options” setting to a JS or JSON file within `config/ckeditor/`. ([#540](https://github.com/craftcms/ckeditor/pull/540))
 - It’s now possible to set the “Custom Styles” setting to a CSS file within `config/ckeditor/`. ([#540](https://github.com/craftcms/ckeditor/pull/540))
