@@ -7,6 +7,7 @@ use craft\ckeditor\Field;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
@@ -63,40 +64,42 @@ class m260220_182920_drop_cke_configs extends Migration
             }
         }
         unset($fieldConfig);
-
-        foreach ($configCounts as $ckeConfigUid => $count) {
-            if ($count < 2 || !isset($ckeConfigs[$ckeConfigUid])) {
-                continue;
-            }
-
-            $ckeConfig = &$ckeConfigs[$ckeConfigUid];
-            $baseName = str_replace(' ', '-', $ckeConfig['name'] ?? $ckeConfigUid);
-            if (isset($configBaseNames[$baseName])) {
-                $baseName .= sprintf('-%s', mt_rand());
-            }
-            $configBaseNames[$baseName] = true;
-
-            if (isset($ckeConfig['options']) || isset($ckeConfig['js'])) {
-                if (isset($ckeConfig['options'])) {
-                    $file = "$baseName.json";
-                    Json::encodeToFile(Field::configFilePath($file), $ckeConfig['options']);
-                } else {
-                    $file = "$baseName.js";
-                    FileHelper::writeToFile(Field::configFilePath($file), $ckeConfig['js']);
+        
+        if (!App::isEphemeral()) {
+            foreach ($configCounts as $ckeConfigUid => $count) {
+                if ($count < 2 || !isset($ckeConfigs[$ckeConfigUid])) {
+                    continue;
                 }
 
-                $ckeConfig['jsFile'] = $file;
-                unset($ckeConfig['options'], $ckeConfig['js']);
-            }
+                $ckeConfig = &$ckeConfigs[$ckeConfigUid];
+                $baseName = str_replace(' ', '-', $ckeConfig['name'] ?? $ckeConfigUid);
+                if (isset($configBaseNames[$baseName])) {
+                    $baseName .= sprintf('-%s', mt_rand());
+                }
+                $configBaseNames[$baseName] = true;
 
-            if (isset($ckeConfig['css'])) {
-                $file = "$baseName.css";
-                FileHelper::writeToFile(Field::configFilePath($file), $ckeConfig['css']);
-                $ckeConfig['cssFile'] = $file;
-                unset($ckeConfig['css']);
-            }
+                if (isset($ckeConfig['options']) || isset($ckeConfig['js'])) {
+                    if (isset($ckeConfig['options'])) {
+                        $file = "$baseName.json";
+                        Json::encodeToFile(Field::configFilePath($file), $ckeConfig['options']);
+                    } else {
+                        $file = "$baseName.js";
+                        FileHelper::writeToFile(Field::configFilePath($file), $ckeConfig['js']);
+                    }
 
-            unset($ckeConfig);
+                    $ckeConfig['jsFile'] = $file;
+                    unset($ckeConfig['options'], $ckeConfig['js']);
+                }
+
+                if (isset($ckeConfig['css'])) {
+                    $file = "$baseName.css";
+                    FileHelper::writeToFile(Field::configFilePath($file), $ckeConfig['css']);
+                    $ckeConfig['cssFile'] = $file;
+                    unset($ckeConfig['css']);
+                }
+
+                unset($ckeConfig);
+            }
         }
 
         // Now update the field settings
