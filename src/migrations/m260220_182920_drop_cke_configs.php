@@ -24,6 +24,13 @@ class m260220_182920_drop_cke_configs extends Migration
     public function safeUp(): bool
     {
         $projectConfig = Craft::$app->getProjectConfig();
+
+        // Don't make the same changes twice
+        $schemaVersion = $projectConfig->get('plugins.ckeditor.schemaVersion', true);
+        if (version_compare($schemaVersion, '5.0.0.1', '>=')) {
+            return true;
+        }
+
         $fieldConfigs = $projectConfig->find(fn(array $item) => ($item['type'] ?? null) === Field::class);
         $ckeConfigs = $projectConfig->get('ckeditor.configs') ?? [];
         $entriesService = Craft::$app->getEntries();
