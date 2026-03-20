@@ -7,7 +7,6 @@ use craft\ckeditor\Field;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
-use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
@@ -24,11 +23,6 @@ class m260220_182920_drop_cke_configs extends Migration
      */
     public function safeUp(): bool
     {
-        if (App::isEphemeral()) {
-            Craft::info('Skipping migration. Cannot write files in ephemeral environment.', __METHOD__);
-            return true;
-        }
-
         $projectConfig = Craft::$app->getProjectConfig();
         $fieldConfigs = $projectConfig->find(fn(array $item) => ($item['type'] ?? null) === Field::class);
         $ckeConfigs = $projectConfig->get('ckeditor.configs') ?? [];
@@ -78,20 +72,10 @@ class m260220_182920_drop_cke_configs extends Migration
             if (isset($ckeConfig['options']) || isset($ckeConfig['js'])) {
                 if (isset($ckeConfig['options'])) {
                     $file = "$baseName.json";
-                    $path = Field::configFilePath($file);
-                    if (!file_exists($path)) {
-                        Json::encodeToFile($path, $ckeConfig['options']);
-                    } else {
-                        Craft::info("CKEditor config file already exists: $file", __METHOD__);
-                    }
+                    Json::encodeToFile(Field::configFilePath($file), $ckeConfig['options']);
                 } else {
                     $file = "$baseName.js";
-                    $path = Field::configFilePath($file);
-                    if (!file_exists($path)) {
-                        FileHelper::writeToFile($path, $ckeConfig['js']);
-                    } else {
-                        Craft::info("CKEditor config file already exists: $file", __METHOD__);
-                    }
+                    FileHelper::writeToFile(Field::configFilePath($file), $ckeConfig['js']);
                 }
 
                 $ckeConfig['jsFile'] = $file;
@@ -100,12 +84,7 @@ class m260220_182920_drop_cke_configs extends Migration
 
             if (isset($ckeConfig['css'])) {
                 $file = "$baseName.css";
-                $path = Field::configFilePath($file);
-                if (!file_exists($path)) {
-                    FileHelper::writeToFile($path, $ckeConfig['css']);
-                } else {
-                    Craft::info("CKEditor CSS file already exists: $file", __METHOD__);
-                }
+                FileHelper::writeToFile(Field::configFilePath($file), $ckeConfig['css']);
                 $ckeConfig['cssFile'] = $file;
                 unset($ckeConfig['css']);
             }
