@@ -1608,7 +1608,7 @@ class Vu extends Hn {
       const T = this._getLinkElementRefHandle();
       T ? this._showLinkTypeForm(
         this.linkTypeDropdownItemModels[T].linkOption
-      ) : this._showLinkTypeForm("default");
+      ) : this._urlInputValue().length == 0 ? (this._selectLinkTypeDropdownItem(this.linkOptions[0].refHandle), this._showLinkTypeForm(this.linkOptions[0])) : this._showLinkTypeForm("default");
     }), this.listenTo(O, "input", () => {
       this._toggleLinkTypeDropdownView();
     });
