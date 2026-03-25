@@ -142,6 +142,12 @@ export default class CraftLinkElementView extends View {
             Craft.addActionsToChip($element, actions);
             //Craft.cp.elementThumbLoader.load($element);
 
+            // only show the sites dropdown, if an element has been selected
+            this.linkUi.sitesView.siteDropdownView.buttonView.set(
+              'isVisible',
+              true,
+            );
+
             // reshuffle focus
             linkUi._alignFocus();
           } else {
