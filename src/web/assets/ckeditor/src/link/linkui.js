@@ -584,11 +584,11 @@ export default class CraftLinkUI extends Plugin {
             .bind('isOn')
             .to(linkCommand, attributeModel, (commandValue) => {
               if (commandValue === undefined) {
-                // set the initial toggle value to off after the page reload
+                // set the initial toggle value to "off" after the page reload
                 formView[attributeModel].element.value = '';
                 return false;
               } else {
-                // set the initial toggle value to on after the page reload
+                // set the initial toggle value to "on" after the page reload
                 formView[attributeModel].element.value =
                   advancedField.conversion.value;
                 return true;
