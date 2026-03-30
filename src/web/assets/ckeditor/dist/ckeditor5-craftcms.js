@@ -1229,7 +1229,9 @@ class ju extends Hn {
               const C = k.textNode || k.nodeBefore;
               i[d.model] ? f.setAttribute(
                 d.model,
-                i[d.model],
+                // for bool type options, if the value is set to true, set the attribute with empty value
+                // see https://github.com/craftcms/ckeditor/issues/551 for more info
+                d.type == "bool" && d.value == !0 ? "" : i[d.model],
                 f.createRangeOn(C)
               ) : f.removeAttribute(d.model, f.createRangeOn(C));
             } else {
@@ -1360,7 +1362,10 @@ class Lu extends Tr {
             }
           }
         ];
-        Craft.addActionsToChip(i, u), _._alignFocus();
+        Craft.addActionsToChip(i, u), this.linkUi.sitesView.siteDropdownView.buttonView.set(
+          "isVisible",
+          !0
+        ), _._alignFocus();
       } else if (((G = this.linkUi.previousLinkValue) == null ? void 0 : G.length) > 0) {
         const { formView: i } = this.linkUi._linkUI;
         i.urlInputView.fieldView.set(
@@ -1608,7 +1613,7 @@ class Vu extends Hn {
       const T = this._getLinkElementRefHandle();
       T ? this._showLinkTypeForm(
         this.linkTypeDropdownItemModels[T].linkOption
-      ) : this._showLinkTypeForm("default");
+      ) : this._urlInputValue().length == 0 ? (this._selectLinkTypeDropdownItem(this.linkOptions[0].refHandle), this._showLinkTypeForm(this.linkOptions[0])) : this._showLinkTypeForm("default");
     }), this.listenTo(O, "input", () => {
       this._toggleLinkTypeDropdownView();
     });
@@ -1685,7 +1690,7 @@ class Vu extends Hn {
       linkUi: this,
       linkOption: _,
       value: this._urlInputValue()
-    }), this.sitesView !== null && (d = (k = this.sitesView) == null ? void 0 : k.siteDropdownView) != null && d.buttonView && this.sitesView.siteDropdownView.buttonView.set("isVisible", !0));
+    }), this.sitesView !== null && (d = (k = this.sitesView) == null ? void 0 : k.siteDropdownView) != null && d.buttonView && this.sitesView.siteDropdownView.buttonView.set("isVisible", !1));
     let i = [
       this.linkTypeDropdownView,
       this.elementInputView
