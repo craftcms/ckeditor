@@ -228,7 +228,14 @@ export default class CraftLinkUI extends Plugin {
           this.linkTypeDropdownItemModels[elementRefHandle].linkOption,
         );
       } else {
-        this._showLinkTypeForm('default');
+        // if we don't have elementRefHandle and the input value is actually empty
+        // default to showing the first option from the linkOptions menu (e.g. Entry)
+        if (this._urlInputValue().length == 0) {
+          this._selectLinkTypeDropdownItem(this.linkOptions[0].refHandle);
+          this._showLinkTypeForm(this.linkOptions[0]);
+        } else {
+          this._showLinkTypeForm('default');
+        }
       }
     });
 
