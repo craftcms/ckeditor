@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 5.4.0 - 2026-03-30
 
 - New links now default to the first available link type option (usually “Entry”). ([#550](https://github.com/craftcms/ckeditor/pull/550))
 - Fixed a bug where invisible characters were being stripped out of field contents. ([#537](https://github.com/craftcms/ckeditor/issues/537))
