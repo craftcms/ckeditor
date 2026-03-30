@@ -300,9 +300,23 @@ export const create = async function (element, config) {
     }
   });
 
+  const $editorElement = $(editor.ui.view.element);
+  const $parentForm = $editorElement.parents('form');
+  let elementEditor = $parentForm.data('elementEditor');
+
   // Update the source element before the initial form value has been recorded,
   // in case the value needs to be normalized
-  editor.updateSourceElement();
+  if (!elementEditor) {
+    editor.updateSourceElement();
+  } else {
+    elementEditor.pause();
+    editor.updateSourceElement();
+    elementEditor.$container.data(
+      'initialSerializedValue',
+      elementEditor.serializeForm(true),
+    );
+    elementEditor.resume();
+  }
 
   // Keep the source element updated with changes
   editor.model.document.on('change:data', () => {
