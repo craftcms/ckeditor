@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 4.11.4 - 2026-03-30
 
 - Fixed a bug where invisible characters were being stripped out of field contents. ([#537](https://github.com/craftcms/ckeditor/issues/537))
 
