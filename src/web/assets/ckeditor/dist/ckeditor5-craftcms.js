@@ -1229,7 +1229,9 @@ class ju extends Hn {
               const C = k.textNode || k.nodeBefore;
               i[d.model] ? f.setAttribute(
                 d.model,
-                i[d.model],
+                // for bool type options, if the value is set to true, set the attribute with empty value
+                // see https://github.com/craftcms/ckeditor/issues/551 for more info
+                d.type == "bool" && d.value == !0 ? "" : i[d.model],
                 f.createRangeOn(C)
               ) : f.removeAttribute(d.model, f.createRangeOn(C));
             } else {

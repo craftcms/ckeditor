@@ -5,6 +5,7 @@
 - New links now default to the first available link type option (usually “Entry”). ([#550](https://github.com/craftcms/ckeditor/pull/550))
 - Fixed a bug where invisible characters were being stripped out of field contents. ([#537](https://github.com/craftcms/ckeditor/issues/537))
 - Fixed a bug where Link modals had empty Site menus when no element was selected. ([#534](https://github.com/craftcms/ckeditor/discussions/534), [#545](https://github.com/craftcms/ckeditor/issues/545))
+- Fixed a bug where downloadable links’ `download` attributes were getting set to the value `"download"`. ([#551](https://github.com/craftcms/ckeditor/issues/551))
 
 ## 5.3.1 - 2026-03-20
 
