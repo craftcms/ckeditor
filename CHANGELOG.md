@@ -7,6 +7,7 @@
 - Fixed a bug where Link modals had empty Site menus when no element was selected. ([#534](https://github.com/craftcms/ckeditor/discussions/534), [#545](https://github.com/craftcms/ckeditor/issues/545))
 - Fixed a bug where downloadable links’ `download` attributes were getting set to the value `"download"`. ([#551](https://github.com/craftcms/ckeditor/issues/551))
 - Fixed an error that occurred when copy/pasting a nested entry within a nested CKEditor field on a non-primary site. ([#548](https://github.com/craftcms/ckeditor/issues/548))
+- Fixed a bug where CKEditor fields with list items would get marked as dirty before any changes were actually made to them. ([#554](https://github.com/craftcms/ckeditor/issues/554))
 
 ## 5.3.1 - 2026-03-20
 
