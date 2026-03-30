@@ -404,7 +404,7 @@ final class CkeditorConfig
                 'value' => 'download',
                 'conversion' => [
                     'type' => 'bool',
-                    'value' => 'download',
+                    'value' => true,
                     'model' => 'craftDownload',
                     'view' => 'download',
                 ],

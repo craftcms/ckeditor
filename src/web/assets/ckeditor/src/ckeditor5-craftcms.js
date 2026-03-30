@@ -143,11 +143,15 @@ const handleClipboard = function (editor, plugins) {
       ) {
         let duplicatedContent = pasteContent;
         let errors = false;
-        const siteId = Craft.siteId;
+        const targetSiteId = Craft.siteId;
         let ownerId = null;
         let layoutElementUid = null;
         const editorData = editor.getData();
-        const matches = [...pasteContent.matchAll(/data-entry-id="([0-9]+)/g)];
+        const matches = [
+          ...pasteContent.matchAll(
+            /data-entry-id="([0-9]+)[^>]*data-site-id="([0-9]+)/g,
+          ),
+        ];
 
         // Stop the event emitter from calling further callbacks for this event interaction
         // we need to get duplicates and update the content snippet that's being pasted in
@@ -189,6 +193,10 @@ const handleClipboard = function (editor, plugins) {
           if (matches[i][1]) {
             entryId = matches[i][1];
           }
+          let sourceSiteId = null;
+          if (matches[i][2]) {
+            sourceSiteId = matches[i][2];
+          }
 
           if (entryId !== null) {
             // check if we're copying to a different field and if this entry ID is in the field already
@@ -224,7 +232,8 @@ const handleClipboard = function (editor, plugins) {
                 {
                   data: {
                     entryId: entryId,
-                    siteId: siteId,
+                    targetSiteId: targetSiteId,
+                    sourceSiteId: sourceSiteId,
                     targetEntryTypeIds: targetEntryTypeIds,
                     targetOwnerId: ownerId,
                     targetLayoutElementUid: layoutElementUid,
@@ -234,8 +243,14 @@ const handleClipboard = function (editor, plugins) {
                 .then((response) => {
                   if (response.data.newEntryId) {
                     duplicatedContent = duplicatedContent.replace(
-                      entryId,
-                      response.data.newEntryId,
+                      'data-entry-id="' + entryId + '"',
+                      'data-entry-id="' + response.data.newEntryId + '"',
+                    );
+                  }
+                  if (response.data.newSiteId) {
+                    duplicatedContent = duplicatedContent.replace(
+                      'data-site-id="' + sourceSiteId + '"',
+                      'data-site-id="' + response.data.newSiteId + '"',
                     );
                   }
                 })
