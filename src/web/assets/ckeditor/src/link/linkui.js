@@ -389,9 +389,11 @@ export default class CraftLinkUI extends Plugin {
         linkOption: linkOption,
         value: this._urlInputValue(),
       });
+
+      // start with a hidden sites dropdown - we only want to show it if an element is selected
       if (this.sitesView !== null) {
         if (this.sitesView?.siteDropdownView?.buttonView) {
-          this.sitesView.siteDropdownView.buttonView.set('isVisible', true);
+          this.sitesView.siteDropdownView.buttonView.set('isVisible', false);
         }
       }
     }
