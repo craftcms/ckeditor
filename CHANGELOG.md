@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed a bug where invisible characters were being stripped out of field contents. ([#537](https://github.com/craftcms/ckeditor/issues/537))
+
 ## 4.11.3 - 2026-03-05
 
 - Fixed an error that could occur if a CKEditor field’s value was instantiated without a known site ID. ([#500](https://github.com/craftcms/ckeditor/issues/500))
