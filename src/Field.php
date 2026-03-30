@@ -903,6 +903,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             $rules[] = [
                 function(ElementInterface $element) {
                     $value = strip_tags((string)$element->getFieldValue($this->handle));
+                    $value = preg_replace(StringHelper::invisibleCharsRegex(), '', $value);
                     if (mb_strlen($value) > $this->characterLimit) {
                         $element->addError(
                             "field:$this->handle",
@@ -1182,8 +1183,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         if (!$value) {
             return null;
         }
-
-        $value = preg_replace(StringHelper::invisibleCharsRegex(), '', $value);
 
         // Redactor to CKEditor syntax for <figure>
         // (https://github.com/craftcms/ckeditor/issues/96)

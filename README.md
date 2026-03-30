@@ -349,7 +349,7 @@ The command will generate a new content migration, which will need to be run on 
 ## Adding CKEditor Plugins
 
 ### First Party plugins
-If you'd like to include any of the [first party packages](https://github.com/ckeditor/ckeditor5/tree/master/packages) from CKEditor, you can call `CkeditorConfig::registerFirstPartyPackage()` in the `init` function of a custom module.
+If you'd like to include any of the [first party packages](https://github.com/ckeditor/ckeditor5/tree/master/packages) from CKEditor not [already included](https://github.com/craftcms/ckeditor/blob/5.2.1/src/helpers/CkeditorConfig.php#L26), you can call `CkeditorConfig::registerFirstPartyPackage()` in the `init` function of a custom module.
 
 ```php
 use craft\ckeditor\helpers\CkeditorConfig;

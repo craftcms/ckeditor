@@ -228,7 +228,14 @@ export default class CraftLinkUI extends Plugin {
           this.linkTypeDropdownItemModels[elementRefHandle].linkOption,
         );
       } else {
-        this._showLinkTypeForm('default');
+        // if we don't have elementRefHandle and the input value is actually empty
+        // default to showing the first option from the linkOptions menu (e.g. Entry)
+        if (this._urlInputValue().length == 0) {
+          this._selectLinkTypeDropdownItem(this.linkOptions[0].refHandle);
+          this._showLinkTypeForm(this.linkOptions[0]);
+        } else {
+          this._showLinkTypeForm('default');
+        }
       }
     });
 
@@ -382,9 +389,11 @@ export default class CraftLinkUI extends Plugin {
         linkOption: linkOption,
         value: this._urlInputValue(),
       });
+
+      // start with a hidden sites dropdown - we only want to show it if an element is selected
       if (this.sitesView !== null) {
         if (this.sitesView?.siteDropdownView?.buttonView) {
-          this.sitesView.siteDropdownView.buttonView.set('isVisible', true);
+          this.sitesView.siteDropdownView.buttonView.set('isVisible', false);
         }
       }
     }
