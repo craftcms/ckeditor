@@ -1313,7 +1313,7 @@ class Lu extends Tr {
     super.render();
     const _ = this.linkUi, E = _._linkUI, T = this.linkOption;
     this.element.addEventListener("click", function(O) {
-      (this.children[0].classList.contains("add") || O.target.classList.contains("ck-button__label")) && (E._hideUI(), _._showElementSelectorModal(T));
+      (this.children[0].classList.contains("add") || O.target.classList.contains("ck-button__label")) && (E._hideUI(!1), _._showElementSelectorModal(T));
     }), this.element.children.length == 0 && Craft.sendActionRequest(
       "POST",
       "ckeditor/ckeditor/render-element-with-supported-sites",
@@ -1764,7 +1764,7 @@ class Vu extends Hn {
                 }
             });
           setTimeout(() => {
-            this._linkUI._addToolbarView(), this._linkUI._balloon.showStack("main"), this._linkUI._addFormView(), this._linkUI._startUpdatingUI();
+            this._linkUI._showUI(!0);
           }, 100);
         } else
           f();
