@@ -522,15 +522,9 @@ export default class CraftLinkUI extends Plugin {
           }
 
           setTimeout(() => {
-            // once element has been selected, show the form view so content authors can change the selected site
+            // once element has been selected, keep showing the balloon, so content authors can e.g. change the selected site
             // copied from https://github.com/ckeditor/ckeditor5/blob/v45.0.0/packages/ckeditor5-link/src/linkui.ts#L965-L976
-            this._linkUI._addToolbarView();
-
-            // Be sure panel with link is visible.
-            this._linkUI._balloon.showStack('main');
-
-            this._linkUI._addFormView();
-            this._linkUI._startUpdatingUI();
+            this._linkUI._showUI(true);
             // end copied
           }, 100);
         } else {
