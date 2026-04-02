@@ -60,6 +60,8 @@
   --ck-color-input-background: var(--input-bg) !important;
   --ck-color-panel-background: var(--white) !important;
   --ck-ui-component-min-height: var(--input-height) !important;
+
+  --ck-color-switch-button-on-background: var(--ck-color-base-action);
 }
 
 .ck.ck-sticky-panel .ck-sticky-panel__content_sticky .ck.ck-toolbar {
