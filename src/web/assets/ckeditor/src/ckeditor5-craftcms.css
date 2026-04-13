@@ -263,8 +263,8 @@ body.ck-fullscreen .slideout-container {
 }
 
 /* link ui */
-.ck-link-form .ck.ck-button-bold,
-.ck-link-form a.ck.ck-button-bold {
+.ck-form__row .ck.ck-button-bold,
+.ck-form__row a.ck.ck-button-bold {
   font-weight: normal;
 }
 
