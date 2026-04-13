@@ -773,11 +773,11 @@ class Pu extends $n {
    */
   async _getCardHtml(_) {
     var u, f, w;
-    let E = _.getAttribute("cardHtml") ?? null, T = $(this.editor.sourceElement).parents(".field");
-    const O = $(T[0]).data("layout-element");
+    let E = _.getAttribute("cardHtml") ?? null;
     if (E)
       return { cardHtml: E };
-    const Q = _.getAttribute("entryId") ?? null, i = _.getAttribute("siteId") ?? null;
+    let T = $(this.editor.sourceElement).parents(".field");
+    const O = $(T[0]).data("layout-element"), Q = _.getAttribute("entryId") ?? null, i = _.getAttribute("siteId") ?? null;
     try {
       const p = this.editor, h = $(p.ui.view.element).closest(
         "form,.lp-editor-container"
