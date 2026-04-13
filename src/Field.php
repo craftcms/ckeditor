@@ -1311,13 +1311,21 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     {
         $isRevision = $entry->getIsRevision();
 
+        $classes = [$isRevision ? 'cke-entry-card' : null];
+        $owner = $entry->getOwner();
+        if ($owner) {
+            if ($entry->getOwner()->hasErrors($this->handle) && in_array($entry->id, $entry->getOwner()->getInvalidNestedElementIds())) {
+                $classes[] = 'error';
+            }
+        }
+
         return Cp::elementCardHtml($entry, [
             'autoReload' => !$isRevision,
             'showDraftName' => !$isRevision,
             'showStatus' => !$isRevision,
             'showThumb' => !$isRevision,
             'attributes' => [
-                'class' => array_filter([$isRevision ? 'cke-entry-card' : null]),
+                'class' => array_filter($classes),
             ],
             'hyperlink' => false,
             'showEditButton' => false,
