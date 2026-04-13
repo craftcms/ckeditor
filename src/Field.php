@@ -1314,7 +1314,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         $classes = [$isRevision ? 'cke-entry-card' : null];
         $owner = $entry->getOwner();
         if ($owner) {
-            if ($entry->getOwner()->hasErrors($this->handle) && in_array($entry->id, $entry->getOwner()->getInvalidNestedElementIds())) {
+            if ($owner->hasErrors($this->handle) && in_array($entry->id, $owner->getInvalidNestedElementIds())) {
                 $classes[] = 'error';
             }
         }
