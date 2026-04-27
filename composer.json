@@ -20,8 +20,8 @@
     "email": "support@craftcms.com",
     "issues": "https://github.com/craftcms/ckeditor/issues?state=open",
     "source": "https://github.com/craftcms/ckeditor",
-    "docs": "https://github.com/craftcms/ckeditor/blob/master/README.md",
-    "rss": "https://github.com/craftcms/ckeditor/commits/master.atom"
+    "docs": "https://github.com/craftcms/ckeditor/blob/5.x/README.md",
+    "rss": "https://github.com/craftcms/ckeditor/commits/5.x.atom"
   },
   "require": {
     "php": "^8.2",
@@ -49,7 +49,7 @@
   "extra": {
     "name": "CKEditor",
     "handle": "ckeditor",
-    "documentationUrl": "https://github.com/craftcms/ckeditor/blob/master/README.md"
+    "documentationUrl": "https://github.com/craftcms/ckeditor/blob/5.x/README.md"
   },
   "config": {
     "platform": {
