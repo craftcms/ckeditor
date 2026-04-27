@@ -66,7 +66,7 @@ export default class CraftLinkElementView extends View {
         this.children[0].classList.contains('add') ||
         ev.target.classList.contains('ck-button__label')
       ) {
-        _linkUI._hideUI();
+        _linkUI._hideUI(false);
         linkUi._showElementSelectorModal(linkOption);
       }
     });
