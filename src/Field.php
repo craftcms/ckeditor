@@ -899,6 +899,12 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     {
         $rules = [];
 
+        $rules[] = [
+            fn(ElementInterface $element) => $this->validateEntries($element),
+            'on' => [Entry::SCENARIO_ESSENTIALS, Entry::SCENARIO_DEFAULT, Entry::SCENARIO_LIVE],
+            'skipOnEmpty' => false,
+        ];
+
         if ($this->characterLimit) {
             $rules[] = [
                 function(ElementInterface $element) {
@@ -943,6 +949,53 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         }
 
         return $rules;
+    }
+
+    private function validateEntries(ElementInterface $element): void
+    {
+        $value = $element->getFieldValue($this->handle);
+        if ($value === null) {
+            return;
+        }
+
+        $chunks = $value->getChunks(false)
+            ->filter(fn(BaseChunk $chunk) => !$chunk instanceof EntryChunk || $chunk->getEntry() !== null);
+
+        /** @var Entry[] $entries */
+        $entries = $chunks
+            ->filter(fn(BaseChunk $chunk) => $chunk instanceof EntryChunk)
+            ->keyBy(fn(EntryChunk $chunk) => $chunk->entryId)
+            ->map(fn(EntryChunk $chunk) => $chunk->getEntry())
+            ->all();
+
+        $scenario = $element->getScenario();
+        $invalidEntryIds = [];
+
+        foreach ($entries as $entry) {
+            $entry->setOwner($element);
+
+            if (
+                $scenario === Entry::SCENARIO_ESSENTIALS ||
+                ($entry->enabled && $scenario === Entry::SCENARIO_LIVE)
+            ) {
+                $entry->setScenario($scenario);
+            }
+
+            if (!$entry->validate()) {
+                $invalidEntryIds[] = $entry->id;
+            }
+        }
+
+        if (!empty($invalidEntryIds)) {
+            $element->addInvalidNestedElementIds($invalidEntryIds);
+            $element->addError(
+                "field:{$this->handle}",
+                Craft::t('app', 'Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.', [
+                    'count' => count($invalidEntryIds),
+                    'fieldName' => $this->getUiLabel(),
+                ]),
+            );
+        }
     }
 
     /**
@@ -1258,13 +1311,22 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     {
         $isRevision = $entry->getIsRevision();
 
+        $classes = [$isRevision ? 'cke-entry-card' : null];
+        /** @var NestedElementInterface $entry */
+        $owner = $entry->getOwner();
+        if ($owner) {
+            if ($owner->hasErrors($this->handle) && in_array($entry->id, $owner->getInvalidNestedElementIds())) {
+                $classes[] = 'error';
+            }
+        }
+
         return Cp::elementCardHtml($entry, [
             'autoReload' => !$isRevision,
             'showDraftName' => !$isRevision,
             'showStatus' => !$isRevision,
             'showThumb' => !$isRevision,
             'attributes' => [
-                'class' => array_filter([$isRevision ? 'cke-entry-card' : null]),
+                'class' => array_filter($classes),
             ],
             'hyperlink' => false,
             'showEditButton' => false,
