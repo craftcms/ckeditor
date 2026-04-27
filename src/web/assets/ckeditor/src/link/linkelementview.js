@@ -66,7 +66,7 @@ export default class CraftLinkElementView extends View {
         this.children[0].classList.contains('add') ||
         ev.target.classList.contains('ck-button__label')
       ) {
-        _linkUI._hideUI();
+        _linkUI._hideUI(false);
         linkUi._showElementSelectorModal(linkOption);
       }
     });
@@ -143,10 +143,12 @@ export default class CraftLinkElementView extends View {
             //Craft.cp.elementThumbLoader.load($element);
 
             // only show the sites dropdown, if an element has been selected
-            this.linkUi.sitesView.siteDropdownView.buttonView.set(
-              'isVisible',
-              true,
-            );
+            if (this.linkUi.sitesView?.siteDropdownView?.buttonView) {
+              this.linkUi.sitesView?.siteDropdownView.buttonView.set(
+                'isVisible',
+                true,
+              );
+            }
 
             // reshuffle focus
             linkUi._alignFocus();

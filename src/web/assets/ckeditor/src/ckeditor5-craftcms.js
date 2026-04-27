@@ -282,7 +282,8 @@ export const create = async function (element, config) {
 
   config.licenseKey = 'GPL';
 
-  const editor = await ClassicEditor.create(element, config);
+  config.attachTo = element;
+  const editor = await ClassicEditor.create(config);
 
   if (Craft.showCkeditorInspector && Craft.userIsAdmin) {
     CKEditorInspector.attach(editor);
