@@ -1,5 +1,10 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed an error that could occur when selecting an entry in the Link modal. ([#556](https://github.com/craftcms/ckeditor/issues/556))
+- Fixed a bug where the current text selection wasn’t respected when adding a new link. ([#558](https://github.com/craftcms/ckeditor/issues/558))
+
 ## 5.4.0 - 2026-03-30
 
 - New links now default to the first available link type option (usually “Entry”). ([#550](https://github.com/craftcms/ckeditor/pull/550))
