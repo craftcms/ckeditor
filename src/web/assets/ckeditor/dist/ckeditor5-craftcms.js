@@ -10874,8 +10874,8 @@ const qu = function(Te) {
     }
   });
 }, ed = async function(Te, _) {
-  typeof Te == "string" && (Te = document.querySelector(`#${Te}`)), _.licenseKey = "GPL";
-  const E = await wu.create(Te, _);
+  typeof Te == "string" && (Te = document.querySelector(`#${Te}`)), _.licenseKey = "GPL", _.attachTo = Te;
+  const E = await wu.create(_);
   Craft.showCkeditorInspector && Craft.userIsAdmin && Wu.attach(E), E.editing.view.change((i) => {
     const u = E.editing.view.document.getRoot();
     if (typeof _.accessibleFieldName < "u" && _.accessibleFieldName.length) {
