@@ -44,6 +44,24 @@
     system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto',
     'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
     'Helvetica Neue', sans-serif;
+
+  --ck-color-button-action-background: var(--primary-button-bg) !important;
+  --ck-color-button-action-hover-background: var(
+    --primary-button-bg--hover
+  ) !important;
+  --ck-color-button-action-active-background: var(
+    --primary-button-bg--active
+  ) !important;
+  --ck-color-button-action-disabled-background: #d38d8f !important;
+  --ck-color-button-action-text: var(--primary-button-text-color) !important;
+
+  --ck-border-radius: var(--input-border-radius) !important;
+  --ck-color-input-border: var(--input-border-color) !important;
+  --ck-color-input-background: var(--input-bg) !important;
+  --ck-color-panel-background: var(--white) !important;
+  --ck-ui-component-min-height: var(--input-height) !important;
+
+  --ck-color-switch-button-on-background: var(--ck-color-base-action);
 }
 
 .ck.ck-sticky-panel .ck-sticky-panel__content_sticky .ck.ck-toolbar {
@@ -245,6 +263,28 @@ body.ck-fullscreen .slideout-container {
 }
 
 /* link ui */
+.ck-form__row .ck.ck-button-bold,
+.ck-form__row a.ck.ck-button-bold {
+  font-weight: normal;
+}
+
+.ck.ck-labeled-field-view.ck-labeled-field-view_empty .ck.ck-label {
+  /* that's the placeholder text inside an input; e.g. link > advanced fields or bookmark > bookmark name */
+  padding-top: 3px !important;
+}
+
+.ck.ck-form .link-type-group .ck.ck-dropdown .ck-dropdown__button:not(:focus) {
+  border: none;
+  border-radius: 5px;
+}
+
+.link-type-group {
+  --ck-color-button-default-background: var(--button-bg) !important;
+  --ck-color-button-default-hover-background: var(
+    --button-bg--hover
+  ) !important;
+}
+
 .link-type-group .ck.ck-labeled-field-view {
   width: 100%;
 }
@@ -256,6 +296,7 @@ body.ck-fullscreen .slideout-container {
 .ck.ck-form__row > :not(.ck-label) + * {
   margin-inline-start: 0;
 }
+
 .link-type-group.ck.ck-form__row .ck.ck-labeled-field-view {
   margin-block-start: var(--ck-spacing-small);
 }
@@ -298,6 +339,14 @@ body.ck-fullscreen .slideout-container {
 
 .ck.link-type-advanced .ck.ck-labeled-field-view {
   margin-block: var(--ck-spacing-large);
+}
+
+@media screen and (max-width: 600px) {
+  .ck.ck-form.ck-link-form.ck-responsive-form
+    .ck.link-type-advanced
+    .ck-labeled-field-view {
+    margin-block: var(--ck-spacing-large) 0;
+  }
 }
 
 .ck.link-type-advanced .pane.hairline .ck.ck-button {
