@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Updated CKEditor 5 to 48.0.0. ([#518](https://github.com/craftcms/ckeditor/pull/518))
+- Updated CKEditor 5 to 48.0.1. ([#518](https://github.com/craftcms/ckeditor/pull/518))
 - Fixed an error that could occur when selecting an entry in the Link modal. ([#556](https://github.com/craftcms/ckeditor/issues/556))
 - Fixed a bug where the current text selection wasn’t respected when adding a new link. ([#558](https://github.com/craftcms/ckeditor/issues/558))
 - Fixed a bug where nested entry cards weren’t showing validation errors. ([#564](https://github.com/craftcms/ckeditor/issues/564))
