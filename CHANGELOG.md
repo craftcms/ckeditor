@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 5.5.0 - 2026-04-27
 
 - Improved the styling of Link modals. ([#562](https://github.com/craftcms/ckeditor/pull/562))
 - Updated CKEditor 5 to 48.0.1. ([#518](https://github.com/craftcms/ckeditor/pull/518))
