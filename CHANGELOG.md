@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Improved the styling of Link modals. ([#562](https://github.com/craftcms/ckeditor/pull/562))
 - Updated CKEditor 5 to 48.0.1. ([#518](https://github.com/craftcms/ckeditor/pull/518))
 - Fixed an error that could occur when selecting an entry in the Link modal. ([#556](https://github.com/craftcms/ckeditor/issues/556))
 - Fixed a bug where the current text selection wasn’t respected when adding a new link. ([#558](https://github.com/craftcms/ckeditor/issues/558))
