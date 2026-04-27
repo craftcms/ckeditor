@@ -4,6 +4,7 @@
 
 - Fixed an error that could occur when selecting an entry in the Link modal. ([#556](https://github.com/craftcms/ckeditor/issues/556))
 - Fixed a bug where the current text selection wasn’t respected when adding a new link. ([#558](https://github.com/craftcms/ckeditor/issues/558))
+- Fixed a bug where nested entry cards weren’t showing validation errors. ([#564](https://github.com/craftcms/ckeditor/issues/564))
 
 ## 5.4.0 - 2026-03-30
 

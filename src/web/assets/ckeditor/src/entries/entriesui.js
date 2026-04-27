@@ -269,11 +269,18 @@ export default class CraftEntriesUI extends Plugin {
     let $element = this._getCardElement(entryId);
     const ownerId = $element.data('owner-id');
 
+    let params = {
+      siteId: siteId,
+    };
+
+    let parents = $element.parents('.field');
+    if (parents.length && $(parents[0]).hasClass('has-errors')) {
+      params['prevalidate'] = true;
+    }
+
     const slideout = Craft.createElementEditor(this.elementType, null, {
       elementId: entryId,
-      params: {
-        siteId: siteId,
-      },
+      params: params,
       onLoad: () => {
         slideout.elementEditor.on('update', () => {
           Craft.Preview.refresh();
