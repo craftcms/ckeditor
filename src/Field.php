@@ -66,6 +66,7 @@ use craft\models\ImageTransform;
 use craft\models\Section;
 use craft\models\Volume;
 use craft\services\Drafts;
+use craft\services\Elements;
 use craft\services\ElementSources;
 use craft\web\View;
 use GraphQL\Type\Definition\Type;
@@ -1249,6 +1250,114 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             '<div class="page-break" style="page-break-after:always;"><span style="display:none;">&nbsp;</span></div>',
             $value,
         );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementSave(ElementInterface $element, bool $isNew): void
+    {
+        if ($element->duplicateOf || $element->isFieldDirty($this->handle)) {
+            $this->updateReferences($element, $isNew);
+        }
+
+        parent::afterElementSave($element, $isNew);
+    }
+
+    private function updateReferences(ElementInterface $element, bool $isNew): void
+    {
+        $value = $element->getFieldValue($this->handle);
+        $targetIds = array_flip($this->getRefTargetIds($value));
+        $db = Craft::$app->getDb();
+
+        // Get the old references
+        if (!$isNew) {
+            $oldRefs = (new Query())
+                ->select(['id', 'targetId'])
+                ->from([Plugin::TABLE_REFERENCES])
+                ->where([
+                    'fieldId' => $this->id,
+                    'fieldInstanceUid' => $this->layoutElement->uid,
+                    'sourceId' => $element->id,
+                    'sourceSiteId' => $element->siteId,
+                ])
+                ->all($db);
+        } else {
+            $oldRefs = [];
+        }
+
+        $deleteIds = [];
+
+        foreach ($oldRefs as $ref) {
+            [$refId, $targetId] = [
+                $ref['id'],
+                $ref['targetId'],
+            ];
+
+            // Does this reference still exist?
+            if (isset($targetIds[$targetId])) {
+                // Avoid re-inserting it
+                unset($targetIds[$targetId]);
+            } else {
+                $deleteIds[] = $refId;
+            }
+        }
+
+        if (empty($deleteIds) && empty($targetIds)) {
+            // Nothing to do here
+            return;
+        }
+
+        $db->transaction(function() use ($element, $deleteIds, $targetIds, $db) {
+            // Add the new ones
+            if (!empty($targetIds)) {
+                $values = [];
+                foreach (array_keys($targetIds) as $targetId) {
+                    $values[] = [
+                        $this->id,
+                        $this->layoutElement->uid,
+                        $element->id,
+                        $element->siteId,
+                        $targetId,
+                    ];
+                }
+                Db::batchInsert(Plugin::TABLE_REFERENCES, [
+                    'fieldId',
+                    'fieldInstanceUid',
+                    'sourceId',
+                    'sourceSiteId',
+                    'targetId',
+                ], $values, $db);
+            }
+
+            if (!empty($deleteIds)) {
+                Db::delete(Plugin::TABLE_REFERENCES, [
+                    'id' => $deleteIds,
+                ], [], $db);
+            }
+        });
+    }
+
+    private function getRefTargetIds(FieldData|string|null $value): array
+    {
+        if ($value instanceof FieldData) {
+            $value = $value->getRawContent();
+        }
+
+        if (!$value) {
+            return [];
+        }
+
+        $refIds = [];
+        preg_match_all(Elements::REF_TAG_PATTERN, $value, $matches);
+
+        foreach ($matches['ref'] ?? [] as $ref) {
+            if (is_numeric($ref)) {
+                $refIds[] = (int)$ref;
+            }
+        }
+
+        return $refIds;
     }
 
     /**

@@ -9,11 +9,13 @@ namespace craft\ckeditor;
 
 use Craft;
 use craft\base\Element;
+use craft\ckeditor\deletionblockers\ReferenceDeletionBlocker;
 use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
 use craft\ckeditor\web\assets\fieldsettings\FieldSettingsAsset;
 use craft\elements\NestedElementManager;
 use craft\events\AssetBundleEvent;
+use craft\events\DefineElementDeletionBlockersEvent;
 use craft\events\ModelEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\UrlHelper;
@@ -29,6 +31,8 @@ use yii\base\Event;
  */
 class Plugin extends \craft\base\Plugin
 {
+    const TABLE_REFERENCES = '{{%ckeditor_references}}';
+
     /**
      * Registers an asset bundle for a CKEditor package.
      *
@@ -45,7 +49,7 @@ class Plugin extends \craft\base\Plugin
     private static array $ckeditorPackages = [];
     private static array $ckeditorImports = [];
 
-    public string $schemaVersion = '5.0.0.1';
+    public string $schemaVersion = '5.6.0.0';
 
     public function init(): void
     {
@@ -99,6 +103,10 @@ class Plugin extends \craft\base\Plugin
             foreach ($this->entryManagers($element) as $entryManager) {
                 $entryManager->maintainNestedElements($element, $event->isNew);
             }
+        });
+
+        Event::on(Element::class, Element::EVENT_DEFINE_DELETION_BLOCKERS, function(DefineElementDeletionBlockersEvent $event) {
+            $event->blockers[] = new ReferenceDeletionBlocker($event->elements, $event->hardDelete);
         });
 
         Event::on(Element::class, Element::EVENT_BEFORE_DELETE, function(ModelEvent $event) {
