@@ -1619,7 +1619,10 @@ import {create} from '@craftcms/ckeditor';
     language: $languageJs,
   }, $baseConfigJs, customConfig, {
     plugins: $configPlugins,
-    removePlugins: []
+    removePlugins: [
+      ...($baseConfigJs?.removePlugins ?? []),
+      ...(customConfig?.removePlugins ?? []),
+    ]
   });
 
 
