@@ -1,5 +1,12 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed a bug where custom `removePlugins` config values weren’t being respected. ([#578](https://github.com/craftcms/ckeditor/issues/578))
+- Fixed a bug where consecutive “Open in new tab?” and “Download” advanced link options were being displayed side-by-side. ([#575](https://github.com/craftcms/ckeditor/issues/575))
+- Fixed a bug where CKEditor fields with list items could get marked as dirty before any changes were actually made to them. ([#554](https://github.com/craftcms/ckeditor/issues/554))
+- Fixed a bug where “Copy value from site…” actions weren’t working properly with CKEditor fields. ([#580](https://github.com/craftcms/ckeditor/issues/580))
+
 ## 5.5.0 - 2026-04-27
 
 - Improved the styling of Link modals. ([#562](https://github.com/craftcms/ckeditor/pull/562))

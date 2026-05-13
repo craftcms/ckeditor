@@ -325,12 +325,28 @@ export const create = async function (element, config) {
   if (!elementEditor) {
     editor.updateSourceElement();
   } else {
+    const fieldName = editor.sourceElement.name;
+    const preVal = $(editor.sourceElement).val();
     elementEditor.pause();
     editor.updateSourceElement();
-    elementEditor.$container.data(
-      'initialSerializedValue',
-      elementEditor.serializeForm(true),
-    );
+    const postVal = $(editor.sourceElement).val();
+    if (preVal !== postVal) {
+      // Only patch the specific field's encoded value in initialSerializedValue.
+      // If preVal isn't found there, this is a re-init (e.g. "copy value from site")
+      // and the change should remain visible as a real edit — so we leave it alone.
+      const initialValue = elementEditor.$container.data(
+        'initialSerializedValue',
+      );
+      if (typeof initialValue === 'string') {
+        elementEditor.$container.data(
+          'initialSerializedValue',
+          initialValue.replace(
+            $.param({[fieldName]: preVal}),
+            $.param({[fieldName]: postVal}),
+          ),
+        );
+      }
+    }
     elementEditor.resume();
   }
 
