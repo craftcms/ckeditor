@@ -1,5 +1,8 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+- Fixed a bug where custom `removePlugins` config values weren’t being respected. ([#578](https://github.com/craftcms/ckeditor/issues/578))
+
 ## 5.5.0 - 2026-04-27
 
 - Improved the styling of Link modals. ([#562](https://github.com/craftcms/ckeditor/pull/562))
