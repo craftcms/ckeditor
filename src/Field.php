@@ -1266,6 +1266,10 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
 
     private function updateReferences(ElementInterface $element, bool $isNew): void
     {
+        if (!Craft::$app->getDb()->tableExists(Plugin::TABLE_REFERENCES)) {
+            return;
+        }
+
         $value = $element->getFieldValue($this->handle);
         $targetIds = array_flip($this->getRefTargetIds($value));
         $db = Craft::$app->getDb();

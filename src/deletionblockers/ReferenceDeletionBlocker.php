@@ -24,12 +24,16 @@ class ReferenceDeletionBlocker extends BaseDeletionBlocker
 
     public function init()
     {
-        $this->referenceCount = (new Query())
-            ->from(Plugin::TABLE_REFERENCES)
-            ->where([
-                'targetId' => $this->elements->ids()->all(),
-            ])
-            ->count();
+        if (Craft::$app->getDb()->tableExists(Plugin::TABLE_REFERENCES)) {
+            $this->referenceCount = (new Query())
+                ->from(Plugin::TABLE_REFERENCES)
+                ->where([
+                    'targetId' => $this->elements->ids()->all(),
+                ])
+                ->count();
+        } else {
+            $this->referenceCount = 0;
+        }
 
         parent::init();
     }
