@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 5.6.1 - 2026-05-13
 
 - Fixed errors that could occur if the `ckeditor_references` table didn’t exist yet. ([#584](https://github.com/craftcms/ckeditor/issues/584))
 
