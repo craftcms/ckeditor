@@ -12,7 +12,6 @@ use craft\base\Batchable;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
-use craft\behaviors\CustomFieldBehavior;
 use craft\ckeditor\Field;
 use craft\db\QueryBatcher;
 use craft\fieldlayoutelements\CustomField;
@@ -86,7 +85,7 @@ class ReplaceReferences extends BaseBatchedElementJob
             ->groupBy(fn(array $ref) => $ref['fieldInstanceUid']);
 
         $fieldLayout = $item->getFieldLayout();
-        /** @var Field[] $layoutElements */
+        /** @var CustomField[] $layoutElements */
         $layoutElements = $refs
             ->map(fn($fieldRefs, string $fieldInstanceUid) => $fieldLayout?->getElementByUid($fieldInstanceUid))
             ->filter(fn(FieldLayoutElement $layoutElement) => (
@@ -98,7 +97,6 @@ class ReplaceReferences extends BaseBatchedElementJob
             return;
         }
 
-        /** @var CustomFieldBehavior $behavior */
         $behavior = $item->getBehavior('customFields');
         $saveElement = false;
 
@@ -111,7 +109,7 @@ class ReplaceReferences extends BaseBatchedElementJob
                 continue;
             }
 
-            $newValue = preg_replace_callback(Elements::REF_TAG_PATTERN, function(array $matches) use ($refs, $field) {
+            $newValue = preg_replace_callback(Elements::REF_TAG_PATTERN, function(array $matches) {
                 $fullMatch = $matches[0];
                 $elementType = $matches['elementType'];
                 $ref = $matches['ref'];

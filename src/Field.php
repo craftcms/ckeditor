@@ -1351,7 +1351,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         $refIds = [];
         preg_match_all(Elements::REF_TAG_PATTERN, $value, $matches);
 
-        foreach ($matches['ref'] ?? [] as $ref) {
+        foreach ($matches['ref'] as $ref) {
             if (is_numeric($ref)) {
                 $refIds[] = (int)$ref;
             }
