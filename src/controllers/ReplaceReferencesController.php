@@ -8,8 +8,8 @@
 namespace craft\ckeditor\controllers;
 
 use Craft;
-use craft\ckeditor\Plugin;
 use craft\ckeditor\jobs\ReplaceReferences;
+use craft\ckeditor\Plugin;
 use craft\controllers\DeleteElementsController;
 use craft\db\Query;
 use craft\db\Table;

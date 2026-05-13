@@ -31,7 +31,7 @@ use yii\base\Event;
  */
 class Plugin extends \craft\base\Plugin
 {
-    const TABLE_REFERENCES = '{{%ckeditor_references}}';
+    public const TABLE_REFERENCES = '{{%ckeditor_references}}';
 
     /**
      * Registers an asset bundle for a CKEditor package.
