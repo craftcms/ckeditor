@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 5.6.0 - 2026-05-13
 
 > [!NOTE]  
 > Elements that contain CKEditor fields must be resaved before the new deletion blocker can take effect. That can be done automatically by running the following command:
