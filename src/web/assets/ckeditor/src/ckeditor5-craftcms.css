@@ -346,6 +346,10 @@ body.ck-fullscreen .slideout-container {
     .ck.link-type-advanced
     .ck-labeled-field-view {
     margin-block: var(--ck-spacing-large) 0;
+
+    &:last-child {
+      margin-block-end: var(--ck-spacing-large);
+    }
   }
 }
 
