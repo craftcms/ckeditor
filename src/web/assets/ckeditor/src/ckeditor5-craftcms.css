@@ -351,6 +351,7 @@ body.ck-fullscreen .slideout-container {
 
 .ck.link-type-advanced .pane.hairline .ck.ck-button {
   padding: 0 !important;
+  float: inline-start;
 }
 
 .ck.ck-read-only {
