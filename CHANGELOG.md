@@ -1,7 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
 ## Unreleased
+
 - Fixed a bug where custom `removePlugins` config values weren’t being respected. ([#578](https://github.com/craftcms/ckeditor/issues/578))
+- Fixed a bug where consecutive “Open in new tab?” and “Download” advanced link options were being displayed side-by-side. ([#575](https://github.com/craftcms/ckeditor/issues/575))
 
 ## 5.5.0 - 2026-04-27
 
