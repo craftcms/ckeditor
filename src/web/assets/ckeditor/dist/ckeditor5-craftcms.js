@@ -24,8 +24,8 @@ class Xu extends au {
       );
       return;
     }
-    const _ = this.editor.ui.componentFactory, E = (T) => this._createToolbarImageButton(T);
-    _.add("insertImage", E), _.add("imageInsert", E), this._attachUploader();
+    const E = this.editor.ui.componentFactory, w = (T) => this._createToolbarImageButton(T);
+    E.add("insertImage", w), E.add("imageInsert", w), this._attachUploader();
   }
   get _imageMode() {
     return this.editor.config.get("imageMode");
@@ -49,20 +49,20 @@ class Xu extends au {
       "form,.lp-editor-container"
     ).data("elementEditor");
   }
-  _createToolbarImageButton(_) {
-    const E = this.editor, T = E.t, O = new gi(_);
+  _createToolbarImageButton(E) {
+    const w = this.editor, T = w.t, O = new gi(E);
     O.isEnabled = !0, O.label = T("Insert image"), O.icon = su, O.tooltip = !0;
-    const Q = E.commands.get("insertImage");
+    const Q = w.commands.get("insertImage");
     return O.bind("isEnabled").to(Q), this.listenTo(O, "execute", () => this._showImageSelectModal()), O;
   }
   _showImageSelectModal() {
-    const _ = this._imageSources, E = this.editor, T = E.config, O = Object.assign({}, T.get("assetSelectionCriteria"), {
+    const E = this._imageSources, w = this.editor, T = w.config, O = Object.assign({}, T.get("assetSelectionCriteria"), {
       kind: "image"
     });
     Craft.createElementSelectorModal("craft\\elements\\Asset", {
       ...this._imageModalSettings,
       storageKey: `ckeditor:${this.pluginName}:'craft\\elements\\Asset'`,
-      sources: _,
+      sources: E,
       criteria: O,
       defaultSiteId: T.get("elementSiteId"),
       transforms: T.get("transforms"),
@@ -70,25 +70,25 @@ class Xu extends au {
       multiSelect: !0,
       onSelect: (Q, i) => {
         this._processSelectedAssets(Q, i).then(() => {
-          E.editing.view.focus();
+          w.editing.view.focus();
         });
       },
       onHide: () => {
-        E.editing.view.focus();
+        w.editing.view.focus();
       },
       closeOtherModals: !1
     });
   }
-  async _processSelectedAssets(_, E) {
-    if (!_.length)
+  async _processSelectedAssets(E, w) {
+    if (!E.length)
       return;
     if (this._imageMode === "entries") {
-      for (const i of _)
+      for (const i of E)
         await this._createImageEntry(i.id);
       return;
     }
     const T = this.editor, O = T.config.get("defaultTransform"), Q = [];
-    for (const i of _) {
+    for (const i of E) {
       const u = this._isTransformUrl(i.url);
       if (!u && O) {
         const f = await this._getTransformUrl(i.id, O);
@@ -97,22 +97,22 @@ class Xu extends au {
         const f = this._buildAssetUrl(
           i.id,
           i.url,
-          u ? E : O
+          u ? w : O
         );
         Q.push(f);
       }
     }
     T.execute("insertImage", { source: Q });
   }
-  async _createImageEntry(_) {
-    const E = this.editor, T = this._elementEditor, O = $(E.sourceElement).attr("name");
+  async _createImageEntry(E) {
+    const w = this.editor, T = this._elementEditor, O = $(w.sourceElement).attr("name");
     T && O && await T.setFormValue(O, "*");
-    const Q = E.config.get(
+    const Q = w.config.get(
       "nestedElementAttributes"
     ), i = {
       ...Q
     };
-    T && (await T.markDeltaNameAsModified(E.sourceElement.name), i.ownerId = T.getDraftElementId(
+    T && (await T.markDeltaNameAsModified(w.sourceElement.name), i.ownerId = T.getDraftElementId(
       Q.ownerId
     ));
     let u;
@@ -123,28 +123,28 @@ class Xu extends au {
         {
           data: {
             ...i,
-            assetIds: [_]
+            assetIds: [E]
           }
         }
       );
     } catch (f) {
       throw Craft.cp.displayError(), f;
     }
-    E.commands.execute("insertEntry", {
+    w.commands.execute("insertEntry", {
       entryId: u.data.entryId,
       siteId: u.data.siteId
     });
   }
-  _buildAssetUrl(_, E, T) {
-    return `${E}#asset:${_}:${T ? "transform:" + T : "url"}`;
+  _buildAssetUrl(E, w, T) {
+    return `${w}#asset:${E}:${T ? "transform:" + T : "url"}`;
   }
-  _removeTransformFromUrl(_) {
-    return _.replace(/(^|\/)(_[^\/]+\/)([^\/]+)$/, "$1$3");
+  _removeTransformFromUrl(E) {
+    return E.replace(/(^|\/)(_[^\/]+\/)([^\/]+)$/, "$1$3");
   }
-  _isTransformUrl(_) {
-    return /(^|\/)_[^\/]+\/[^\/]+$/.test(_);
+  _isTransformUrl(E) {
+    return /(^|\/)_[^\/]+\/[^\/]+$/.test(E);
   }
-  async _getTransformUrl(_, E) {
+  async _getTransformUrl(E, w) {
     let T;
     try {
       T = await Craft.sendActionRequest(
@@ -152,38 +152,38 @@ class Xu extends au {
         "ckeditor/ckeditor/image-url",
         {
           data: {
-            assetId: _,
-            transform: E
+            assetId: E,
+            transform: w
           }
         }
       );
     } catch {
       alert("There was an error generating the transform URL.");
     }
-    return this._buildAssetUrl(_, T.data.url, E);
+    return this._buildAssetUrl(E, T.data.url, w);
   }
-  _getAssetUrlComponents(_) {
-    const E = _.match(
+  _getAssetUrlComponents(E) {
+    const w = E.match(
       /(.*)#asset:(\d+):(url|transform):?([a-zA-Z][a-zA-Z0-9_]*)?/
     );
-    return E ? {
-      url: E[1],
-      assetId: E[2],
-      transform: E[3] !== "url" ? E[4] : null
+    return w ? {
+      url: w[1],
+      assetId: w[2],
+      transform: w[3] !== "url" ? w[4] : null
     } : null;
   }
   /**
    * Attach the uploader with drag event handler
    */
   _attachUploader() {
-    const _ = this.editor, E = _.config.get("defaultUploadFolderId");
-    E && (this.$container = $(_.sourceElement).closest(".input"), this.progressBar = new Craft.ProgressBar(
+    const E = this.editor, w = E.config.get("defaultUploadFolderId");
+    w && (this.$container = $(E.sourceElement).closest(".input"), this.progressBar = new Craft.ProgressBar(
       $('<div class="progress-shade"></div>').appendTo(this.$container)
     ), this.$fileInput = $("<input/>", {
       type: "file",
       class: "hidden",
       multiple: !0
-    }).insertAfter(_.sourceElement), this.uploader = Craft.createUploader(null, this.$container, {
+    }).insertAfter(E.sourceElement), this.uploader = Craft.createUploader(null, this.$container, {
       dropZone: this.$container,
       fileInput: this.$fileInput,
       allowedKinds: ["image"],
@@ -195,16 +195,16 @@ class Xu extends au {
         fileuploadfail: this._onUploadFailure.bind(this)
       }
     }), this.uploader.setParams({
-      folderId: E,
-      siteId: _.config.get("elementSiteId")
-    }), _.editing.view.document.on(
+      folderId: w,
+      siteId: E.config.get("elementSiteId")
+    }), E.editing.view.document.on(
       "drop",
       async (T, O) => {
-        _.editing.view, _.model;
-        const Q = _.editing.mapper, i = O.dropRange;
+        E.editing.view, E.model;
+        const Q = E.editing.mapper, i = O.dropRange;
         if (i) {
           const u = i.start, f = Q.toModelPosition(u);
-          _.model.change((k) => {
+          E.model.change((k) => {
             k.setSelection(f, 0);
           });
         }
@@ -223,16 +223,16 @@ class Xu extends au {
   /**
    * On upload progress.
    */
-  _onUploadProgress(_, E = null) {
-    E = _ instanceof CustomEvent ? _.detail : E;
-    var T = parseInt(Math.min(E.loaded / E.total, 1) * 100, 10);
+  _onUploadProgress(E, w = null) {
+    w = E instanceof CustomEvent ? E.detail : w;
+    var T = parseInt(Math.min(w.loaded / w.total, 1) * 100, 10);
     this.progressBar.setProgressPercentage(T);
   }
   /**
    * On a file being uploaded.
    */
-  async _onUploadComplete(_, E = null) {
-    const T = _ instanceof CustomEvent ? _.detail : E.result;
+  async _onUploadComplete(E, w = null) {
+    const T = E instanceof CustomEvent ? E.detail : w.result;
     if (this.progressBar.hideProgressBar(), this.$container.removeClass("uploading"), this._imageMode === "entries") {
       await this._createImageEntry(T.assetId);
       return;
@@ -248,11 +248,11 @@ class Xu extends au {
   /**
    * On Upload Failure.
    */
-  _onUploadFailure(_, E = null) {
+  _onUploadFailure(E, w = null) {
     var f, k;
-    const T = _ instanceof CustomEvent ? _.detail : (f = E == null ? void 0 : E.jqXHR) == null ? void 0 : f.responseJSON;
+    const T = E instanceof CustomEvent ? E.detail : (f = w == null ? void 0 : w.jqXHR) == null ? void 0 : f.responseJSON;
     let { message: O, filename: Q, errors: i } = T || {};
-    Q = Q || ((k = E == null ? void 0 : E.files) == null ? void 0 : k[0].name);
+    Q = Q || ((k = w == null ? void 0 : w.files) == null ? void 0 : k[0].name);
     let u = i ? Object.values(i).flat() : [];
     O || (u.length ? O = u.join(`
 `) : Q ? O = Craft.t("app", "Upload failed for “{filename}”.", { filename: Q }) : O = Craft.t("app", "Upload failed.")), Craft.cp.displayError(O), this.progressBar.hideProgressBar(), this.$container.removeClass("uploading");
@@ -265,25 +265,25 @@ class Xu extends au {
  */
 class Eu extends El {
   refresh() {
-    const _ = this._element(), E = this._srcInfo(_);
-    this.isEnabled = !!E, E ? this.value = {
-      transform: E.transform
+    const E = this._element(), w = this._srcInfo(E);
+    this.isEnabled = !!w, w ? this.value = {
+      transform: w.transform
     } : this.value = null;
   }
   _element() {
-    const _ = this.editor;
-    return _.plugins.get("ImageUtils").getClosestSelectedImageElement(
-      _.model.document.selection
+    const E = this.editor;
+    return E.plugins.get("ImageUtils").getClosestSelectedImageElement(
+      E.model.document.selection
     );
   }
-  _srcInfo(_) {
-    if (!_ || !_.hasAttribute("src"))
+  _srcInfo(E) {
+    if (!E || !E.hasAttribute("src"))
       return null;
-    const E = _.getAttribute("src"), T = E.match(
+    const w = E.getAttribute("src"), T = w.match(
       /#asset:(\d+)(?::transform:([a-zA-Z][a-zA-Z0-9_]*))?/
     );
     return T ? {
-      src: E,
+      src: w,
       assetId: T[1],
       transform: T[2]
     } : null;
@@ -303,19 +303,19 @@ class Eu extends El {
    * @param options.transform The new transform for the image.
    * @fires execute
    */
-  execute(_) {
+  execute(E) {
     const T = this.editor.model, O = this._element(), Q = this._srcInfo(O);
     if (this.value = {
-      transform: _.transform
+      transform: E.transform
     }, Q) {
-      const i = `#asset:${Q.assetId}` + (_.transform ? `:transform:${_.transform}` : "");
+      const i = `#asset:${Q.assetId}` + (E.transform ? `:transform:${E.transform}` : "");
       T.change((u) => {
         const f = Q.src.replace(/#.*/, "") + i;
         u.setAttribute("src", f, O);
       }), Craft.sendActionRequest("post", "ckeditor/ckeditor/image-url", {
         data: {
           assetId: Q.assetId,
-          transform: _.transform
+          transform: E.transform
         }
       }).then(({ data: u }) => {
         T.change((f) => {
@@ -338,12 +338,12 @@ class Ac extends $n {
   static get pluginName() {
     return "ImageTransformEditing";
   }
-  constructor(_) {
-    super(_), _.config.define("transforms", []);
+  constructor(E) {
+    super(E), E.config.define("transforms", []);
   }
   init() {
-    const _ = this.editor, E = new Eu(_);
-    _.commands.add("transformImage", E);
+    const E = this.editor, w = new Eu(E);
+    E.commands.add("transformImage", w);
   }
 }
 /**
@@ -360,8 +360,8 @@ class Su extends $n {
     return "ImageTransformUI";
   }
   init() {
-    const _ = this.editor, E = _.config.get("transforms"), T = _.commands.get("transformImage");
-    this.bind("isEnabled").to(T), this._registerImageTransformDropdown(E);
+    const E = this.editor, w = E.config.get("transforms"), T = E.commands.get("transformImage");
+    this.bind("isEnabled").to(T), this._registerImageTransformDropdown(w);
   }
   /**
    * A helper function that creates a dropdown component for the plugin containing all the transform options defined in
@@ -369,19 +369,19 @@ class Su extends $n {
    *
    * @param transforms An array of the available image transforms.
    */
-  _registerImageTransformDropdown(_) {
-    const E = this.editor, T = E.t, O = {
+  _registerImageTransformDropdown(E) {
+    const w = this.editor, T = w.t, O = {
       name: "transformImage:original",
       value: null
     }, Q = [
       O,
-      ..._.map((u) => ({
+      ...E.map((u) => ({
         label: u.name,
         name: `transformImage:${u.handle}`,
         value: u.handle
       }))
     ], i = (u) => {
-      const f = E.commands.get("transformImage"), k = ra(u, lu), p = k.buttonView;
+      const f = w.commands.get("transformImage"), k = ra(u, lu), p = k.buttonView;
       return p.set({
         tooltip: T("Resize image"),
         commandValue: null,
@@ -393,7 +393,7 @@ class Su extends $n {
       }), p.bind("label").to(f, "value", (C) => {
         if (!C || !C.transform)
           return this._getOptionLabelValue(O);
-        const h = _.find(
+        const h = E.find(
           (b) => b.handle === C.transform
         );
         return h ? h.name : C.transform;
@@ -404,12 +404,12 @@ class Su extends $n {
           ariaLabel: T("Image resize list")
         }
       ), this.listenTo(k, "execute", (C) => {
-        E.execute(C.source.commandName, {
+        w.execute(C.source.commandName, {
           transform: C.source.commandValue
-        }), E.editing.view.focus();
+        }), w.editing.view.focus();
       }), k;
     };
-    E.ui.componentFactory.add("transformImage", i);
+    w.ui.componentFactory.add("transformImage", i);
   }
   /**
    * A helper function for creating an option label value string.
@@ -417,8 +417,8 @@ class Su extends $n {
    * @param option A transform option object.
    * @returns The option label.
    */
-  _getOptionLabelValue(_) {
-    return _.label || _.value || this.editor.t("Original");
+  _getOptionLabelValue(E) {
+    return E.label || E.value || this.editor.t("Original");
   }
   /**
    * A helper function that parses the transform options and returns list item definitions ready for use in the dropdown.
@@ -427,9 +427,9 @@ class Su extends $n {
    * @param command The transform image command.
    * @returns Dropdown item definitions.
    */
-  _getTransformDropdownListItemDefinitions(_, E) {
+  _getTransformDropdownListItemDefinitions(E, w) {
     const T = new na();
-    return _.map((O) => {
+    return E.map((O) => {
       const Q = {
         type: "button",
         model: new yi({
@@ -440,14 +440,14 @@ class Su extends $n {
           icon: null
         })
       };
-      Q.model.bind("isOn").to(E, "value", Cu(O.value)), T.add(Q);
+      Q.model.bind("isOn").to(w, "value", Cu(O.value)), T.add(Q);
     }), T;
   }
 }
 function Cu(Te) {
-  return (_) => {
-    const E = _;
-    return Te === null && E === Te ? !0 : E !== null && E.transform === Te;
+  return (E) => {
+    const w = E;
+    return Te === null && w === Te ? !0 : w !== null && w.transform === Te;
   };
 }
 /**
@@ -470,10 +470,10 @@ class Gu extends $n {
  */
 class Tu extends El {
   refresh() {
-    const _ = this._element(), E = this._srcInfo(_);
-    if (this.isEnabled = !!E, this.isEnabled) {
+    const E = this._element(), w = this._srcInfo(E);
+    if (this.isEnabled = !!w, this.isEnabled) {
       let T = {
-        assetId: E.assetId
+        assetId: w.assetId
       };
       Craft.sendActionRequest("POST", "ckeditor/ckeditor/image-permissions", {
         data: T
@@ -486,9 +486,9 @@ class Tu extends El {
    * Returns the selected image element.
    */
   _element() {
-    const _ = this.editor;
-    return _.plugins.get("ImageUtils").getClosestSelectedImageElement(
-      _.model.document.selection
+    const E = this.editor;
+    return E.plugins.get("ImageUtils").getClosestSelectedImageElement(
+      E.model.document.selection
     );
   }
   /**
@@ -499,14 +499,14 @@ class Tu extends El {
    * @returns {{transform: *, src: *, assetId: *, baseSrc: *}|null}
    * @private
    */
-  _srcInfo(_) {
-    if (!_ || !_.hasAttribute("src"))
+  _srcInfo(E) {
+    if (!E || !E.hasAttribute("src"))
       return null;
-    const E = _.getAttribute("src"), T = E.match(
+    const w = E.getAttribute("src"), T = w.match(
       /(.*)#asset:(\d+)(?::transform:([a-zA-Z][a-zA-Z0-9_]*))?/
     );
     return T ? {
-      src: E,
+      src: w,
       baseSrc: T[1],
       assetId: T[2],
       transform: T[3]
@@ -519,7 +519,7 @@ class Tu extends El {
    */
   execute() {
     this.editor.model;
-    const E = this._element(), T = this._srcInfo(E);
+    const w = this._element(), T = this._srcInfo(w);
     if (T) {
       let O = {
         allowSavingAsNew: !1,
@@ -537,10 +537,10 @@ class Tu extends El {
    *
    * @param data
    */
-  _reloadImage(_, E) {
+  _reloadImage(E, w) {
     let O = this.editor.model;
     this._getAllImageAssets().forEach((i) => {
-      if (i.srcInfo.assetId == _)
+      if (i.srcInfo.assetId == E)
         if (i.srcInfo.transform) {
           let u = {
             assetId: i.srcInfo.assetId,
@@ -569,7 +569,7 @@ class Tu extends El {
    * @private
    */
   _getAllImageAssets() {
-    const E = this.editor.model, T = E.createRangeIn(E.document.getRoot());
+    const w = this.editor.model, T = w.createRangeIn(w.document.getRoot());
     let O = [];
     for (const Q of T.getWalker({ ignoreElementEnd: !0 }))
       if (Q.item.is("element") && Q.item.name === "imageBlock") {
@@ -595,8 +595,8 @@ class jc extends $n {
     return "ImageEditorEditing";
   }
   init() {
-    const _ = this.editor, E = new Tu(_);
-    _.commands.add("imageEditor", E);
+    const E = this.editor, w = new Tu(E);
+    E.commands.add("imageEditor", w);
   }
 }
 /**
@@ -612,23 +612,23 @@ class Ou extends $n {
     return "ImageEditorUI";
   }
   init() {
-    const E = this.editor.commands.get("imageEditor");
-    this.bind("isEnabled").to(E), this._registerImageEditorButton();
+    const w = this.editor.commands.get("imageEditor");
+    this.bind("isEnabled").to(w), this._registerImageEditorButton();
   }
   /**
    * A helper function that creates a button component for the plugin that triggers launch of the Image Editor.
    */
   _registerImageEditorButton() {
-    const _ = this.editor, E = _.t, T = _.commands.get("imageEditor"), O = () => {
+    const E = this.editor, w = E.t, T = E.commands.get("imageEditor"), O = () => {
       const Q = new gi();
       return Q.set({
-        label: E("Edit Image"),
+        label: w("Edit Image"),
         withText: !0
       }), Q.bind("isEnabled").to(T), this.listenTo(Q, "execute", (i) => {
-        _.execute("imageEditor"), _.editing.view.focus();
+        E.execute("imageEditor"), E.editing.view.focus();
       }), Q;
     };
-    _.ui.componentFactory.add("imageEditor", O);
+    E.ui.componentFactory.add("imageEditor", O);
   }
 }
 /**
@@ -645,22 +645,22 @@ class Zu extends $n {
   }
 }
 class Nu extends El {
-  execute(_) {
-    const E = this.editor, T = E.model.document.selection;
+  execute(E) {
+    const w = this.editor, T = w.model.document.selection;
     if (!T.isCollapsed && T.getFirstRange()) {
       const Q = T.getSelectedElement();
-      E.execute("insertParagraph", {
-        position: E.model.createPositionAfter(Q)
+      w.execute("insertParagraph", {
+        position: w.model.createPositionAfter(Q)
       });
     }
-    E.model.change((Q) => {
+    w.model.change((Q) => {
       const i = Q.createElement("craftEntryModel", {
         ...Object.fromEntries(T.getAttributes()),
-        cardHtml: _.cardHtml,
-        entryId: _.entryId,
-        siteId: _.siteId
+        cardHtml: E.cardHtml,
+        entryId: E.entryId,
+        siteId: E.siteId
       });
-      E.model.insertObject(i, null, null, {
+      w.model.insertObject(i, null, null, {
         setSelection: "on"
       });
     });
@@ -687,11 +687,11 @@ class Pu extends $n {
    */
   init() {
     this._defineSchema(), this._defineConverters();
-    const _ = this.editor;
-    _.commands.add("insertEntry", new Nu(_)), _.editing.mapper.on(
+    const E = this.editor;
+    E.commands.add("insertEntry", new Nu(E)), E.editing.mapper.on(
       "viewToModelPosition",
-      du(_.model, (E) => {
-        E.hasClass("cke-entry-card");
+      du(E.model, (w) => {
+        w.hasClass("cke-entry-card");
       })
     );
   }
@@ -711,8 +711,8 @@ class Pu extends $n {
    * @private
    */
   _defineConverters() {
-    const _ = this.editor.conversion;
-    _.for("upcast").elementToElement({
+    const E = this.editor.conversion;
+    E.for("upcast").elementToElement({
       view: {
         name: "craft-entry"
         // has to be lower case
@@ -725,7 +725,7 @@ class Pu extends $n {
           siteId: u
         });
       }
-    }), _.for("editingDowncast").elementToElement({
+    }), E.for("editingDowncast").elementToElement({
       model: "craftEntryModel",
       view: (T, { writer: O }) => {
         const Q = T.getAttribute("entryId") ?? null, i = T.getAttribute("siteId") ?? null, u = O.createContainerElement("div", {
@@ -733,9 +733,9 @@ class Pu extends $n {
           "data-entry-id": Q,
           "data-site-id": i
         });
-        return E(T, O, u), pu(u, O);
+        return w(T, O, u), pu(u, O);
       }
-    }), _.for("dataDowncast").elementToElement({
+    }), E.for("dataDowncast").elementToElement({
       model: "craftEntryModel",
       view: (T, { writer: O }) => {
         const Q = T.getAttribute("entryId") ?? null, i = T.getAttribute("siteId") ?? null;
@@ -745,7 +745,7 @@ class Pu extends $n {
         });
       }
     });
-    const E = (T, O, Q) => {
+    const w = (T, O, Q) => {
       this._getCardHtml(T).then((i) => {
         const u = O.createRawElement(
           "div",
@@ -771,13 +771,13 @@ class Pu extends $n {
    * @returns {Promise<unknown>|Promise<T | string>}
    * @private
    */
-  async _getCardHtml(_) {
+  async _getCardHtml(E) {
     var u, f, k;
-    let E = _.getAttribute("cardHtml") ?? null;
-    if (E)
-      return { cardHtml: E };
+    let w = E.getAttribute("cardHtml") ?? null;
+    if (w)
+      return { cardHtml: w };
     let T = $(this.editor.sourceElement).parents(".field");
-    const O = $(T[0]).data("layout-element"), Q = _.getAttribute("entryId") ?? null, i = _.getAttribute("siteId") ?? null;
+    const O = $(T[0]).data("layout-element"), Q = E.getAttribute("entryId") ?? null, i = E.getAttribute("siteId") ?? null;
     try {
       const p = this.editor, h = $(p.ui.view.element).closest(
         "form,.lp-editor-container"
@@ -801,16 +801,16 @@ class Pu extends $n {
   }
 }
 class Du extends fu {
-  constructor(_) {
-    super(_), this.domEventType = "dblclick";
+  constructor(E) {
+    super(E), this.domEventType = "dblclick";
   }
-  onDomEvent(_) {
-    this.fire(_.type, _);
+  onDomEvent(E) {
+    this.fire(E.type, E);
   }
 }
 class Iu extends Tr {
-  constructor(_, E = {}) {
-    super(_), this.set("isFocused", !1), this.entriesUi = E.entriesUi, this.editor = this.entriesUi.editor, this.entryType = E.entryType;
+  constructor(E, w = {}) {
+    super(E), this.set("isFocused", !1), this.entriesUi = w.entriesUi, this.editor = this.entriesUi.editor, this.entryType = w.entryType;
     const T = this.editor.commands.get("insertEntry");
     let O = new gi(), Q = {
       commandValue: this.entryType.model.commandValue,
@@ -838,14 +838,14 @@ class Iu extends Tr {
   }
 }
 class Ru extends Tr {
-  constructor(_, E = {}) {
-    super(_), this.bindTemplate, this.set("isFocused", !1), this.entriesUi = E.entriesUi, this.editor = this.entriesUi.editor;
-    const T = E.entryTypes, O = this.editor.commands.get("insertEntry");
+  constructor(E, w = {}) {
+    super(E), this.bindTemplate, this.set("isFocused", !1), this.entriesUi = w.entriesUi, this.editor = this.entriesUi.editor;
+    const T = w.entryTypes, O = this.editor.commands.get("insertEntry");
     let Q = new na();
     T.forEach((u) => {
       u.model.color && (u.model.class || (u.model.class = ""), u.model.class += "icon " + u.model.color), Q.add(u);
     });
-    const i = ra(_);
+    const i = ra(E);
     i.buttonView.set({
       label: Craft.t("ckeditor", "Add nested content"),
       icon: Mc,
@@ -870,9 +870,9 @@ class Ru extends Tr {
   }
 }
 class Mu extends Tr {
-  constructor(_, E = {}) {
-    super(_), this.bindTemplate, this.set("isFocused", !1), this.entriesUi = E.entriesUi, this.editor = this.entriesUi.editor;
-    const T = this.editor.commands.get("insertEntry"), O = ra(_);
+  constructor(E, w = {}) {
+    super(E), this.bindTemplate, this.set("isFocused", !1), this.entriesUi = w.entriesUi, this.editor = this.entriesUi.editor;
+    const T = this.editor.commands.get("insertEntry"), O = ra(E);
     O.buttonView.set({
       label: Craft.t("ckeditor", "Add nested content"),
       icon: Mc,
@@ -912,7 +912,7 @@ class zu extends $n {
    * @inheritDoc
    */
   init() {
-    this._createToolbarEntriesButtons(), this.editor.ui.componentFactory.add("editEntryBtn", (_) => this._createEditEntryBtn(_)), this._listenToEvents();
+    this._createToolbarEntriesButtons(), this.editor.ui.componentFactory.add("editEntryBtn", (E) => this._createEditEntryBtn(E)), this._listenToEvents();
   }
   /**
    * @inheritDoc
@@ -925,8 +925,8 @@ class zu extends $n {
       // Toolbar Buttons
       items: ["editEntryBtn"],
       // If a related element is returned the toolbar is attached
-      getRelatedElement: (E) => {
-        const T = E.getSelectedElement();
+      getRelatedElement: (w) => {
+        const T = w.getSelectedElement();
         return T && hu(T) && T.hasClass("cke-entry-card") ? T : null;
       }
     });
@@ -937,8 +937,8 @@ class zu extends $n {
    * @private
    */
   _listenToEvents() {
-    const _ = this.editor.editing.view, E = _.document;
-    _.addObserver(Du), this.editor.listenTo(E, "dblclick", (T, O) => {
+    const E = this.editor.editing.view, w = E.document;
+    E.addObserver(Du), this.editor.listenTo(w, "dblclick", (T, O) => {
       if (!this.editor.isReadOnly) {
         const Q = this.editor.editing.mapper.toModelElement(
           O.target.parent
@@ -947,12 +947,12 @@ class zu extends $n {
       }
     });
   }
-  _initEditEntrySlideout(_ = null, E = null) {
+  _initEditEntrySlideout(E = null, w = null) {
     if (this.editor.isReadOnly)
       return;
-    E === null && (E = this.editor.model.document.selection.getSelectedElement());
-    const T = E.getAttribute("entryId"), O = E.getAttribute("siteId") ?? null;
-    this._showEditEntrySlideout(T, O, E);
+    w === null && (w = this.editor.model.document.selection.getSelectedElement());
+    const T = w.getAttribute("entryId"), O = w.getAttribute("siteId") ?? null;
+    this._showEditEntrySlideout(T, O, w);
   }
   /**
    * Creates toolbar buttons that allow for an entry of given type to be inserted into the editor
@@ -960,9 +960,9 @@ class zu extends $n {
    * @private
    */
   _createToolbarEntriesButtons() {
-    const E = this.editor.config.get("entryTypeOptions");
-    if (!(!E || !E.length))
-      if (E.length == 1 && E[0].value == "fake")
+    const w = this.editor.config.get("entryTypeOptions");
+    if (!(!w || !w.length))
+      if (w.length == 1 && w[0].value == "fake")
         this.editor.ui.componentFactory.add(
           "createEntry",
           (T) => new Mu(this.editor.locale, {
@@ -971,7 +971,7 @@ class zu extends $n {
         );
       else {
         let T = this._getEntryTypeButtonsCollection(
-          E ?? []
+          w ?? []
         ), O = T.filter((i) => i.model.expanded), Q = T.filter((i) => !i.model.expanded);
         O.forEach((i, u) => {
           this.editor.ui.componentFactory.add(
@@ -997,9 +997,9 @@ class zu extends $n {
    * @returns {Collection<Record<string, any>>}
    * @private
    */
-  _getEntryTypeButtonsCollection(_) {
-    const E = new na();
-    return _.map((T) => {
+  _getEntryTypeButtonsCollection(E) {
+    const w = new na();
+    return E.map((T) => {
       const O = {
         type: "button",
         model: new yi({
@@ -1015,8 +1015,8 @@ class zu extends $n {
           // items in a dropdown should always have text
         })
       };
-      E.add(O);
-    }), E;
+      w.add(O);
+    }), w;
   }
   /**
    * Creates an edit entry button that shows in the contextual balloon for each craft entry widget
@@ -1024,20 +1024,20 @@ class zu extends $n {
    * @returns {ButtonView}
    * @private
    */
-  _createEditEntryBtn(_) {
+  _createEditEntryBtn(E) {
     if (this.editor.isReadOnly)
       return;
-    const E = new gi(_);
-    return E.set({
+    const w = new gi(E);
+    return w.set({
       isEnabled: !0,
       label: Craft.t("app", "Edit {type}", {
         type: Craft.elementTypeNames["craft\\elements\\Entry"][2]
       }),
       tooltip: !0,
       withText: !0
-    }), this.listenTo(E, "execute", (T) => {
+    }), this.listenTo(w, "execute", (T) => {
       this._initEditEntrySlideout();
-    }), E;
+    }), w;
   }
   /**
    * Returns Craft.ElementEditor instance that the CKEditor field belongs to.
@@ -1056,8 +1056,8 @@ class zu extends $n {
    * @returns {*}
    * @private
    */
-  _getCardElement(_) {
-    return $(this.editor.ui.element).find('.element.card[data-id="' + _ + '"]');
+  _getCardElement(E) {
+    return $(this.editor.ui.element).find('.element.card[data-id="' + E + '"]');
   }
   /**
    * Opens an element editor for existing entry
@@ -1065,16 +1065,16 @@ class zu extends $n {
    * @param entryId
    * @private
    */
-  _showEditEntrySlideout(_, E, T) {
+  _showEditEntrySlideout(E, w, T) {
     const O = this.editor, Q = O.model, i = this.getElementEditor();
-    let u = this._getCardElement(_);
+    let u = this._getCardElement(E);
     const f = u.data("owner-id");
     let k = {
-      siteId: E
+      siteId: w
     }, p = u.parents(".field");
     p.length && $(p[0]).hasClass("has-errors") && (k.prevalidate = !0);
     const C = Craft.createElementEditor(this.elementType, null, {
-      elementId: _,
+      elementId: E,
       params: k,
       onLoad: () => {
         C.elementEditor.on("update", () => {
@@ -1089,7 +1089,7 @@ class zu extends $n {
         }
       },
       onSubmit: (h) => {
-        let b = this._getCardElement(_);
+        let b = this._getCardElement(E);
         b !== null && h.data.id != b.data("id") && (b.attr("data-id", h.data.id).data("id", h.data.id).data("owner-id", h.data.ownerId), O.editing.model.change((v) => {
           v.setAttribute("entryId", h.data.id, T), O.ui.update();
         }), Craft.refreshElementInstances(h.data.id));
@@ -1109,14 +1109,14 @@ class zu extends $n {
    * @param entryTypeId
    * @private
    */
-  async _showCreateEntrySlideout(_) {
+  async _showCreateEntrySlideout(E) {
     var C, h;
-    const E = this.editor, T = E.model, Q = T.document.selection.getFirstRange(), i = E.config.get(
+    const w = this.editor, T = w.model, Q = T.document.selection.getFirstRange(), i = w.config.get(
       "nestedElementAttributes"
     ), u = Object.assign({}, i, {
-      typeId: _
+      typeId: E
     }), f = this.getElementEditor();
-    f && (await f.markDeltaNameAsModified(E.sourceElement.name), u.ownerId = f.getDraftElementId(
+    f && (await f.markDeltaNameAsModified(w.sourceElement.name), u.ownerId = f.getDraftElementId(
       i.ownerId
     ));
     let k;
@@ -1139,7 +1139,7 @@ class zu extends $n {
         siteId: k.element.siteId
       },
       onSubmit: (b) => {
-        E.commands.execute("insertEntry", {
+        w.commands.execute("insertEntry", {
           entryId: b.data.id,
           siteId: b.data.siteId
         });
@@ -1149,11 +1149,11 @@ class zu extends $n {
       p.$triggerElement = null, T.change((b) => {
         b.setSelection(
           b.createPositionAt(
-            E.model.document.getRoot(),
+            w.model.document.getRoot(),
             Q.end.path[0]
           )
         );
-      }), E.editing.view.focus();
+      }), w.editing.view.focus();
     });
   }
 }
@@ -1178,44 +1178,44 @@ class ju extends $n {
     super(...arguments), this.conversionData = [], this.editor.config.define("advancedLinkFields", []);
   }
   init() {
-    const E = this.editor.config.get("advancedLinkFields");
-    this.conversionData = E.map((T) => T.conversion ?? null).filter((T) => T), this._defineSchema(), this._defineConverters(), this._adjustLinkCommand(), this._adjustUnlinkCommand();
+    const w = this.editor.config.get("advancedLinkFields");
+    this.conversionData = w.map((T) => T.conversion ?? null).filter((T) => T), this._defineSchema(), this._defineConverters(), this._adjustLinkCommand(), this._adjustUnlinkCommand();
   }
   _defineSchema() {
-    const _ = this.editor.model.schema;
-    let E = this.conversionData.map((T) => T.model);
-    _.extend("$text", {
-      allowAttributes: E
+    const E = this.editor.model.schema;
+    let w = this.conversionData.map((T) => T.model);
+    E.extend("$text", {
+      allowAttributes: w
     });
   }
   _defineConverters() {
-    const _ = this.editor.conversion;
-    for (let E = 0; E < this.conversionData.length; E++)
-      _.for("downcast").attributeToElement({
-        model: this.conversionData[E].model,
+    const E = this.editor.conversion;
+    for (let w = 0; w < this.conversionData.length; w++)
+      E.for("downcast").attributeToElement({
+        model: this.conversionData[w].model,
         view: (T, { writer: O }) => {
           const Q = O.createAttributeElement(
             "a",
-            { [this.conversionData[E].view]: T },
+            { [this.conversionData[w].view]: T },
             { priority: 5 }
           );
           return O.setCustomProperty("link", !0, Q), Q;
         }
-      }), _.for("upcast").attributeToAttribute({
+      }), E.for("upcast").attributeToAttribute({
         view: {
           name: "a",
-          key: this.conversionData[E].view
+          key: this.conversionData[w].view
         },
         model: {
-          key: this.conversionData[E].model,
-          value: (T, O) => T.getAttribute(this.conversionData[E].view)
+          key: this.conversionData[w].model,
+          value: (T, O) => T.getAttribute(this.conversionData[w].view)
         }
       });
   }
   _adjustLinkCommand() {
-    const _ = this.editor, E = _.commands.get("link");
+    const E = this.editor, w = E.commands.get("link");
     let T = !1;
-    E.on(
+    w.on(
       "execute",
       (O, Q) => {
         if (T) {
@@ -1223,9 +1223,9 @@ class ju extends $n {
           return;
         }
         O.stop(), T = !0;
-        const i = Q[Q.length - 1], u = _.model.document.selection;
-        _.model.change((f) => {
-          _.execute("link", ...Q);
+        const i = Q[Q.length - 1], u = E.model.document.selection;
+        E.model.change((f) => {
+          E.execute("link", ...Q);
           const k = u.getFirstPosition();
           this.conversionData.forEach((p) => {
             if (u.isCollapsed) {
@@ -1238,7 +1238,7 @@ class ju extends $n {
                 f.createRangeOn(C)
               ) : f.removeAttribute(p.model, f.createRangeOn(C));
             } else {
-              const C = _.model.schema.getValidRanges(
+              const C = E.model.schema.getValidRanges(
                 u.getRanges(),
                 p.model
               );
@@ -1256,13 +1256,13 @@ class ju extends $n {
     );
   }
   _adjustUnlinkCommand() {
-    const _ = this.editor, E = _.commands.get("unlink"), { model: T } = _, { selection: O } = T.document;
+    const E = this.editor, w = E.commands.get("unlink"), { model: T } = E, { selection: O } = T.document;
     let Q = !1;
-    E.on(
+    w.on(
       "execute",
       (i) => {
         Q || (i.stop(), T.change(() => {
-          Q = !0, _.execute("unlink"), Q = !1, T.change((u) => {
+          Q = !0, E.execute("unlink"), Q = !1, T.change((u) => {
             let f;
             this.conversionData.forEach((k) => {
               O.isCollapsed ? f = [
@@ -1287,8 +1287,8 @@ class ju extends $n {
   }
 }
 class Lu extends Tr {
-  constructor(_, E = {}) {
-    super(_), this.bindTemplate, this.set("isFocused", !1), this.linkUi = E.linkUi, this.editor = this.linkUi.editor, this.elementId = this.linkUi._getLinkElementId(), this.siteId = this.linkUi._getLinkSiteId(), this.linkOption = E.linkOption;
+  constructor(E, w = {}) {
+    super(E), this.bindTemplate, this.set("isFocused", !1), this.linkUi = w.linkUi, this.editor = this.linkUi.editor, this.elementId = this.linkUi._getLinkElementId(), this.siteId = this.linkUi._getLinkSiteId(), this.linkOption = w.linkOption;
     const T = this.linkUi._getLinkElementRefHandle();
     if (this.button = null, T) {
       const O = this.linkUi.linkTypeDropdownItemModels[T];
@@ -1314,9 +1314,9 @@ class Lu extends Tr {
   }
   render() {
     super.render();
-    const _ = this.linkUi, E = _._linkUI, T = this.linkOption;
+    const E = this.linkUi, w = E._linkUI, T = this.linkOption;
     this.element.addEventListener("click", function(O) {
-      (this.children[0].classList.contains("add") || O.target.classList.contains("ck-button__label")) && (E._hideUI(!1), _._showElementSelectorModal(T));
+      (this.children[0].classList.contains("add") || O.target.classList.contains("ck-button__label")) && (w._hideUI(!1), E._showElementSelectorModal(T));
     }), this.element.children.length == 0 && Craft.sendActionRequest(
       "POST",
       "ckeditor/ckeditor/render-element-with-supported-sites",
@@ -1368,7 +1368,7 @@ class Lu extends Tr {
         Craft.addActionsToChip(k, p), (i = (Q = this.linkUi.sitesView) == null ? void 0 : Q.siteDropdownView) != null && i.buttonView && ((u = this.linkUi.sitesView) == null || u.siteDropdownView.buttonView.set(
           "isVisible",
           !0
-        )), _._alignFocus();
+        )), E._alignFocus();
       } else if (((f = this.linkUi.previousLinkValue) == null ? void 0 : f.length) > 0) {
         const { formView: k } = this.linkUi._linkUI;
         k.urlInputView.fieldView.set(
@@ -1388,8 +1388,8 @@ class Lu extends Tr {
   }
 }
 class Fu extends Tr {
-  constructor(_, E = {}) {
-    super(_), this.bindTemplate, this.set("isFocused", !1), this.linkUi = E.linkUi, this.editor = this.linkUi.editor, this.elementId = this.linkUi._getLinkElementId(), this.siteId = this.linkUi._getLinkSiteId(), this.linkOption = E.linkOption, this.linkUi._getLinkElementRefHandle(), this.siteDropdownView = ra(this.linkUi._linkUI.formView.locale), this.siteDropdownItemModels = null, this.localizedRefHandleRE = null;
+  constructor(E, w = {}) {
+    super(E), this.bindTemplate, this.set("isFocused", !1), this.linkUi = w.linkUi, this.editor = this.linkUi.editor, this.elementId = this.linkUi._getLinkElementId(), this.siteId = this.linkUi._getLinkSiteId(), this.linkOption = w.linkOption, this.linkUi._getLinkElementRefHandle(), this.siteDropdownView = ra(this.linkUi._linkUI.formView.locale), this.siteDropdownItemModels = null, this.localizedRefHandleRE = null;
     const T = CKE_LOCALIZED_REF_HANDLES.join("|");
     this.localizedRefHandleRE = new RegExp(
       `(#(?:${T}):\\d+)(?:@(\\d+))?`
@@ -1411,7 +1411,7 @@ class Fu extends Tr {
     super.render(), this._sitesDropdown();
   }
   _sitesDropdown() {
-    const { formView: _ } = this.linkUi._linkUI, { urlInputView: E } = _, { fieldView: T } = E;
+    const { formView: E } = this.linkUi._linkUI, { urlInputView: w } = E, { fieldView: T } = w;
     this.siteDropdownView.buttonView.set({
       label: "",
       withText: !0,
@@ -1453,7 +1453,7 @@ class Fu extends Tr {
       let u = Q[1];
       i && (u += `@${i}`), this.linkUi.previousLinkValue = this.linkUi._urlInputValue();
       const f = this.linkUi._urlInputValue().replace(Q[0], u);
-      _.urlInputView.fieldView.set("value", f), this._toggleSiteDropdownView();
+      E.urlInputView.fieldView.set("value", f), this._toggleSiteDropdownView();
     }), this.listenTo(T, "change:value", () => {
       this._toggleSiteDropdownView();
     }), this.listenTo(T, "input", () => {
@@ -1461,38 +1461,38 @@ class Fu extends Tr {
     });
   }
   _toggleSiteDropdownView() {
-    const _ = this.linkUi._urlInputRefMatch(this.localizedRefHandleRE);
-    if (_) {
+    const E = this.linkUi._urlInputRefMatch(this.localizedRefHandleRE);
+    if (E) {
       this.siteDropdownView.buttonView.set("isVisible", !0);
-      let E = _[2] ? parseInt(_[2], 10) : null;
-      E && typeof this.siteDropdownItemModels[E] > "u" && (E = null), this._selectSiteDropdownItem(E), this.siteDropdownView.buttonView.set("isVisible", !0);
+      let w = E[2] ? parseInt(E[2], 10) : null;
+      w && typeof this.siteDropdownItemModels[w] > "u" && (w = null), this._selectSiteDropdownItem(w), this.siteDropdownView.buttonView.set("isVisible", !0);
     } else
       this.siteDropdownView.buttonView.set("isVisible", !1);
   }
-  _selectSiteDropdownItem(_) {
-    const E = this.siteDropdownItemModels[_ ?? "current"], T = _ ? Craft.t("ckeditor", "Site: {name}", { name: E.label }) : E.label;
+  _selectSiteDropdownItem(E) {
+    const w = this.siteDropdownItemModels[E ?? "current"], T = E ? Craft.t("ckeditor", "Site: {name}", { name: w.label }) : w.label;
     this.siteDropdownView.buttonView.set("label", T), Object.values(this.siteDropdownItemModels).forEach((O) => {
-      O.set("isOn", O.siteId === E.siteId);
+      O.set("isOn", O.siteId === w.siteId);
     });
   }
 }
 class Uu extends Tr {
-  constructor(_, E = {}) {
-    super(_);
+  constructor(E, w = {}) {
+    super(E);
     const T = this.bindTemplate;
-    this.set("label", Craft.t("app", "Advanced")), this.linkUi = E.linkUi, this.editor = this.linkUi.editor, this.children = this.createCollection(), this.advancedChildren = this.createCollection(), this.setTemplate({
+    this.set("label", Craft.t("app", "Advanced")), this.linkUi = w.linkUi, this.editor = this.linkUi.editor, this.children = this.createCollection(), this.advancedChildren = this.createCollection(), this.setTemplate({
       tag: "details",
       attributes: {
         class: ["ck", "ck-form__details", "link-type-advanced"]
       },
       children: this.children
-    }), this.summary = new Tr(_), this.summary.setTemplate({
+    }), this.summary = new Tr(E), this.summary.setTemplate({
       tag: "summary",
       attributes: {
         class: ["ck", "ck-form__details__summary"]
       },
       children: [{ text: T.to("label") }]
-    }), this.children.add(this.summary), this.advancedFieldsContainer = new Tr(_), this.advancedFieldsContainer.setTemplate({
+    }), this.children.add(this.summary), this.advancedFieldsContainer = new Tr(E), this.advancedFieldsContainer.setTemplate({
       tag: "div",
       attributes: {
         class: ["meta", "pane", "hairline"]
@@ -1508,16 +1508,16 @@ class Uu extends Tr {
     super.render(), this.element.addEventListener("toggle", this.onToggle.bind(this));
   }
   // this is needed to control the focus order
-  onToggle(_) {
-    const { formView: E } = this.linkUi._linkUI;
-    if (_.target.open) {
-      const T = E._focusables.getIndex(this);
+  onToggle(E) {
+    const { formView: w } = this.linkUi._linkUI;
+    if (E.target.open) {
+      const T = w._focusables.getIndex(this);
       this.advancedChildren._items.forEach((O, Q) => {
-        E._focusables.add(O, T + Q + 1), E.focusTracker.add(O.element, T + Q + 1);
+        w._focusables.add(O, T + Q + 1), w.focusTracker.add(O.element, T + Q + 1);
       });
     } else
       this.advancedChildren._items.forEach((T, O) => {
-        E._focusables.remove(T), E.focusTracker.remove(T.element);
+        w._focusables.remove(T), w.focusTracker.remove(T.element);
       });
   }
 }
@@ -1537,13 +1537,13 @@ class Vu extends $n {
     super(...arguments), this.linkTypeWrapperView = null, this.advancedView = null, this.elementInputView = null, this.sitesView = null, this.previousLinkValue = null, this.linkTypeDropdownView = null, this.linkTypeDropdownItemModels = [], this.elementTypeRefHandleRE = null, this.urlWithRefHandleRE = null, this.conversionData = [], this.linkOptions = [], this.advancedLinkFields = [], this.editor.config.define("linkOptions", []), this.editor.config.define("advancedLinkFields", []);
   }
   init() {
-    const _ = this.editor;
-    this._linkUI = _.plugins.get(Dc), this._balloon = _.plugins.get(gu), this.linkOptions = _.config.get("linkOptions"), this.advancedLinkFields = _.config.get("advancedLinkFields"), this.conversionData = this.advancedLinkFields.map((T) => T.conversion ?? null).filter((T) => T);
-    const E = CKE_LOCALIZED_REF_HANDLES.join("|");
+    const E = this.editor;
+    this._linkUI = E.plugins.get(Dc), this._balloon = E.plugins.get(gu), this.linkOptions = E.config.get("linkOptions"), this.advancedLinkFields = E.config.get("advancedLinkFields"), this.conversionData = this.advancedLinkFields.map((T) => T.conversion ?? null).filter((T) => T);
+    const w = CKE_LOCALIZED_REF_HANDLES.join("|");
     this.elementTypeRefHandleRE = new RegExp(
-      `(#((?:${E})):\\d+)`
+      `(#((?:${w})):\\d+)`
     ), this.urlWithRefHandleRE = new RegExp(
-      `(.+)(#((?:${E})):(\\d+))(?:@(\\d+))?`
+      `(.+)(#((?:${w})):(\\d+))(?:@(\\d+))?`
     ), this._modifyFormViewTemplate(), this._balloon.on(
       "set:visibleView",
       (T, O, Q, i) => {
@@ -1556,19 +1556,19 @@ class Vu extends $n {
    * Reset focus order of the extra fields we're adding to the link form view
    */
   _alignFocus() {
-    const { formView: _ } = this._linkUI;
-    let E = 0;
+    const { formView: E } = this._linkUI;
+    let w = 0;
     this.linkTypeWrapperView && (this.linkTypeWrapperView._unboundChildren._items.forEach((T) => {
-      _._focusables.has(T) && _._focusables.remove(T), _.focusTracker.remove(T.element), _._focusables.add(T, E), _.focusTracker.add(T.element, E), E++;
-    }), this.advancedView !== null && (_._focusables.has(this.advancedView) && _._focusables.remove(this.advancedView), _.focusTracker.remove(this.advancedView), _._focusables.add(this.advancedView, E), _.focusTracker.add(this.advancedView.element, E)));
+      E._focusables.has(T) && E._focusables.remove(T), E.focusTracker.remove(T.element), E._focusables.add(T, w), E.focusTracker.add(T.element, w), w++;
+    }), this.advancedView !== null && (E._focusables.has(this.advancedView) && E._focusables.remove(this.advancedView), E.focusTracker.remove(this.advancedView), E._focusables.add(this.advancedView, w), E.focusTracker.add(this.advancedView.element, w)));
   }
   /**
    * Add all our custom fields (for element linking and advanced fields) to the link form view.
    */
   _modifyFormViewTemplate() {
     this._linkUI.formView || this._linkUI._createViews();
-    const { formView: _ } = this._linkUI;
-    _.template.attributes.class.push(
+    const { formView: E } = this._linkUI;
+    E.template.attributes.class.push(
       "ck-link-form_layout-vertical",
       "ck-vertical-form"
     ), this.linkOptions && this.linkOptions.length && this._linkOptionsDropdown(), this.advancedLinkFields && this.advancedLinkFields.length && this._advancedLinkFields();
@@ -1582,16 +1582,16 @@ class Vu extends $n {
   /**
    * Returns whether the "default" URL input field value matched given regular expression.
    */
-  _urlInputRefMatch(_) {
-    return this._urlInputValue().match(_);
+  _urlInputRefMatch(E) {
+    return this._urlInputValue().match(E);
   }
   ////////////////////// Link Options Dropdown (link types) //////////////////////
   /**
    * Create a link type dropdown.
    */
   _linkOptionsDropdown() {
-    const { formView: _ } = this._linkUI, { urlInputView: E } = _, { fieldView: T } = E;
-    this.linkTypeDropdownView = ra(_.locale), this.linkTypeDropdownView.buttonView.set({
+    const { formView: E } = this._linkUI, { urlInputView: w } = E, { fieldView: T } = w;
+    this.linkTypeDropdownView = ra(E.locale), this.linkTypeDropdownView.buttonView.set({
       label: "",
       withText: !0,
       isVisible: !0
@@ -1608,7 +1608,7 @@ class Vu extends $n {
     ), T.isEmpty && this._showLinkTypeForm("default"), this.linkTypeDropdownView.on("execute", (O) => {
       if (O.source.linkOption) {
         const Q = O.source.linkOption;
-        this._selectLinkTypeDropdownItem(Q.refHandle), this._showLinkTypeForm(Q, _);
+        this._selectLinkTypeDropdownItem(Q.refHandle), this._showLinkTypeForm(Q, E);
       } else
         this._selectLinkTypeDropdownItem("default"), this._showLinkTypeForm("default");
     }), this.listenTo(T, "change:value", () => {
@@ -1625,82 +1625,82 @@ class Vu extends $n {
    * Get the refHandle from the URL field value.
    */
   _getLinkElementRefHandle() {
-    let _ = null;
-    const E = this._urlInputValue().match(this.elementTypeRefHandleRE);
-    return E && (_ = E[2], _ && typeof this.linkTypeDropdownItemModels[_] > "u" && (_ = null)), _;
+    let E = null;
+    const w = this._urlInputValue().match(this.elementTypeRefHandleRE);
+    return w && (E = w[2], E && typeof this.linkTypeDropdownItemModels[E] > "u" && (E = null)), E;
   }
   /**
    * Get element ID from the URL field value.
    */
   _getLinkElementId() {
-    let _ = null;
-    const E = this._urlInputRefMatch(this.urlWithRefHandleRE);
-    return E && (_ = E[4] ? parseInt(E[4], 10) : null), _;
+    let E = null;
+    const w = this._urlInputRefMatch(this.urlWithRefHandleRE);
+    return w && (E = w[4] ? parseInt(w[4], 10) : null), E;
   }
   /**
    * Get site ID from the URL field value.
    */
   _getLinkSiteId() {
-    let _ = null;
-    const E = this._urlInputRefMatch(this.urlWithRefHandleRE);
-    return E && (_ = E[5] ? parseInt(E[5], 10) : null), _;
+    let E = null;
+    const w = this._urlInputRefMatch(this.urlWithRefHandleRE);
+    return w && (E = w[5] ? parseInt(w[5], 10) : null), E;
   }
   /**
    * Toggle between element link and default URL link fields.
    */
   _toggleLinkTypeDropdownView() {
-    let _ = this._getLinkElementRefHandle();
-    _ ? (this.linkTypeDropdownView.buttonView.set("isVisible", !0), this._selectLinkTypeDropdownItem(_)) : this._selectLinkTypeDropdownItem("default");
+    let E = this._getLinkElementRefHandle();
+    E ? (this.linkTypeDropdownView.buttonView.set("isVisible", !0), this._selectLinkTypeDropdownItem(E)) : this._selectLinkTypeDropdownItem("default");
   }
   /**
    * Select link type from the dropdown.
    */
-  _selectLinkTypeDropdownItem(_) {
-    const E = this.linkTypeDropdownItemModels[_], T = _ ? Craft.t("app", "{name}", { name: E.label }) : E.label;
+  _selectLinkTypeDropdownItem(E) {
+    const w = this.linkTypeDropdownItemModels[E], T = E ? Craft.t("app", "{name}", { name: w.label }) : w.label;
     this.linkTypeDropdownView.buttonView.set("label", T), Object.values(this.linkTypeDropdownItemModels).forEach((O) => {
-      O.set("isOn", O.handle === E.handle);
+      O.set("isOn", O.handle === w.handle);
     });
   }
   /**
    * Get a list of all the options that should be shown in the link type dropdown.
    */
   _getLinkListItemDefinitions() {
-    const _ = [];
-    for (const E of this.linkOptions)
-      _.push(
+    const E = [];
+    for (const w of this.linkOptions)
+      E.push(
         new yi({
-          label: E.label,
-          handle: E.refHandle,
-          linkOption: E,
+          label: w.label,
+          handle: w.refHandle,
+          linkOption: w,
           withText: !0
         })
       );
-    return _.push(
+    return E.push(
       new yi({
         label: Craft.t("app", "URL"),
         handle: "default",
         withText: !0
       })
-    ), _;
+    ), E;
   }
   /**
    * Place the link type fields in the form.
    */
-  _showLinkTypeForm(_) {
+  _showLinkTypeForm(E) {
     var u, f, k, p;
-    const { formView: E } = this._linkUI, { children: T } = E, { urlInputView: O } = E, { displayedTextInputView: Q } = E;
-    Q.focus(), this.linkTypeWrapperView !== null && T.remove(this.linkTypeWrapperView), _ === "default" ? (this.elementInputView = O, this.sitesView !== null && (f = (u = this.sitesView) == null ? void 0 : u.siteDropdownView) != null && f.buttonView && this.sitesView.siteDropdownView.buttonView.set("isVisible", !1)) : (this.elementInputView = new Lu(E.locale, {
+    const { formView: w } = this._linkUI, { children: T } = w, { urlInputView: O } = w, { displayedTextInputView: Q } = w;
+    Q.focus(), this.linkTypeWrapperView !== null && T.remove(this.linkTypeWrapperView), E === "default" ? (this.elementInputView = O, this.sitesView !== null && (f = (u = this.sitesView) == null ? void 0 : u.siteDropdownView) != null && f.buttonView && this.sitesView.siteDropdownView.buttonView.set("isVisible", !1)) : (this.elementInputView = new Lu(w.locale, {
       linkUi: this,
-      linkOption: _,
+      linkOption: E,
       value: this._urlInputValue()
     }), this.sitesView !== null && (p = (k = this.sitesView) == null ? void 0 : k.siteDropdownView) != null && p.buttonView && this.sitesView.siteDropdownView.buttonView.set("isVisible", !1));
     let i = [
       this.linkTypeDropdownView,
       this.elementInputView
     ];
-    if (Craft.isMultiSite && this.sitesView == null && (this.sitesView = new Fu(E.locale, {
+    if (Craft.isMultiSite && this.sitesView == null && (this.sitesView = new Fu(w.locale, {
       linkUi: this,
-      linkOption: _
+      linkOption: E
     })), this.sitesView != null) {
       let C = new Tr();
       C.setTemplate({
@@ -1727,26 +1727,26 @@ class Vu extends $n {
   /**
    * Show element selector modal for given element type (link option).
    */
-  _showElementSelectorModal(_) {
-    const E = this.editor, T = E.model, O = T.document.selection, Q = O.isCollapsed, i = O.getFirstRange(), u = this._linkUI._getSelectedLinkElement(), f = () => {
-      E.editing.view.focus(), !Q && i && T.change((k) => {
+  _showElementSelectorModal(E) {
+    const w = this.editor, T = w.model, O = T.document.selection, Q = O.isCollapsed, i = O.getFirstRange(), u = this._linkUI._getSelectedLinkElement(), f = () => {
+      w.editing.view.focus(), !Q && i && T.change((k) => {
         k.setSelection(i);
       }), this._linkUI._hideFakeVisualSelection();
     };
-    u || this._linkUI._showFakeVisualSelection(), Craft.createElementSelectorModal(_.elementType, {
-      storageKey: `ckeditor:${this.pluginName}:${_.elementType}`,
-      sources: _.sources,
-      criteria: _.criteria,
-      defaultSiteId: E.config.get("elementSiteId"),
+    u || this._linkUI._showFakeVisualSelection(), Craft.createElementSelectorModal(E.elementType, {
+      storageKey: `ckeditor:${this.pluginName}:${E.elementType}`,
+      sources: E.sources,
+      criteria: E.criteria,
+      defaultSiteId: w.config.get("elementSiteId"),
       autoFocusSearchBox: !1,
       onSelect: (k) => {
         if (k.length) {
-          const p = k[0], C = `${p.url}#${_.refHandle}:${p.id}@${p.siteId}`;
-          if (E.editing.view.focus(), (!Q || u) && i) {
+          const p = k[0], C = `${p.url}#${E.refHandle}:${p.id}@${p.siteId}`;
+          if (w.editing.view.focus(), (!Q || u) && i) {
             T.change((v) => {
               v.setSelection(i);
             });
-            const h = E.commands.get("link");
+            const h = w.commands.get("link");
             let b = this._getAdvancedFieldValues();
             h.execute(C, b);
           } else
@@ -1790,25 +1790,25 @@ class Vu extends $n {
    */
   _addAdvancedLinkFieldInputs() {
     var O;
-    const _ = this.editor.commands.get("link"), { formView: E } = this._linkUI, { children: T } = E;
-    this.advancedView = new Uu(E.locale, {
+    const E = this.editor.commands.get("link"), { formView: w } = this._linkUI, { children: T } = w;
+    this.advancedView = new Uu(w.locale, {
       linkUi: this
     }), T.add(this.advancedView, 3);
     for (const Q of this.advancedLinkFields) {
       let i = (O = Q.conversion) == null ? void 0 : O.model;
-      if (i && typeof E[i] > "u")
+      if (i && typeof w[i] > "u")
         if (Q.conversion.type === "bool") {
           const u = new bu();
           u.set({
             withText: !0,
             label: Q.label,
             isToggleable: !0
-          }), Q.tooltip && (u.tooltip = Q.tooltip), this.advancedView.advancedChildren.add(u), E[i] = u, E[i].bind("isOn").to(_, i, (f) => f === void 0 ? (E[i].element.value = "", !1) : (E[i].element.value = Q.conversion.value, !0)), u.on("execute", () => {
-            u.isOn ? (u.isOn = !1, E[i].element.value = "") : (u.isOn = !0, E[i].element.value = Q.conversion.value);
+          }), Q.tooltip && (u.tooltip = Q.tooltip), this.advancedView.advancedChildren.add(u), w[i] = u, w[i].bind("isOn").to(E, i, (f) => f === void 0 ? (w[i].element.value = "", !1) : (w[i].element.value = Q.conversion.value, !0)), u.on("execute", () => {
+            u.isOn ? (u.isOn = !1, w[i].element.value = "") : (u.isOn = !0, w[i].element.value = Q.conversion.value);
           });
         } else {
           let u = this._addLabeledField(Q);
-          E[i] = u, E[i].fieldView.bind("value").to(_, i), E[i].fieldView.element.value = _[i] || "";
+          w[i] = u, w[i].fieldView.bind("value").to(E, i), w[i].fieldView.element.value = E[i] || "";
         }
       else if (Q.value === "urlSuffix") {
         let u = this._addLabeledField(Q);
@@ -1826,21 +1826,21 @@ class Vu extends $n {
                   b,
                   L + h
                 );
-                E.urlInputView.fieldView.set("value", ae);
+                w.urlInputView.fieldView.set("value", ae);
               } catch {
                 let [I, D] = b.split("#"), [L, ae] = I.split("?");
                 const te = this._urlInputValue().replace(
                   b,
                   L + h
                 );
-                E.urlInputView.fieldView.set("value", te);
+                w.urlInputView.fieldView.set("value", te);
               }
             }
           }
-        ), this.listenTo(E.urlInputView.fieldView, "change:value", (f) => {
+        ), this.listenTo(w.urlInputView.fieldView, "change:value", (f) => {
           this._toggleUrlSuffixInputView(u, f.source.isEmpty);
         }), this.listenTo(
-          E.urlInputView.fieldView,
+          w.urlInputView.fieldView,
           "change:isFocused",
           (f) => {
             this._toggleUrlSuffixInputView(u, f.source.isEmpty);
@@ -1852,32 +1852,32 @@ class Vu extends $n {
   /**
    * Create a labeled field for given advanced field.
    */
-  _addLabeledField(_) {
-    const { formView: E } = this._linkUI;
+  _addLabeledField(E) {
+    const { formView: w } = this._linkUI;
     let T = new vu(
-      E.locale,
+      w.locale,
       ku
     );
-    return T.label = _.label, _.tooltip && (T.infoText = _.tooltip), this.advancedView.advancedChildren.add(T), T;
+    return T.label = E.label, E.tooltip && (T.infoText = E.tooltip), this.advancedView.advancedChildren.add(T), T;
   }
   /**
    * Populate URL suffix advanced field with content.
    * e.g. if a query string was added directly to the default URL input field,
    * ensure the value is also showing in the URL Suffix advanced field.
    */
-  _toggleUrlSuffixInputView(_, E) {
-    if (E)
-      _.fieldView.set("value", "");
+  _toggleUrlSuffixInputView(E, w) {
+    if (w)
+      E.fieldView.set("value", "");
     else {
       const T = this._urlInputRefMatch(this.urlWithRefHandleRE);
       let O = null;
       T ? O = T[1] : O = this._urlInputValue();
       try {
         let Q = new URL(O), i = Q.search, u = Q.hash;
-        _.fieldView.set("value", i + u);
+        E.fieldView.set("value", i + u);
       } catch {
         let [i, u] = O.split("#"), [f, k] = i.split("?");
-        u = u ? "#" + u : "", k = k ? "?" + k : "", _.fieldView.set("value", k + u);
+        u = u ? "#" + u : "", k = k ? "?" + k : "", E.fieldView.set("value", k + u);
       }
     }
   }
@@ -1885,12 +1885,12 @@ class Vu extends $n {
    * When link form is submitted, pass the advanced field values the link command.
    */
   _handleAdvancedLinkFieldsFormSubmit() {
-    const E = this.editor.commands.get("link"), { formView: T } = this._linkUI;
+    const w = this.editor.commands.get("link"), { formView: T } = this._linkUI;
     T.on(
       "submit",
       () => {
         let O = this._getAdvancedFieldValues();
-        E.once(
+        w.once(
           "execute",
           (Q, i) => {
             i.length === 4 ? Object.assign(i[3], O) : i.push(O);
@@ -1905,10 +1905,10 @@ class Vu extends $n {
    * Update the link command when the advanced field value changes.
    */
   _trackAdvancedLinkFieldsValueChange() {
-    const _ = this.editor, E = _.commands.get("link"), T = _.model.document.selection;
+    const E = this.editor, w = E.commands.get("link"), T = E.model.document.selection;
     this.conversionData.forEach((O) => {
-      E.set(O.model, null), _.model.document.on("change", () => {
-        E[O.model] = T.getAttribute(O.model);
+      w.set(O.model, null), E.model.document.on("change", () => {
+        w[O.model] = T.getAttribute(O.model);
       });
     });
   }
@@ -1916,12 +1916,12 @@ class Vu extends $n {
    * Get the values of all the advanced fields.
    */
   _getAdvancedFieldValues() {
-    const { formView: _ } = this._linkUI;
-    let E = {};
+    const { formView: E } = this._linkUI;
+    let w = {};
     return this.conversionData.forEach((T) => {
       let O = [];
-      T.type === "bool" ? O[T.model] = _[T.model].element.value : O[T.model] = _[T.model].fieldView.element.value, Object.assign(E, O);
-    }), E;
+      T.type === "bool" ? O[T.model] = E[T.model].element.value : O[T.model] = E[T.model].fieldView.element.value, Object.assign(w, O);
+    }), w;
   }
 }
 class Ju extends $n {
@@ -1939,11 +1939,11 @@ var _l = { exports: {} };
 /*! For license information please see inspector.js.LICENSE.txt */
 var Ic;
 function Hu() {
-  return Ic || (Ic = 1, (function(Te, _) {
-    (function(E, T) {
+  return Ic || (Ic = 1, (function(Te, E) {
+    (function(w, T) {
       Te.exports = T();
     })(self, () => (() => {
-      var E = { 0: (i, u, f) => {
+      var w = { 0: (i, u, f) => {
         var k = f(5072), p = f(7195);
         typeof (p = p.__esModule ? p.default : p) == "string" && (p = [[i.id, p, ""]]);
         var C = { injectType: "singletonStyleTag", attributes: { "data-cke-inspector": !0 }, insert: "head", singleton: !0 };
@@ -2381,7 +2381,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
           return "Minified React error #" + e + "; visit " + t + " for the full message or use the non-minified dev environment for full errors and additional helpful warnings.";
         }
         if (!k) throw Error(h(227));
-        function b(e, t, n, r, a, d, m, w, B) {
+        function b(e, t, n, r, a, d, m, _, B) {
           var V = Array.prototype.slice.call(arguments, 3);
           try {
             t.apply(n, V);
@@ -2392,13 +2392,13 @@ https://fb.me/react-async-component-lifecycle-hooks`);
         var v = !1, N = null, I = !1, D = null, L = { onError: function(e) {
           v = !0, N = e;
         } };
-        function ae(e, t, n, r, a, d, m, w, B) {
+        function ae(e, t, n, r, a, d, m, _, B) {
           v = !1, N = null, b.apply(L, arguments);
         }
         var te = null, R = null, F = null;
         function q(e, t, n) {
           var r = e.type || "unknown-event";
-          e.currentTarget = F(n), (function(a, d, m, w, B, V, ce, Re, Ve) {
+          e.currentTarget = F(n), (function(a, d, m, _, B, V, ce, Re, Ve) {
             if (ae.apply(this, arguments), v) {
               if (!v) throw Error(h(198));
               var ot = N;
@@ -2414,14 +2414,14 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             if (!he[n]) {
               if (!t.extractEvents) throw Error(h(97, e));
               for (var r in he[n] = t, n = t.eventTypes) {
-                var a = void 0, d = n[r], m = t, w = r;
-                if (S.hasOwnProperty(w)) throw Error(h(99, w));
-                S[w] = d;
+                var a = void 0, d = n[r], m = t, _ = r;
+                if (S.hasOwnProperty(_)) throw Error(h(99, _));
+                S[_] = d;
                 var B = d.phasedRegistrationNames;
                 if (B) {
-                  for (a in B) B.hasOwnProperty(a) && fe(B[a], m, w);
+                  for (a in B) B.hasOwnProperty(a) && fe(B[a], m, _);
                   a = !0;
-                } else d.registrationName ? (fe(d.registrationName, m, w), a = !0) : a = !1;
+                } else d.registrationName ? (fe(d.registrationName, m, _), a = !0) : a = !1;
                 if (!a) throw Error(h(98, r, e));
               }
             }
@@ -2527,7 +2527,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
         var et = k.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
         function Pt(e, t, n, r) {
           var a = _e.hasOwnProperty(t) ? _e[t] : null;
-          (a !== null ? a.type === 0 : !r && 2 < t.length && (t[0] === "o" || t[0] === "O") && (t[1] === "n" || t[1] === "N")) || ((function(d, m, w, B) {
+          (a !== null ? a.type === 0 : !r && 2 < t.length && (t[0] === "o" || t[0] === "O") && (t[1] === "n" || t[1] === "N")) || ((function(d, m, _, B) {
             if (m == null || (function(V, ce, Re, Ve) {
               if (Re !== null && Re.type === 0) return !1;
               switch (typeof ce) {
@@ -2539,9 +2539,9 @@ https://fb.me/react-async-component-lifecycle-hooks`);
                 default:
                   return !1;
               }
-            })(d, m, w, B)) return !0;
+            })(d, m, _, B)) return !0;
             if (B) return !1;
-            if (w !== null) switch (w.type) {
+            if (_ !== null) switch (_.type) {
               case 3:
                 return !m;
               case 4:
@@ -2640,12 +2640,12 @@ https://fb.me/react-async-component-lifecycle-hooks`);
               var d = r.get, m = r.set;
               return Object.defineProperty(t, n, { configurable: !0, get: function() {
                 return d.call(this);
-              }, set: function(w) {
-                a = "" + w, m.call(this, w);
+              }, set: function(_) {
+                a = "" + _, m.call(this, _);
               } }), Object.defineProperty(t, n, { enumerable: r.enumerable }), { getValue: function() {
                 return a;
-              }, setValue: function(w) {
-                a = "" + w;
+              }, setValue: function(_) {
+                a = "" + _;
               }, stopTracking: function() {
                 t._valueTracker = null, delete t[n];
               } };
@@ -2817,43 +2817,43 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             for (var a = n, d = r; ; ) {
               var m = a.return;
               if (m === null) break;
-              var w = m.alternate;
-              if (w === null) {
+              var _ = m.alternate;
+              if (_ === null) {
                 if ((d = m.return) !== null) {
                   a = d;
                   continue;
                 }
                 break;
               }
-              if (m.child === w.child) {
-                for (w = m.child; w; ) {
-                  if (w === a) return ft(m), n;
-                  if (w === d) return ft(m), r;
-                  w = w.sibling;
+              if (m.child === _.child) {
+                for (_ = m.child; _; ) {
+                  if (_ === a) return ft(m), n;
+                  if (_ === d) return ft(m), r;
+                  _ = _.sibling;
                 }
                 throw Error(h(188));
               }
-              if (a.return !== d.return) a = m, d = w;
+              if (a.return !== d.return) a = m, d = _;
               else {
                 for (var B = !1, V = m.child; V; ) {
                   if (V === a) {
-                    B = !0, a = m, d = w;
+                    B = !0, a = m, d = _;
                     break;
                   }
                   if (V === d) {
-                    B = !0, d = m, a = w;
+                    B = !0, d = m, a = _;
                     break;
                   }
                   V = V.sibling;
                 }
                 if (!B) {
-                  for (V = w.child; V; ) {
+                  for (V = _.child; V; ) {
                     if (V === a) {
-                      B = !0, a = w, d = m;
+                      B = !0, a = _, d = m;
                       break;
                     }
                     if (V === d) {
-                      B = !0, d = w, a = m;
+                      B = !0, d = _, a = m;
                       break;
                     }
                     V = V.sibling;
@@ -2943,11 +2943,11 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             r = e.topLevelType;
             var d = e.nativeEvent, m = e.eventSystemFlags;
             n === 0 && (m |= 64);
-            for (var w = null, B = 0; B < he.length; B++) {
+            for (var _ = null, B = 0; B < he.length; B++) {
               var V = he[B];
-              V && (V = V.extractEvents(r, t, d, a, m)) && (w = kt(w, V));
+              V && (V = V.extractEvents(r, t, d, a, m)) && (_ = kt(_, V));
             }
-            yn(w);
+            yn(_);
           }
         }
         function nt(e, t, n) {
@@ -3105,19 +3105,19 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             var a = mr(e, t, n, r);
             if (a === null) Xn(e, r);
             else if (-1 < ln.indexOf(e)) e = pr(a, e, t, n, r), ut.push(e);
-            else if (!(function(d, m, w, B, V) {
+            else if (!(function(d, m, _, B, V) {
               switch (m) {
                 case "focus":
-                  return wt = _n(wt, d, m, w, B, V), !0;
+                  return wt = _n(wt, d, m, _, B, V), !0;
                 case "dragenter":
-                  return Tt = _n(Tt, d, m, w, B, V), !0;
+                  return Tt = _n(Tt, d, m, _, B, V), !0;
                 case "mouseover":
-                  return Lt = _n(Lt, d, m, w, B, V), !0;
+                  return Lt = _n(Lt, d, m, _, B, V), !0;
                 case "pointerover":
                   var ce = V.pointerId;
-                  return kn.set(ce, _n(kn.get(ce) || null, d, m, w, B, V)), !0;
+                  return kn.set(ce, _n(kn.get(ce) || null, d, m, _, B, V)), !0;
                 case "gotpointercapture":
-                  return ce = V.pointerId, zn.set(ce, _n(zn.get(ce) || null, d, m, w, B, V)), !0;
+                  return ce = V.pointerId, zn.set(ce, _n(zn.get(ce) || null, d, m, _, B, V)), !0;
               }
               return !1;
             })(a, e, t, n, r)) {
@@ -3466,31 +3466,31 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             d = void 0;
           }
           else io ? oo(e, n) && (d = nr.compositionEnd) : e === "keydown" && n.keyCode === 229 && (d = nr.compositionStart);
-          return d ? (pa && n.locale !== "ko" && (io || d !== nr.compositionStart ? d === nr.compositionEnd && io && (a = ua()) : (Ai = "value" in (tr = r) ? tr.value : tr.textContent, io = !0)), d = ds.getPooled(d, t, n, r), (a || (a = ma(n)) !== null) && (d.data = a), Ht(d), a = d) : a = null, (e = fs ? (function(m, w) {
+          return d ? (pa && n.locale !== "ko" && (io || d !== nr.compositionStart ? d === nr.compositionEnd && io && (a = ua()) : (Ai = "value" in (tr = r) ? tr.value : tr.textContent, io = !0)), d = ds.getPooled(d, t, n, r), (a || (a = ma(n)) !== null) && (d.data = a), Ht(d), a = d) : a = null, (e = fs ? (function(m, _) {
             switch (m) {
               case "compositionend":
-                return ma(w);
+                return ma(_);
               case "keypress":
-                return w.which !== 32 ? null : (ha = !0, fa);
+                return _.which !== 32 ? null : (ha = !0, fa);
               case "textInput":
-                return (m = w.data) === fa && ha ? null : m;
+                return (m = _.data) === fa && ha ? null : m;
               default:
                 return null;
             }
-          })(e, n) : (function(m, w) {
-            if (io) return m === "compositionend" || !ji && oo(m, w) ? (m = ua(), ii = Ai = tr = null, io = !1, m) : null;
+          })(e, n) : (function(m, _) {
+            if (io) return m === "compositionend" || !ji && oo(m, _) ? (m = ua(), ii = Ai = tr = null, io = !1, m) : null;
             switch (m) {
               case "paste":
               default:
                 return null;
               case "keypress":
-                if (!(w.ctrlKey || w.altKey || w.metaKey) || w.ctrlKey && w.altKey) {
-                  if (w.char && 1 < w.char.length) return w.char;
-                  if (w.which) return String.fromCharCode(w.which);
+                if (!(_.ctrlKey || _.altKey || _.metaKey) || _.ctrlKey && _.altKey) {
+                  if (_.char && 1 < _.char.length) return _.char;
+                  if (_.which) return String.fromCharCode(_.which);
                 }
                 return null;
               case "compositionend":
-                return pa && w.locale !== "ko" ? null : w.data;
+                return pa && _.locale !== "ko" ? null : _.data;
             }
           })(e, n)) ? ((t = ps.getPooled(nr.beforeInput, t, n, r)).data = e, Ht(t)) : t = null, a === null ? t : t === null ? a : [a, t];
         } }, hs = { color: !0, date: !0, datetime: !0, "datetime-local": !0, email: !0, month: !0, number: !0, password: !0, range: !0, search: !0, tel: !0, text: !0, time: !0, url: !0, week: !0 };
@@ -3546,11 +3546,11 @@ https://fb.me/react-async-component-lifecycle-hooks`);
           else if (ga(a)) if (Li) m = ks;
           else {
             m = bs;
-            var w = ys;
+            var _ = ys;
           }
           else (d = a.nodeName) && d.toLowerCase() === "input" && (a.type === "checkbox" || a.type === "radio") && (m = vs);
           if (m && (m = m(e, t))) return ba(m, n, r);
-          w && w(e, a, t), e === "blur" && (e = a._wrapperState) && e.controlled && a.type === "number" && So(a, "number", a.value);
+          _ && _(e, a, t), e === "blur" && (e = a._wrapperState) && e.controlled && a.type === "number" && So(a, "number", a.value);
         } }, jo = Ot.extend({ view: null, detail: null }), _s = { Alt: "altKey", Control: "ctrlKey", Meta: "metaKey", Shift: "shiftKey" };
         function Es(e) {
           var t = this.nativeEvent;
@@ -3572,23 +3572,23 @@ https://fb.me/react-async-component-lifecycle-hooks`);
         } }), xa = jr.extend({ pointerId: null, width: null, height: null, pressure: null, tangentialPressure: null, tiltX: null, tiltY: null, twist: null, pointerType: null, isPrimary: null }), Lr = { mouseEnter: { registrationName: "onMouseEnter", dependencies: ["mouseout", "mouseover"] }, mouseLeave: { registrationName: "onMouseLeave", dependencies: ["mouseout", "mouseover"] }, pointerEnter: { registrationName: "onPointerEnter", dependencies: ["pointerout", "pointerover"] }, pointerLeave: { registrationName: "onPointerLeave", dependencies: ["pointerout", "pointerover"] } }, xs = { eventTypes: Lr, extractEvents: function(e, t, n, r, a) {
           var d = e === "mouseover" || e === "pointerover", m = e === "mouseout" || e === "pointerout";
           if (d && !(32 & a) && (n.relatedTarget || n.fromElement) || !m && !d || (d = r.window === r ? r : (d = r.ownerDocument) ? d.defaultView || d.parentWindow : window, m ? (m = t, (t = (t = n.relatedTarget || n.toElement) ? no(t) : null) !== null && (t !== rt(t) || t.tag !== 5 && t.tag !== 6) && (t = null)) : m = null, m === t)) return null;
-          if (e === "mouseout" || e === "mouseover") var w = jr, B = Lr.mouseLeave, V = Lr.mouseEnter, ce = "mouse";
-          else e !== "pointerout" && e !== "pointerover" || (w = xa, B = Lr.pointerLeave, V = Lr.pointerEnter, ce = "pointer");
-          if (e = m == null ? d : Zn(m), d = t == null ? d : Zn(t), (B = w.getPooled(B, m, n, r)).type = ce + "leave", B.target = e, B.relatedTarget = d, (n = w.getPooled(V, t, n, r)).type = ce + "enter", n.target = d, n.relatedTarget = e, ce = t, (r = m) && ce) e: {
-            for (V = ce, m = 0, e = w = r; e; e = Jn(e)) m++;
+          if (e === "mouseout" || e === "mouseover") var _ = jr, B = Lr.mouseLeave, V = Lr.mouseEnter, ce = "mouse";
+          else e !== "pointerout" && e !== "pointerover" || (_ = xa, B = Lr.pointerLeave, V = Lr.pointerEnter, ce = "pointer");
+          if (e = m == null ? d : Zn(m), d = t == null ? d : Zn(t), (B = _.getPooled(B, m, n, r)).type = ce + "leave", B.target = e, B.relatedTarget = d, (n = _.getPooled(V, t, n, r)).type = ce + "enter", n.target = d, n.relatedTarget = e, ce = t, (r = m) && ce) e: {
+            for (V = ce, m = 0, e = _ = r; e; e = Jn(e)) m++;
             for (e = 0, t = V; t; t = Jn(t)) e++;
-            for (; 0 < m - e; ) w = Jn(w), m--;
+            for (; 0 < m - e; ) _ = Jn(_), m--;
             for (; 0 < e - m; ) V = Jn(V), e--;
             for (; m--; ) {
-              if (w === V || w === V.alternate) break e;
-              w = Jn(w), V = Jn(V);
+              if (_ === V || _ === V.alternate) break e;
+              _ = Jn(_), V = Jn(V);
             }
-            w = null;
+            _ = null;
           }
-          else w = null;
-          for (V = w, w = []; r && r !== V && ((m = r.alternate) === null || m !== V); ) w.push(r), r = Jn(r);
+          else _ = null;
+          for (V = _, _ = []; r && r !== V && ((m = r.alternate) === null || m !== V); ) _.push(r), r = Jn(r);
           for (r = []; ce && ce !== V && ((m = ce.alternate) === null || m !== V); ) r.push(ce), ce = Jn(ce);
-          for (ce = 0; ce < w.length; ce++) er(w[ce], "bubbled", B);
+          for (ce = 0; ce < _.length; ce++) er(_[ce], "bubbled", B);
           for (ce = r.length; 0 < ce--; ) er(r[ce], "captured", n);
           return 64 & a ? [B, n] : [B];
         } }, rr = typeof Object.is == "function" ? Object.is : function(e, t) {
@@ -3918,15 +3918,15 @@ https://fb.me/react-async-component-lifecycle-hooks`);
           var d = a.baseQueue, m = a.shared.pending;
           if (m !== null) {
             if (d !== null) {
-              var w = d.next;
-              d.next = m.next, m.next = w;
+              var _ = d.next;
+              d.next = m.next, m.next = _;
             }
-            d = m, a.shared.pending = null, (w = e.alternate) !== null && (w = w.updateQueue) !== null && (w.baseQueue = m);
+            d = m, a.shared.pending = null, (_ = e.alternate) !== null && (_ = _.updateQueue) !== null && (_.baseQueue = m);
           }
           if (d !== null) {
-            w = d.next;
+            _ = d.next;
             var B = a.baseState, V = 0, ce = null, Re = null, Ve = null;
-            if (w !== null) for (var ot = w; ; ) {
+            if (_ !== null) for (var ot = _; ; ) {
               if ((m = ot.expirationTime) < r) {
                 var Vn = { expirationTime: ot.expirationTime, suspenseConfig: ot.suspenseConfig, tag: ot.tag, payload: ot.payload, callback: ot.callback, next: null };
                 Ve === null ? (Re = Ve = Vn, ce = B) : Ve = Ve.next = Vn, m > V && (V = m);
@@ -3954,9 +3954,9 @@ https://fb.me/react-async-component-lifecycle-hooks`);
                 }
                 ot.callback !== null && (e.effectTag |= 32, (m = a.effects) === null ? a.effects = [ot] : m.push(ot));
               }
-              if ((ot = ot.next) === null || ot === w) {
+              if ((ot = ot.next) === null || ot === _) {
                 if ((m = a.shared.pending) === null) break;
-                ot = d.next = m.next, m.next = w, a.baseQueue = d = m, a.shared.pending = null;
+                ot = d.next = m.next, m.next = _, a.baseQueue = d = m, a.shared.pending = null;
               }
             }
             Ve === null ? ce = B : Ve.next = Re, a.baseState = ce, a.baseQueue = Ve, es(V), e.expirationTime = V, e.memoizedState = B;
@@ -4054,7 +4054,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
           function m(W) {
             return e && W.alternate === null && (W.effectTag = 2), W;
           }
-          function w(W, H, re, ve) {
+          function _(W, H, re, ve) {
             return H === null || H.tag !== 6 ? ((H = gl(re, W.mode, ve)).return = W, H) : ((H = a(H, re)).return = W, H);
           }
           function B(W, H, re, ve) {
@@ -4082,7 +4082,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
           }
           function Ve(W, H, re, ve) {
             var xe = H !== null ? H.key : null;
-            if (typeof re == "string" || typeof re == "number") return xe !== null ? null : w(W, H, "" + re, ve);
+            if (typeof re == "string" || typeof re == "number") return xe !== null ? null : _(W, H, "" + re, ve);
             if (typeof re == "object" && re !== null) {
               switch (re.$$typeof) {
                 case Gt:
@@ -4096,7 +4096,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
             return null;
           }
           function ot(W, H, re, ve, xe) {
-            if (typeof ve == "string" || typeof ve == "number") return w(H, W = W.get(re) || null, "" + ve, xe);
+            if (typeof ve == "string" || typeof ve == "number") return _(H, W = W.get(re) || null, "" + ve, xe);
             if (typeof ve == "object" && ve !== null) {
               switch (ve.$$typeof) {
                 case Gt:
@@ -4311,16 +4311,16 @@ https://fb.me/react-async-component-lifecycle-hooks`);
           }
           if (a !== null) {
             a = a.next, r = r.baseState;
-            var w = m = d = null, B = a;
+            var _ = m = d = null, B = a;
             do {
               var V = B.expirationTime;
               if (V < ho) {
                 var ce = { expirationTime: B.expirationTime, suspenseConfig: B.suspenseConfig, action: B.action, eagerReducer: B.eagerReducer, eagerState: B.eagerState, next: null };
-                w === null ? (m = w = ce, d = r) : w = w.next = ce, V > Rt.expirationTime && (Rt.expirationTime = V, es(V));
-              } else w !== null && (w = w.next = { expirationTime: 1073741823, suspenseConfig: B.suspenseConfig, action: B.action, eagerReducer: B.eagerReducer, eagerState: B.eagerState, next: null }), _c(V, B.suspenseConfig), r = B.eagerReducer === e ? B.eagerState : e(r, B.action);
+                _ === null ? (m = _ = ce, d = r) : _ = _.next = ce, V > Rt.expirationTime && (Rt.expirationTime = V, es(V));
+              } else _ !== null && (_ = _.next = { expirationTime: 1073741823, suspenseConfig: B.suspenseConfig, action: B.action, eagerReducer: B.eagerReducer, eagerState: B.eagerState, next: null }), _c(V, B.suspenseConfig), r = B.eagerReducer === e ? B.eagerState : e(r, B.action);
               B = B.next;
             } while (B !== null && B !== a);
-            w === null ? d = r : w.next = m, rr(r, t.memoizedState) || (Er = !0), t.memoizedState = r, t.baseState = d, t.baseQueue = w, n.lastRenderedState = r;
+            _ === null ? d = r : _.next = m, rr(r, t.memoizedState) || (Er = !0), t.memoizedState = r, t.baseState = d, t.baseQueue = _, n.lastRenderedState = r;
           }
           return [t.memoizedState, n.dispatch];
         }
@@ -4420,8 +4420,8 @@ https://fb.me/react-async-component-lifecycle-hooks`);
           if (d === null ? a.next = a : (a.next = d.next, d.next = a), t.pending = a, d = e.alternate, e === Rt || d !== null && d === Rt) Ma = !0, a.expirationTime = ho, Rt.expirationTime = ho;
           else {
             if (e.expirationTime === 0 && (d === null || d.expirationTime === 0) && (d = t.lastRenderedReducer) !== null) try {
-              var m = t.lastRenderedState, w = d(m, n);
-              if (a.eagerReducer = d, a.eagerState = w, rr(w, m)) return;
+              var m = t.lastRenderedState, _ = d(m, n);
+              if (a.eagerReducer = d, a.eagerState = _, rr(_, m)) return;
             } catch {
             }
             yo(e, r);
@@ -4581,15 +4581,15 @@ https://fb.me/react-async-component-lifecycle-hooks`);
           } else d = !1;
           if (ui(t, a), t.stateNode === null) e !== null && (e.alternate = null, t.alternate = null, t.effectTag |= 2), Nl(t, n, r), zs(t, n, r, a), r = !0;
           else if (e === null) {
-            var m = t.stateNode, w = t.memoizedProps;
-            m.props = w;
+            var m = t.stateNode, _ = t.memoizedProps;
+            m.props = _;
             var B = m.context, V = n.contextType;
             typeof V == "object" && V !== null ? V = Ln(V) : V = me(t, V = de(n) ? ue : X.current);
             var ce = n.getDerivedStateFromProps, Re = typeof ce == "function" || typeof m.getSnapshotBeforeUpdate == "function";
-            Re || typeof m.UNSAFE_componentWillReceiveProps != "function" && typeof m.componentWillReceiveProps != "function" || (w !== r || B !== V) && Pl(t, m, r, V), uo = !1;
+            Re || typeof m.UNSAFE_componentWillReceiveProps != "function" && typeof m.componentWillReceiveProps != "function" || (_ !== r || B !== V) && Pl(t, m, r, V), uo = !1;
             var Ve = t.memoizedState;
-            m.state = Ve, Bi(t, r, m, a), B = t.memoizedState, w !== r || Ve !== B || ie.current || uo ? (typeof ce == "function" && (Oa(t, n, ce, r), B = t.memoizedState), (w = uo || Ol(t, n, w, r, Ve, B, V)) ? (Re || typeof m.UNSAFE_componentWillMount != "function" && typeof m.componentWillMount != "function" || (typeof m.componentWillMount == "function" && m.componentWillMount(), typeof m.UNSAFE_componentWillMount == "function" && m.UNSAFE_componentWillMount()), typeof m.componentDidMount == "function" && (t.effectTag |= 4)) : (typeof m.componentDidMount == "function" && (t.effectTag |= 4), t.memoizedProps = r, t.memoizedState = B), m.props = r, m.state = B, m.context = V, r = w) : (typeof m.componentDidMount == "function" && (t.effectTag |= 4), r = !1);
-          } else m = t.stateNode, Ms(e, t), w = t.memoizedProps, m.props = t.type === t.elementType ? w : nn(t.type, w), B = m.context, typeof (V = n.contextType) == "object" && V !== null ? V = Ln(V) : V = me(t, V = de(n) ? ue : X.current), (Re = typeof (ce = n.getDerivedStateFromProps) == "function" || typeof m.getSnapshotBeforeUpdate == "function") || typeof m.UNSAFE_componentWillReceiveProps != "function" && typeof m.componentWillReceiveProps != "function" || (w !== r || B !== V) && Pl(t, m, r, V), uo = !1, B = t.memoizedState, m.state = B, Bi(t, r, m, a), Ve = t.memoizedState, w !== r || B !== Ve || ie.current || uo ? (typeof ce == "function" && (Oa(t, n, ce, r), Ve = t.memoizedState), (ce = uo || Ol(t, n, w, r, B, Ve, V)) ? (Re || typeof m.UNSAFE_componentWillUpdate != "function" && typeof m.componentWillUpdate != "function" || (typeof m.componentWillUpdate == "function" && m.componentWillUpdate(r, Ve, V), typeof m.UNSAFE_componentWillUpdate == "function" && m.UNSAFE_componentWillUpdate(r, Ve, V)), typeof m.componentDidUpdate == "function" && (t.effectTag |= 4), typeof m.getSnapshotBeforeUpdate == "function" && (t.effectTag |= 256)) : (typeof m.componentDidUpdate != "function" || w === e.memoizedProps && B === e.memoizedState || (t.effectTag |= 4), typeof m.getSnapshotBeforeUpdate != "function" || w === e.memoizedProps && B === e.memoizedState || (t.effectTag |= 256), t.memoizedProps = r, t.memoizedState = Ve), m.props = r, m.state = Ve, m.context = V, r = ce) : (typeof m.componentDidUpdate != "function" || w === e.memoizedProps && B === e.memoizedState || (t.effectTag |= 4), typeof m.getSnapshotBeforeUpdate != "function" || w === e.memoizedProps && B === e.memoizedState || (t.effectTag |= 256), r = !1);
+            m.state = Ve, Bi(t, r, m, a), B = t.memoizedState, _ !== r || Ve !== B || ie.current || uo ? (typeof ce == "function" && (Oa(t, n, ce, r), B = t.memoizedState), (_ = uo || Ol(t, n, _, r, Ve, B, V)) ? (Re || typeof m.UNSAFE_componentWillMount != "function" && typeof m.componentWillMount != "function" || (typeof m.componentWillMount == "function" && m.componentWillMount(), typeof m.UNSAFE_componentWillMount == "function" && m.UNSAFE_componentWillMount()), typeof m.componentDidMount == "function" && (t.effectTag |= 4)) : (typeof m.componentDidMount == "function" && (t.effectTag |= 4), t.memoizedProps = r, t.memoizedState = B), m.props = r, m.state = B, m.context = V, r = _) : (typeof m.componentDidMount == "function" && (t.effectTag |= 4), r = !1);
+          } else m = t.stateNode, Ms(e, t), _ = t.memoizedProps, m.props = t.type === t.elementType ? _ : nn(t.type, _), B = m.context, typeof (V = n.contextType) == "object" && V !== null ? V = Ln(V) : V = me(t, V = de(n) ? ue : X.current), (Re = typeof (ce = n.getDerivedStateFromProps) == "function" || typeof m.getSnapshotBeforeUpdate == "function") || typeof m.UNSAFE_componentWillReceiveProps != "function" && typeof m.componentWillReceiveProps != "function" || (_ !== r || B !== V) && Pl(t, m, r, V), uo = !1, B = t.memoizedState, m.state = B, Bi(t, r, m, a), Ve = t.memoizedState, _ !== r || B !== Ve || ie.current || uo ? (typeof ce == "function" && (Oa(t, n, ce, r), Ve = t.memoizedState), (ce = uo || Ol(t, n, _, r, B, Ve, V)) ? (Re || typeof m.UNSAFE_componentWillUpdate != "function" && typeof m.componentWillUpdate != "function" || (typeof m.componentWillUpdate == "function" && m.componentWillUpdate(r, Ve, V), typeof m.UNSAFE_componentWillUpdate == "function" && m.UNSAFE_componentWillUpdate(r, Ve, V)), typeof m.componentDidUpdate == "function" && (t.effectTag |= 4), typeof m.getSnapshotBeforeUpdate == "function" && (t.effectTag |= 256)) : (typeof m.componentDidUpdate != "function" || _ === e.memoizedProps && B === e.memoizedState || (t.effectTag |= 4), typeof m.getSnapshotBeforeUpdate != "function" || _ === e.memoizedProps && B === e.memoizedState || (t.effectTag |= 256), t.memoizedProps = r, t.memoizedState = Ve), m.props = r, m.state = Ve, m.context = V, r = ce) : (typeof m.componentDidUpdate != "function" || _ === e.memoizedProps && B === e.memoizedState || (t.effectTag |= 4), typeof m.getSnapshotBeforeUpdate != "function" || _ === e.memoizedProps && B === e.memoizedState || (t.effectTag |= 256), r = !1);
           return Gs(e, t, n, r, d, a);
         }
         function Gs(e, t, n, r, a, d) {
@@ -4597,8 +4597,8 @@ https://fb.me/react-async-component-lifecycle-hooks`);
           var m = !!(64 & t.effectTag);
           if (!r && !m) return a && Be(t, n, !1), Hr(e, t, d);
           r = t.stateNode, Vc.current = t;
-          var w = m && typeof n.getDerivedStateFromError != "function" ? null : r.render();
-          return t.effectTag |= 1, e !== null && m ? (t.child = di(t, e.child, null, d), t.child = di(t, null, w, d)) : Un(e, t, w, d), t.memoizedState = r.state, a && Be(t, n, !0), t.child;
+          var _ = m && typeof n.getDerivedStateFromError != "function" ? null : r.render();
+          return t.effectTag |= 1, e !== null && m ? (t.child = di(t, e.child, null, d), t.child = di(t, null, _, d)) : Un(e, t, _, d), t.memoizedState = r.state, a && Be(t, n, !0), t.child;
         }
         function Yl(e) {
           var t = e.stateNode;
@@ -4606,24 +4606,24 @@ https://fb.me/react-async-component-lifecycle-hooks`);
         }
         var Xl, Zs, Gl, Zl, Js = { dehydrated: null, retryTime: 0 };
         function Jl(e, t, n) {
-          var r, a = t.mode, d = t.pendingProps, m = Ct.current, w = !1;
-          if ((r = !!(64 & t.effectTag)) || (r = !!(2 & m) && (e === null || e.memoizedState !== null)), r ? (w = !0, t.effectTag &= -65) : e !== null && e.memoizedState === null || d.fallback === void 0 || d.unstable_avoidThisFallback === !0 || (m |= 1), z(Ct, 1 & m), e === null) {
-            if (d.fallback !== void 0 && Qs(t), w) {
-              if (w = d.fallback, (d = bo(null, a, 0, null)).return = t, !(2 & t.mode)) for (e = t.memoizedState !== null ? t.child.child : t.child, d.child = e; e !== null; ) e.return = d, e = e.sibling;
-              return (n = bo(w, a, n, null)).return = t, d.sibling = n, t.memoizedState = Js, t.child = d, n;
+          var r, a = t.mode, d = t.pendingProps, m = Ct.current, _ = !1;
+          if ((r = !!(64 & t.effectTag)) || (r = !!(2 & m) && (e === null || e.memoizedState !== null)), r ? (_ = !0, t.effectTag &= -65) : e !== null && e.memoizedState === null || d.fallback === void 0 || d.unstable_avoidThisFallback === !0 || (m |= 1), z(Ct, 1 & m), e === null) {
+            if (d.fallback !== void 0 && Qs(t), _) {
+              if (_ = d.fallback, (d = bo(null, a, 0, null)).return = t, !(2 & t.mode)) for (e = t.memoizedState !== null ? t.child.child : t.child, d.child = e; e !== null; ) e.return = d, e = e.sibling;
+              return (n = bo(_, a, n, null)).return = t, d.sibling = n, t.memoizedState = Js, t.child = d, n;
             }
             return a = d.children, t.memoizedState = null, t.child = As(t, null, a, n);
           }
           if (e.memoizedState !== null) {
-            if (a = (e = e.child).sibling, w) {
-              if (d = d.fallback, (n = Go(e, e.pendingProps)).return = t, !(2 & t.mode) && (w = t.memoizedState !== null ? t.child.child : t.child) !== e.child) for (n.child = w; w !== null; ) w.return = n, w = w.sibling;
+            if (a = (e = e.child).sibling, _) {
+              if (d = d.fallback, (n = Go(e, e.pendingProps)).return = t, !(2 & t.mode) && (_ = t.memoizedState !== null ? t.child.child : t.child) !== e.child) for (n.child = _; _ !== null; ) _.return = n, _ = _.sibling;
               return (a = Go(a, d)).return = t, n.sibling = a, n.childExpirationTime = 0, t.memoizedState = Js, t.child = n, a;
             }
             return n = di(t, e.child, d.children, n), t.memoizedState = null, t.child = n;
           }
-          if (e = e.child, w) {
-            if (w = d.fallback, (d = bo(null, a, 0, null)).return = t, d.child = e, e !== null && (e.return = d), !(2 & t.mode)) for (e = t.memoizedState !== null ? t.child.child : t.child, d.child = e; e !== null; ) e.return = d, e = e.sibling;
-            return (n = bo(w, a, n, null)).return = t, d.sibling = n, n.effectTag |= 2, d.childExpirationTime = 0, t.memoizedState = Js, t.child = d, n;
+          if (e = e.child, _) {
+            if (_ = d.fallback, (d = bo(null, a, 0, null)).return = t, d.child = e, e !== null && (e.return = d), !(2 & t.mode)) for (e = t.memoizedState !== null ? t.child.child : t.child, d.child = e; e !== null; ) e.return = d, e = e.sibling;
+            return (n = bo(_, a, n, null)).return = t, d.sibling = n, n.effectTag |= 2, d.childExpirationTime = 0, t.memoizedState = Js, t.child = d, n;
           }
           return t.memoizedState = null, t.child = di(t, e, d.children, n);
         }
@@ -4769,8 +4769,8 @@ https://fb.me/react-async-component-lifecycle-hooks`);
                       lr(r, d), gt("invalid", r), Gn(n, "onChange");
                   }
                   for (var m in xi(a, d), e = null, d) if (d.hasOwnProperty(m)) {
-                    var w = d[m];
-                    m === "children" ? typeof w == "string" ? r.textContent !== w && (e = ["children", w]) : typeof w == "number" && r.textContent !== "" + w && (e = ["children", "" + w]) : j.hasOwnProperty(m) && w != null && Gn(n, m);
+                    var _ = d[m];
+                    m === "children" ? typeof _ == "string" ? r.textContent !== _ && (e = ["children", _]) : typeof _ == "number" && r.textContent !== "" + _ && (e = ["children", "" + _]) : j.hasOwnProperty(m) && _ != null && Gn(n, m);
                   }
                   switch (a) {
                     case "input":
@@ -4791,44 +4791,44 @@ https://fb.me/react-async-component-lifecycle-hooks`);
                     case "iframe":
                     case "object":
                     case "embed":
-                      gt("load", e), w = r;
+                      gt("load", e), _ = r;
                       break;
                     case "video":
                     case "audio":
-                      for (w = 0; w < tt.length; w++) gt(tt[w], e);
-                      w = r;
+                      for (_ = 0; _ < tt.length; _++) gt(tt[_], e);
+                      _ = r;
                       break;
                     case "source":
-                      gt("error", e), w = r;
+                      gt("error", e), _ = r;
                       break;
                     case "img":
                     case "image":
                     case "link":
-                      gt("error", e), gt("load", e), w = r;
+                      gt("error", e), gt("load", e), _ = r;
                       break;
                     case "form":
-                      gt("reset", e), gt("submit", e), w = r;
+                      gt("reset", e), gt("submit", e), _ = r;
                       break;
                     case "details":
-                      gt("toggle", e), w = r;
+                      gt("toggle", e), _ = r;
                       break;
                     case "input":
-                      Or(e, r), w = Kr(e, r), gt("invalid", e), Gn(n, "onChange");
+                      Or(e, r), _ = Kr(e, r), gt("invalid", e), Gn(n, "onChange");
                       break;
                     case "option":
-                      w = Nr(e, r);
+                      _ = Nr(e, r);
                       break;
                     case "select":
-                      e._wrapperState = { wasMultiple: !!r.multiple }, w = p({}, r, { value: void 0 }), gt("invalid", e), Gn(n, "onChange");
+                      e._wrapperState = { wasMultiple: !!r.multiple }, _ = p({}, r, { value: void 0 }), gt("invalid", e), Gn(n, "onChange");
                       break;
                     case "textarea":
-                      lr(e, r), w = Pr(e, r), gt("invalid", e), Gn(n, "onChange");
+                      lr(e, r), _ = Pr(e, r), gt("invalid", e), Gn(n, "onChange");
                       break;
                     default:
-                      w = r;
+                      _ = r;
                   }
-                  xi(a, w);
-                  var B = w;
+                  xi(a, _);
+                  var B = _;
                   for (d in B) if (B.hasOwnProperty(d)) {
                     var V = B[d];
                     d === "style" ? ei(e, V) : d === "dangerouslySetInnerHTML" ? (V = V ? V.__html : void 0) != null && Dr(e, V) : d === "children" ? typeof V == "string" ? (a !== "textarea" || V !== "") && Kn(e, V) : typeof V == "number" && Kn(e, "" + V) : d !== "suppressContentEditableWarning" && d !== "suppressHydrationWarning" && d !== "autoFocus" && (j.hasOwnProperty(d) ? V != null && Gn(n, d) : V != null && Pt(e, d, V, m));
@@ -4847,7 +4847,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
                       e.multiple = !!r.multiple, (n = r.value) != null ? Dn(e, !!r.multiple, n, !1) : r.defaultValue != null && Dn(e, !!r.multiple, r.defaultValue, !0);
                       break;
                     default:
-                      typeof w.onClick == "function" && (e.onclick = Jr);
+                      typeof _.onClick == "function" && (e.onclick = Jr);
                   }
                   Yt(a, r) && (t.effectTag |= 4);
                 }
@@ -4932,7 +4932,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
         }, Gl = function(e, t, n, r, a) {
           var d = e.memoizedProps;
           if (d !== r) {
-            var m, w, B = t.stateNode;
+            var m, _, B = t.stateNode;
             switch ($o(_r.current), e = null, n) {
               case "input":
                 d = Kr(B, d), r = Kr(B, r), e = [];
@@ -4949,13 +4949,13 @@ https://fb.me/react-async-component-lifecycle-hooks`);
               default:
                 typeof d.onClick != "function" && typeof r.onClick == "function" && (B.onclick = Jr);
             }
-            for (m in xi(n, r), n = null, d) if (!r.hasOwnProperty(m) && d.hasOwnProperty(m) && d[m] != null) if (m === "style") for (w in B = d[m]) B.hasOwnProperty(w) && (n || (n = {}), n[w] = "");
+            for (m in xi(n, r), n = null, d) if (!r.hasOwnProperty(m) && d.hasOwnProperty(m) && d[m] != null) if (m === "style") for (_ in B = d[m]) B.hasOwnProperty(_) && (n || (n = {}), n[_] = "");
             else m !== "dangerouslySetInnerHTML" && m !== "children" && m !== "suppressContentEditableWarning" && m !== "suppressHydrationWarning" && m !== "autoFocus" && (j.hasOwnProperty(m) ? e || (e = []) : (e = e || []).push(m, null));
             for (m in r) {
               var V = r[m];
               if (B = d != null ? d[m] : void 0, r.hasOwnProperty(m) && V !== B && (V != null || B != null)) if (m === "style") if (B) {
-                for (w in B) !B.hasOwnProperty(w) || V && V.hasOwnProperty(w) || (n || (n = {}), n[w] = "");
-                for (w in V) V.hasOwnProperty(w) && B[w] !== V[w] && (n || (n = {}), n[w] = V[w]);
+                for (_ in B) !B.hasOwnProperty(_) || V && V.hasOwnProperty(_) || (n || (n = {}), n[_] = "");
+                for (_ in V) V.hasOwnProperty(_) && B[_] !== V[_] && (n || (n = {}), n[_] = V[_]);
               } else n || (e || (e = []), e.push(m, n)), n = V;
               else m === "dangerouslySetInnerHTML" ? (V = V ? V.__html : void 0, B = B ? B.__html : void 0, V != null && B !== V && (e = e || []).push(m, V)) : m === "children" ? B === V || typeof V != "string" && typeof V != "number" || (e = e || []).push(m, "" + V) : m !== "suppressContentEditableWarning" && m !== "suppressHydrationWarning" && (j.hasOwnProperty(m) ? (V != null && Gn(a, m), e || B === V || (e = [])) : (e = e || []).push(m, V));
             }
@@ -5086,8 +5086,8 @@ https://fb.me/react-async-component-lifecycle-hooks`);
                       var m = t;
                       try {
                         d();
-                      } catch (w) {
-                        Xo(m, w);
+                      } catch (_) {
+                        Xo(m, _);
                       }
                     }
                     a = a.next;
@@ -5190,7 +5190,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
               m = !0;
             }
             if (d.tag === 5 || d.tag === 6) {
-              e: for (var w = e, B = d, V = n, ce = B; ; ) if (ic(w, ce, V), ce.child !== null && ce.tag !== 4) ce.child.return = ce, ce = ce.child;
+              e: for (var _ = e, B = d, V = n, ce = B; ; ) if (ic(_, ce, V), ce.child !== null && ce.tag !== 4) ce.child.return = ce, ce = ce.child;
               else {
                 if (ce === B) break e;
                 for (; ce.sibling === null; ) {
@@ -5199,7 +5199,7 @@ https://fb.me/react-async-component-lifecycle-hooks`);
                 }
                 ce.sibling.return = ce.return, ce = ce.sibling;
               }
-              a ? (w = r, B = d.stateNode, w.nodeType === 8 ? w.parentNode.removeChild(B) : w.removeChild(B)) : r.removeChild(d.stateNode);
+              a ? (_ = r, B = d.stateNode, _.nodeType === 8 ? _.parentNode.removeChild(B) : _.removeChild(B)) : r.removeChild(d.stateNode);
             } else if (d.tag === 4) {
               if (d.child !== null) {
                 r = d.stateNode.containerInfo, a = !0, d.child.return = d, d = d.child;
@@ -5237,8 +5237,8 @@ https://fb.me/react-async-component-lifecycle-hooks`);
                 var d = t.updateQueue;
                 if (t.updateQueue = null, d !== null) {
                   for (n[ri] = r, e === "input" && r.type === "radio" && r.name != null && fn(n, r), Si(e, a), t = Si(e, r), a = 0; a < d.length; a += 2) {
-                    var m = d[a], w = d[a + 1];
-                    m === "style" ? ei(n, w) : m === "dangerouslySetInnerHTML" ? Dr(n, w) : m === "children" ? Kn(n, w) : Pt(n, m, w, t);
+                    var m = d[a], _ = d[a + 1];
+                    m === "style" ? ei(n, _) : m === "dangerouslySetInnerHTML" ? Dr(n, _) : m === "children" ? Kn(n, _) : Pt(n, m, _, t);
                   }
                   switch (e) {
                     case "input":
@@ -5404,8 +5404,8 @@ https://fb.me/react-async-component-lifecycle-hooks`);
               for (var a = wc(); ; ) try {
                 Xc();
                 break;
-              } catch (w) {
-                kc(e, w);
+              } catch (_) {
+                kc(e, _);
               }
               if (ir(), We = r, $a.current = a, Vt === Ha) throw t = qa, Qo(e, n), Zo(e, n), Tn(e), t;
               if (qe === null) switch (a = e.finishedWork = e.current.alternate, e.finishedExpirationTime = n, r = Vt, Cn = null, r) {
@@ -5543,9 +5543,9 @@ https://fb.me/react-async-component-lifecycle-hooks`);
               }
               if (ho = 0, Xt = rn = Rt = null, Ma = !1, qe === null || qe.return === null) return Vt = Ha, qa = t, qe = null;
               e: {
-                var a = e, d = qe.return, m = qe, w = t;
-                if (t = dn, m.effectTag |= 2048, m.firstEffect = m.lastEffect = null, w !== null && typeof w == "object" && typeof w.then == "function") {
-                  var B = w;
+                var a = e, d = qe.return, m = qe, _ = t;
+                if (t = dn, m.effectTag |= 2048, m.firstEffect = m.lastEffect = null, _ !== null && typeof _ == "object" && typeof _.then == "function") {
+                  var B = _;
                   if (!(2 & m.mode)) {
                     var V = m.alternate;
                     V ? (m.updateQueue = V.updateQueue, m.memoizedState = V.memoizedState, m.expirationTime = V.expirationTime) : (m.updateQueue = null, m.memoizedState = null);
@@ -5576,10 +5576,10 @@ https://fb.me/react-async-component-lifecycle-hooks`);
                         m.expirationTime = 1073741823;
                         break e;
                       }
-                      w = void 0, m = t;
+                      _ = void 0, m = t;
                       var re = a.pingCache;
-                      if (re === null ? (re = a.pingCache = new Kc(), w = /* @__PURE__ */ new Set(), re.set(B, w)) : (w = re.get(B)) === void 0 && (w = /* @__PURE__ */ new Set(), re.set(B, w)), !w.has(m)) {
-                        w.add(m);
+                      if (re === null ? (re = a.pingCache = new Kc(), _ = /* @__PURE__ */ new Set(), re.set(B, _)) : (_ = re.get(B)) === void 0 && (_ = /* @__PURE__ */ new Set(), re.set(B, _)), !_.has(m)) {
+                        _.add(m);
                         var ve = eu.bind(null, a, B, m);
                         B.then(ve, ve);
                       }
@@ -5588,18 +5588,18 @@ https://fb.me/react-async-component-lifecycle-hooks`);
                     }
                     Re = Re.return;
                   } while (Re !== null);
-                  w = Error((Kt(m.type) || "A React component") + ` suspended while rendering, but no fallback UI was specified.
+                  _ = Error((Kt(m.type) || "A React component") + ` suspended while rendering, but no fallback UI was specified.
 
 Add a <Suspense fallback=...> component higher in the tree to provide a loading indicator or placeholder to display.` + zt(m));
                 }
-                Vt !== sl && (Vt = mc), w = tl(w, m), Re = d;
+                Vt !== sl && (Vt = mc), _ = tl(_, m), Re = d;
                 do {
                   switch (Re.tag) {
                     case 3:
-                      B = w, Re.effectTag |= 4096, Re.expirationTime = t, Sl(Re, dc(Re, B, t));
+                      B = _, Re.effectTag |= 4096, Re.expirationTime = t, Sl(Re, dc(Re, B, t));
                       break e;
                     case 1:
-                      B = w;
+                      B = _;
                       var xe = Re.type, Ie = Re.stateNode;
                       if (!(64 & Re.effectTag || typeof xe.getDerivedStateFromError != "function" && (Ie === null || typeof Ie.componentDidCatch != "function" || go !== null && go.has(Ie)))) {
                         Re.effectTag |= 4096, Re.expirationTime = t, Sl(Re, pc(Re, B, t));
@@ -5683,35 +5683,35 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
             We |= xr, hc.current = null, Do = An;
             var m = la();
             if (Oi(m)) {
-              if ("selectionStart" in m) var w = { start: m.selectionStart, end: m.selectionEnd };
+              if ("selectionStart" in m) var _ = { start: m.selectionStart, end: m.selectionEnd };
               else e: {
-                var B = (w = (w = m.ownerDocument) && w.defaultView || window).getSelection && w.getSelection();
+                var B = (_ = (_ = m.ownerDocument) && _.defaultView || window).getSelection && _.getSelection();
                 if (B && B.rangeCount !== 0) {
-                  w = B.anchorNode;
+                  _ = B.anchorNode;
                   var V = B.anchorOffset, ce = B.focusNode;
                   B = B.focusOffset;
                   try {
-                    w.nodeType, ce.nodeType;
+                    _.nodeType, ce.nodeType;
                   } catch {
-                    w = null;
+                    _ = null;
                     break e;
                   }
                   var Re = 0, Ve = -1, ot = -1, Vn = 0, on = 0, W = m, H = null;
                   t: for (; ; ) {
-                    for (var re; W !== w || V !== 0 && W.nodeType !== 3 || (Ve = Re + V), W !== ce || B !== 0 && W.nodeType !== 3 || (ot = Re + B), W.nodeType === 3 && (Re += W.nodeValue.length), (re = W.firstChild) !== null; ) H = W, W = re;
+                    for (var re; W !== _ || V !== 0 && W.nodeType !== 3 || (Ve = Re + V), W !== ce || B !== 0 && W.nodeType !== 3 || (ot = Re + B), W.nodeType === 3 && (Re += W.nodeValue.length), (re = W.firstChild) !== null; ) H = W, W = re;
                     for (; ; ) {
                       if (W === m) break t;
-                      if (H === w && ++Vn === V && (Ve = Re), H === ce && ++on === B && (ot = Re), (re = W.nextSibling) !== null) break;
+                      if (H === _ && ++Vn === V && (Ve = Re), H === ce && ++on === B && (ot = Re), (re = W.nextSibling) !== null) break;
                       H = (W = H).parentNode;
                     }
                     W = re;
                   }
-                  w = Ve === -1 || ot === -1 ? null : { start: Ve, end: ot };
-                } else w = null;
+                  _ = Ve === -1 || ot === -1 ? null : { start: Ve, end: ot };
+                } else _ = null;
               }
-              w = w || { start: 0, end: 0 };
-            } else w = null;
-            Et = { activeElementDetached: null, focusedElem: m, selectionRange: w }, An = !1, Me = a;
+              _ = _ || { start: 0, end: 0 };
+            } else _ = null;
+            Et = { activeElementDetached: null, focusedElem: m, selectionRange: _ }, An = !1, Me = a;
             do
               try {
                 Zc();
@@ -5723,7 +5723,7 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
             Me = a;
             do
               try {
-                for (m = e, w = t; Me !== null; ) {
+                for (m = e, _ = t; Me !== null; ) {
                   var ve = Me.effectTag;
                   if (16 & ve && Kn(Me.stateNode, ""), 128 & ve) {
                     var xe = Me.alternate;
@@ -5749,7 +5749,7 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
                       il(Me.alternate, Me);
                       break;
                     case 8:
-                      cc(m, V = Me, w), ac(V);
+                      cc(m, V = Me, _), ac(V);
                   }
                   Me = Me.nextEffect;
                 }
@@ -5758,8 +5758,8 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
                 Xo(Me, Xe), Me = Me.nextEffect;
               }
             while (Me !== null);
-            if (Ie = Et, xe = la(), ve = Ie.focusedElem, w = Ie.selectionRange, xe !== ve && ve && ve.ownerDocument && Ti(ve.ownerDocument.documentElement, ve)) {
-              for (w !== null && Oi(ve) && (xe = w.start, (Ie = w.end) === void 0 && (Ie = xe), "selectionStart" in ve ? (ve.selectionStart = xe, ve.selectionEnd = Math.min(Ie, ve.value.length)) : (Ie = (xe = ve.ownerDocument || document) && xe.defaultView || window).getSelection && (Ie = Ie.getSelection(), V = ve.textContent.length, m = Math.min(w.start, V), w = w.end === void 0 ? m : Math.min(w.end, V), !Ie.extend && m > w && (V = w, w = m, m = V), V = sa(ve, m), ce = sa(ve, w), V && ce && (Ie.rangeCount !== 1 || Ie.anchorNode !== V.node || Ie.anchorOffset !== V.offset || Ie.focusNode !== ce.node || Ie.focusOffset !== ce.offset) && ((xe = xe.createRange()).setStart(V.node, V.offset), Ie.removeAllRanges(), m > w ? (Ie.addRange(xe), Ie.extend(ce.node, ce.offset)) : (xe.setEnd(ce.node, ce.offset), Ie.addRange(xe))))), xe = [], Ie = ve; Ie = Ie.parentNode; ) Ie.nodeType === 1 && xe.push({ element: Ie, left: Ie.scrollLeft, top: Ie.scrollTop });
+            if (Ie = Et, xe = la(), ve = Ie.focusedElem, _ = Ie.selectionRange, xe !== ve && ve && ve.ownerDocument && Ti(ve.ownerDocument.documentElement, ve)) {
+              for (_ !== null && Oi(ve) && (xe = _.start, (Ie = _.end) === void 0 && (Ie = xe), "selectionStart" in ve ? (ve.selectionStart = xe, ve.selectionEnd = Math.min(Ie, ve.value.length)) : (Ie = (xe = ve.ownerDocument || document) && xe.defaultView || window).getSelection && (Ie = Ie.getSelection(), V = ve.textContent.length, m = Math.min(_.start, V), _ = _.end === void 0 ? m : Math.min(_.end, V), !Ie.extend && m > _ && (V = _, _ = m, m = V), V = sa(ve, m), ce = sa(ve, _), V && ce && (Ie.rangeCount !== 1 || Ie.anchorNode !== V.node || Ie.anchorOffset !== V.offset || Ie.focusNode !== ce.node || Ie.focusOffset !== ce.offset) && ((xe = xe.createRange()).setStart(V.node, V.offset), Ie.removeAllRanges(), m > _ ? (Ie.addRange(xe), Ie.extend(ce.node, ce.offset)) : (xe.setEnd(ce.node, ce.offset), Ie.addRange(xe))))), xe = [], Ie = ve; Ie = Ie.parentNode; ) Ie.nodeType === 1 && xe.push({ element: Ie, left: Ie.scrollLeft, top: Ie.scrollTop });
               for (typeof ve.focus == "function" && ve.focus(), ve = 0; ve < xe.length; ve++) (Ie = xe[ve]).element.scrollLeft = Ie.left, Ie.element.scrollTop = Ie.top;
             }
             An = !!Do, Et = Do = null, e.current = n, Me = a;
@@ -5973,37 +5973,37 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
             case 10:
               e: {
                 r = t.type._context, a = t.pendingProps, m = t.memoizedProps, d = a.value;
-                var w = t.type._context;
-                if (z(Vr, w._currentValue), w._currentValue = d, m !== null) if (w = m.value, (d = rr(w, d) ? 0 : 0 | (typeof r._calculateChangedBits == "function" ? r._calculateChangedBits(w, d) : 1073741823)) === 0) {
+                var _ = t.type._context;
+                if (z(Vr, _._currentValue), _._currentValue = d, m !== null) if (_ = m.value, (d = rr(_, d) ? 0 : 0 | (typeof r._calculateChangedBits == "function" ? r._calculateChangedBits(_, d) : 1073741823)) === 0) {
                   if (m.children === a.children && !ie.current) {
                     t = Hr(e, t, n);
                     break e;
                   }
-                } else for ((w = t.child) !== null && (w.return = t); w !== null; ) {
-                  var B = w.dependencies;
+                } else for ((_ = t.child) !== null && (_.return = t); _ !== null; ) {
+                  var B = _.dependencies;
                   if (B !== null) {
-                    m = w.child;
+                    m = _.child;
                     for (var V = B.firstContext; V !== null; ) {
                       if (V.context === r && (V.observedBits & d) !== 0) {
-                        w.tag === 1 && ((V = po(n, null)).tag = 2, fo(w, V)), w.expirationTime < n && (w.expirationTime = n), (V = w.alternate) !== null && V.expirationTime < n && (V.expirationTime = n), xl(w.return, n), B.expirationTime < n && (B.expirationTime = n);
+                        _.tag === 1 && ((V = po(n, null)).tag = 2, fo(_, V)), _.expirationTime < n && (_.expirationTime = n), (V = _.alternate) !== null && V.expirationTime < n && (V.expirationTime = n), xl(_.return, n), B.expirationTime < n && (B.expirationTime = n);
                         break;
                       }
                       V = V.next;
                     }
-                  } else m = w.tag === 10 && w.type === t.type ? null : w.child;
-                  if (m !== null) m.return = w;
-                  else for (m = w; m !== null; ) {
+                  } else m = _.tag === 10 && _.type === t.type ? null : _.child;
+                  if (m !== null) m.return = _;
+                  else for (m = _; m !== null; ) {
                     if (m === t) {
                       m = null;
                       break;
                     }
-                    if ((w = m.sibling) !== null) {
-                      w.return = m.return, m = w;
+                    if ((_ = m.sibling) !== null) {
+                      _.return = m.return, m = _;
                       break;
                     }
                     m = m.return;
                   }
-                  w = m;
+                  _ = m;
                 }
                 Un(e, t, a.children, n), t = t.child;
               }
@@ -6114,30 +6114,30 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
           e: if (n) {
             t: {
               if (rt(n = n._reactInternalFiber) !== n || n.tag !== 1) throw Error(h(170));
-              var w = n;
+              var _ = n;
               do {
-                switch (w.tag) {
+                switch (_.tag) {
                   case 3:
-                    w = w.stateNode.context;
+                    _ = _.stateNode.context;
                     break t;
                   case 1:
-                    if (de(w.type)) {
-                      w = w.stateNode.__reactInternalMemoizedMergedChildContext;
+                    if (de(_.type)) {
+                      _ = _.stateNode.__reactInternalMemoizedMergedChildContext;
                       break t;
                     }
                 }
-                w = w.return;
-              } while (w !== null);
+                _ = _.return;
+              } while (_ !== null);
               throw Error(h(171));
             }
             if (n.tag === 1) {
               var B = n.type;
               if (de(B)) {
-                n = ze(n, B, w);
+                n = ze(n, B, _);
                 break e;
               }
             }
-            n = w;
+            n = _;
           } else n = K;
           return t.context === null ? t.context = n : t.pendingContext = n, (t = po(d, m)).payload = { element: e }, (r = r === void 0 ? null : r) !== null && (t.callback = r), fo(a, t), yo(a, d), d;
         }
@@ -6153,11 +6153,11 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
         function wl(e, t, n) {
           var r = new ru(e, t, n = n != null && n.hydrate === !0), a = Cr(3, null, null, t === 2 ? 7 : t === 1 ? 3 : 0);
           r.current = a, a.stateNode = r, Rs(a), e[Io] = r.current, n && t !== 0 && (function(d, m) {
-            var w = Ge(m);
+            var _ = Ge(m);
             ln.forEach(function(B) {
-              nt(B, m, w);
+              nt(B, m, _);
             }), Gr.forEach(function(B) {
-              nt(B, m, w);
+              nt(B, m, _);
             });
           })(0, e.nodeType === 9 ? e : e.ownerDocument), this._internalRoot = r;
         }
@@ -6169,10 +6169,10 @@ Add a <Suspense fallback=...> component higher in the tree to provide a loading 
           if (d) {
             var m = d._internalRoot;
             if (typeof a == "function") {
-              var w = a;
+              var _ = a;
               a = function() {
                 var V = vl(m);
-                w.call(V);
+                _.call(V);
               };
             }
             ns(t, m, e, a);
@@ -8645,7 +8645,7 @@ ${k}`);
         var u = T[i];
         if (u !== void 0) return u.exports;
         var f = T[i] = { id: i, loaded: !1, exports: {} };
-        return E[i](f, f.exports, O), f.loaded = !0, f.exports;
+        return w[i](f, f.exports, O), f.loaded = !0, f.exports;
       }
       O.n = (i) => {
         var u = i && i.__esModule ? () => i.default : () => i;
@@ -10756,7 +10756,7 @@ const Wu = /* @__PURE__ */ $u(Bu);
  * @license GPL-3.0-or-later
  */
 const qu = function(Te) {
-  const _ = Te.plugins.get(zc), E = $(Te.ui.view.element), T = $(Te.sourceElement), O = `ckeditor${Math.floor(Math.random() * 1e9)}`, Q = [
+  const E = Te.plugins.get(zc), w = $(Te.ui.view.element), T = $(Te.sourceElement), O = `ckeditor${Math.floor(Math.random() * 1e9)}`, Q = [
     "keypress",
     "keyup",
     "change",
@@ -10766,11 +10766,11 @@ const qu = function(Te) {
     "mousedown",
     "mouseup"
   ].map((i) => `${i}.${O}`).join(" ");
-  _.on("change:isSourceEditingMode", () => {
-    const i = E.find(
+  E.on("change:isSourceEditingMode", () => {
+    const i = w.find(
       ".ck-source-editing-area"
     );
-    if (_.isSourceEditingMode) {
+    if (E.isSourceEditingMode) {
       let u = i.attr("data-value");
       i.on(Q, () => {
         u !== (u = i.attr("data-value")) && T.val(u);
@@ -10778,38 +10778,38 @@ const qu = function(Te) {
     } else
       i.off(`.${O}`);
   });
-}, Ku = function(Te, _) {
-  if (_.heading !== void 0) {
-    var E = _.heading.options;
-    E.find((T) => T.view === "h1") !== void 0 && Te.keystrokes.set(
+}, Ku = function(Te, E) {
+  if (E.heading !== void 0) {
+    var w = E.heading.options;
+    w.find((T) => T.view === "h1") !== void 0 && Te.keystrokes.set(
       "Ctrl+Alt+1",
       () => Te.execute("heading", { value: "heading1" })
-    ), E.find((T) => T.view === "h2") !== void 0 && Te.keystrokes.set(
+    ), w.find((T) => T.view === "h2") !== void 0 && Te.keystrokes.set(
       "Ctrl+Alt+2",
       () => Te.execute("heading", { value: "heading2" })
-    ), E.find((T) => T.view === "h3") !== void 0 && Te.keystrokes.set(
+    ), w.find((T) => T.view === "h3") !== void 0 && Te.keystrokes.set(
       "Ctrl+Alt+3",
       () => Te.execute("heading", { value: "heading3" })
-    ), E.find((T) => T.view === "h4") !== void 0 && Te.keystrokes.set(
+    ), w.find((T) => T.view === "h4") !== void 0 && Te.keystrokes.set(
       "Ctrl+Alt+4",
       () => Te.execute("heading", { value: "heading4" })
-    ), E.find((T) => T.view === "h5") !== void 0 && Te.keystrokes.set(
+    ), w.find((T) => T.view === "h5") !== void 0 && Te.keystrokes.set(
       "Ctrl+Alt+5",
       () => Te.execute("heading", { value: "heading5" })
-    ), E.find((T) => T.view === "h6") !== void 0 && Te.keystrokes.set(
+    ), w.find((T) => T.view === "h6") !== void 0 && Te.keystrokes.set(
       "Ctrl+Alt+6",
       () => Te.execute("heading", { value: "heading6" })
-    ), E.find((T) => T.model === "paragraph") !== void 0 && Te.keystrokes.set("Ctrl+Alt+p", "paragraph");
+    ), w.find((T) => T.model === "paragraph") !== void 0 && Te.keystrokes.set("Ctrl+Alt+p", "paragraph");
   }
-}, Qu = function(Te, _) {
-  let E = null;
+}, Qu = function(Te, E) {
+  let w = null;
   const T = Te.editing.view.document, O = Te.plugins.get("ClipboardPipeline");
   T.on("clipboardOutput", (Q, i) => {
-    E = Te.id;
+    w = Te.id;
   }), T.on("clipboardInput", async (Q, i) => {
     let u = i.dataTransfer.getData("text/html");
-    if (u && u.includes("<craft-entry") && !(i.method == "drop" && E === Te.id)) {
-      if (i.method == "paste" || i.method == "drop" && E !== Te.id) {
+    if (u && u.includes("<craft-entry") && !(i.method == "drop" && w === Te.id)) {
+      if (i.method == "paste" || i.method == "drop" && w !== Te.id) {
         let f = u, k = !1;
         const p = Craft.siteId;
         let C = null, h = null;
@@ -10834,9 +10834,9 @@ const qu = function(Te) {
           let R = null;
           if (v[ae][2] && (R = v[ae][2]), te !== null) {
             const F = new RegExp('data-entry-id="' + te + '"');
-            if (!(E === Te.id && !F.test(b))) {
+            if (!(w === Te.id && !F.test(b))) {
               let q = null;
-              E !== Te.id && (_.includes(Au) ? q = Te.config.get("entryTypeOptions").map((G) => G.value) : (Craft.cp.displayError(
+              w !== Te.id && (E.includes(Au) ? q = Te.config.get("entryTypeOptions").map((G) => G.value) : (Craft.cp.displayError(
                 Craft.t(
                   "ckeditor",
                   "This field doesn’t allow nested entries."
@@ -10873,32 +10873,49 @@ const qu = function(Te) {
       }
     }
   });
-}, ed = async function(Te, _) {
-  typeof Te == "string" && (Te = document.querySelector(`#${Te}`)), _.licenseKey = "GPL", _.attachTo = Te;
-  const E = await wu.create(_);
-  Craft.showCkeditorInspector && Craft.userIsAdmin && Wu.attach(E), E.editing.view.change((i) => {
-    const u = E.editing.view.document.getRoot();
-    if (typeof _.accessibleFieldName < "u" && _.accessibleFieldName.length) {
+}, ed = async function(Te, E) {
+  typeof Te == "string" && (Te = document.querySelector(`#${Te}`)), E.licenseKey = "GPL", E.attachTo = Te;
+  const w = await wu.create(E);
+  Craft.showCkeditorInspector && Craft.userIsAdmin && Wu.attach(w), w.editing.view.change((i) => {
+    const u = w.editing.view.document.getRoot();
+    if (typeof E.accessibleFieldName < "u" && E.accessibleFieldName.length) {
       let f = u.getAttribute("aria-label");
       i.setAttribute(
         "aria-label",
-        _.accessibleFieldName + ", " + f,
+        E.accessibleFieldName + ", " + f,
         u
       );
     }
-    typeof _.describedBy < "u" && _.describedBy.length && i.setAttribute(
+    typeof E.describedBy < "u" && E.describedBy.length && i.setAttribute(
       "aria-describedby",
-      _.describedBy,
+      E.describedBy,
       u
     );
   });
-  let Q = $(E.ui.view.element).parents("form").data("elementEditor");
-  return Q ? (Q.pause(), E.updateSourceElement(), Q.$container.data(
-    "initialSerializedValue",
-    Q.serializeForm(!0)
-  ), Q.resume()) : E.updateSourceElement(), E.model.document.on("change:data", () => {
-    E.updateSourceElement();
-  }), _.plugins.includes(zc) && qu(E), _.plugins.includes(_u) && Ku(E, _), Qu(E, _.plugins), E;
+  let Q = $(w.ui.view.element).parents("form").data("elementEditor");
+  if (!Q)
+    w.updateSourceElement();
+  else {
+    const i = w.sourceElement.name, u = $(w.sourceElement).val();
+    Q.pause(), w.updateSourceElement();
+    const f = $(w.sourceElement).val();
+    if (u !== f) {
+      const k = Q.$container.data(
+        "initialSerializedValue"
+      );
+      typeof k == "string" && Q.$container.data(
+        "initialSerializedValue",
+        k.replace(
+          $.param({ [i]: u }),
+          $.param({ [i]: f })
+        )
+      );
+    }
+    Q.resume();
+  }
+  return w.model.document.on("change:data", () => {
+    w.updateSourceElement();
+  }), E.plugins.includes(zc) && qu(w), E.plugins.includes(_u) && Ku(w, E), Qu(w, E.plugins), w;
 };
 export {
   Au as CraftEntries,
