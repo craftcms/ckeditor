@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+> [!NOTE]  
+> Elements that contain CKEditor fields must be resaved before the new deletion blocker can take effect. That can be done automatically by running the following command:
+>
+> ```sh
+> php craft resave/all --with-fields=myCkeditorField1,myCkeditorField2
+> ```
+
+- CKEditor now requires Craft CMS 5.10 or later.
+- Added a deletion blocker for elements that are referenced within CKEditor fields. ([#576](https://github.com/craftcms/ckeditor/pull/576))
 - Fixed a bug where custom `removePlugins` config values weren’t being respected. ([#578](https://github.com/craftcms/ckeditor/issues/578))
 - Fixed a bug where consecutive “Open in new tab?” and “Download” advanced link options were being displayed side-by-side. ([#575](https://github.com/craftcms/ckeditor/issues/575))
 - Fixed a bug where CKEditor fields with list items could get marked as dirty before any changes were actually made to them. ([#554](https://github.com/craftcms/ckeditor/issues/554))
