@@ -2471,6 +2471,16 @@ JS;
             $def?->addAttribute('ul', 'style', 'Text');
         }
 
+        if (
+            in_array('bulletedList', $this->toolbar) ||
+            in_array('numberedList', $this->toolbar) ||
+            in_array('todoList', $this->toolbar)
+        ) {
+            // allow `data-list-item-id` attribute for the list items;
+            // complements https://github.com/craftcms/ckeditor/pull/555
+            $def?->addAttribute('li', 'data-list-item-id', 'Text');
+        }
+
         if ($this->imageMode === self::IMAGE_MODE_ENTRIES || in_array('createEntry', $this->toolbar)) {
             $def?->addElement('craft-entry', 'Inline', 'Inline', '', [
                 'data-entry-id' => 'Number',
