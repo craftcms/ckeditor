@@ -47,6 +47,7 @@ return [
     'Show as a separate button' => 'Show as a separate button',
     'Show word count' => 'Show word count',
     'Site: {name}' => 'Site: {name}',
+    'Sync from asset' => 'Sync from asset',
     'The default transform that should be applied when inserting an image.' => 'The default transform that should be applied when inserting an image.',
     'The maximum number of words or characters the field is allowed to have.' => 'The maximum number of words or characters the field is allowed to have.',
     'The text tooltip for the entry creation button.' => 'The text tooltip for the entry creation button.',
