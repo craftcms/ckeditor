@@ -49,34 +49,14 @@ export default class CraftImageTextAlternativeUI extends ImageTextAlternativeUI 
 
     const fieldView = this._form.labeledInput.fieldView;
     const value = this._visibleAltText(fieldView.element.value);
-    const hasSyncedAlt = assetAltRefPattern.test(fieldView.element.value);
 
     fieldView.value = fieldView.element.value = value;
-    this._syncButton.isEnabled =
-      !hasSyncedAlt && !!this._srcInfo(this._selectedImage());
-    this._toggleSyncRowVisibility();
+    this._syncButton.isEnabled = !!this._srcInfo(this._selectedImage());
     fieldView.select();
   }
 
   _visibleAltText(value) {
     return value.replace(assetAltRefPattern, '');
-  }
-
-  _toggleSyncRowVisibility() {
-    let classes = [...this._syncButtonRow.class];
-    const hiddenClassIndex = classes.indexOf('hidden');
-
-    if (!this._syncButton.isEnabled) {
-      if (hiddenClassIndex == -1) {
-        classes.push('hidden');
-      }
-    } else {
-      if (hiddenClassIndex >= 0) {
-        classes.splice(hiddenClassIndex, 1);
-      }
-    }
-
-    this._syncButtonRow.set('class', classes);
   }
 
   _selectedImage() {
@@ -154,8 +134,20 @@ export default class CraftImageTextAlternativeUI extends ImageTextAlternativeUI 
 
     const siteId = response.data.siteId ?? srcInfo.siteId;
     const alt = response.data.alt ?? '';
-    const value = `${alt}#asset:${srcInfo.assetId}${siteId ? `@${siteId}` : ''}:alt`;
+
+    let value = '';
+    if (alt !== '') {
+      value = `${alt}#asset:${srcInfo.assetId}${siteId ? `@${siteId}` : ''}:alt`;
+    }
+
     const fieldView = this._form.labeledInput.fieldView;
+
+    if (fieldView.value == alt) {
+      Craft.cp.displaySuccess(
+        Craft.t('ckeditor', 'The text alternative was already in sync.'),
+      );
+      return;
+    }
 
     fieldView.value = fieldView.element.value = alt;
 
@@ -163,8 +155,9 @@ export default class CraftImageTextAlternativeUI extends ImageTextAlternativeUI 
       newValue: value,
     });
 
-    this._syncButton.isEnabled = false;
-    this._toggleSyncRowVisibility();
+    Craft.cp.displaySuccess(
+      Craft.t('ckeditor', 'The text alternative was synced from the asset.'),
+    );
   }
 
   destroy() {
