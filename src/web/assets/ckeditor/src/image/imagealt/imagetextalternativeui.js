@@ -84,11 +84,10 @@ export default class CraftImageTextAlternativeUI extends ImageTextAlternativeUI 
 
   _createSyncButton() {
     const editor = this.editor;
-    const t = editor.t;
     const syncButton = new ButtonView(editor.locale);
 
     syncButton.set({
-      label: t('Sync from asset'),
+      label: Craft.t('ckeditor', 'Sync from asset'),
       withText: true,
       class: 'btn',
     });
