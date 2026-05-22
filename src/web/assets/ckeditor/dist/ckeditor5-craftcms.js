@@ -139,10 +139,10 @@ class Xu extends au {
     return `${w}#asset:${E}:${T ? "transform:" + T : "url"}`;
   }
   _removeTransformFromUrl(E) {
-    return E.replace(/(^|\/)(_[^\/]+\/)([^\/]+)$/, "$1$3");
+    return E.replace(/(^|\/)_[^\/]+(\/\d+)?\/([^\/]+)$/, "$1$3");
   }
   _isTransformUrl(E) {
-    return /(^|\/)_[^\/]+\/[^\/]+$/.test(E);
+    return /(^|\/)_[^\/]+(\/\d+)?(\/[^\/]+)$/.test(E);
   }
   async _getTransformUrl(E, w) {
     let T;

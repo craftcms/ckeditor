@@ -210,11 +210,11 @@ export default class CraftImageInsertUI extends ImageInsertUI {
   }
 
   _removeTransformFromUrl(url) {
-    return url.replace(/(^|\/)(_[^\/]+\/)([^\/]+)$/, '$1$3');
+    return url.replace(/(^|\/)_[^\/]+(\/\d+)?\/([^\/]+)$/, '$1$3');
   }
 
   _isTransformUrl(url) {
-    return /(^|\/)_[^\/]+\/[^\/]+$/.test(url);
+    return /(^|\/)_[^\/]+(\/\d+)?(\/[^\/]+)$/.test(url);
   }
 
   async _getTransformUrl(assetId, handle) {
