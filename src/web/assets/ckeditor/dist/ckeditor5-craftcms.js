@@ -24,7 +24,7 @@ class Xu extends au {
       );
       return;
     }
-    const E = this.editor.ui.componentFactory, w = (T) => this._createToolbarImageButton(T);
+    const E = this.editor.ui.componentFactory, w = (O) => this._createToolbarImageButton(O);
     E.add("insertImage", w), E.add("imageInsert", w), this._attachUploader();
   }
   get _imageMode() {
@@ -50,22 +50,22 @@ class Xu extends au {
     ).data("elementEditor");
   }
   _createToolbarImageButton(E) {
-    const w = this.editor, T = w.t, O = new gi(E);
-    O.isEnabled = !0, O.label = T("Insert image"), O.icon = su, O.tooltip = !0;
+    const w = this.editor, O = w.t, T = new gi(E);
+    T.isEnabled = !0, T.label = O("Insert image"), T.icon = su, T.tooltip = !0;
     const Q = w.commands.get("insertImage");
-    return O.bind("isEnabled").to(Q), this.listenTo(O, "execute", () => this._showImageSelectModal()), O;
+    return T.bind("isEnabled").to(Q), this.listenTo(T, "execute", () => this._showImageSelectModal()), T;
   }
   _showImageSelectModal() {
-    const E = this._imageSources, w = this.editor, T = w.config, O = Object.assign({}, T.get("assetSelectionCriteria"), {
+    const E = this._imageSources, w = this.editor, O = w.config, T = Object.assign({}, O.get("assetSelectionCriteria"), {
       kind: "image"
     });
     Craft.createElementSelectorModal("craft\\elements\\Asset", {
       ...this._imageModalSettings,
       storageKey: `ckeditor:${this.pluginName}:'craft\\elements\\Asset'`,
       sources: E,
-      criteria: O,
-      defaultSiteId: T.get("elementSiteId"),
-      transforms: T.get("transforms"),
+      criteria: T,
+      defaultSiteId: O.get("elementSiteId"),
+      transforms: O.get("transforms"),
       autoFocusSearchBox: !1,
       multiSelect: !0,
       onSelect: (Q, i) => {
@@ -87,32 +87,32 @@ class Xu extends au {
         await this._createImageEntry(i.id);
       return;
     }
-    const T = this.editor, O = T.config.get("defaultTransform"), Q = [];
+    const O = this.editor, T = O.config.get("defaultTransform"), Q = [];
     for (const i of E) {
       const u = this._isTransformUrl(i.url);
-      if (!u && O) {
-        const f = await this._getTransformUrl(i.id, O);
+      if (!u && T) {
+        const f = await this._getTransformUrl(i.id, T);
         Q.push(f);
       } else {
         const f = this._buildAssetUrl(
           i.id,
           i.url,
-          u ? w : O
+          u ? w : T
         );
         Q.push(f);
       }
     }
-    T.execute("insertImage", { source: Q });
+    O.execute("insertImage", { source: Q });
   }
   async _createImageEntry(E) {
-    const w = this.editor, T = this._elementEditor, O = $(w.sourceElement).attr("name");
-    T && O && await T.setFormValue(O, "*");
+    const w = this.editor, O = this._elementEditor, T = $(w.sourceElement).attr("name");
+    O && T && await O.setFormValue(T, "*");
     const Q = w.config.get(
       "nestedElementAttributes"
     ), i = {
       ...Q
     };
-    T && (await T.markDeltaNameAsModified(w.sourceElement.name), i.ownerId = T.getDraftElementId(
+    O && (await O.markDeltaNameAsModified(w.sourceElement.name), i.ownerId = O.getDraftElementId(
       Q.ownerId
     ));
     let u;
@@ -135,8 +135,8 @@ class Xu extends au {
       siteId: u.data.siteId
     });
   }
-  _buildAssetUrl(E, w, T) {
-    return `${w}#asset:${E}:${T ? "transform:" + T : "url"}`;
+  _buildAssetUrl(E, w, O) {
+    return `${w}#asset:${E}:${O ? "transform:" + O : "url"}`;
   }
   _removeTransformFromUrl(E) {
     return E.replace(/(^|\/)(_[^\/]+\/)([^\/]+)$/, "$1$3");
@@ -145,9 +145,9 @@ class Xu extends au {
     return /(^|\/)_[^\/]+\/[^\/]+$/.test(E);
   }
   async _getTransformUrl(E, w) {
-    let T;
+    let O;
     try {
-      T = await Craft.sendActionRequest(
+      O = await Craft.sendActionRequest(
         "POST",
         "ckeditor/ckeditor/image-url",
         {
@@ -160,7 +160,7 @@ class Xu extends au {
     } catch {
       alert("There was an error generating the transform URL.");
     }
-    return this._buildAssetUrl(E, T.data.url, w);
+    return this._buildAssetUrl(E, O.data.url, w);
   }
   _getAssetUrlComponents(E) {
     const w = E.match(
@@ -199,9 +199,9 @@ class Xu extends au {
       siteId: E.config.get("elementSiteId")
     }), E.editing.view.document.on(
       "drop",
-      async (T, O) => {
+      async (O, T) => {
         E.editing.view, E.model;
-        const Q = E.editing.mapper, i = O.dropRange;
+        const Q = E.editing.mapper, i = T.dropRange;
         if (i) {
           const u = i.start, f = Q.toModelPosition(u);
           E.model.change((k) => {
@@ -225,24 +225,24 @@ class Xu extends au {
    */
   _onUploadProgress(E, w = null) {
     w = E instanceof CustomEvent ? E.detail : w;
-    var T = parseInt(Math.min(w.loaded / w.total, 1) * 100, 10);
-    this.progressBar.setProgressPercentage(T);
+    var O = parseInt(Math.min(w.loaded / w.total, 1) * 100, 10);
+    this.progressBar.setProgressPercentage(O);
   }
   /**
    * On a file being uploaded.
    */
   async _onUploadComplete(E, w = null) {
-    const T = E instanceof CustomEvent ? E.detail : w.result;
+    const O = E instanceof CustomEvent ? E.detail : w.result;
     if (this.progressBar.hideProgressBar(), this.$container.removeClass("uploading"), this._imageMode === "entries") {
-      await this._createImageEntry(T.assetId);
+      await this._createImageEntry(O.assetId);
       return;
     }
-    const O = this.editor.config.get("defaultTransform"), Q = this._isTransformUrl(T.url);
+    const T = this.editor.config.get("defaultTransform"), Q = this._isTransformUrl(O.url);
     let i;
-    !Q && O ? i = await this._getTransformUrl(T.assetId, O) : i = this._buildAssetUrl(
-      T.assetId,
-      T.url,
-      Q ? transform : O
+    !Q && T ? i = await this._getTransformUrl(O.assetId, T) : i = this._buildAssetUrl(
+      O.assetId,
+      O.url,
+      Q ? transform : T
     ), this.editor.execute("insertImage", { source: i, breakBlock: !0 });
   }
   /**
@@ -250,12 +250,12 @@ class Xu extends au {
    */
   _onUploadFailure(E, w = null) {
     var f, k;
-    const T = E instanceof CustomEvent ? E.detail : (f = w == null ? void 0 : w.jqXHR) == null ? void 0 : f.responseJSON;
-    let { message: O, filename: Q, errors: i } = T || {};
+    const O = E instanceof CustomEvent ? E.detail : (f = w == null ? void 0 : w.jqXHR) == null ? void 0 : f.responseJSON;
+    let { message: T, filename: Q, errors: i } = O || {};
     Q = Q || ((k = w == null ? void 0 : w.files) == null ? void 0 : k[0].name);
     let u = i ? Object.values(i).flat() : [];
-    O || (u.length ? O = u.join(`
-`) : Q ? O = Craft.t("app", "Upload failed for “{filename}”.", { filename: Q }) : O = Craft.t("app", "Upload failed.")), Craft.cp.displayError(O), this.progressBar.hideProgressBar(), this.$container.removeClass("uploading");
+    T || (u.length ? T = u.join(`
+`) : Q ? T = Craft.t("app", "Upload failed for “{filename}”.", { filename: Q }) : T = Craft.t("app", "Upload failed.")), Craft.cp.displayError(T), this.progressBar.hideProgressBar(), this.$container.removeClass("uploading");
   }
 }
 /**
@@ -279,13 +279,13 @@ class Eu extends El {
   _srcInfo(E) {
     if (!E || !E.hasAttribute("src"))
       return null;
-    const w = E.getAttribute("src"), T = w.match(
+    const w = E.getAttribute("src"), O = w.match(
       /#asset:(\d+)(?::transform:([a-zA-Z][a-zA-Z0-9_]*))?/
     );
-    return T ? {
+    return O ? {
       src: w,
-      assetId: T[1],
-      transform: T[2]
+      assetId: O[1],
+      transform: O[2]
     } : null;
   }
   /**
@@ -304,23 +304,23 @@ class Eu extends El {
    * @fires execute
    */
   execute(E) {
-    const T = this.editor.model, O = this._element(), Q = this._srcInfo(O);
+    const O = this.editor.model, T = this._element(), Q = this._srcInfo(T);
     if (this.value = {
       transform: E.transform
     }, Q) {
       const i = `#asset:${Q.assetId}` + (E.transform ? `:transform:${E.transform}` : "");
-      T.change((u) => {
+      O.change((u) => {
         const f = Q.src.replace(/#.*/, "") + i;
-        u.setAttribute("src", f, O);
+        u.setAttribute("src", f, T);
       }), Craft.sendActionRequest("post", "ckeditor/ckeditor/image-url", {
         data: {
           assetId: Q.assetId,
           transform: E.transform
         }
       }).then(({ data: u }) => {
-        T.change((f) => {
+        O.change((f) => {
           const k = u.url + i;
-          f.setAttribute("src", k, O), u.width && f.setAttribute("width", u.width, O), u.height && f.setAttribute("height", u.height, O);
+          f.setAttribute("src", k, T), u.width && f.setAttribute("width", u.width, T), u.height && f.setAttribute("height", u.height, T);
         });
       });
     }
@@ -360,8 +360,8 @@ class Su extends $n {
     return "ImageTransformUI";
   }
   init() {
-    const E = this.editor, w = E.config.get("transforms"), T = E.commands.get("transformImage");
-    this.bind("isEnabled").to(T), this._registerImageTransformDropdown(w);
+    const E = this.editor, w = E.config.get("transforms"), O = E.commands.get("transformImage");
+    this.bind("isEnabled").to(O), this._registerImageTransformDropdown(w);
   }
   /**
    * A helper function that creates a dropdown component for the plugin containing all the transform options defined in
@@ -370,11 +370,11 @@ class Su extends $n {
    * @param transforms An array of the available image transforms.
    */
   _registerImageTransformDropdown(E) {
-    const w = this.editor, T = w.t, O = {
+    const w = this.editor, O = w.t, T = {
       name: "transformImage:original",
       value: null
     }, Q = [
-      O,
+      T,
       ...E.map((u) => ({
         label: u.name,
         name: `transformImage:${u.handle}`,
@@ -383,16 +383,16 @@ class Su extends $n {
     ], i = (u) => {
       const f = w.commands.get("transformImage"), k = ra(u, lu), p = k.buttonView;
       return p.set({
-        tooltip: T("Resize image"),
+        tooltip: O("Resize image"),
         commandValue: null,
         icon: xu,
         isToggleable: !0,
-        label: this._getOptionLabelValue(O),
+        label: this._getOptionLabelValue(T),
         withText: !0,
         class: "ck-resize-image-button"
       }), p.bind("label").to(f, "value", (C) => {
         if (!C || !C.transform)
-          return this._getOptionLabelValue(O);
+          return this._getOptionLabelValue(T);
         const h = E.find(
           (b) => b.handle === C.transform
         );
@@ -401,7 +401,7 @@ class Su extends $n {
         k,
         () => this._getTransformDropdownListItemDefinitions(Q, f),
         {
-          ariaLabel: T("Image resize list")
+          ariaLabel: O("Image resize list")
         }
       ), this.listenTo(k, "execute", (C) => {
         w.execute(C.source.commandName, {
@@ -428,20 +428,20 @@ class Su extends $n {
    * @returns Dropdown item definitions.
    */
   _getTransformDropdownListItemDefinitions(E, w) {
-    const T = new na();
-    return E.map((O) => {
+    const O = new na();
+    return E.map((T) => {
       const Q = {
         type: "button",
         model: new yi({
           commandName: "transformImage",
-          commandValue: O.value,
-          label: this._getOptionLabelValue(O),
+          commandValue: T.value,
+          label: this._getOptionLabelValue(T),
           withText: !0,
           icon: null
         })
       };
-      Q.model.bind("isOn").to(w, "value", Cu(O.value)), T.add(Q);
-    }), T;
+      Q.model.bind("isOn").to(w, "value", Cu(T.value)), O.add(Q);
+    }), O;
   }
 }
 function Cu(Te) {
@@ -472,13 +472,13 @@ class Tu extends El {
   refresh() {
     const E = this._element(), w = this._srcInfo(E);
     if (this.isEnabled = !!w, this.isEnabled) {
-      let T = {
+      let O = {
         assetId: w.assetId
       };
       Craft.sendActionRequest("POST", "ckeditor/ckeditor/image-permissions", {
-        data: T
-      }).then((O) => {
-        O.data.editable === !1 && (this.isEnabled = !1);
+        data: O
+      }).then((T) => {
+        T.data.editable === !1 && (this.isEnabled = !1);
       });
     }
   }
@@ -493,23 +493,22 @@ class Tu extends El {
   }
   /**
    * Checks if element has a src attribute and at least an asset id.
-   * Returns null if not and array containing src, baseSrc, asset id and transform (if used).
+   * Returns null if not and array containing src, asset id and transform (if used).
    *
    * @param element
-   * @returns {{transform: *, src: *, assetId: *, baseSrc: *}|null}
+   * @returns {{transform: *, src: *, assetId: *}|null}
    * @private
    */
   _srcInfo(E) {
     if (!E || !E.hasAttribute("src"))
       return null;
-    const w = E.getAttribute("src"), T = w.match(
+    const w = E.getAttribute("src"), O = w.match(
       /(.*)#asset:(\d+)(?::transform:([a-zA-Z][a-zA-Z0-9_]*))?/
     );
-    return T ? {
+    return O ? {
       src: w,
-      baseSrc: T[1],
-      assetId: T[2],
-      transform: T[3]
+      assetId: O[2],
+      transform: O[3]
     } : null;
   }
   /**
@@ -519,17 +518,17 @@ class Tu extends El {
    */
   execute() {
     this.editor.model;
-    const w = this._element(), T = this._srcInfo(w);
-    if (T) {
-      let O = {
+    const w = this._element(), O = this._srcInfo(w);
+    if (O) {
+      let T = {
         allowSavingAsNew: !1,
         // todo: we might want to change that, but currently we're doing the same functionality as in Redactor
         onSave: (Q) => {
-          this._reloadImage(T.assetId, Q);
+          this._reloadImage(O.assetId, Q);
         },
         allowDegreeFractions: Craft.isImagick
       };
-      new Craft.AssetImageEditor(T.assetId, O);
+      new Craft.AssetImageEditor(O.assetId, T);
     }
   }
   /**
@@ -538,7 +537,7 @@ class Tu extends El {
    * @param data
    */
   _reloadImage(E, w) {
-    let O = this.editor.model;
+    let T = this.editor.model;
     this._getAllImageAssets().forEach((i) => {
       if (i.srcInfo.assetId == E)
         if (i.srcInfo.transform) {
@@ -549,15 +548,22 @@ class Tu extends El {
           Craft.sendActionRequest("POST", "assets/generate-transform", {
             data: u
           }).then((f) => {
-            let k = f.data.url + "?" + (/* @__PURE__ */ new Date()).getTime() + "#asset:" + i.srcInfo.assetId + ":transform:" + i.srcInfo.transform;
-            O.change((p) => {
+            let k = f.data.url + "#asset:" + i.srcInfo.assetId + ":transform:" + i.srcInfo.transform;
+            T.change((p) => {
               p.setAttribute("src", k, i.element);
             });
           });
         } else {
-          let u = i.srcInfo.baseSrc + "?" + (/* @__PURE__ */ new Date()).getTime() + "#asset:" + i.srcInfo.assetId;
-          O.change((f) => {
-            f.setAttribute("src", u, i.element);
+          let u = {
+            assetId: i.srcInfo.assetId
+          };
+          Craft.sendActionRequest("POST", "ckeditor/ckeditor/image-url", {
+            data: u
+          }).then((f) => {
+            let k = f.data.url + "#asset:" + i.srcInfo.assetId;
+            T.change((p) => {
+              p.setAttribute("src", k, i.element);
+            });
           });
         }
     });
@@ -569,17 +575,17 @@ class Tu extends El {
    * @private
    */
   _getAllImageAssets() {
-    const w = this.editor.model, T = w.createRangeIn(w.document.getRoot());
-    let O = [];
-    for (const Q of T.getWalker({ ignoreElementEnd: !0 }))
+    const w = this.editor.model, O = w.createRangeIn(w.document.getRoot());
+    let T = [];
+    for (const Q of O.getWalker({ ignoreElementEnd: !0 }))
       if (Q.item.is("element") && Q.item.name === "imageBlock") {
         let i = this._srcInfo(Q.item);
-        i && O.push({
+        i && T.push({
           element: Q.item,
           srcInfo: i
         });
       }
-    return O;
+    return T;
   }
 }
 /**
@@ -619,16 +625,16 @@ class Ou extends $n {
    * A helper function that creates a button component for the plugin that triggers launch of the Image Editor.
    */
   _registerImageEditorButton() {
-    const E = this.editor, w = E.t, T = E.commands.get("imageEditor"), O = () => {
+    const E = this.editor, w = E.t, O = E.commands.get("imageEditor"), T = () => {
       const Q = new gi();
       return Q.set({
         label: w("Edit Image"),
         withText: !0
-      }), Q.bind("isEnabled").to(T), this.listenTo(Q, "execute", (i) => {
+      }), Q.bind("isEnabled").to(O), this.listenTo(Q, "execute", (i) => {
         E.execute("imageEditor"), E.editing.view.focus();
       }), Q;
     };
-    E.ui.componentFactory.add("imageEditor", O);
+    E.ui.componentFactory.add("imageEditor", T);
   }
 }
 /**
@@ -646,16 +652,16 @@ class Zu extends $n {
 }
 class Nu extends El {
   execute(E) {
-    const w = this.editor, T = w.model.document.selection;
-    if (!T.isCollapsed && T.getFirstRange()) {
-      const Q = T.getSelectedElement();
+    const w = this.editor, O = w.model.document.selection;
+    if (!O.isCollapsed && O.getFirstRange()) {
+      const Q = O.getSelectedElement();
       w.execute("insertParagraph", {
         position: w.model.createPositionAfter(Q)
       });
     }
     w.model.change((Q) => {
       const i = Q.createElement("craftEntryModel", {
-        ...Object.fromEntries(T.getAttributes()),
+        ...Object.fromEntries(O.getAttributes()),
         cardHtml: E.cardHtml,
         entryId: E.entryId,
         siteId: E.siteId
@@ -717,9 +723,9 @@ class Pu extends $n {
         name: "craft-entry"
         // has to be lower case
       },
-      model: (T, { writer: O }) => {
-        const Q = T.getAttribute("data-card-html"), i = T.getAttribute("data-entry-id"), u = T.getAttribute("data-site-id") ?? null;
-        return O.createElement("craftEntryModel", {
+      model: (O, { writer: T }) => {
+        const Q = O.getAttribute("data-card-html"), i = O.getAttribute("data-entry-id"), u = O.getAttribute("data-site-id") ?? null;
+        return T.createElement("craftEntryModel", {
           cardHtml: Q,
           entryId: i,
           siteId: u
@@ -727,34 +733,34 @@ class Pu extends $n {
       }
     }), E.for("editingDowncast").elementToElement({
       model: "craftEntryModel",
-      view: (T, { writer: O }) => {
-        const Q = T.getAttribute("entryId") ?? null, i = T.getAttribute("siteId") ?? null, u = O.createContainerElement("div", {
+      view: (O, { writer: T }) => {
+        const Q = O.getAttribute("entryId") ?? null, i = O.getAttribute("siteId") ?? null, u = T.createContainerElement("div", {
           class: "cke-entry-card",
           "data-entry-id": Q,
           "data-site-id": i
         });
-        return w(T, O, u), pu(u, O);
+        return w(O, T, u), pu(u, T);
       }
     }), E.for("dataDowncast").elementToElement({
       model: "craftEntryModel",
-      view: (T, { writer: O }) => {
-        const Q = T.getAttribute("entryId") ?? null, i = T.getAttribute("siteId") ?? null;
-        return O.createContainerElement("craft-entry", {
+      view: (O, { writer: T }) => {
+        const Q = O.getAttribute("entryId") ?? null, i = O.getAttribute("siteId") ?? null;
+        return T.createContainerElement("craft-entry", {
           "data-entry-id": Q,
           "data-site-id": i
         });
       }
     });
-    const w = (T, O, Q) => {
-      this._getCardHtml(T).then((i) => {
-        const u = O.createRawElement(
+    const w = (O, T, Q) => {
+      this._getCardHtml(O).then((i) => {
+        const u = T.createRawElement(
           "div",
           null,
           function(k) {
             k.innerHTML = i.cardHtml, Craft.appendHeadHtml(i.headHtml), Craft.appendBodyHtml(i.bodyHtml);
           }
         );
-        O.insert(O.createPositionAt(Q, 0), u);
+        T.insert(T.createPositionAt(Q, 0), u);
         const f = this.editor;
         f.editing.view.focus(), setTimeout(() => {
           Craft.cp.elementThumbLoader.load($(f.ui.element));
@@ -776,8 +782,8 @@ class Pu extends $n {
     let w = E.getAttribute("cardHtml") ?? null;
     if (w)
       return { cardHtml: w };
-    let T = $(this.editor.sourceElement).parents(".field");
-    const O = $(T[0]).data("layout-element"), Q = E.getAttribute("entryId") ?? null, i = E.getAttribute("siteId") ?? null;
+    let O = $(this.editor.sourceElement).parents(".field");
+    const T = $(O[0]).data("layout-element"), Q = E.getAttribute("entryId") ?? null, i = E.getAttribute("siteId") ?? null;
     try {
       const p = this.editor, h = $(p.ui.view.element).closest(
         "form,.lp-editor-container"
@@ -790,7 +796,7 @@ class Pu extends $n {
           data: {
             entryId: Q,
             siteId: i,
-            layoutElementUid: O
+            layoutElementUid: T
           }
         }
       );
@@ -811,8 +817,8 @@ class Du extends fu {
 class Iu extends Tr {
   constructor(E, w = {}) {
     super(E), this.set("isFocused", !1), this.entriesUi = w.entriesUi, this.editor = this.entriesUi.editor, this.entryType = w.entryType;
-    const T = this.editor.commands.get("insertEntry");
-    let O = new gi(), Q = {
+    const O = this.editor.commands.get("insertEntry");
+    let T = new gi(), Q = {
       commandValue: this.entryType.model.commandValue,
       //entry type id
       label: this.entryType.model.label,
@@ -821,15 +827,15 @@ class Iu extends Tr {
         type: this.entryType.model.label
       })
     }, i = ["btn", "ck-reset_all-excluded"];
-    this.entryType.model.icon && i.push(["icon", "cp-icon"]), Q.class = i.join(" "), this.entryType.model.withIcon && (Q.icon = this.entryType.model.icon), O.set(Q), this.listenTo(O, "execute", (u) => {
+    this.entryType.model.icon && i.push(["icon", "cp-icon"]), Q.class = i.join(" "), this.entryType.model.withIcon && (Q.icon = this.entryType.model.icon), T.set(Q), this.listenTo(T, "execute", (u) => {
       this.entriesUi._showCreateEntrySlideout(u.source.commandValue);
-    }), O.bind("isEnabled").to(T), this.setTemplate({
+    }), T.bind("isEnabled").to(O), this.setTemplate({
       tag: "div",
       attributes: {
         // ck-reset_all-excluded class is needed so that CKE doesn't mess with the styles we already have
         class: ["entry-type-button"]
       },
-      children: [O]
+      children: [T]
     });
   }
   // this is needed so that the button is focusable
@@ -840,9 +846,9 @@ class Iu extends Tr {
 class Ru extends Tr {
   constructor(E, w = {}) {
     super(E), this.bindTemplate, this.set("isFocused", !1), this.entriesUi = w.entriesUi, this.editor = this.entriesUi.editor;
-    const T = w.entryTypes, O = this.editor.commands.get("insertEntry");
+    const O = w.entryTypes, T = this.editor.commands.get("insertEntry");
     let Q = new na();
-    T.forEach((u) => {
+    O.forEach((u) => {
       u.model.color && (u.model.class || (u.model.class = ""), u.model.class += "icon " + u.model.color), Q.add(u);
     });
     const i = ra(E);
@@ -851,7 +857,7 @@ class Ru extends Tr {
       icon: Mc,
       tooltip: !0,
       withText: !1
-    }), i.bind("isEnabled").to(O), i.id = Craft.uuid(), os(i, () => Q, {
+    }), i.bind("isEnabled").to(T), i.id = Craft.uuid(), os(i, () => Q, {
       ariaLabel: Craft.t("ckeditor", "Entry types list")
     }), this.listenTo(i, "execute", (u) => {
       this.entriesUi._showCreateEntrySlideout(u.source.commandValue);
@@ -872,13 +878,13 @@ class Ru extends Tr {
 class Mu extends Tr {
   constructor(E, w = {}) {
     super(E), this.bindTemplate, this.set("isFocused", !1), this.entriesUi = w.entriesUi, this.editor = this.entriesUi.editor;
-    const T = this.editor.commands.get("insertEntry"), O = ra(E);
-    O.buttonView.set({
+    const O = this.editor.commands.get("insertEntry"), T = ra(E);
+    T.buttonView.set({
       label: Craft.t("ckeditor", "Add nested content"),
       icon: Mc,
       tooltip: !0,
       withText: !1
-    }), O.bind("isEnabled").to(T), O.id = Craft.uuid(), this.listenTo(O, "execute", (Q) => {
+    }), T.bind("isEnabled").to(O), T.id = Craft.uuid(), this.listenTo(T, "execute", (Q) => {
       this.entriesUi._showCreateEntrySlideout(Q.source.commandValue);
     }), this.setTemplate({
       tag: "div",
@@ -887,7 +893,7 @@ class Mu extends Tr {
         class: ["entry-type-button"],
         tabindex: -1
       },
-      children: [O]
+      children: [T]
     });
   }
   // this is needed so that the button is focusable
@@ -926,8 +932,8 @@ class zu extends $n {
       items: ["editEntryBtn"],
       // If a related element is returned the toolbar is attached
       getRelatedElement: (w) => {
-        const T = w.getSelectedElement();
-        return T && hu(T) && T.hasClass("cke-entry-card") ? T : null;
+        const O = w.getSelectedElement();
+        return O && hu(O) && O.hasClass("cke-entry-card") ? O : null;
       }
     });
   }
@@ -938,12 +944,12 @@ class zu extends $n {
    */
   _listenToEvents() {
     const E = this.editor.editing.view, w = E.document;
-    E.addObserver(Du), this.editor.listenTo(w, "dblclick", (T, O) => {
+    E.addObserver(Du), this.editor.listenTo(w, "dblclick", (O, T) => {
       if (!this.editor.isReadOnly) {
         const Q = this.editor.editing.mapper.toModelElement(
-          O.target.parent
+          T.target.parent
         );
-        Q.name === "craftEntryModel" && this._initEditEntrySlideout(O, Q);
+        Q.name === "craftEntryModel" && this._initEditEntrySlideout(T, Q);
       }
     });
   }
@@ -951,8 +957,8 @@ class zu extends $n {
     if (this.editor.isReadOnly)
       return;
     w === null && (w = this.editor.model.document.selection.getSelectedElement());
-    const T = w.getAttribute("entryId"), O = w.getAttribute("siteId") ?? null;
-    this._showEditEntrySlideout(T, O, w);
+    const O = w.getAttribute("entryId"), T = w.getAttribute("siteId") ?? null;
+    this._showEditEntrySlideout(O, T, w);
   }
   /**
    * Creates toolbar buttons that allow for an entry of given type to be inserted into the editor
@@ -965,15 +971,15 @@ class zu extends $n {
       if (w.length == 1 && w[0].value == "fake")
         this.editor.ui.componentFactory.add(
           "createEntry",
-          (T) => new Mu(this.editor.locale, {
+          (O) => new Mu(this.editor.locale, {
             entriesUi: this
           })
         );
       else {
-        let T = this._getEntryTypeButtonsCollection(
+        let O = this._getEntryTypeButtonsCollection(
           w ?? []
-        ), O = T.filter((i) => i.model.expanded), Q = T.filter((i) => !i.model.expanded);
-        O.forEach((i, u) => {
+        ), T = O.filter((i) => i.model.expanded), Q = O.filter((i) => !i.model.expanded);
+        T.forEach((i, u) => {
           this.editor.ui.componentFactory.add(
             `createEntry-${i.model.uid}`,
             (f) => new Iu(this.editor.locale, {
@@ -999,23 +1005,23 @@ class zu extends $n {
    */
   _getEntryTypeButtonsCollection(E) {
     const w = new na();
-    return E.map((T) => {
-      const O = {
+    return E.map((O) => {
+      const T = {
         type: "button",
         model: new yi({
-          commandValue: T.value,
+          commandValue: O.value,
           //entry type id
-          color: T.expanded ? null : T.color,
-          expanded: T.expanded,
-          icon: T.icon,
-          label: T.label || T.value,
-          uid: T.uid,
-          withIcon: T.icon,
-          withText: T.expanded ? !T.icon : !0
+          color: O.expanded ? null : O.color,
+          expanded: O.expanded,
+          icon: O.icon,
+          label: O.label || O.value,
+          uid: O.uid,
+          withIcon: O.icon,
+          withText: O.expanded ? !O.icon : !0
           // items in a dropdown should always have text
         })
       };
-      w.add(O);
+      w.add(T);
     }), w;
   }
   /**
@@ -1035,7 +1041,7 @@ class zu extends $n {
       }),
       tooltip: !0,
       withText: !0
-    }), this.listenTo(w, "execute", (T) => {
+    }), this.listenTo(w, "execute", (O) => {
       this._initEditEntrySlideout();
     }), w;
   }
@@ -1065,8 +1071,8 @@ class zu extends $n {
    * @param entryId
    * @private
    */
-  _showEditEntrySlideout(E, w, T) {
-    const O = this.editor, Q = O.model, i = this.getElementEditor();
+  _showEditEntrySlideout(E, w, O) {
+    const T = this.editor, Q = T.model, i = this.getElementEditor();
     let u = this._getCardElement(E);
     const f = u.data("owner-id");
     let k = {
@@ -1084,23 +1090,23 @@ class zu extends $n {
       onBeforeSubmit: async () => {
         if (u !== null && Garnish.hasAttr(u, "data-owner-is-canonical") && (!i || !i.settings.isUnpublishedDraft)) {
           await C.elementEditor.checkForm(!0, !0);
-          let h = $(O.sourceElement).attr("name");
+          let h = $(T.sourceElement).attr("name");
           i && h && await i.setFormValue(h, "*"), i && i.settings.draftId && C.elementEditor.settings.draftId && (C.elementEditor.settings.saveParams || (C.elementEditor.settings.saveParams = {}), C.elementEditor.settings.saveParams.action = "elements/save-nested-element-for-derivative", C.elementEditor.settings.saveParams.newOwnerId = i.getDraftElementId(f));
         }
       },
       onSubmit: (h) => {
         let b = this._getCardElement(E);
-        b !== null && h.data.id != b.data("id") && (b.attr("data-id", h.data.id).data("id", h.data.id).data("owner-id", h.data.ownerId), O.editing.model.change((v) => {
-          v.setAttribute("entryId", h.data.id, T), O.ui.update();
+        b !== null && h.data.id != b.data("id") && (b.attr("data-id", h.data.id).data("id", h.data.id).data("owner-id", h.data.ownerId), T.editing.model.change((v) => {
+          v.setAttribute("entryId", h.data.id, O), T.ui.update();
         }), Craft.refreshElementInstances(h.data.id));
       }
     });
     C.on("beforeClose", () => {
       Q.change((h) => {
-        h.setSelection(h.createPositionAfter(T)), O.editing.view.focus();
+        h.setSelection(h.createPositionAfter(O)), T.editing.view.focus();
       });
     }), C.on("close", () => {
-      O.editing.view.focus();
+      T.editing.view.focus();
     });
   }
   /**
@@ -1111,7 +1117,7 @@ class zu extends $n {
    */
   async _showCreateEntrySlideout(E) {
     var C, h;
-    const w = this.editor, T = w.model, Q = T.document.selection.getFirstRange(), i = w.config.get(
+    const w = this.editor, O = w.model, Q = O.document.selection.getFirstRange(), i = w.config.get(
       "nestedElementAttributes"
     ), u = Object.assign({}, i, {
       typeId: E
@@ -1146,7 +1152,7 @@ class zu extends $n {
       }
     });
     p.on("beforeClose", () => {
-      p.$triggerElement = null, T.change((b) => {
+      p.$triggerElement = null, O.change((b) => {
         b.setSelection(
           b.createPositionAt(
             w.model.document.getRoot(),
@@ -1179,11 +1185,11 @@ class ju extends $n {
   }
   init() {
     const w = this.editor.config.get("advancedLinkFields");
-    this.conversionData = w.map((T) => T.conversion ?? null).filter((T) => T), this._defineSchema(), this._defineConverters(), this._adjustLinkCommand(), this._adjustUnlinkCommand();
+    this.conversionData = w.map((O) => O.conversion ?? null).filter((O) => O), this._defineSchema(), this._defineConverters(), this._adjustLinkCommand(), this._adjustUnlinkCommand();
   }
   _defineSchema() {
     const E = this.editor.model.schema;
-    let w = this.conversionData.map((T) => T.model);
+    let w = this.conversionData.map((O) => O.model);
     E.extend("$text", {
       allowAttributes: w
     });
@@ -1193,13 +1199,13 @@ class ju extends $n {
     for (let w = 0; w < this.conversionData.length; w++)
       E.for("downcast").attributeToElement({
         model: this.conversionData[w].model,
-        view: (T, { writer: O }) => {
-          const Q = O.createAttributeElement(
+        view: (O, { writer: T }) => {
+          const Q = T.createAttributeElement(
             "a",
-            { [this.conversionData[w].view]: T },
+            { [this.conversionData[w].view]: O },
             { priority: 5 }
           );
-          return O.setCustomProperty("link", !0, Q), Q;
+          return T.setCustomProperty("link", !0, Q), Q;
         }
       }), E.for("upcast").attributeToAttribute({
         view: {
@@ -1208,21 +1214,21 @@ class ju extends $n {
         },
         model: {
           key: this.conversionData[w].model,
-          value: (T, O) => T.getAttribute(this.conversionData[w].view)
+          value: (O, T) => O.getAttribute(this.conversionData[w].view)
         }
       });
   }
   _adjustLinkCommand() {
     const E = this.editor, w = E.commands.get("link");
-    let T = !1;
+    let O = !1;
     w.on(
       "execute",
-      (O, Q) => {
-        if (T) {
-          T = !1;
+      (T, Q) => {
+        if (O) {
+          O = !1;
           return;
         }
-        O.stop(), T = !0;
+        T.stop(), O = !0;
         const i = Q[Q.length - 1], u = E.model.document.selection;
         E.model.change((f) => {
           E.execute("link", ...Q);
@@ -1256,24 +1262,24 @@ class ju extends $n {
     );
   }
   _adjustUnlinkCommand() {
-    const E = this.editor, w = E.commands.get("unlink"), { model: T } = E, { selection: O } = T.document;
+    const E = this.editor, w = E.commands.get("unlink"), { model: O } = E, { selection: T } = O.document;
     let Q = !1;
     w.on(
       "execute",
       (i) => {
-        Q || (i.stop(), T.change(() => {
-          Q = !0, E.execute("unlink"), Q = !1, T.change((u) => {
+        Q || (i.stop(), O.change(() => {
+          Q = !0, E.execute("unlink"), Q = !1, O.change((u) => {
             let f;
             this.conversionData.forEach((k) => {
-              O.isCollapsed ? f = [
+              T.isCollapsed ? f = [
                 mu(
-                  O.getFirstPosition(),
+                  T.getFirstPosition(),
                   k.model,
-                  O.getAttribute(k.model),
-                  T
+                  T.getAttribute(k.model),
+                  O
                 )
-              ] : f = T.schema.getValidRanges(
-                O.getRanges(),
+              ] : f = O.schema.getValidRanges(
+                T.getRanges(),
                 k.model
               );
               for (const p of f)
@@ -1289,10 +1295,10 @@ class ju extends $n {
 class Lu extends Tr {
   constructor(E, w = {}) {
     super(E), this.bindTemplate, this.set("isFocused", !1), this.linkUi = w.linkUi, this.editor = this.linkUi.editor, this.elementId = this.linkUi._getLinkElementId(), this.siteId = this.linkUi._getLinkSiteId(), this.linkOption = w.linkOption;
-    const T = this.linkUi._getLinkElementRefHandle();
-    if (this.button = null, T) {
-      const O = this.linkUi.linkTypeDropdownItemModels[T];
-      this.linkUi.linkTypeDropdownView.buttonView.label == O.label && (this.button = Craft.t("app", "Loading"));
+    const O = this.linkUi._getLinkElementRefHandle();
+    if (this.button = null, O) {
+      const T = this.linkUi.linkTypeDropdownItemModels[O];
+      this.linkUi.linkTypeDropdownView.buttonView.label == T.label && (this.button = Craft.t("app", "Loading"));
     }
     this.button == null && (this.button = new gi(), this.button.set({
       label: Craft.t("app", "Choose"),
@@ -1314,9 +1320,9 @@ class Lu extends Tr {
   }
   render() {
     super.render();
-    const E = this.linkUi, w = E._linkUI, T = this.linkOption;
-    this.element.addEventListener("click", function(O) {
-      (this.children[0].classList.contains("add") || O.target.classList.contains("ck-button__label")) && (w._hideUI(!1), E._showElementSelectorModal(T));
+    const E = this.linkUi, w = E._linkUI, O = this.linkOption;
+    this.element.addEventListener("click", function(T) {
+      (this.children[0].classList.contains("add") || T.target.classList.contains("ck-button__label")) && (w._hideUI(!1), E._showElementSelectorModal(O));
     }), this.element.children.length == 0 && Craft.sendActionRequest(
       "POST",
       "ckeditor/ckeditor/render-element-with-supported-sites",
@@ -1324,7 +1330,7 @@ class Lu extends Tr {
         data: {
           elements: [
             {
-              type: T.elementType,
+              type: O.elementType,
               id: this.elementId,
               siteId: this.siteId,
               instances: [
@@ -1339,15 +1345,15 @@ class Lu extends Tr {
           ]
         }
       }
-    ).then((O) => {
+    ).then((T) => {
       var Q, i, u, f;
-      if (Object.keys(O.data.elements).length > 0) {
+      if (Object.keys(T.data.elements).length > 0) {
         if (Craft.isMultiSite && this.linkUi.sitesView != null)
           for (const [C, h] of Object.entries(
             this.linkUi.sitesView.siteDropdownItemModels
           ))
-            O.data.siteIds.includes(parseInt(C)) || C == "current" ? h.set("isEnabled", !0) : h.set("isEnabled", !1);
-        this.element.innerHTML = O.data.elements[this.elementId][0], Craft.appendHeadHtml(O.data.headHtml), Craft.appendBodyHtml(O.data.bodyHtml);
+            T.data.siteIds.includes(parseInt(C)) || C == "current" ? h.set("isEnabled", !0) : h.set("isEnabled", !1);
+        this.element.innerHTML = T.data.elements[this.elementId][0], Craft.appendHeadHtml(T.data.headHtml), Craft.appendBodyHtml(T.data.bodyHtml);
         let k = this.element.firstChild;
         const p = [
           {
@@ -1381,18 +1387,18 @@ class Lu extends Tr {
           withText: !0,
           class: "btn add icon dashed"
         }), this.button.render(), this.element.innerHTML = this.button.element.outerHTML;
-    }).catch((O) => {
+    }).catch((T) => {
       var Q, i, u, f;
-      throw Craft.cp.displayError((i = (Q = O == null ? void 0 : O.response) == null ? void 0 : Q.data) == null ? void 0 : i.message), ((f = (u = O == null ? void 0 : O.response) == null ? void 0 : u.data) == null ? void 0 : f.message) ?? O;
+      throw Craft.cp.displayError((i = (Q = T == null ? void 0 : T.response) == null ? void 0 : Q.data) == null ? void 0 : i.message), ((f = (u = T == null ? void 0 : T.response) == null ? void 0 : u.data) == null ? void 0 : f.message) ?? T;
     });
   }
 }
 class Fu extends Tr {
   constructor(E, w = {}) {
     super(E), this.bindTemplate, this.set("isFocused", !1), this.linkUi = w.linkUi, this.editor = this.linkUi.editor, this.elementId = this.linkUi._getLinkElementId(), this.siteId = this.linkUi._getLinkSiteId(), this.linkOption = w.linkOption, this.linkUi._getLinkElementRefHandle(), this.siteDropdownView = ra(this.linkUi._linkUI.formView.locale), this.siteDropdownItemModels = null, this.localizedRefHandleRE = null;
-    const T = CKE_LOCALIZED_REF_HANDLES.join("|");
+    const O = CKE_LOCALIZED_REF_HANDLES.join("|");
     this.localizedRefHandleRE = new RegExp(
-      `(#(?:${T}):\\d+)(?:@(\\d+))?`
+      `(#(?:${O}):\\d+)(?:@(\\d+))?`
     ), this.setTemplate({
       tag: "div",
       attributes: {
@@ -1411,17 +1417,17 @@ class Fu extends Tr {
     super.render(), this._sitesDropdown();
   }
   _sitesDropdown() {
-    const { formView: E } = this.linkUi._linkUI, { urlInputView: w } = E, { fieldView: T } = w;
+    const { formView: E } = this.linkUi._linkUI, { urlInputView: w } = E, { fieldView: O } = w;
     this.siteDropdownView.buttonView.set({
       label: "",
       withText: !0,
       isVisible: !0
     }), this.siteDropdownItemModels = Object.fromEntries(
-      Craft.sites.map((O) => [
-        O.id,
+      Craft.sites.map((T) => [
+        T.id,
         new yi({
-          label: O.name,
-          siteId: O.id,
+          label: T.name,
+          siteId: T.id,
           withText: !0
         })
       ])
@@ -1432,16 +1438,16 @@ class Fu extends Tr {
     }), os(
       this.siteDropdownView,
       new na([
-        ...Craft.sites.map((O) => ({
+        ...Craft.sites.map((T) => ({
           type: "button",
-          model: this.siteDropdownItemModels[O.id]
+          model: this.siteDropdownItemModels[T.id]
         })),
         {
           type: "button",
           model: this.siteDropdownItemModels.current
         }
       ])
-    ), this.siteDropdownView.on("execute", (O) => {
+    ), this.siteDropdownView.on("execute", (T) => {
       const Q = this.linkUi._urlInputRefMatch(this.localizedRefHandleRE);
       if (!Q) {
         console.warn(
@@ -1449,14 +1455,14 @@ class Fu extends Tr {
         );
         return;
       }
-      const { siteId: i } = O.source;
+      const { siteId: i } = T.source;
       let u = Q[1];
       i && (u += `@${i}`), this.linkUi.previousLinkValue = this.linkUi._urlInputValue();
       const f = this.linkUi._urlInputValue().replace(Q[0], u);
       E.urlInputView.fieldView.set("value", f), this._toggleSiteDropdownView();
-    }), this.listenTo(T, "change:value", () => {
+    }), this.listenTo(O, "change:value", () => {
       this._toggleSiteDropdownView();
-    }), this.listenTo(T, "input", () => {
+    }), this.listenTo(O, "input", () => {
       this._toggleSiteDropdownView();
     });
   }
@@ -1470,16 +1476,16 @@ class Fu extends Tr {
       this.siteDropdownView.buttonView.set("isVisible", !1);
   }
   _selectSiteDropdownItem(E) {
-    const w = this.siteDropdownItemModels[E ?? "current"], T = E ? Craft.t("ckeditor", "Site: {name}", { name: w.label }) : w.label;
-    this.siteDropdownView.buttonView.set("label", T), Object.values(this.siteDropdownItemModels).forEach((O) => {
-      O.set("isOn", O.siteId === w.siteId);
+    const w = this.siteDropdownItemModels[E ?? "current"], O = E ? Craft.t("ckeditor", "Site: {name}", { name: w.label }) : w.label;
+    this.siteDropdownView.buttonView.set("label", O), Object.values(this.siteDropdownItemModels).forEach((T) => {
+      T.set("isOn", T.siteId === w.siteId);
     });
   }
 }
 class Uu extends Tr {
   constructor(E, w = {}) {
     super(E);
-    const T = this.bindTemplate;
+    const O = this.bindTemplate;
     this.set("label", Craft.t("app", "Advanced")), this.linkUi = w.linkUi, this.editor = this.linkUi.editor, this.children = this.createCollection(), this.advancedChildren = this.createCollection(), this.setTemplate({
       tag: "details",
       attributes: {
@@ -1491,7 +1497,7 @@ class Uu extends Tr {
       attributes: {
         class: ["ck", "ck-form__details__summary"]
       },
-      children: [{ text: T.to("label") }]
+      children: [{ text: O.to("label") }]
     }), this.children.add(this.summary), this.advancedFieldsContainer = new Tr(E), this.advancedFieldsContainer.setTemplate({
       tag: "div",
       attributes: {
@@ -1511,13 +1517,13 @@ class Uu extends Tr {
   onToggle(E) {
     const { formView: w } = this.linkUi._linkUI;
     if (E.target.open) {
-      const T = w._focusables.getIndex(this);
-      this.advancedChildren._items.forEach((O, Q) => {
-        w._focusables.add(O, T + Q + 1), w.focusTracker.add(O.element, T + Q + 1);
+      const O = w._focusables.getIndex(this);
+      this.advancedChildren._items.forEach((T, Q) => {
+        w._focusables.add(T, O + Q + 1), w.focusTracker.add(T.element, O + Q + 1);
       });
     } else
-      this.advancedChildren._items.forEach((T, O) => {
-        w._focusables.remove(T), w.focusTracker.remove(T.element);
+      this.advancedChildren._items.forEach((O, T) => {
+        w._focusables.remove(O), w.focusTracker.remove(O.element);
       });
   }
 }
@@ -1538,7 +1544,7 @@ class Vu extends $n {
   }
   init() {
     const E = this.editor;
-    this._linkUI = E.plugins.get(Dc), this._balloon = E.plugins.get(gu), this.linkOptions = E.config.get("linkOptions"), this.advancedLinkFields = E.config.get("advancedLinkFields"), this.conversionData = this.advancedLinkFields.map((T) => T.conversion ?? null).filter((T) => T);
+    this._linkUI = E.plugins.get(Dc), this._balloon = E.plugins.get(gu), this.linkOptions = E.config.get("linkOptions"), this.advancedLinkFields = E.config.get("advancedLinkFields"), this.conversionData = this.advancedLinkFields.map((O) => O.conversion ?? null).filter((O) => O);
     const w = CKE_LOCALIZED_REF_HANDLES.join("|");
     this.elementTypeRefHandleRE = new RegExp(
       `(#((?:${w})):\\d+)`
@@ -1546,7 +1552,7 @@ class Vu extends $n {
       `(.+)(#((?:${w})):(\\d+))(?:@(\\d+))?`
     ), this._modifyFormViewTemplate(), this._balloon.on(
       "set:visibleView",
-      (T, O, Q, i) => {
+      (O, T, Q, i) => {
         const { formView: u } = this._linkUI;
         Q === i || Q !== u || this._alignFocus();
       }
@@ -1558,8 +1564,8 @@ class Vu extends $n {
   _alignFocus() {
     const { formView: E } = this._linkUI;
     let w = 0;
-    this.linkTypeWrapperView && (this.linkTypeWrapperView._unboundChildren._items.forEach((T) => {
-      E._focusables.has(T) && E._focusables.remove(T), E.focusTracker.remove(T.element), E._focusables.add(T, w), E.focusTracker.add(T.element, w), w++;
+    this.linkTypeWrapperView && (this.linkTypeWrapperView._unboundChildren._items.forEach((O) => {
+      E._focusables.has(O) && E._focusables.remove(O), E.focusTracker.remove(O.element), E._focusables.add(O, w), E.focusTracker.add(O.element, w), w++;
     }), this.advancedView !== null && (E._focusables.has(this.advancedView) && E._focusables.remove(this.advancedView), E.focusTracker.remove(this.advancedView), E._focusables.add(this.advancedView, w), E.focusTracker.add(this.advancedView.element, w)));
   }
   /**
@@ -1590,34 +1596,34 @@ class Vu extends $n {
    * Create a link type dropdown.
    */
   _linkOptionsDropdown() {
-    const { formView: E } = this._linkUI, { urlInputView: w } = E, { fieldView: T } = w;
+    const { formView: E } = this._linkUI, { urlInputView: w } = E, { fieldView: O } = w;
     this.linkTypeDropdownView = ra(E.locale), this.linkTypeDropdownView.buttonView.set({
       label: "",
       withText: !0,
       isVisible: !0
     }), this.linkTypeDropdownItemModels = Object.fromEntries(
-      this._getLinkListItemDefinitions().map((O) => [O.handle, O])
+      this._getLinkListItemDefinitions().map((T) => [T.handle, T])
     ), os(
       this.linkTypeDropdownView,
       new na([
-        ...this._getLinkListItemDefinitions().map((O) => ({
+        ...this._getLinkListItemDefinitions().map((T) => ({
           type: "button",
-          model: this.linkTypeDropdownItemModels[O.handle]
+          model: this.linkTypeDropdownItemModels[T.handle]
         }))
       ])
-    ), T.isEmpty && this._showLinkTypeForm("default"), this.linkTypeDropdownView.on("execute", (O) => {
-      if (O.source.linkOption) {
-        const Q = O.source.linkOption;
+    ), O.isEmpty && this._showLinkTypeForm("default"), this.linkTypeDropdownView.on("execute", (T) => {
+      if (T.source.linkOption) {
+        const Q = T.source.linkOption;
         this._selectLinkTypeDropdownItem(Q.refHandle), this._showLinkTypeForm(Q, E);
       } else
         this._selectLinkTypeDropdownItem("default"), this._showLinkTypeForm("default");
-    }), this.listenTo(T, "change:value", () => {
+    }), this.listenTo(O, "change:value", () => {
       this._toggleLinkTypeDropdownView();
-      const O = this._getLinkElementRefHandle();
-      O ? this._showLinkTypeForm(
-        this.linkTypeDropdownItemModels[O].linkOption
+      const T = this._getLinkElementRefHandle();
+      T ? this._showLinkTypeForm(
+        this.linkTypeDropdownItemModels[T].linkOption
       ) : this._urlInputValue().length == 0 ? (this._selectLinkTypeDropdownItem(this.linkOptions[0].refHandle), this._showLinkTypeForm(this.linkOptions[0])) : this._showLinkTypeForm("default");
-    }), this.listenTo(T, "input", () => {
+    }), this.listenTo(O, "input", () => {
       this._toggleLinkTypeDropdownView();
     });
   }
@@ -1656,9 +1662,9 @@ class Vu extends $n {
    * Select link type from the dropdown.
    */
   _selectLinkTypeDropdownItem(E) {
-    const w = this.linkTypeDropdownItemModels[E], T = E ? Craft.t("app", "{name}", { name: w.label }) : w.label;
-    this.linkTypeDropdownView.buttonView.set("label", T), Object.values(this.linkTypeDropdownItemModels).forEach((O) => {
-      O.set("isOn", O.handle === w.handle);
+    const w = this.linkTypeDropdownItemModels[E], O = E ? Craft.t("app", "{name}", { name: w.label }) : w.label;
+    this.linkTypeDropdownView.buttonView.set("label", O), Object.values(this.linkTypeDropdownItemModels).forEach((T) => {
+      T.set("isOn", T.handle === w.handle);
     });
   }
   /**
@@ -1688,8 +1694,8 @@ class Vu extends $n {
    */
   _showLinkTypeForm(E) {
     var u, f, k, p;
-    const { formView: w } = this._linkUI, { children: T } = w, { urlInputView: O } = w, { displayedTextInputView: Q } = w;
-    Q.focus(), this.linkTypeWrapperView !== null && T.remove(this.linkTypeWrapperView), E === "default" ? (this.elementInputView = O, this.sitesView !== null && (f = (u = this.sitesView) == null ? void 0 : u.siteDropdownView) != null && f.buttonView && this.sitesView.siteDropdownView.buttonView.set("isVisible", !1)) : (this.elementInputView = new Lu(w.locale, {
+    const { formView: w } = this._linkUI, { children: O } = w, { urlInputView: T } = w, { displayedTextInputView: Q } = w;
+    Q.focus(), this.linkTypeWrapperView !== null && O.remove(this.linkTypeWrapperView), E === "default" ? (this.elementInputView = T, this.sitesView !== null && (f = (u = this.sitesView) == null ? void 0 : u.siteDropdownView) != null && f.buttonView && this.sitesView.siteDropdownView.buttonView.set("isVisible", !1)) : (this.elementInputView = new Lu(w.locale, {
       linkUi: this,
       linkOption: E,
       value: this._urlInputValue()
@@ -1722,14 +1728,14 @@ class Vu extends $n {
           "flex"
         ]
       }
-    }), T.add(this.linkTypeWrapperView, 2);
+    }), O.add(this.linkTypeWrapperView, 2);
   }
   /**
    * Show element selector modal for given element type (link option).
    */
   _showElementSelectorModal(E) {
-    const w = this.editor, T = w.model, O = T.document.selection, Q = O.isCollapsed, i = O.getFirstRange(), u = this._linkUI._getSelectedLinkElement(), f = () => {
-      w.editing.view.focus(), !Q && i && T.change((k) => {
+    const w = this.editor, O = w.model, T = O.document.selection, Q = T.isCollapsed, i = T.getFirstRange(), u = this._linkUI._getSelectedLinkElement(), f = () => {
+      w.editing.view.focus(), !Q && i && O.change((k) => {
         k.setSelection(i);
       }), this._linkUI._hideFakeVisualSelection();
     };
@@ -1743,21 +1749,21 @@ class Vu extends $n {
         if (k.length) {
           const p = k[0], C = `${p.url}#${E.refHandle}:${p.id}@${p.siteId}`;
           if (w.editing.view.focus(), (!Q || u) && i) {
-            T.change((v) => {
+            O.change((v) => {
               v.setSelection(i);
             });
             const h = w.commands.get("link");
             let b = this._getAdvancedFieldValues();
             h.execute(C, b);
           } else
-            T.change((h) => {
+            O.change((h) => {
               let b = this._getAdvancedFieldValues();
               if (h.insertText(
                 p.label,
                 {
                   linkHref: C
                 },
-                O.getFirstPosition(),
+                T.getFirstPosition(),
                 b
               ), i instanceof yu)
                 try {
@@ -1789,13 +1795,13 @@ class Vu extends $n {
    * Create advanced link field inputs and add them to the link form view.
    */
   _addAdvancedLinkFieldInputs() {
-    var O;
-    const E = this.editor.commands.get("link"), { formView: w } = this._linkUI, { children: T } = w;
+    var T;
+    const E = this.editor.commands.get("link"), { formView: w } = this._linkUI, { children: O } = w;
     this.advancedView = new Uu(w.locale, {
       linkUi: this
-    }), T.add(this.advancedView, 3);
+    }), O.add(this.advancedView, 3);
     for (const Q of this.advancedLinkFields) {
-      let i = (O = Q.conversion) == null ? void 0 : O.model;
+      let i = (T = Q.conversion) == null ? void 0 : T.model;
       if (i && typeof w[i] > "u")
         if (Q.conversion.type === "bool") {
           const u = new bu();
@@ -1854,11 +1860,11 @@ class Vu extends $n {
    */
   _addLabeledField(E) {
     const { formView: w } = this._linkUI;
-    let T = new vu(
+    let O = new vu(
       w.locale,
       ku
     );
-    return T.label = E.label, E.tooltip && (T.infoText = E.tooltip), this.advancedView.advancedChildren.add(T), T;
+    return O.label = E.label, E.tooltip && (O.infoText = E.tooltip), this.advancedView.advancedChildren.add(O), O;
   }
   /**
    * Populate URL suffix advanced field with content.
@@ -1869,14 +1875,14 @@ class Vu extends $n {
     if (w)
       E.fieldView.set("value", "");
     else {
-      const T = this._urlInputRefMatch(this.urlWithRefHandleRE);
-      let O = null;
-      T ? O = T[1] : O = this._urlInputValue();
+      const O = this._urlInputRefMatch(this.urlWithRefHandleRE);
+      let T = null;
+      O ? T = O[1] : T = this._urlInputValue();
       try {
-        let Q = new URL(O), i = Q.search, u = Q.hash;
+        let Q = new URL(T), i = Q.search, u = Q.hash;
         E.fieldView.set("value", i + u);
       } catch {
-        let [i, u] = O.split("#"), [f, k] = i.split("?");
+        let [i, u] = T.split("#"), [f, k] = i.split("?");
         u = u ? "#" + u : "", k = k ? "?" + k : "", E.fieldView.set("value", k + u);
       }
     }
@@ -1885,15 +1891,15 @@ class Vu extends $n {
    * When link form is submitted, pass the advanced field values the link command.
    */
   _handleAdvancedLinkFieldsFormSubmit() {
-    const w = this.editor.commands.get("link"), { formView: T } = this._linkUI;
-    T.on(
+    const w = this.editor.commands.get("link"), { formView: O } = this._linkUI;
+    O.on(
       "submit",
       () => {
-        let O = this._getAdvancedFieldValues();
+        let T = this._getAdvancedFieldValues();
         w.once(
           "execute",
           (Q, i) => {
-            i.length === 4 ? Object.assign(i[3], O) : i.push(O);
+            i.length === 4 ? Object.assign(i[3], T) : i.push(T);
           },
           { priority: "highest" }
         );
@@ -1905,10 +1911,10 @@ class Vu extends $n {
    * Update the link command when the advanced field value changes.
    */
   _trackAdvancedLinkFieldsValueChange() {
-    const E = this.editor, w = E.commands.get("link"), T = E.model.document.selection;
-    this.conversionData.forEach((O) => {
-      w.set(O.model, null), E.model.document.on("change", () => {
-        w[O.model] = T.getAttribute(O.model);
+    const E = this.editor, w = E.commands.get("link"), O = E.model.document.selection;
+    this.conversionData.forEach((T) => {
+      w.set(T.model, null), E.model.document.on("change", () => {
+        w[T.model] = O.getAttribute(T.model);
       });
     });
   }
@@ -1918,9 +1924,9 @@ class Vu extends $n {
   _getAdvancedFieldValues() {
     const { formView: E } = this._linkUI;
     let w = {};
-    return this.conversionData.forEach((T) => {
-      let O = [];
-      T.type === "bool" ? O[T.model] = E[T.model].element.value : O[T.model] = E[T.model].fieldView.element.value, Object.assign(w, O);
+    return this.conversionData.forEach((O) => {
+      let T = [];
+      O.type === "bool" ? T[O.model] = E[O.model].element.value : T[O.model] = E[O.model].fieldView.element.value, Object.assign(w, T);
     }), w;
   }
 }
@@ -1940,8 +1946,8 @@ var _l = { exports: {} };
 var Ic;
 function Hu() {
   return Ic || (Ic = 1, (function(Te, E) {
-    (function(w, T) {
-      Te.exports = T();
+    (function(w, O) {
+      Te.exports = O();
     })(self, () => (() => {
       var w = { 0: (i, u, f) => {
         var k = f(5072), p = f(7195);
@@ -8640,32 +8646,32 @@ ${k}`);
         k(p, C), i.exports = p.locals || {};
       }, 9982: (i, u, f) => {
         i.exports = f(7463);
-      } }, T = {};
-      function O(i) {
-        var u = T[i];
+      } }, O = {};
+      function T(i) {
+        var u = O[i];
         if (u !== void 0) return u.exports;
-        var f = T[i] = { id: i, loaded: !1, exports: {} };
-        return w[i](f, f.exports, O), f.loaded = !0, f.exports;
+        var f = O[i] = { id: i, loaded: !1, exports: {} };
+        return w[i](f, f.exports, T), f.loaded = !0, f.exports;
       }
-      O.n = (i) => {
+      T.n = (i) => {
         var u = i && i.__esModule ? () => i.default : () => i;
-        return O.d(u, { a: u }), u;
-      }, O.d = (i, u) => {
-        for (var f in u) O.o(u, f) && !O.o(i, f) && Object.defineProperty(i, f, { enumerable: !0, get: u[f] });
-      }, O.g = (function() {
+        return T.d(u, { a: u }), u;
+      }, T.d = (i, u) => {
+        for (var f in u) T.o(u, f) && !T.o(i, f) && Object.defineProperty(i, f, { enumerable: !0, get: u[f] });
+      }, T.g = (function() {
         if (typeof globalThis == "object") return globalThis;
         try {
           return this || new Function("return this")();
         } catch {
           if (typeof window == "object") return window;
         }
-      })(), O.o = (i, u) => Object.prototype.hasOwnProperty.call(i, u), O.r = (i) => {
+      })(), T.o = (i, u) => Object.prototype.hasOwnProperty.call(i, u), T.r = (i) => {
         typeof Symbol < "u" && Symbol.toStringTag && Object.defineProperty(i, Symbol.toStringTag, { value: "Module" }), Object.defineProperty(i, "__esModule", { value: !0 });
-      }, O.nmd = (i) => (i.paths = [], i.children || (i.children = []), i), O.nc = void 0;
+      }, T.nmd = (i) => (i.paths = [], i.children || (i.children = []), i), T.nc = void 0;
       var Q = {};
       return (() => {
-        O.d(Q, { default: () => He });
-        var i = O(6540), u = O(961);
+        T.d(Q, { default: () => He });
+        var i = T(6540), u = T(961);
         function f(l) {
           return "Minified Redux error #" + l + "; visit https://redux.js.org/Errors?code=" + l + " for the full message or use the non-minified dev environment for full errors. ";
         }
@@ -8816,7 +8822,7 @@ ${k}`);
           }
           return s;
         }
-        var q = O(4146), G = O.n(q), pe = O(4737), oe = ["getDisplayName", "methodName", "renderCountProp", "shouldHandleStateChanges", "storeKey", "withRef", "forwardRef", "context"], fe = ["reactReduxForwardedRef"], he = [], S = [null, null];
+        var q = T(4146), G = T.n(q), pe = T(4737), oe = ["getDisplayName", "methodName", "renderCountProp", "shouldHandleStateChanges", "storeKey", "withRef", "forwardRef", "context"], fe = ["reactReduxForwardedRef"], he = [], S = [null, null];
         function j(l, o) {
           var s = l[1];
           return [o.payload, s + 1];
@@ -9093,7 +9099,7 @@ ${k}`);
           for (let c = 0; c < s; c++) if (l[c] != o[c]) return c;
           return l.length == o.length ? "same" : l.length < o.length ? "prefix" : "extension";
         }
-        var Or = O(5323);
+        var Or = T(5323);
         function fn(l, o = !0) {
           if (l === void 0) return "undefined";
           if (typeof l == "function") return "function() {…}";
@@ -9578,7 +9584,7 @@ ${k}`);
           const s = gn(l);
           return { ...o, isReadOnly: !!s && s.isReadOnly };
         }
-        var wi = O(5794), is = O.n(wi), _i = /* @__PURE__ */ (function() {
+        var wi = T(5794), is = T.n(wi), _i = /* @__PURE__ */ (function() {
           var l = function(o, s) {
             return l = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(c, g) {
               c.__proto__ = g;
@@ -9609,7 +9615,7 @@ ${k}`);
           return _i(o, l), o.prototype.render = function() {
             return i.createElement("div", { className: this.props.className || "", style: No(No({ position: "absolute", userSelect: "none" }, Ei[this.props.direction]), this.props.replaceStyles || {}), onMouseDown: this.onMouseDown, onTouchStart: this.onTouchStart }, this.props.children);
           }, o;
-        })(i.PureComponent), ss = O(4987), An = O.n(ss), gt = /* @__PURE__ */ (function() {
+        })(i.PureComponent), ss = T(4987), An = T.n(ss), gt = /* @__PURE__ */ (function() {
           var l = function(o, s) {
             return l = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(c, g) {
               c.__proto__ = g;
@@ -9977,7 +9983,7 @@ ${k}`);
           }, onDragStop: function() {
           } }, o;
         })(i.PureComponent);
-        O(1256);
+        T(1256);
         class la extends i.Component {
           constructor(o) {
             super(o), this.handleTabClick = this.handleTabClick.bind(this);
@@ -9996,7 +10002,7 @@ ${k}`);
             return i.createElement("button", { className: ["ck-inspector-horizontal-nav__item", this.props.isActive ? " ck-inspector-horizontal-nav__item_active" : ""].join(" "), key: this.props.label, onClick: this.props.onClick, type: "button" }, this.props.label);
           }
         }
-        O(1197);
+        T(1197);
         class eo extends i.Component {
           render() {
             const o = Array.isArray(this.props.children) ? this.props.children : [this.props.children];
@@ -10015,7 +10021,7 @@ ${k}`);
             return i.createElement(eo, null, [this.props.contentBefore, i.createElement(la, { key: "navigation", definitions: o.map((s) => s.props.label), activeTab: this.props.activeTab, onClick: this.handleTabClick }), this.props.contentAfter], o.filter((s) => s.props.label === this.props.activeTab));
           }
         }
-        var Ni = O(8142), yr = O.n(Ni);
+        var Ni = T(8142), yr = T.n(Ni);
         class Do extends i.Component {
           render() {
             return [i.createElement("label", { htmlFor: this.props.id, key: "label" }, this.props.label, ":"), i.createElement("select", { id: this.props.id, value: this.props.value, onChange: this.props.onChange, key: "select" }, this.props.options.map((o) => i.createElement("option", { value: o, key: o }, o)))];
@@ -10024,7 +10030,7 @@ ${k}`);
             return !yr()(this.props, o);
           }
         }
-        O(5627);
+        T(5627);
         class Et extends i.PureComponent {
           render() {
             const o = ["ck-inspector-button", this.props.className || "", this.props.isOn ? "ck-inspector-button_on" : "", this.props.isEnabled === !1 ? "ck-inspector-button_disabled" : ""].filter((s) => s).join(" ");
@@ -10032,13 +10038,13 @@ ${k}`);
             } : this.props.onClick, title: this.props.title || this.props.text }, i.createElement("span", null, this.props.text), this.props.icon);
           }
         }
-        O(7785);
+        T(7785);
         class Yt extends i.Component {
           render() {
             return i.createElement("div", { className: ["ck-inspector-pane", this.props.splitVertically ? "ck-inspector-pane_vsplit" : "", this.props.isEmpty ? "ck-inspector-pane_empty" : ""].join(" ") }, this.props.children);
           }
         }
-        O(9936);
+        T(9936);
         const Pi = { position: "relative" };
         class Di extends i.Component {
           get maxSidePaneWidth() {
@@ -10143,14 +10149,14 @@ ${k}`);
         function no(l, o, s) {
           return l.type === "element" ? i.createElement(vr, { key: o, definition: l, globalTreeProps: s }) : l.type === "text" ? i.createElement(ri, { key: o, definition: l, globalTreeProps: s }) : l.type === "comment" ? i.createElement(Io, { key: o, definition: l }) : void 0;
         }
-        O(2584);
+        T(2584);
         class kr extends i.Component {
           render() {
             let o;
             return o = this.props.definition ? this.props.definition.map((s, c) => no(s, c, { onClick: this.props.onClick, showCompactText: this.props.showCompactText, showElementTypes: this.props.showElementTypes, activeNode: this.props.activeNode })) : "Nothing to show.", i.createElement("div", { className: ["ck-inspector-tree", ...this.props.className || [], this.props.textDirection ? "ck-inspector-tree_text-direction_" + this.props.textDirection : "", this.props.showCompactText ? "ck-inspector-tree_compact-text" : ""].join(" ") }, o);
           }
         }
-        O(3780);
+        T(3780);
         class Zn extends i.PureComponent {
           render() {
             return [i.createElement("input", { type: "checkbox", className: "ck-inspector-checkbox", id: this.props.id, key: "input", checked: this.props.isChecked, onChange: this.props.onChange }), i.createElement("label", { htmlFor: this.props.id, key: "label" }, this.props.label)];
@@ -10180,7 +10186,7 @@ ${k}`);
         }, setModelCurrentNode: function(l) {
           return { type: et, currentNode: l };
         }, setModelActiveTab: On })(Ri);
-        O(7024);
+        T(7024);
         class oi extends i.Component {
           render() {
             const o = this.props.presentation && this.props.presentation.expandCollapsibles, s = [];
@@ -10207,7 +10213,7 @@ ${k}`);
             return this.props.canCollapse && (o.push("ck-inspector-property-list__title_collapsible"), o.push("ck-inspector-property-list__title_" + (this.state.isCollapsed ? "collapsed" : "expanded")), s = i.createElement("button", { type: "button", onClick: this.handleCollapsedChange }, "Toggle")), this.props.colorBox && (c = i.createElement("span", { className: "ck-inspector-property-list__title__color-box", style: { background: this.props.colorBox } })), this.props.onClick && o.push("ck-inspector-property-list__title_clickable"), i.createElement("dt", { className: o.join(" ").trim() }, s, c, i.createElement("label", { htmlFor: `${this.props.listUid}-${this.props.name}-value-input`, onClick: this.props.onClick ? () => this.props.onClick(this.props.name) : null, title: this.props.title }, this.props.name), ":");
           }
         }
-        O(8967);
+        T(8967);
         function Mi() {
           return Mi = Object.assign ? Object.assign.bind() : function(l) {
             for (var o = 1; o < arguments.length; o++) {
@@ -10338,7 +10344,7 @@ ${k}`);
         function ji({ name: l, start: o, end: s, affectsData: c, managedUsingOperations: g }) {
           return { name: { value: l }, start: { value: o.path }, end: { value: s.path }, affectsData: { value: c }, managedUsingOperations: { value: g } };
         }
-        O(6709);
+        T(6709);
         class zo extends i.Component {
           render() {
             return this.props.currentEditorName ? i.createElement(Yt, { splitVertically: "true" }, i.createElement(Jn, null), i.createElement(ni, null, i.createElement(to, { onTabChange: this.props.setModelActiveTab, activeTab: this.props.activeTab }, i.createElement(ua, { label: "Inspect" }), i.createElement(us, { label: "Selection" }), i.createElement(ps, { label: "Markers" })))) : i.createElement(Yt, { isEmpty: "true" }, i.createElement("p", null, "Nothing to show. Attach another editor instance to start inspecting."));
@@ -10492,7 +10498,7 @@ ${k}`);
           }
         }
         const ks = _e(({ currentEditorName: l }) => ({ currentEditorName: l }))(vs);
-        var ws = O(7965), jo = O.n(ws), _s = O(312), Es = O.n(_s);
+        var ws = T(7965), jo = T.n(ws), _s = T(312), Es = T.n(_s);
         function Lo() {
           return Lo = Object.assign ? Object.assign.bind() : function(l) {
             for (var o = 1; o < arguments.length; o++) {
@@ -10503,7 +10509,7 @@ ${k}`);
           }, Lo.apply(null, arguments);
         }
         const wa = ({ styles: l = {}, ...o }) => i.createElement("svg", Lo({ viewBox: "0 0 19 19", xmlns: "http://www.w3.org/2000/svg" }, o), i.createElement("path", { d: "M12.936 0l5 4.5v12.502l-1.504-.001v.003h1.504v1.499h-5v-1.501l3.496-.001V5.208L12.21 1.516 3.436 1.5v15.504l3.5-.001v1.5h-5V0h11z" }), i.createElement("path", { d: "M10.374 9.463l.085.072.477.464L11 10v.06l3.545 3.453-1.047 1.075L11 12.155V19H9v-6.9l-2.424 2.476-1.072-1.05L9.4 9.547a.75.75 0 01.974-.084zM12.799 1.5l-.001 2.774h3.645v1.5h-5.144V1.5z" }));
-        O(0);
+        T(0);
         class _a extends i.Component {
           constructor(o) {
             super(o), this.state = { isModalOpen: !1, editorDataValue: "" }, this.textarea = i.createRef();
@@ -10578,7 +10584,7 @@ ${k}`);
           }, Fr.apply(null, arguments);
         }
         const Cs = ({ styles: l = {}, ...o }) => i.createElement("svg", Fr({ viewBox: "0 0 20 20", xmlns: "http://www.w3.org/2000/svg" }, o), i.createElement("path", { fill: "#4fa800", d: "M6.972 16.615a.997.997 0 01-.744-.292l-4.596-4.596a1 1 0 111.414-1.414l3.926 3.926 9.937-9.937a1 1 0 011.414 1.415L7.717 16.323a.997.997 0 01-.745.292z" }));
-        O(4343);
+        T(4343);
         const Fi = "Lock from Inspector (@ckeditor/ckeditor5-inspector)";
         class so extends i.Component {
           constructor(o) {
@@ -10625,7 +10631,7 @@ ${k}`);
           }, Ur.apply(null, arguments);
         }
         const Vi = ({ styles: l = {}, ...o }) => i.createElement("svg", Ur({ viewBox: "0 0 19 19", xmlns: "http://www.w3.org/2000/svg" }, o), i.createElement("path", { d: "M17.03 6.47a.75.75 0 01.073.976l-.072.084-6.984 7a.75.75 0 01-.977.073l-.084-.072-7.016-7a.75.75 0 01.976-1.134l.084.072 6.485 6.47 6.454-6.469a.75.75 0 01.977-.073l.084.072z" }));
-        O(9938);
+        T(9938);
         const Sa = { position: "fixed", bottom: "0", left: "0", right: "0", top: "auto" };
         class Ts extends i.Component {
           constructor(o) {
@@ -10679,7 +10685,7 @@ ${k}`);
         function Ca(l) {
           document.body.style.setProperty("--ck-inspector-height", l);
         }
-        O(8704), window.CKEDITOR_INSPECTOR_VERSION = "5.0.0";
+        T(8704), window.CKEDITOR_INSPECTOR_VERSION = "5.0.0";
         class He {
           constructor() {
             Ye.warn("[CKEditorInspector] Whoops! Looks like you tried to create an instance of the CKEditorInspector class. To attach the inspector, use the static CKEditorInspector.attach( editor ) method instead. For the latest API, please refer to https://github.com/ckeditor/ckeditor5-inspector/blob/master/README.md. ");
@@ -10756,7 +10762,7 @@ const Wu = /* @__PURE__ */ $u(Bu);
  * @license GPL-3.0-or-later
  */
 const qu = function(Te) {
-  const E = Te.plugins.get(zc), w = $(Te.ui.view.element), T = $(Te.sourceElement), O = `ckeditor${Math.floor(Math.random() * 1e9)}`, Q = [
+  const E = Te.plugins.get(zc), w = $(Te.ui.view.element), O = $(Te.sourceElement), T = `ckeditor${Math.floor(Math.random() * 1e9)}`, Q = [
     "keypress",
     "keyup",
     "change",
@@ -10765,7 +10771,7 @@ const qu = function(Te) {
     "click",
     "mousedown",
     "mouseup"
-  ].map((i) => `${i}.${O}`).join(" ");
+  ].map((i) => `${i}.${T}`).join(" ");
   E.on("change:isSourceEditingMode", () => {
     const i = w.find(
       ".ck-source-editing-area"
@@ -10773,40 +10779,40 @@ const qu = function(Te) {
     if (E.isSourceEditingMode) {
       let u = i.attr("data-value");
       i.on(Q, () => {
-        u !== (u = i.attr("data-value")) && T.val(u);
+        u !== (u = i.attr("data-value")) && O.val(u);
       });
     } else
-      i.off(`.${O}`);
+      i.off(`.${T}`);
   });
 }, Ku = function(Te, E) {
   if (E.heading !== void 0) {
     var w = E.heading.options;
-    w.find((T) => T.view === "h1") !== void 0 && Te.keystrokes.set(
+    w.find((O) => O.view === "h1") !== void 0 && Te.keystrokes.set(
       "Ctrl+Alt+1",
       () => Te.execute("heading", { value: "heading1" })
-    ), w.find((T) => T.view === "h2") !== void 0 && Te.keystrokes.set(
+    ), w.find((O) => O.view === "h2") !== void 0 && Te.keystrokes.set(
       "Ctrl+Alt+2",
       () => Te.execute("heading", { value: "heading2" })
-    ), w.find((T) => T.view === "h3") !== void 0 && Te.keystrokes.set(
+    ), w.find((O) => O.view === "h3") !== void 0 && Te.keystrokes.set(
       "Ctrl+Alt+3",
       () => Te.execute("heading", { value: "heading3" })
-    ), w.find((T) => T.view === "h4") !== void 0 && Te.keystrokes.set(
+    ), w.find((O) => O.view === "h4") !== void 0 && Te.keystrokes.set(
       "Ctrl+Alt+4",
       () => Te.execute("heading", { value: "heading4" })
-    ), w.find((T) => T.view === "h5") !== void 0 && Te.keystrokes.set(
+    ), w.find((O) => O.view === "h5") !== void 0 && Te.keystrokes.set(
       "Ctrl+Alt+5",
       () => Te.execute("heading", { value: "heading5" })
-    ), w.find((T) => T.view === "h6") !== void 0 && Te.keystrokes.set(
+    ), w.find((O) => O.view === "h6") !== void 0 && Te.keystrokes.set(
       "Ctrl+Alt+6",
       () => Te.execute("heading", { value: "heading6" })
-    ), w.find((T) => T.model === "paragraph") !== void 0 && Te.keystrokes.set("Ctrl+Alt+p", "paragraph");
+    ), w.find((O) => O.model === "paragraph") !== void 0 && Te.keystrokes.set("Ctrl+Alt+p", "paragraph");
   }
 }, Qu = function(Te, E) {
   let w = null;
-  const T = Te.editing.view.document, O = Te.plugins.get("ClipboardPipeline");
-  T.on("clipboardOutput", (Q, i) => {
+  const O = Te.editing.view.document, T = Te.plugins.get("ClipboardPipeline");
+  O.on("clipboardOutput", (Q, i) => {
     w = Te.id;
-  }), T.on("clipboardInput", async (Q, i) => {
+  }), O.on("clipboardInput", async (Q, i) => {
     let u = i.dataTransfer.getData("text/html");
     if (u && u.includes("<craft-entry") && !(i.method == "drop" && w === Te.id)) {
       if (i.method == "paste" || i.method == "drop" && w !== Te.id) {
@@ -10869,7 +10875,7 @@ const qu = function(Te) {
             }
           }
         }
-        k || (i.content = Te.data.htmlProcessor.toView(f), O.fire("inputTransformation", i));
+        k || (i.content = Te.data.htmlProcessor.toView(f), T.fire("inputTransformation", i));
       }
     }
   });
