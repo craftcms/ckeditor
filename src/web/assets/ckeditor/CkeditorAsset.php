@@ -86,7 +86,7 @@ Craft.showCkeditorInspector = $attach;
 Craft.revAssetUrls = $revAssetUrls;
 JS, [
                 (bool)App::env('CRAFT_SHOW_CKEDITOR_INSPECTOR'),
-                Craft::$app->getConfig()->getGeneral()->revAssetUrls
+                Craft::$app->getConfig()->getGeneral()->revAssetUrls,
             ], View::POS_END);
         }
     }
