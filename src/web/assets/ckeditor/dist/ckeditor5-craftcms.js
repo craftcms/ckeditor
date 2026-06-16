@@ -570,7 +570,7 @@ class Tu extends El {
   }
   _getNewSrc(_, k) {
     let T = _.url;
-    return Craft.revAssetUrls || (T += (T.includes("?") ? "&" : "?") + "t=" + (/* @__PURE__ */ new Date()).getTime()), T += "#asset:" + k.srcInfo.assetId, k.srcInfo.transform && (T += ":transform:" + k.srcInfo.transform), T;
+    return Craft.revAssetUrls || (T += (T.includes("?") ? "&" : "?") + (/* @__PURE__ */ new Date()).getTime()), T += "#asset:" + k.srcInfo.assetId, k.srcInfo.transform && (T += ":transform:" + k.srcInfo.transform), T;
   }
   /**
    * Returns all images present in the editor that are Craft Assets.

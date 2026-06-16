@@ -157,8 +157,7 @@ export default class ImageEditorCommand extends Command {
     // (e.g. if using native stuff and you "just" rotated the image)
     // if revAssetUrls is on, then the asset's URL should already have a "v=" param
     if (!Craft.revAssetUrls) {
-      newSrc +=
-        (newSrc.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
+      newSrc += (newSrc.includes('?') ? '&' : '?') + new Date().getTime();
     }
 
     newSrc += '#asset:' + image.srcInfo.assetId;
