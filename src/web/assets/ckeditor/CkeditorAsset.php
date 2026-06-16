@@ -81,11 +81,13 @@ class CkeditorAsset extends BaseCkeditorPackageAsset
                 '{num, number} {num, plural, =1{word} other{words}}',
             ]);
 
-            $view->registerJsWithVars(fn($attach) => <<<JS
+            $view->registerJsWithVars(fn($attach, $revAssetUrls) => <<<JS
 Craft.showCkeditorInspector = $attach;
+Craft.revAssetUrls = $revAssetUrls;
 JS, [
                 (bool)App::env('CRAFT_SHOW_CKEDITOR_INSPECTOR'),
-], View::POS_END);
+                Craft::$app->getConfig()->getGeneral()->revAssetUrls
+            ], View::POS_END);
         }
     }
 

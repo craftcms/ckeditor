@@ -119,7 +119,7 @@ export default class ImageEditorCommand extends Command {
           Craft.sendActionRequest('POST', 'ckeditor/ckeditor/image-url', {
             data,
           }).then((response) => {
-            let newSrc = response.data.url + '#asset:' + image.srcInfo.assetId;
+            let newSrc = this._getNewSrc(response.data, image);
 
             model.change((writer) => {
               writer.setAttribute('src', newSrc, image.element);
@@ -136,12 +136,7 @@ export default class ImageEditorCommand extends Command {
             data,
           }).then((response) => {
             // get new src
-            let newSrc =
-              response.data.url +
-              '#asset:' +
-              image.srcInfo.assetId +
-              ':transform:' +
-              image.srcInfo.transform;
+            let newSrc = this._getNewSrc(response.data, image);
 
             // and replace
             model.change((writer) => {
@@ -151,6 +146,28 @@ export default class ImageEditorCommand extends Command {
         }
       }
     });
+  }
+
+  _getNewSrc(data, image) {
+    let newSrc = data.url;
+
+    // this is negated on purpose;
+    // we want to include some sort of browser cache-busting query param,
+    // so that the image is reloaded after it was edited, because the URL might still be the same
+    // (e.g. if using native stuff and you "just" rotated the image)
+    // if revAssetUrls is on, then the asset's URL should already have a "v=" param
+    if (!Craft.revAssetUrls) {
+      newSrc +=
+        (newSrc.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
+    }
+
+    newSrc += '#asset:' + image.srcInfo.assetId;
+
+    if (image.srcInfo.transform) {
+      newSrc += ':transform:' + image.srcInfo.transform;
+    }
+
+    return newSrc;
   }
 
   /**
