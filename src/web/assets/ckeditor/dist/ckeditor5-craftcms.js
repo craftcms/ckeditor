@@ -1245,7 +1245,9 @@ class ju extends $n {
               for (const h of C)
                 i[p.model] ? f.setAttribute(
                   p.model,
-                  i[p.model],
+                  // for bool type options, if the value is set to true, set the attribute with empty value
+                  // see https://github.com/craftcms/ckeditor/issues/606 for more info
+                  p.type == "bool" && p.value == !0 ? "" : i[p.model],
                   h
                 ) : f.removeAttribute(p.model, h);
             }

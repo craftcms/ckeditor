@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed a bug where downloadable links’ `download` attributes were sometimes getting set to the value `"true"`. ([#606](https://github.com/craftcms/ckeditor/issues/606))
+
 ## 5.6.1 - 2026-05-13
 
 - Fixed errors that could occur if the `ckeditor_references` table didn’t exist yet. ([#584](https://github.com/craftcms/ckeditor/issues/584))
