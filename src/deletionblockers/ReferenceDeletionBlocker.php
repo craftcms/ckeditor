@@ -32,7 +32,7 @@ class ReferenceDeletionBlocker extends BaseDeletionBlocker
                 ->where([
                     'targetId' => $this->elements->ids()->all(),
                     'elements.draftId' => null,
-                    'elements.revisionId' => null
+                    'elements.revisionId' => null,
                 ])
                 ->count();
         } else {
