@@ -12,6 +12,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\ckeditor\Plugin;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\deletionblockers\BaseDeletionBlocker;
 use craft\helpers\Html;
 
@@ -26,9 +27,12 @@ class ReferenceDeletionBlocker extends BaseDeletionBlocker
     {
         if (Craft::$app->getDb()->tableExists(Plugin::TABLE_REFERENCES)) {
             $this->referenceCount = (new Query())
-                ->from(Plugin::TABLE_REFERENCES)
+                ->from(['ckeditor_references' => Plugin::TABLE_REFERENCES])
+                ->leftJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[ckeditor_references.sourceId]]')
                 ->where([
                     'targetId' => $this->elements->ids()->all(),
+                    'elements.draftId' => null,
+                    'elements.revisionId' => null
                 ])
                 ->count();
         } else {
