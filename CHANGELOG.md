@@ -6,7 +6,7 @@
 - Images’ alternative text modals now have a “Sync from asset” button. ([#585](https://github.com/craftcms/ckeditor/pull/585))
 - Added Dutch translations. ([#603](https://github.com/craftcms/ckeditor/pull/603))
 - Improved Norwegian translations. ([#601](https://github.com/craftcms/ckeditor/pull/601), [#602](https://github.com/craftcms/ckeditor/pull/602))
-- Fixed a bug where selected image transforms were being forgotten, if the transform chanegd the file format. ([#588](https://github.com/craftcms/ckeditor/issues/588))
+- Fixed a bug where selected image transforms were being forgotten, if the transform changed the file format. ([#588](https://github.com/craftcms/ckeditor/issues/588))
 - Fixed a bug where downloadable links’ `download` attributes were sometimes getting set to the value `"true"`. ([#606](https://github.com/craftcms/ckeditor/issues/606))
 
 ## 5.6.1 - 2026-05-13
