@@ -15,6 +15,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\deletionblockers\BaseDeletionBlocker;
 use craft\helpers\Html;
+use craft\helpers\StringHelper;
 
 /**
  * @since 5.6.0
@@ -52,12 +53,12 @@ class ReferenceDeletionBlocker extends BaseDeletionBlocker
         /** @var class-string<ElementInterface> $targetElementType */
         $targetElementType = $this->elements->first()::class;
 
-        return Craft::t('ckeditor', 'The {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} referenced by CKEditor fields in {numReferences, number} other {numReferences, plural, =1{element} other{elements}}.', [
+        return StringHelper::upperCaseFirst(Craft::t('ckeditor', 'The {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} referenced by CKEditor fields in {numReferences, number} other {numReferences, plural, =1{element} other{elements}}.', [
             'targetTypeSingular' => $targetElementType::lowerDisplayName(),
             'targetTypePlural' => $targetElementType::pluralLowerDisplayName(),
             'numReferences' => $this->referenceCount,
             'numTargets' => $this->elements->count(),
-        ]);
+        ]));
     }
 
     public function getActions(): array

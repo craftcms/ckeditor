@@ -1588,6 +1588,8 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         $idJs = Json::encode($view->namespaceInputId($id));
         $wordCountId = "$id-counts";
         $wordCountIdJs = Json::encode($view->namespaceInputId($wordCountId));
+        $inputId = Html::id('input-ckeditor-' . $id);
+        $namespacedInputId = $view->namespaceInputId($inputId);
 
         $baseConfig = array_filter([
             'defaultTransform' => $defaultTransform?->handle,
@@ -1719,6 +1721,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             $wordLimitJs,
             $characterLimitJs,
             $imageMode,
+            $namespacedInputIdJs,
         ) => <<<JS
 $imports
 $uiTranslationImport
@@ -1771,6 +1774,30 @@ import {create} from '@craftcms/ckeditor';
 
     // use the headings
     config.heading.options = Object.values(headings);
+  }
+
+  // special case for fullscreen mode and Custom Styles
+  // see https://github.com/craftcms/ckeditor/issues/614
+  if (config.toolbar.items.indexOf('fullscreen') >= 0) {
+    const fullscreenConfig = customConfig?.fullscreen ?? {};
+    const userOnEnterCallback = fullscreenConfig?.onEnterCallback;
+    const userOnLeaveCallback = fullscreenConfig?.onLeaveCallback;
+    const fieldInputId = $namespacedInputIdJs;
+    config.fullscreen = {
+      ...fullscreenConfig,
+      onEnterCallback: (container) => {
+        container.classList.add(fieldInputId);
+        if (userOnEnterCallback) {
+          userOnEnterCallback(container);
+        }
+      },
+      onLeaveCallback: (container) => {
+        if (userOnLeaveCallback) {
+          userOnLeaveCallback(container);
+        }
+        container.classList.remove(fieldInputId);
+      },
+    };
   }
 
   const extraRemovePlugins = [];
@@ -1841,13 +1868,13 @@ JS,
                 $this->wordLimit ?: 0,
                 $this->characterLimit ?: 0,
                 $this->imageMode,
+                $namespacedInputId,
             ],
             View::POS_END,
             ['type' => 'module']
         );
 
         $value = $this->prepValueForInput($value, $element);
-        $inputId = Html::id('input-ckeditor-' . $id);
         $html = Html::textarea($this->handle, $value, [
             'id' => $id,
             'class' => 'hidden',
@@ -1873,7 +1900,9 @@ JS,
             }
             $css = trim($css);
             if ($css !== '') {
-                $view->registerCss("#{$view->namespaceInputId($inputId)} { $css }");
+                // the id is needed for the regular field
+                // the class is used by the fullscreen mode (there can only be one at the time)
+                $view->registerCss("#{$namespacedInputId}, .{$namespacedInputId} { $css }");
             }
         }
 
