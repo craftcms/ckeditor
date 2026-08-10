@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 5.7.0 - 2026-08-10
 
 - Assets inserted as `<img>` tags now populate the `alt` attribute with the asset’s Alternative Text value. If left unedited, the `alt` attribute will stay in sync with the asset. ([#585](https://github.com/craftcms/ckeditor/pull/585))
 - Images’ alternative text modals now have a “Sync from asset” button. ([#585](https://github.com/craftcms/ckeditor/pull/585))
