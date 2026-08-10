@@ -588,10 +588,10 @@ class Du extends El {
   }
   /**
    * Checks if element has a src attribute and at least an asset id.
-   * Returns null if not and array containing src, baseSrc, asset id and transform (if used).
+   * Returns null if not and array containing src, asset id and transform (if used).
    *
    * @param element
-   * @returns {{transform: *, src: *, assetId: *, baseSrc: *}|null}
+   * @returns {{transform: *, src: *, assetId: *}|null}
    * @private
    */
   _srcInfo(k) {
@@ -602,7 +602,6 @@ class Du extends El {
     );
     return T ? {
       src: v,
-      baseSrc: T[1],
       assetId: T[2],
       transform: T[3]
     } : null;
@@ -644,18 +643,29 @@ class Du extends El {
           Craft.sendActionRequest("POST", "assets/generate-transform", {
             data: u
           }).then((f) => {
-            let _ = f.data.url + "?" + (/* @__PURE__ */ new Date()).getTime() + "#asset:" + i.srcInfo.assetId + ":transform:" + i.srcInfo.transform;
+            let _ = this._getNewSrc(f.data, i);
             O.change((d) => {
               d.setAttribute("src", _, i.element);
             });
           });
         } else {
-          let u = i.srcInfo.baseSrc + "?" + (/* @__PURE__ */ new Date()).getTime() + "#asset:" + i.srcInfo.assetId;
-          O.change((f) => {
-            f.setAttribute("src", u, i.element);
+          let u = {
+            assetId: i.srcInfo.assetId
+          };
+          Craft.sendActionRequest("POST", "ckeditor/ckeditor/image-url", {
+            data: u
+          }).then((f) => {
+            let _ = this._getNewSrc(f.data, i);
+            O.change((d) => {
+              d.setAttribute("src", _, i.element);
+            });
           });
         }
     });
+  }
+  _getNewSrc(k, v) {
+    let T = k.url;
+    return Craft.revAssetUrls || (T += (T.includes("?") ? "&" : "?") + (/* @__PURE__ */ new Date()).getTime()), T += "#asset:" + v.srcInfo.assetId, v.srcInfo.transform && (T += ":transform:" + v.srcInfo.transform), T;
   }
   /**
    * Returns all images present in the editor that are Craft Assets.

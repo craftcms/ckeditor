@@ -44,10 +44,10 @@ export default class ImageEditorCommand extends Command {
 
   /**
    * Checks if element has a src attribute and at least an asset id.
-   * Returns null if not and array containing src, baseSrc, asset id and transform (if used).
+   * Returns null if not and array containing src, asset id and transform (if used).
    *
    * @param element
-   * @returns {{transform: *, src: *, assetId: *, baseSrc: *}|null}
+   * @returns {{transform: *, src: *, assetId: *}|null}
    * @private
    */
   _srcInfo(element) {
@@ -65,7 +65,6 @@ export default class ImageEditorCommand extends Command {
 
     return {
       src,
-      baseSrc: match[1],
       assetId: match[2],
       transform: match[3],
     };
@@ -113,17 +112,18 @@ export default class ImageEditorCommand extends Command {
       if (image.srcInfo.assetId == assetId) {
         // if it doesn't have a transform
         if (!image.srcInfo.transform) {
-          // get new src
-          let newSrc =
-            image.srcInfo.baseSrc +
-            '?' +
-            new Date().getTime() +
-            '#asset:' +
-            image.srcInfo.assetId;
+          let data = {
+            assetId: image.srcInfo.assetId,
+          };
 
-          // and replace
-          model.change((writer) => {
-            writer.setAttribute('src', newSrc, image.element);
+          Craft.sendActionRequest('POST', 'ckeditor/ckeditor/image-url', {
+            data,
+          }).then((response) => {
+            let newSrc = this._getNewSrc(response.data, image);
+
+            model.change((writer) => {
+              writer.setAttribute('src', newSrc, image.element);
+            });
           });
         } else {
           let data = {
@@ -136,14 +136,7 @@ export default class ImageEditorCommand extends Command {
             data,
           }).then((response) => {
             // get new src
-            let newSrc =
-              response.data.url +
-              '?' +
-              new Date().getTime() +
-              '#asset:' +
-              image.srcInfo.assetId +
-              ':transform:' +
-              image.srcInfo.transform;
+            let newSrc = this._getNewSrc(response.data, image);
 
             // and replace
             model.change((writer) => {
@@ -153,6 +146,27 @@ export default class ImageEditorCommand extends Command {
         }
       }
     });
+  }
+
+  _getNewSrc(data, image) {
+    let newSrc = data.url;
+
+    // this is negated on purpose;
+    // we want to include some sort of browser cache-busting query param,
+    // so that the image is reloaded after it was edited, because the URL might still be the same
+    // (e.g. if using native stuff and you "just" rotated the image)
+    // if revAssetUrls is on, then the asset's URL should already have a "v=" param
+    if (!Craft.revAssetUrls) {
+      newSrc += (newSrc.includes('?') ? '&' : '?') + new Date().getTime();
+    }
+
+    newSrc += '#asset:' + image.srcInfo.assetId;
+
+    if (image.srcInfo.transform) {
+      newSrc += ':transform:' + image.srcInfo.transform;
+    }
+
+    return newSrc;
   }
 
   /**
