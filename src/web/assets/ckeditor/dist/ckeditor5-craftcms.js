@@ -1340,7 +1340,9 @@ class Uu extends $n {
               for (const h of C)
                 i[d.model] ? f.setAttribute(
                   d.model,
-                  i[d.model],
+                  // for bool type options, if the value is set to true, set the attribute with empty value
+                  // see https://github.com/craftcms/ckeditor/issues/606 for more info
+                  d.type == "bool" && d.value == !0 ? "" : i[d.model],
                   h
                 ) : f.removeAttribute(d.model, h);
             }
