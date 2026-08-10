@@ -136,13 +136,8 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     const urls = [];
 
     for (const asset of assets) {
-      let alt = asset.$element.data('alt');
-      if (!alt) {
-        alt = null;
-      } else {
-        const siteId = asset.siteId ?? editor.config.get('elementSiteId');
-        alt = alt + `#asset:${asset.id}${siteId ? `@${siteId}` : ''}:alt`;
-      }
+      const siteId = asset.siteId ?? editor.config.get('elementSiteId');
+      const alt = `${asset.$element.data('alt') ?? ''}#asset:${asset.id}${siteId ? `@${siteId}` : ''}:alt`;
 
       const hasTransform = this._isTransformUrl(asset.url);
 

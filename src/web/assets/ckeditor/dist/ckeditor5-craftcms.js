@@ -77,10 +77,7 @@ class ed extends su {
     } catch (d) {
       throw Craft.cp.displayError((_ = (f = d == null ? void 0 : d.response) == null ? void 0 : f.data) == null ? void 0 : _.message), d;
     }
-    const O = T.data.siteId ?? v.siteId, K = T.data.alt ?? "";
-    let i = "";
-    K !== "" && (i = `${K}#asset:${v.assetId}${O ? `@${O}` : ""}:alt`);
-    const u = this._form.labeledInput.fieldView;
+    const O = T.data.siteId ?? v.siteId, K = T.data.alt ?? "", i = `${K}#asset:${v.assetId}${O ? `@${O}` : ""}:alt`, u = this._form.labeledInput.fieldView;
     if (u.value == K) {
       Craft.cp.displaySuccess(
         Craft.t("ckeditor", "The alternative text was already in sync.")
@@ -187,24 +184,17 @@ class td extends cu {
     }
     const T = this.editor, O = T.config.get("defaultTransform"), K = [];
     for (const i of k) {
-      let u = i.$element.data("alt");
-      if (!u)
-        u = null;
-      else {
-        const _ = i.siteId ?? T.config.get("elementSiteId");
-        u = u + `#asset:${i.id}${_ ? `@${_}` : ""}:alt`;
-      }
-      const f = this._isTransformUrl(i.url);
-      if (!f && O) {
-        const _ = await this._getTransformUrl(i.id, O);
-        K.push({ src: _, alt: u });
+      const u = i.siteId ?? T.config.get("elementSiteId"), f = `${i.$element.data("alt") ?? ""}#asset:${i.id}${u ? `@${u}` : ""}:alt`, _ = this._isTransformUrl(i.url);
+      if (!_ && O) {
+        const d = await this._getTransformUrl(i.id, O);
+        K.push({ src: d, alt: f });
       } else {
-        const _ = this._buildAssetUrl(
+        const d = this._buildAssetUrl(
           i.id,
           i.url,
-          f ? v : O
+          _ ? v : O
         );
-        K.push({ src: _, alt: u });
+        K.push({ src: d, alt: f });
       }
     }
     T.execute("insertImage", { source: K });

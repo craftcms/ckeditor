@@ -133,11 +133,7 @@ export default class CraftImageTextAlternativeUI extends ImageTextAlternativeUI 
 
     const siteId = response.data.siteId ?? srcInfo.siteId;
     const alt = response.data.alt ?? '';
-
-    let value = '';
-    if (alt !== '') {
-      value = `${alt}#asset:${srcInfo.assetId}${siteId ? `@${siteId}` : ''}:alt`;
-    }
+    const value = `${alt}#asset:${srcInfo.assetId}${siteId ? `@${siteId}` : ''}:alt`;
 
     const fieldView = this._form.labeledInput.fieldView;
 
