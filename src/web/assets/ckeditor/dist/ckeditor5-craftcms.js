@@ -1328,7 +1328,7 @@ class Uu extends $n {
           return;
         }
         O.stop(), T = !0;
-        const i = K[K.length - 1], u = k.model.document.selection;
+        const i = K[3] || {}, u = k.model.document.selection;
         k.model.change((f) => {
           k.execute("link", ...K);
           const _ = u.getFirstPosition();
@@ -1855,21 +1855,20 @@ class Wu extends $n {
             });
             const h = v.commands.get("link");
             let b = this._getAdvancedFieldValues();
-            h.execute(C, b);
+            h.execute(C, {}, void 0, b);
           } else
             T.change((h) => {
-              let b = this._getAdvancedFieldValues();
-              if (h.insertText(
+              let b = this._getAdvancedFieldValues(), w = { linkHref: C };
+              if (this.conversionData.forEach((N) => {
+                b[N.model] && (w[N.model] = N.type == "bool" && N.value == !0 ? "" : b[N.model]);
+              }), h.insertText(
                 d.label,
-                {
-                  linkHref: C
-                },
-                O.getFirstPosition(),
-                b
+                w,
+                O.getFirstPosition()
               ), i instanceof ku)
                 try {
-                  const w = i.clone();
-                  w.end.path[1] += d.label.length, h.setSelection(w);
+                  const N = i.clone();
+                  N.end.path[1] += d.label.length, h.setSelection(N);
                 } catch {
                 }
             });
@@ -1996,11 +1995,13 @@ class Wu extends $n {
     T.on(
       "submit",
       () => {
+        if (!T.isValid())
+          return;
         let O = this._getAdvancedFieldValues();
         v.once(
           "execute",
           (K, i) => {
-            i.length === 4 ? Object.assign(i[3], O) : i.push(O);
+            i[3] = i[3] ? Object.assign(i[3], O) : O;
           },
           { priority: "highest" }
         );

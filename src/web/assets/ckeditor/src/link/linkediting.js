@@ -99,7 +99,14 @@ export default class CraftLinkEditing extends Plugin {
         evt.stop();
         linking = true;
 
-        const extraAttributeValues = args[args.length - 1];
+        // Craft's extra attribute values are always passed as the 4th argument to
+        // linkCommand.execute() (see CraftLinkUI for the call sites), regardless of
+        // whether CKEditor5's own `manualDecoratorIds`/`displayedText` arguments were
+        // also passed. Using a fixed index here - rather than assuming the values are
+        // whatever the *last* argument happens to be - means this can't be confused
+        // with those unrelated built-in arguments.
+        // see https://github.com/craftcms/ckeditor/issues/612 for more info
+        const extraAttributeValues = args[3] || {};
         const selection = editor.model.document.selection;
 
         editor.model.change((writer) => {

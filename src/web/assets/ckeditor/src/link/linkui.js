@@ -493,23 +493,41 @@ export default class CraftLinkUI extends Plugin {
             });
             const linkCommand = editor.commands.get('link');
 
-            // get all the advanced link fields and pass them to the link command
+            // get all the advanced link fields and pass them to the link command.
+            // note: these are passed as the 4th argument, not the 2nd, because the 2nd
+            // argument is reserved by CKEditor5's LinkCommand for manual decorator
+            // states (an unrelated built-in feature) - see
+            // CraftLinkEditing._adjustLinkCommand(), and
+            // https://github.com/craftcms/ckeditor/issues/612 for more info
             let values = this._getAdvancedFieldValues();
-            linkCommand.execute(url, values);
+            linkCommand.execute(url, {}, undefined, values);
           } else {
             // this is the path when adding a link without anything being pre-selected;
             // e.g. you only have a cursor flashing
             model.change((writer) => {
-              // get all the advanced link fields and pass them along with linkHref
+              // get all the advanced link fields and merge them into the attributes of
+              // the text node we're about to insert. We apply these directly (instead
+              // of going through linkCommand.execute()) because writer.insertText()
+              // doesn't have an "extra attribute values" argument to pass them through -
+              // see https://github.com/craftcms/ckeditor/issues/612 for more info
               let values = this._getAdvancedFieldValues();
+              let attributes = {linkHref: url};
+
+              this.conversionData.forEach((item) => {
+                if (values[item.model]) {
+                  // for bool type options, if the value is set to true, set the attribute with empty value
+                  // see https://github.com/craftcms/ckeditor/issues/551 for more info
+                  attributes[item.model] =
+                    item.type == 'bool' && item.value == true
+                      ? ''
+                      : values[item.model];
+                }
+              });
 
               writer.insertText(
                 element.label,
-                {
-                  linkHref: url,
-                },
+                attributes,
                 selection.getFirstPosition(),
-                values,
               );
               if (range instanceof ModelRange) {
                 try {
@@ -762,18 +780,25 @@ export default class CraftLinkUI extends Plugin {
     formView.on(
       'submit',
       () => {
+        // if the form isn't valid, CKEditor5's own submit handler (registered at
+        // normal priority, so it runs after this one) won't call linkCommand.execute()
+        // at all. Bail out here too, so we don't leave a stale listener behind that
+        // could end up applying these values to some later, unrelated execute() call.
+        // see https://github.com/craftcms/ckeditor/issues/612 for more info
+        if (!formView.isValid()) {
+          return;
+        }
+
         let values = this._getAdvancedFieldValues();
 
         linkCommand.once(
           'execute',
           (evt, args) => {
-            if (args.length === 4) {
-              // if we already have extra args on the link - update the list of args
-              Object.assign(args[3], values);
-            } else {
-              // if there's no extra attrs on the link - add them to the list of args
-              args.push(values);
-            }
+            // extra Craft attribute values always live at a fixed index (the 4th
+            // argument) - see CraftLinkEditing._adjustLinkCommand() - regardless of
+            // whether CKEditor5's own manualDecoratorIds/displayedText arguments were
+            // passed, so merge into that slot rather than relying on args.length.
+            args[3] = args[3] ? Object.assign(args[3], values) : values;
           },
           {priority: 'highest'},
         );
