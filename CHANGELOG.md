@@ -13,6 +13,7 @@
 - Fixed a bug where images could be set to malformed URLs after saving via the Image Editor. ([#477](https://github.com/craftcms/ckeditor/issues/477), [#595](https://github.com/craftcms/ckeditor/issues/595))
 - Fixed a bug where the editor could become unresponsive after toggling an advanced link field’s lightswitch before choosing a link target. ([#612](https://github.com/craftcms/ckeditor/issues/612))
 - Fixed a styling issue with the Link modal. ([#610](https://github.com/craftcms/ckeditor/issues/610))
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-jcjm-q9x2-72xv)
 
 ## 5.6.1 - 2026-05-13
 

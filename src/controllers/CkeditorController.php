@@ -10,6 +10,7 @@ namespace craft\ckeditor\controllers;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\base\NestedElementInterface;
 use craft\ckeditor\Field;
 use craft\elements\Asset;
 use craft\elements\Entry;
@@ -125,8 +126,24 @@ class CkeditorController extends Controller
             'revisions' => null,
         ]);
 
-        if (!$entry) {
+        if (!$entry instanceof NestedElementInterface) {
             throw new BadRequestHttpException("Invalid entry ID: $entryId");
+        }
+
+        $elementsService = Craft::$app->getElements();
+
+        if (!$elementsService->canView($entry)) {
+            throw new ForbiddenHttpException('User not authorized to view this element.');
+        }
+
+        if ($targetOwnerId !== null && $entry->primaryOwnerId !== $targetOwnerId) {
+            $owner = $elementsService->getElementById($targetOwnerId, null, $targetSiteId);
+        } else {
+            $owner = $entry->getOwner();
+        }
+
+        if (!$elementsService->canSave($owner)) {
+            throw new ForbiddenHttpException('User not authorized to edit this element.');
         }
 
         // check if the target field accepts the entry type we're trying to duplicate
@@ -142,11 +159,6 @@ class CkeditorController extends Controller
 
         // get ID of the field we're duplicating (e.g. pasting) into
         if ($targetLayoutElementUid !== null) {
-            if ($targetOwnerId !== null && $entry->primaryOwnerId !== $targetOwnerId) {
-                $owner = Craft::$app->getElements()->getElementById($targetOwnerId, null, $targetSiteId);
-            } else {
-                $owner = $entry->getOwner();
-            }
             /** @var CustomField $layoutElement */
             $layoutElement = $owner->getFieldLayout()->getElementByUid($targetLayoutElementUid);
             /** @var Field $field */
@@ -166,7 +178,7 @@ class CkeditorController extends Controller
         }
 
         try {
-            $newEntry = Craft::$app->getElements()->duplicateElement($entry, $newAttrs);
+            $newEntry = $elementsService->duplicateElement($entry, $newAttrs);
         } catch (Throwable $e) {
             return $this->asFailure(Craft::t('app', 'Couldn’t duplicate {type}.', [
                 'type' => $entry::lowerDisplayName(),
