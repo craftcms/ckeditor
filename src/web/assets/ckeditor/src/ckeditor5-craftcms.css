@@ -373,3 +373,10 @@ body.ck-fullscreen .slideout-container {
 .ck.ck-read-only {
   cursor: not-allowed;
 }
+
+.ck.ck-text-alternative-form .btn {
+  background-color: var(--button-bg) !important;
+}
+.ck.ck-text-alternative-form .btn:hover {
+  background: var(--button-bg--hover) !important;
+}

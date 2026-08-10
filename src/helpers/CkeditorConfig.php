@@ -79,6 +79,7 @@ final class CkeditorConfig
             'WordCount',
         ],
         '@craftcms/ckeditor' => [
+            'CraftImageTextAlternativeUI',
             'CraftImageInsertUI',
             'ImageTransform',
             'ImageEditor',
@@ -99,6 +100,7 @@ final class CkeditorConfig
                 'AutoImage',
                 'CraftEntries',
                 'CraftImageInsertUI',
+                'CraftImageTextAlternativeUI',
                 'Image',
                 'ImageCaption',
                 'ImageStyle',
