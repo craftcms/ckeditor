@@ -216,6 +216,31 @@ class CkeditorController extends Controller
         ]);
     }
 
+    public function actionImageAlt(): Response
+    {
+        $assetId = $this->request->getRequiredBodyParam('assetId');
+        $siteId = $this->request->getBodyParam('siteId');
+
+        $query = Asset::find()
+            ->id($assetId)
+            ->kind('image');
+
+        if ($siteId) {
+            $query->siteId($siteId);
+        }
+
+        $asset = $query->one();
+
+        if (!$asset) {
+            throw new NotFoundHttpException('Image not found');
+        }
+
+        return $this->asJson([
+            'alt' => $asset->alt,
+            'siteId' => $asset->siteId,
+        ]);
+    }
+
     /**
      * Return element rendered for the control panel and the IDs of the sites it supports.
      *

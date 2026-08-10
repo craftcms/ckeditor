@@ -1,5 +1,17 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Assets inserted as `<img>` tags now populate the `alt` attribute with the asset’s Alternative Text value. If left unedited, the `alt` attribute will stay in sync with the asset. ([#585](https://github.com/craftcms/ckeditor/pull/585))
+- Images’ alternative text modals now have a “Sync from asset” button. ([#585](https://github.com/craftcms/ckeditor/pull/585))
+- Added Dutch translations. ([#603](https://github.com/craftcms/ckeditor/pull/603))
+- Improved Norwegian translations. ([#601](https://github.com/craftcms/ckeditor/pull/601), [#602](https://github.com/craftcms/ckeditor/pull/602))
+- Fixed a bug where selected image transforms were being forgotten, if the transform changed the file format. ([#588](https://github.com/craftcms/ckeditor/issues/588))
+- Fixed a bug where downloadable links’ `download` attributes were sometimes getting set to the value `"true"`. ([#606](https://github.com/craftcms/ckeditor/issues/606))
+- Fixed a bug where custom styles weren’t being applied in fullscreen mode. ([#614](https://github.com/craftcms/ckeditor/issues/614))
+- Fixed a bug where entry deletion blockers were factoring in drafts and revisions that referenced the to-be-deleted entry. ([#600](https://github.com/craftcms/ckeditor/issues/600))
+- Fixed a styling issue with the Link modal. ([#610](https://github.com/craftcms/ckeditor/issues/610))
+
 ## 5.6.1 - 2026-05-13
 
 - Fixed errors that could occur if the `ckeditor_references` table didn’t exist yet. ([#584](https://github.com/craftcms/ckeditor/issues/584))
