@@ -9,6 +9,7 @@
 - Fixed a bug where selected image transforms were being forgotten, if the transform changed the file format. ([#588](https://github.com/craftcms/ckeditor/issues/588))
 - Fixed a bug where downloadable links’ `download` attributes were sometimes getting set to the value `"true"`. ([#606](https://github.com/craftcms/ckeditor/issues/606))
 - Fixed a bug where custom styles weren’t being applied in fullscreen mode. ([#614](https://github.com/craftcms/ckeditor/issues/614))
+- Fixed a bug where entry deletion blockers were factoring in drafts and revisions that referenced the to-be-deleted entry. ([#600](https://github.com/craftcms/ckeditor/issues/600)) 
 
 ## 5.6.1 - 2026-05-13
 
