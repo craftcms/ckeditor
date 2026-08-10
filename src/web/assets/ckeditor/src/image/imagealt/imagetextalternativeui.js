@@ -143,7 +143,7 @@ export default class CraftImageTextAlternativeUI extends ImageTextAlternativeUI 
 
     if (fieldView.value == alt) {
       Craft.cp.displaySuccess(
-        Craft.t('ckeditor', 'The text alternative was already in sync.'),
+        Craft.t('ckeditor', 'The alternative text was already in sync.'),
       );
       return;
     }
@@ -155,7 +155,7 @@ export default class CraftImageTextAlternativeUI extends ImageTextAlternativeUI 
     });
 
     Craft.cp.displaySuccess(
-      Craft.t('ckeditor', 'The text alternative was synced from the asset.'),
+      Craft.t('ckeditor', 'The alternative text was synced from the asset.'),
     );
   }
 

@@ -83,14 +83,14 @@ class ed extends su {
     const u = this._form.labeledInput.fieldView;
     if (u.value == K) {
       Craft.cp.displaySuccess(
-        Craft.t("ckeditor", "The text alternative was already in sync.")
+        Craft.t("ckeditor", "The alternative text was already in sync.")
       );
       return;
     }
     u.value = u.element.value = K, this.editor.execute("imageTextAlternative", {
       newValue: i
     }), Craft.cp.displaySuccess(
-      Craft.t("ckeditor", "The text alternative was synced from the asset.")
+      Craft.t("ckeditor", "The alternative text was synced from the asset.")
     );
   }
   destroy() {
