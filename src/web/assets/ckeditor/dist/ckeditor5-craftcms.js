@@ -234,10 +234,10 @@ class td extends cu {
     return `${v}#asset:${k}:${T ? "transform:" + T : "url"}`;
   }
   _removeTransformFromUrl(k) {
-    return k.replace(/(^|\/)(_[^\/]+\/)([^\/]+)$/, "$1$3");
+    return k.replace(/(^|\/)_[^\/]+(\/\d+)?\/([^\/]+)$/, "$1$3");
   }
   _isTransformUrl(k) {
-    return /(^|\/)_[^\/]+\/[^\/]+$/.test(k);
+    return /(^|\/)_[^\/]+(\/\d+)?(\/[^\/]+)$/.test(k);
   }
   async _getTransformUrl(k, v) {
     let T;
