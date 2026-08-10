@@ -10,7 +10,7 @@
 - Fixed a bug where downloadable links’ `download` attributes were sometimes getting set to the value `"true"`. ([#606](https://github.com/craftcms/ckeditor/issues/606))
 - Fixed a bug where custom styles weren’t being applied in fullscreen mode. ([#614](https://github.com/craftcms/ckeditor/issues/614))
 - Fixed a bug where entry deletion blockers were factoring in drafts and revisions that referenced the to-be-deleted entry. ([#600](https://github.com/craftcms/ckeditor/issues/600))
-- Fixed a bug where images could be set to malformed URLs after saving via the Image Editor. ([#477](https://github.com/craftcms/ckeditor/issues/477), [#595](https://github.com/craftcms/ckeditor/issues/595)) 
+- Fixed a bug where images could be set to malformed URLs after saving via the Image Editor. ([#477](https://github.com/craftcms/ckeditor/issues/477), [#595](https://github.com/craftcms/ckeditor/issues/595))
 - Fixed a styling issue with the Link modal. ([#610](https://github.com/craftcms/ckeditor/issues/610))
 
 ## 5.6.1 - 2026-05-13
