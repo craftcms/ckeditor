@@ -4,6 +4,7 @@
  * @license GPL-3.0-or-later
  */
 
+export {default as CraftImageTextAlternativeUI} from './image/imagealt/imagetextalternativeui';
 export {default as CraftImageInsertUI} from './image/imageinsert/imageinsertui';
 export {default as ImageTransform} from './image/imagetransform';
 export {default as ImageEditor} from './image/imageeditor';
