@@ -136,19 +136,22 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     const urls = [];
 
     for (const asset of assets) {
+      const siteId = asset.siteId ?? editor.config.get('elementSiteId');
+      const alt = `${asset.$element.data('alt') ?? ''}#asset:${asset.id}${siteId ? `@${siteId}` : ''}:alt`;
+
       const hasTransform = this._isTransformUrl(asset.url);
 
       // Do we need to apply the default transform?
       if (!hasTransform && defaultTransform) {
         const url = await this._getTransformUrl(asset.id, defaultTransform);
-        urls.push(url);
+        urls.push({src: url, alt: alt});
       } else {
         const url = this._buildAssetUrl(
           asset.id,
           asset.url,
           hasTransform ? transform : defaultTransform,
         );
-        urls.push(url);
+        urls.push({src: url, alt: alt});
       }
     }
 
