@@ -124,6 +124,8 @@ export default class CraftLinkEditing extends Plugin {
                 writer.removeAttribute(item.model, writer.createRangeOn(node));
               }
             } else {
+              // one case where selection is considered not collapsed is when you highlight a text, add a link to it,
+              // and then click on the "edit link" icon without closing the balloon that you see after adding a link
               const ranges = editor.model.schema.getValidRanges(
                 selection.getRanges(),
                 item.model,
@@ -133,7 +135,11 @@ export default class CraftLinkEditing extends Plugin {
                 if (extraAttributeValues[item.model]) {
                   writer.setAttribute(
                     item.model,
-                    extraAttributeValues[item.model],
+                    // for bool type options, if the value is set to true, set the attribute with empty value
+                    // see https://github.com/craftcms/ckeditor/issues/606 for more info
+                    item.type == 'bool' && item.value == true
+                      ? ''
+                      : extraAttributeValues[item.model],
                     range,
                   );
                 } else {
