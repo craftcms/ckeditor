@@ -447,7 +447,7 @@ export default class CraftLinkUI extends Plugin {
   /**
    * Show element selector modal for given element type (link option).
    */
-  _showElementSelectorModal(linkOption) {
+  _showElementSelectorModal(linkOption, displayText) {
     const editor = this.editor;
     const model = editor.model;
     const selection = model.document.selection;
@@ -524,15 +524,14 @@ export default class CraftLinkUI extends Plugin {
                 }
               });
 
-              writer.insertText(
-                element.label,
-                attributes,
-                selection.getFirstPosition(),
-              );
+              const text = displayText || element.label;
+
+              writer.insertText(text, attributes, selection.getFirstPosition());
+
               if (range instanceof ModelRange) {
                 try {
                   const newRange = range.clone();
-                  newRange.end.path[1] += element.label.length;
+                  newRange.end.path[1] += text.length;
                   writer.setSelection(newRange);
                 } catch (e) {}
               }
