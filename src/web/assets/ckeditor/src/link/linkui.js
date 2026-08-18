@@ -22,6 +22,7 @@ import {
 import CraftLinkElementView from './linkelementview.js';
 import CraftLinkSitesView from './linksitesview.js';
 import CraftLinkAdvancedView from './linkadvancedview.js';
+import {resolveAdvancedFieldAttributeValue} from './linkutils.js';
 
 export default class CraftLinkUI extends Plugin {
   static get requires() {
@@ -514,13 +515,12 @@ export default class CraftLinkUI extends Plugin {
               let attributes = {linkHref: url};
 
               this.conversionData.forEach((item) => {
-                if (values[item.model]) {
-                  // for bool type options, if the value is set to true, set the attribute with empty value
-                  // see https://github.com/craftcms/ckeditor/issues/551 for more info
-                  attributes[item.model] =
-                    item.type == 'bool' && item.value == true
-                      ? ''
-                      : values[item.model];
+                const value = resolveAdvancedFieldAttributeValue(
+                  item,
+                  values[item.model],
+                );
+                if (value !== undefined) {
+                  attributes[item.model] = value;
                 }
               });
 
