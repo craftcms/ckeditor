@@ -66,8 +66,11 @@ export default class CraftLinkElementView extends View {
         this.children[0].classList.contains('add') ||
         ev.target.classList.contains('ck-button__label')
       ) {
+        // capture the displayed text before hiding the UI, which resets the form fields
+        const displayText =
+          _linkUI.formView.displayedTextInputView.fieldView.element.value;
         _linkUI._hideUI(false);
-        linkUi._showElementSelectorModal(linkOption);
+        linkUi._showElementSelectorModal(linkOption, displayText);
       }
     });
 
