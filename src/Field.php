@@ -41,14 +41,16 @@ use craft\elements\Entry;
 use craft\elements\NestedElementManager;
 use craft\elements\User;
 use craft\enums\PropagationMethod;
+use craft\errors\FsObjectNotFoundException;
+use craft\errors\InvalidFsException;
 use craft\errors\InvalidHtmlTagException;
+use craft\errors\InvalidSubpathException;
 use craft\events\CancelableEvent;
 use craft\events\DraftEvent;
 use craft\events\DuplicateNestedElementsEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\Assets;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -1261,6 +1263,15 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             $this->updateReferences($element, $isNew);
         }
 
+        if (
+            $this->imageMode === self::IMAGE_MODE_IMG &&
+            $this->defaultUploadLocationVolume &&
+            !$element->propagating &&
+            !ElementHelper::rootElement($element)->getIsRevision()
+        ) {
+            $this->moveTempAssets($element);
+        }
+
         parent::afterElementSave($element, $isNew);
     }
 
@@ -1342,7 +1353,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         });
     }
 
-    private function getRefTargetIds(FieldData|string|null $value): array
+    private function getRefTargetIds(FieldData|string|null $value, ?string $refHandle = null): array
     {
         if ($value instanceof FieldData) {
             $value = $value->getRawContent();
@@ -1355,13 +1366,22 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         $refIds = [];
         preg_match_all(Elements::REF_TAG_PATTERN, $value, $matches);
 
-        foreach ($matches['ref'] as $ref) {
-            if (is_numeric($ref)) {
+        foreach ($matches['ref'] as $i => $ref) {
+            if (
+                is_numeric($ref) &&
+                ($refHandle === null || $matches['elementType'][$i] === $refHandle)
+            ) {
                 $refIds[] = (int)$ref;
             }
         }
 
-        return $refIds;
+        // Also look for unserialized element URLs (e.g. `foo.jpg#asset:123:url`)
+        if ($refHandle !== null) {
+            preg_match_all(sprintf('/#%s:(\d+)/', preg_quote($refHandle, '/')), $value, $matches);
+            array_push($refIds, ...array_map('intval', $matches[1]));
+        }
+
+        return array_values(array_unique($refIds));
     }
 
     /**
@@ -1635,7 +1655,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             'imageModalSettings' => $this->_imageModalSettings(),
             'imageFieldHandle' => $this->getImageField()?->handle,
             'assetSelectionCriteria' => $this->_assetSelectionCriteria(),
-            'defaultUploadFolderId' => $this->_defaultUploadFolderId(),
+            'defaultUploadFolderId' => $this->_defaultUploadFolderId($element),
             'linkOptions' => $this->_linkOptions($element),
             'advancedLinkFields' => $this->_advancedLinkFields(),
             'table' => [
@@ -2461,44 +2481,120 @@ JS;
     }
 
     /**
-     * Returns the default upload folder ID.
-     *
-     * @return int|null
+     * Returns the default upload folder ID for the given element.
      */
-    private function _defaultUploadFolderId(): ?int
+    private function _defaultUploadFolderId(?ElementInterface $element): ?int
     {
-        if ($this->imageMode === self::IMAGE_MODE_ENTRIES) {
-            $imageField = $this->getImageField();
-            if (
-                !$imageField?->defaultUploadLocationSource ||
-                !preg_match('/^volume:(.+)$/', $imageField->defaultUploadLocationSource, $matches)
-            ) {
-                return null;
-            }
-
-            $volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1]);
-            $subpath = $imageField->defaultUploadLocationSubpath;
-        } else {
-            if (!$this->defaultUploadLocationVolume) {
-                return null;
-            }
-
-            $volume = Craft::$app->getVolumes()->getVolumeByUid($this->defaultUploadLocationVolume);
-            $subpath = $this->defaultUploadLocationSubpath;
-        }
-
-        if (!$volume) {
+        [$uploadField, $target] = $this->_uploadField($element) ?? [null, null];
+        if (!$uploadField) {
             return null;
         }
 
-        [$subpath, $folder] = AssetsHelper::resolveSubpath($volume, trim($subpath ?? '', '/'));
+        try {
+            return $uploadField->resolveDynamicPathToFolderId($target);
+        } catch (InvalidFsException $e) {
+            Craft::warning("Couldn’t resolve the default upload folder for the “{$this->name}” field: {$e->getMessage()}", __METHOD__);
+            return null;
+        } catch (InvalidSubpathException $e) {
+            // Don't take down the whole edit page over it
+            Craft::warning("Couldn’t resolve the default upload folder for the “{$this->name}” field: {$e->getMessage()}", __METHOD__);
+            return Craft::$app->getAssets()->getUserTemporaryUploadFolder()->id;
+        }
+    }
 
-        // Ensure that the folder exists
-        if (!$folder) {
-            $folder = Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($subpath, $volume);
+    /**
+     * Returns the Assets field that determines where images get uploaded to, along with the element its subpath
+     * should be resolved against.
+     *
+     * @return array{0:Assets,1:ElementInterface|null}|null
+     */
+    private function _uploadField(?ElementInterface $element): ?array
+    {
+        if ($this->imageMode === self::IMAGE_MODE_ENTRIES) {
+            $imageField = $this->getImageField();
+            $imageEntryType = $this->getImageEntryType();
+            if (!$imageField?->defaultUploadLocationSource || !$imageEntryType) {
+                return null;
+            }
+
+            // The subpath gets rendered against the nested image entry, so give it one to work with
+            $imageEntry = new Entry([
+                'typeId' => $imageEntryType->id,
+                'fieldId' => $this->id,
+                'siteId' => $element?->siteId,
+            ]);
+            $imageEntry->setOwner($element);
+
+            return [$imageField, $imageEntry];
         }
 
-        return $folder->id;
+        if (!$this->defaultUploadLocationVolume) {
+            return null;
+        }
+
+        // Let a stand-in Assets field handle subpath resolution and temp folder fallbacks
+        $uploadField = new Assets([
+            'name' => $this->name,
+            'handle' => $this->handle,
+            'defaultUploadLocationSource' => "volume:$this->defaultUploadLocationVolume",
+            'defaultUploadLocationSubpath' => $this->defaultUploadLocationSubpath,
+        ]);
+
+        return [$uploadField, $element];
+    }
+
+    /**
+     * Moves any temporary image uploads referenced by the field into the default upload folder.
+     */
+    private function moveTempAssets(ElementInterface $element): void
+    {
+        // Leave drafts’ uploads alone until they’re applied
+        if (!$element->getIsCanonical()) {
+            return;
+        }
+
+        $assetIds = $this->getRefTargetIds($element->getFieldValue($this->handle), Asset::refHandle());
+        if (empty($assetIds)) {
+            return;
+        }
+
+        $assetsService = Craft::$app->getAssets();
+        /** @var Asset[] $assets */
+        $assets = $assetsService->createTempAssetQuery()
+            ->id($assetIds)
+            ->all();
+
+        if (empty($assets)) {
+            return;
+        }
+
+        [$uploadField, $target] = $this->_uploadField($element) ?? [null, null];
+        if (!$uploadField) {
+            return;
+        }
+
+        try {
+            $uploadFolder = $assetsService->getFolderById($uploadField->resolveDynamicPathToFolderId($target));
+        } catch (InvalidFsException|InvalidSubpathException $e) {
+            Craft::warning("Couldn’t move temporary uploads for the “{$this->name}” field: {$e->getMessage()}", __METHOD__);
+            return;
+        }
+
+        // Nowhere better to put them yet
+        if (!$uploadFolder?->volumeId) {
+            return;
+        }
+
+        // Resolve all conflicts by keeping both
+        foreach ($assets as $asset) {
+            $asset->avoidFilenameConflicts = true;
+            try {
+                $assetsService->moveAsset($asset, $uploadFolder);
+            } catch (FsObjectNotFoundException $e) {
+                Craft::warning('Couldn’t move asset because the file doesn’t exist: ' . $e->getMessage(), __METHOD__);
+                Craft::$app->getErrorHandler()->logException($e);
+            }
+        }
     }
 
     /**
