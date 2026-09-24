@@ -68,12 +68,17 @@ class Plugin extends \craft\base\Plugin
             $configBundle = $assetManager->getBundle(FieldSettingsAsset::class);
             $view->registerJsImport('@craftcms/ckeditor-config', $assetManager->getAssetUrl($configBundle, 'fieldsettings.js'));
 
-            foreach (self::$ckeditorImports as $bundleName => $entry) {
-                $bundle = $assetManager->getBundle($bundleName);
-                if ($bundle instanceof BaseCkeditorPackageAsset) {
-                    $view->registerJsImport($bundle->namespace, $assetManager->getAssetUrl($bundle, $entry, false));
+            Event::on(View::class, View::EVENT_BEGIN_PAGE, function(Event $event) {
+                /** @var View $view */
+                $view = $event->sender;
+                $assetManager = $view->getAssetManager();
+                foreach (self::$ckeditorImports as $bundleName => $entry) {
+                    $bundle = $assetManager->getBundle($bundleName);
+                    if ($bundle instanceof BaseCkeditorPackageAsset) {
+                        $view->registerJsImport($bundle->namespace, $assetManager->getAssetUrl($bundle, $entry, false));
+                    }
                 }
-            }
+            });
         }
 
         Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, function(RegisterComponentTypesEvent $event) {
