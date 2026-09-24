@@ -39,6 +39,7 @@ export default class CraftLinkUI extends Plugin {
     this.advancedView = null;
     this.elementInputView = null;
     this.sitesView = null;
+    this.urlSuffixInputView = null;
     this.previousLinkValue = null;
 
     this.linkTypeDropdownView = null;
@@ -482,7 +483,10 @@ export default class CraftLinkUI extends Plugin {
       onSelect: (elements) => {
         if (elements.length) {
           const element = elements[0];
-          const url = `${element.url}#${linkOption.refHandle}:${element.id}@${element.siteId}`;
+          // include the URL suffix, in case it was provided before the element was selected
+          const urlSuffix =
+            this.urlSuffixInputView?.fieldView.element.value.trim() ?? '';
+          const url = `${element.url}${urlSuffix}#${linkOption.refHandle}:${element.id}@${element.siteId}`;
           editor.editing.view.focus();
 
           if ((!isCollapsed || currentLinkElement) && range) {
@@ -640,66 +644,66 @@ export default class CraftLinkUI extends Plugin {
             linkCommand[attributeModel] || '';
         }
       } else if (advancedField.value === 'urlSuffix') {
-        let labeledInputView = this._addLabeledField(advancedField);
+        this.urlSuffixInputView = this._addLabeledField(advancedField);
 
         // when you focus out of the urlSuffix field, update the main URL input field value with urlSuffix
         this.listenTo(
-          labeledInputView.fieldView,
+          this.urlSuffixInputView.fieldView,
           'change:isFocused',
           (evt, name, value, oldValue) => {
             if (value !== oldValue && !value) {
-              let urlSuffix = evt.source.element.value;
-              let inputValue = null;
-
-              const match = this._urlInputRefMatch(this.urlWithRefHandleRE);
-              if (match) {
-                // match[1] is the whole URL that shows before the {refTag}
-                inputValue = match[1];
-              } else {
-                // if no match found then it's a "regular" link, e.g. https://craftcms.com or a relative one e.g. /my-page
-                inputValue = this._urlInputValue();
+              // if no link target has been set yet, don't write the suffix into the main URL field;
+              // it'll get applied once the target is chosen
+              if (this._urlInputValue().trim() === '') {
+                return;
               }
 
-              // check if it's a "valid" absolute URL, if yes - proceed as with the matches,
-              // if not still extract query params and anchor
-              try {
-                let url = new URL(inputValue);
-                let search = url.search;
-                let hash = url.hash;
-                let baseUrl = inputValue.replace(hash, '').replace(search, '');
-
-                const newUrl = this._urlInputValue().replace(
-                  inputValue,
-                  baseUrl + urlSuffix,
-                );
-                formView.urlInputView.fieldView.set('value', newUrl);
-              } catch (e) {
-                // it might be a relative URL, and we still need to proceed
-                // get the path, query params and anchor
-                let [base, hash] = inputValue.split('#');
-                let [path, search] = base.split('?');
-
-                const newUrl = this._urlInputValue().replace(
-                  inputValue,
-                  path + urlSuffix,
-                );
-                formView.urlInputView.fieldView.set('value', newUrl);
-              }
+              this._applyUrlSuffix(evt.source.element.value);
             }
           },
         );
 
         // update the URL Suffix form field when main URL field is loaded
         this.listenTo(formView.urlInputView.fieldView, 'change:value', (ev) => {
-          this._toggleUrlSuffixInputView(labeledInputView, ev.source.isEmpty);
+          this._toggleUrlSuffixInputView(
+            this.urlSuffixInputView,
+            ev.source.isEmpty,
+          );
         });
 
+        let urlWasEmptyOnFocus = false;
         // update the URL Suffix form field when main URL field is focused into and out of
         this.listenTo(
           formView.urlInputView.fieldView,
           'change:isFocused',
-          (ev) => {
-            this._toggleUrlSuffixInputView(labeledInputView, ev.source.isEmpty);
+          (ev, name, isFocused) => {
+            const urlIsEmpty = this._urlInputValue().trim() === '';
+            if (isFocused) {
+              urlWasEmptyOnFocus = urlIsEmpty;
+            }
+
+            // don't clear the URL Suffix if it was provided before the URL
+            if (urlIsEmpty) {
+              return;
+            }
+
+            // if the URL was provided after the URL Suffix, apply the suffix to it
+            const urlSuffix =
+              this.urlSuffixInputView?.fieldView.element.value.trim();
+            if (
+              !isFocused &&
+              urlWasEmptyOnFocus &&
+              urlSuffix !== '' &&
+              this._getUrlSuffix() === ''
+            ) {
+              this._applyUrlSuffix(urlSuffix);
+              return;
+            }
+
+            this._toggleUrlSuffixInputView(
+              this.urlSuffixInputView,
+              ev.source.isEmpty,
+            );
           },
         );
       }
@@ -733,40 +737,73 @@ export default class CraftLinkUI extends Plugin {
    * ensure the value is also showing in the URL Suffix advanced field.
    */
   _toggleUrlSuffixInputView(labeledInputView, isEmpty) {
-    if (isEmpty) {
-      labeledInputView.fieldView.set('value', '');
-    } else {
-      const match = this._urlInputRefMatch(this.urlWithRefHandleRE);
-      let inputValue = null;
+    labeledInputView.fieldView.set(
+      'value',
+      isEmpty ? '' : this._getUrlSuffix(),
+    );
+  }
 
-      if (match) {
-        // match[1] is the whole URL that shows before the {refTag}
-        inputValue = match[1];
-      } else {
-        // if no match found then it's a "regular" link, e.g. https://craftcms.com or a relative one e.g. /my-page
-        inputValue = this._urlInputValue();
-      }
+  /**
+   * Get the URL field value without the {refTag} portion.
+   */
+  _getUrlWithoutRefTag() {
+    const match = this._urlInputRefMatch(this.urlWithRefHandleRE);
 
-      // check if it's a "valid" absolute URL, if yes - proceed as with the matches,
-      // if not still extract query params and anchor
-      try {
-        let url = new URL(inputValue);
-        let search = url.search;
-        let hash = url.hash;
+    // match[1] is the whole URL that shows before the {refTag};
+    // if no match found then it's a "regular" link, e.g. https://craftcms.com or a relative one e.g. /my-page
+    return match ? match[1] : this._urlInputValue();
+  }
 
-        labeledInputView.fieldView.set('value', search + hash);
-      } catch (e) {
-        // it might be a relative URL, and we still need to proceed
-        // get the path, query params and anchor
-        let [base, hash] = inputValue.split('#');
-        let [path, search] = base.split('?');
+  /**
+   * Get the query params and anchor from the URL field value.
+   */
+  _getUrlSuffix() {
+    const inputValue = this._getUrlWithoutRefTag();
 
-        hash = hash ? '#' + hash : '';
-        search = search ? '?' + search : '';
+    // check if it's a "valid" absolute URL, if yes - proceed as with the matches,
+    // if not still extract query params and anchor
+    try {
+      let url = new URL(inputValue);
 
-        labeledInputView.fieldView.set('value', search + hash);
-      }
+      return url.search + url.hash;
+    } catch (e) {
+      // it might be a relative URL, and we still need to proceed
+      // get the path, query params and anchor
+      let [base, hash] = inputValue.split('#');
+      let [path, search] = base.split('?');
+
+      hash = hash ? '#' + hash : '';
+      search = search ? '?' + search : '';
+
+      return search + hash;
     }
+  }
+
+  /**
+   * Replace the query params and anchor in the URL field value with given URL suffix.
+   */
+  _applyUrlSuffix(urlSuffix) {
+    const {formView} = this._linkUI;
+    const inputValue = this._getUrlWithoutRefTag();
+    let baseUrl;
+
+    // check if it's a "valid" absolute URL, if yes - proceed as with the matches,
+    // if not still extract query params and anchor
+    try {
+      let url = new URL(inputValue);
+      baseUrl = inputValue.replace(url.hash, '').replace(url.search, '');
+    } catch (e) {
+      // it might be a relative URL, and we still need to proceed
+      // get the path as our baseUrl
+      let [base, hash] = inputValue.split('#');
+      let [baseUrl, search] = base.split('?');
+    }
+
+    const newUrl = this._urlInputValue().replace(
+      inputValue,
+      baseUrl + urlSuffix,
+    );
+    formView.urlInputView.fieldView.set('value', newUrl);
   }
 
   /**
