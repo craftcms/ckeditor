@@ -4,7 +4,7 @@
 
 - CKEditor packages registered by plugins that load after CKEditor, including from `Craft::$app->onInit()` callbacks, are now registered properly. ([#621](https://github.com/craftcms/ckeditor/issues/621))
 - CKEditor fields now only import third-party CKEditor packages, and register their asset bundles, when one of the package’s toolbar items is in the field’s toolbar. Packages without toolbar items are still loaded for every field.
-- Third-party CKEditor plugins are now referenced via namespace imports, so plugins with the same name from different packages no longer conflict.
+- Third-party CKEditor plugins are now referenced via namespace imports, so plugins with the same name from different packages no longer conflict. Custom config JS can still refer to them by name (e.g. `extraPlugins: [Tokens]`), as long as the name is unique.
 - Added `craft\ckeditor\Plugin::EVENT_REGISTER_CKEDITOR_PACKAGES`.
 - Added `craft\ckeditor\Plugin::registerCkeditorPackageBundles()`.
 - Added `craft\ckeditor\events\RegisterPackagesEvent`.

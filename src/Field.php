@@ -1678,8 +1678,15 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             $removePlugins->push('ImageTransforms');
         }
 
-        // Only import (and register the asset bundles for) packages that have plugins in use
-        [$imports, $pluginRefs, $namespaces] = CkeditorConfig::getImports($event->toolbar, $removePlugins->all());
+        $configJs = $this->configJs();
+
+        // Only import (and register the asset bundles for) packages that have plugins in use, or that custom
+        // config JS refers to by name (e.g. `extraPlugins: [Tokens]`). JSON config can't refer to plugin classes.
+        [$imports, $pluginRefs, $namespaces] = CkeditorConfig::getImports(
+            $event->toolbar,
+            $removePlugins->all(),
+            isset($this->options) ? null : $configJs,
+        );
         Plugin::registerCkeditorPackageBundles($view, $namespaces);
 
         $configPlugins = '[' . implode(',', $pluginRefs) . ']';
@@ -1688,8 +1695,6 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         $uiLanguage = BaseCkeditorPackageAsset::uiLanguage();
         $importCompliantUiLanguage = BaseCkeditorPackageAsset::getImportCompliantLanguage(BaseCkeditorPackageAsset::uiLanguage());
         $uiTranslationImport = "import coreTranslations from 'ckeditor5/translations/$importCompliantUiLanguage.js';";
-
-        $configJs = $this->configJs();
 
         $view->registerScriptWithVars(fn(
             $baseConfigJs,

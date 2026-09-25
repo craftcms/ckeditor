@@ -442,7 +442,9 @@ public function registerPackage(): void
 }
 ```
 
-Plugins from your package are referenced through a namespace import (`import * as pkg from '@craftcms/ckeditor5-tokens'`), so their names won’t collide with plugins from other packages. If you need your package’s asset bundle on a page that creates its own CKEditor instances, call `\craft\ckeditor\Plugin::registerCkeditorPackageBundles($view)`.
+Plugins from your package are referenced through a namespace import (`import * as pkg from '@craftcms/ckeditor5-tokens'`), so their names won’t collide with plugins from other packages. A field’s custom config JS can still refer to your plugin class by name, e.g. `extraPlugins: [Tokens]` to enable it without its toolbar button. The package is imported for that field whenever its config mentions the plugin, as long as no other package provides a plugin with the same name.
+
+If you need your package’s asset bundle on a page that creates its own CKEditor instances, call `\craft\ckeditor\Plugin::registerCkeditorPackageBundles($view)`.
 
 ## Front-end use
 

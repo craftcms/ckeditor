@@ -340,19 +340,27 @@ final class CkeditorConfig
      * referenced through a namespace import, so plugin names can’t collide across packages, and those packages
      * aren’t imported at all if none of their plugins are needed.
      *
+     * Plugins from other packages that the custom config JS refers to by name (e.g. `extraPlugins: [Tokens]`)
+     * are also imported by name, as long as no other package provides a plugin with the same name.
+     *
      * @param string[]|null $toolbar The editor’s toolbar items, or `null` to import every registered plugin
      * @param string[] $removePlugins Plugin names that should be left out
+     * @param string|null $configJs The field’s custom config JS
      * @return array{0:string,1:string[],2:string[]} The import statements, the plugin references, and the
-     * namespaces of the packages that have plugins in use
+     * namespaces of the packages that were imported
      * @internal
      */
-    public static function getImports(?array $toolbar = null, array $removePlugins = []): array
+    public static function getImports(?array $toolbar = null, array $removePlugins = [], ?string $configJs = null): array
     {
         $allPluginsByPackage = self::getPluginsByPackage();
         $pluginsByPackage = $toolbar !== null
             ? self::pluginsForToolbar($toolbar, $removePlugins)
             : $allPluginsByPackage;
-        $namespaces = array_keys($pluginsByPackage);
+        $referencedPlugins = $configJs !== null ? self::referencedPlugins($configJs, $allPluginsByPackage) : [];
+        $namespaces = array_values(array_unique([
+            ...array_keys($pluginsByPackage),
+            ...array_keys($referencedPlugins),
+        ]));
 
         $statements = [];
         $references = [];
@@ -389,7 +397,43 @@ final class CkeditorConfig
             }
         }
 
+        foreach ($referencedPlugins as $namespace => $plugins) {
+            $namespaceJs = Json::encode($namespace, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            $statements[] = sprintf('import {%s} from %s;', implode(', ', $plugins), $namespaceJs);
+        }
+
         return [implode("\n", $statements), $references, $namespaces];
+    }
+
+    /**
+     * Returns the plugins from non-core packages that the given JS refers to by name, indexed by package namespace.
+     *
+     * Plugin names provided by more than one package are left out, since they can’t be imported unambiguously.
+     *
+     * @param string $js
+     * @param array<string,string[]> $allPluginsByPackage
+     * @return array<string,string[]>
+     */
+    private static function referencedPlugins(string $js, array $allPluginsByPackage): array
+    {
+        $counts = array_count_values(array_merge(...array_values($allPluginsByPackage)));
+        $referenced = [];
+
+        foreach ($allPluginsByPackage as $namespace => $plugins) {
+            if (in_array($namespace, self::CORE_PACKAGES, true)) {
+                continue;
+            }
+
+            foreach ($plugins as $plugin) {
+                // Match identifiers, not property names or strings (e.g. `removePlugins: ['Tokens']`)
+                $pattern = sprintf('/(?<![\w$.\'"`])%s(?![\w$\'"`])/', preg_quote($plugin, '/'));
+                if ($counts[$plugin] === 1 && preg_match($pattern, $js)) {
+                    $referenced[$namespace][] = $plugin;
+                }
+            }
+        }
+
+        return $referenced;
     }
 
     /**
