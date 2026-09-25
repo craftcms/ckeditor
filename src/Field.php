@@ -1104,6 +1104,10 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         $view = Craft::$app->getView();
         $bundle = $view->registerAssetBundle(FieldSettingsAsset::class);
 
+        // The toolbar builder needs every package
+        [$importStatements, $pluginRefs] = CkeditorConfig::getImports();
+        Plugin::registerCkeditorPackageBundles($view);
+
         $userGroupOptions = [
             [
                 'label' => Craft::t('app', 'Admins'),
@@ -1153,12 +1157,12 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
 
         return $view->renderTemplate('ckeditor/_field-settings.twig', [
             'field' => $this,
-            'importStatements' => CkeditorConfig::getImportStatements(),
+            'importStatements' => $importStatements,
             'toolbarBuilderId' => $view->namespaceInputId('toolbar-builder'),
             'configOptionsId' => $view->namespaceInputId('config-options'),
             'cssOptionsId' => $view->namespaceInputId('css-options'),
-            'toolbarItems' => CkeditorConfig::normalizeToolbarItems(CkeditorConfig::$toolbarItems),
-            'plugins' => CkeditorConfig::getAllPlugins(),
+            'toolbarItems' => CkeditorConfig::normalizeToolbarItems(CkeditorConfig::getToolbarItems()),
+            'plugins' => $pluginRefs,
             'jsonSchema' => CkeditorConfigSchema::create(),
             'jsonSchemaUri' => $jsonSchemaUri,
             'advanceLinkOptions' => CkeditorConfig::advanceLinkOptions(),
@@ -1674,37 +1678,11 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             $removePlugins->push('ImageTransforms');
         }
 
-        // Avoid loading plugins not included in the toolbar
-        $unusedPlugins = collect(CkeditorConfig::$pluginButtonMap)
-            ->filter(function(array $item) use ($event) {
-                $buttons = $item['buttons'] ?? [];
+        // Only import (and register the asset bundles for) packages that have plugins in use
+        [$imports, $pluginRefs, $namespaces] = CkeditorConfig::getImports($event->toolbar, $removePlugins->all());
+        Plugin::registerCkeditorPackageBundles($view, $namespaces);
 
-                // If there are no buttons defined, always load it
-                if (empty($buttons)) {
-                    return false;
-                }
-
-                return collect($event->toolbar)
-                    ->doesntContain(function(string $toolbarItem) use ($buttons) {
-                        return in_array($toolbarItem, $buttons);
-                    });
-            })
-            ->map(fn(array $item) => $item['plugins'] ?? [])
-            ->flatten();
-
-        $removePlugins->push(...$unusedPlugins->all());
-
-        $plugins = CkeditorConfig::getPluginsByPackage();
-
-        $plugins = collect($plugins)
-            ->mapWithKeys(fn(array $plugins, string $namespace) => [
-                $namespace => collect($plugins)
-                    ->reject(fn($plugin) => in_array($plugin, $removePlugins->toArray())),
-            ]);
-
-        $configPlugins = '[' . $plugins->flatten()->join(',') . ']';
-
-        $imports = CkeditorConfig::getImportStatements();
+        $configPlugins = '[' . implode(',', $pluginRefs) . ']';
 
         // Add the translation import
         $uiLanguage = BaseCkeditorPackageAsset::uiLanguage();

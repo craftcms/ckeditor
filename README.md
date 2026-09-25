@@ -406,13 +406,43 @@ class TokensAsset extends BaseCkeditorPackageAsset
 }
 ```
 
-Finally, ensure your asset bundle is registered whenever the core CKEditor asset bundle is. Add the following code to your plugin’s `init()` method:
+Finally, register the asset bundle from your plugin’s `init()` method:
 
 ```php
-\craft\ckeditor\Plugin::registerCkeditorPackage(TokensAsset::class, 'tokens.js');
+use craft\ckeditor\events\RegisterPackagesEvent;
+use craft\ckeditor\Plugin as CkeditorPlugin;
+use yii\base\Event;
+
+Event::on(CkeditorPlugin::class, CkeditorPlugin::EVENT_REGISTER_CKEDITOR_PACKAGES, function(RegisterPackagesEvent $event) {
+    $event->packages[TokensAsset::class] = 'tokens.js';
+});
 ```
 
-The second parameter should point to the main entry file for your JavaScript. In most cases, it will be the same as the only item in your `$js` array.
+The value should point to the main entry file for your JavaScript. In most cases, it will be the same as the only item in your `$js` array.
+
+Packages aren’t collected until Craft has finished initializing, so you can register yours from `init()` or a `Craft::$app->onInit()` callback, and it doesn’t matter which order plugins are loaded in. (Calling `\craft\ckeditor\Plugin::registerCkeditorPackage(TokensAsset::class, 'tokens.js')` works too.)
+
+Each CKEditor field only imports your package and registers its asset bundle if one of the package’s `$toolbarItems` is in the field’s toolbar. Packages without toolbar items aren’t tied to the toolbar:
+
+- If `$toolbarItems` is empty, the package’s plugins are loaded for every field.
+- If `$pluginNames` is empty too, the asset bundle is registered for every field, and its JavaScript runs for its side effects.
+
+If some of your plugins go with a toolbar button and others should always be loaded, register the always-on plugins separately:
+
+```php
+public function registerPackage(): void
+{
+    // Plugins in $pluginNames only load when one of $toolbarItems is in the toolbar
+    parent::registerPackage();
+
+    // These load for every field
+    \craft\ckeditor\helpers\CkeditorConfig::registerPackage($this->namespace, [
+        'plugins' => ['TokensAutocomplete'],
+    ]);
+}
+```
+
+Plugins from your package are referenced through a namespace import (`import * as pkg from '@craftcms/ckeditor5-tokens'`), so their names won’t collide with plugins from other packages. If you need your package’s asset bundle on a page that creates its own CKEditor instances, call `\craft\ckeditor\Plugin::registerCkeditorPackageBundles($view)`.
 
 ## Front-end use
 
