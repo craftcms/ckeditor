@@ -8,6 +8,8 @@
 namespace craft\ckeditor\helpers;
 
 use Craft;
+use craft\ckeditor\Plugin;
+use craft\helpers\Json;
 use Illuminate\Support\Collection;
 
 /**
@@ -90,6 +92,8 @@ final class CkeditorConfig
 
     /**
      * Maps toolbar items to plugins so can only load applicable plugins when we render a field.
+     *
+     * Items registered via [[registerPackage()]] also have a `package` key, limiting them to plugins from that package.
      *
      * @var array
      */
@@ -206,6 +210,13 @@ final class CkeditorConfig
 
 
     /**
+     * Package namespaces provided by CKEditor and Craft.
+     *
+     * Their plugins are imported by name, so custom config JS can reference them directly.
+     */
+    private const CORE_PACKAGES = ['ckeditor5', '@craftcms/ckeditor'];
+
+    /**
      * Register a custom CKEditor plugin
      *
      * @param string $name the namespace of the plugin
@@ -220,14 +231,23 @@ final class CkeditorConfig
         if (!isset(self::$pluginsByPackage[$name])) {
             self::$pluginsByPackage[$name] = $plugins;
         } else {
-            self::$pluginsByPackage[$name] = array_unique(array_merge(self::$pluginsByPackage[$name], $plugins));
+            self::$pluginsByPackage[$name] = array_values(array_unique(array_merge(self::$pluginsByPackage[$name], $plugins)));
         }
 
-        self::$toolbarItems[] = $toolbarItems;
-        self::$pluginButtonMap[] = [
+        foreach ($toolbarItems as $toolbarItem) {
+            if (!in_array($toolbarItem, self::$toolbarItems, true)) {
+                self::$toolbarItems[] = $toolbarItem;
+            }
+        }
+
+        $mapItem = [
+            'package' => $name,
             'plugins' => $plugins,
-            'buttons' => $toolbarItems,
+            'buttons' => self::buttonNames($toolbarItems),
         ];
+        if (!in_array($mapItem, self::$pluginButtonMap, true)) {
+            self::$pluginButtonMap[] = $mapItem;
+        }
     }
 
     /**
@@ -249,7 +269,7 @@ final class CkeditorConfig
      */
     public static function getPluginPackages(): array
     {
-        return array_keys(self::$pluginsByPackage);
+        return array_keys(self::getPluginsByPackage());
     }
 
     /**
@@ -260,15 +280,13 @@ final class CkeditorConfig
      */
     public static function getPluginsByPackage(string $name = null): array
     {
+        Plugin::getCkeditorPackages();
+
         if (!$name) {
             return self::$pluginsByPackage;
         }
 
-        if (!in_array($name, self::getPluginPackages())) {
-            return [];
-        }
-
-        return self::$pluginsByPackage[$name];
+        return self::$pluginsByPackage[$name] ?? [];
     }
 
     /**
@@ -284,19 +302,185 @@ final class CkeditorConfig
     }
 
     /**
+     * Returns all available toolbar items.
+     *
+     * @return array
+     * @internal
+     */
+    public static function getToolbarItems(): array
+    {
+        Plugin::getCkeditorPackages();
+        return self::$toolbarItems;
+    }
+
+    /**
      * Get the JavaScript import statements for all plugins
      *
      * @param string|null $name namespace of the package
      * @return string
+     * @deprecated in 5.8.0.
      */
     public static function getImportStatements(string $name = null): string
     {
-        return collect(self::getPluginsByPackage($name))
+        $plugins = $name ? [$name => self::getPluginsByPackage($name)] : self::getPluginsByPackage();
+
+        return collect($plugins)
             ->reduce(function(Collection $carry, array $plugins, string $import) {
                 $carry->push('import { ' . implode(', ', $plugins) . ' } from "' . $import . '";');
 
                 return $carry;
             }, Collection::empty())->join("\n");
+    }
+
+    /**
+     * Returns the JavaScript import statements for an editor, along with the JavaScript expressions that
+     * reference each of its plugins.
+     *
+     * Plugins provided by CKEditor and Craft are imported by name. Plugins provided by other packages are
+     * referenced through a namespace import, so plugin names can’t collide across packages, and those packages
+     * aren’t imported at all if none of their plugins are needed.
+     *
+     * Plugins from other packages that the custom config JS refers to by name (e.g. `extraPlugins: [Tokens]`)
+     * are also imported by name, as long as no other package provides a plugin with the same name.
+     *
+     * @param string[]|null $toolbar The editor’s toolbar items, or `null` to import every registered plugin
+     * @param string[] $removePlugins Plugin names that should be left out
+     * @param string|null $configJs The field’s custom config JS
+     * @return array{0:string,1:string[],2:string[]} The import statements, the plugin references, and the
+     * namespaces of the packages that were imported
+     * @internal
+     */
+    public static function getImports(?array $toolbar = null, array $removePlugins = [], ?string $configJs = null): array
+    {
+        $allPluginsByPackage = self::getPluginsByPackage();
+        $pluginsByPackage = $toolbar !== null
+            ? self::pluginsForToolbar($toolbar, $removePlugins)
+            : $allPluginsByPackage;
+        $referencedPlugins = $configJs !== null ? self::referencedPlugins($configJs, $allPluginsByPackage) : [];
+        $namespaces = array_values(array_unique([
+            ...array_keys($pluginsByPackage),
+            ...array_keys($referencedPlugins),
+        ]));
+
+        $statements = [];
+        $references = [];
+        $i = 0;
+
+        // Core packages are always imported
+        foreach (self::CORE_PACKAGES as $namespace) {
+            $pluginsByPackage[$namespace] ??= [];
+        }
+
+        foreach ($pluginsByPackage as $namespace => $plugins) {
+            $isCorePackage = in_array($namespace, self::CORE_PACKAGES, true);
+
+            if (empty($plugins) && !$isCorePackage) {
+                continue;
+            }
+
+            $namespaceJs = Json::encode($namespace, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+            if ($isCorePackage) {
+                // These are loaded regardless, so import everything to keep it available to custom config JS
+                $allPlugins = $allPluginsByPackage[$namespace] ?? $plugins;
+                if (empty($allPlugins)) {
+                    continue;
+                }
+                $statements[] = sprintf('import {%s} from %s;', implode(', ', $allPlugins), $namespaceJs);
+                array_push($references, ...array_values($plugins));
+            } else {
+                $alias = '__ckePackage' . $i++;
+                $statements[] = "import * as $alias from $namespaceJs;";
+                foreach ($plugins as $plugin) {
+                    $references[] = "$alias.$plugin";
+                }
+            }
+        }
+
+        foreach ($referencedPlugins as $namespace => $plugins) {
+            $namespaceJs = Json::encode($namespace, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            $statements[] = sprintf('import {%s} from %s;', implode(', ', $plugins), $namespaceJs);
+        }
+
+        return [implode("\n", $statements), $references, $namespaces];
+    }
+
+    /**
+     * Returns the plugins from non-core packages that the given JS refers to by name, indexed by package namespace.
+     *
+     * Plugin names provided by more than one package are left out, since they can’t be imported unambiguously.
+     *
+     * @param string $js
+     * @param array<string,string[]> $allPluginsByPackage
+     * @return array<string,string[]>
+     */
+    private static function referencedPlugins(string $js, array $allPluginsByPackage): array
+    {
+        $counts = array_count_values(array_merge(...array_values($allPluginsByPackage)));
+        $referenced = [];
+
+        foreach ($allPluginsByPackage as $namespace => $plugins) {
+            if (in_array($namespace, self::CORE_PACKAGES, true)) {
+                continue;
+            }
+
+            foreach ($plugins as $plugin) {
+                // Match identifiers, not property names or strings (e.g. `removePlugins: ['Tokens']`)
+                $pattern = sprintf('/(?<![\w$.\'"`])%s(?![\w$\'"`])/', preg_quote($plugin, '/'));
+                if ($counts[$plugin] === 1 && preg_match($pattern, $js)) {
+                    $referenced[$namespace][] = $plugin;
+                }
+            }
+        }
+
+        return $referenced;
+    }
+
+    /**
+     * Returns the plugins that should be loaded for the given toolbar, indexed by package namespace.
+     *
+     * Plugins tied to toolbar buttons are left out if none of their buttons are in the toolbar. Packages
+     * without any remaining plugins are left out entirely.
+     *
+     * @param string[] $toolbar The toolbar items
+     * @param string[] $removePlugins Additional plugin names that should be left out
+     * @return array<string,string[]>
+     */
+    private static function pluginsForToolbar(array $toolbar, array $removePlugins): array
+    {
+        Plugin::getCkeditorPackages();
+
+        $unused = collect(self::$pluginButtonMap)
+            ->filter(fn(array $item) =>
+                // If there are no buttons defined, always load it
+                !empty($item['buttons']) && empty(array_intersect($toolbar, $item['buttons'])))
+            ->values();
+
+        return collect(self::getPluginsByPackage())
+            ->map(function(array $plugins, string $namespace) use ($unused, $removePlugins) {
+                // Only remove unused plugins that belong to this package (or aren’t tied to one)
+                $remove = $unused
+                    ->filter(fn(array $item) => !isset($item['package']) || $item['package'] === $namespace)
+                    ->flatMap(fn(array $item) => $item['plugins'] ?? [])
+                    ->merge($removePlugins)
+                    ->all();
+                return array_values(array_diff($plugins, $remove));
+            })
+            ->filter()
+            ->all();
+    }
+
+    /**
+     * Returns the button names for the given toolbar items.
+     *
+     * @param array $toolbarItems
+     * @return string[]
+     */
+    private static function buttonNames(array $toolbarItems): array
+    {
+        return collect($toolbarItems)
+            ->flatMap(fn($item) => array_column(self::normalizeToolbarItem($item), 'button'))
+            ->all();
     }
 
     private static function normalizeToolbarItem($item): array
