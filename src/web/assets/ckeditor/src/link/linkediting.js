@@ -5,6 +5,7 @@
  */
 
 import {findAttributeRange, Plugin} from 'ckeditor5';
+import {resolveAdvancedFieldAttributeValue} from './linkutils.js';
 
 /**
  * These imports aren't ideal but are necessary for now because the main
@@ -115,16 +116,17 @@ export default class CraftLinkEditing extends Plugin {
           const firstPosition = selection.getFirstPosition();
 
           this.conversionData.forEach((item) => {
+            const value = resolveAdvancedFieldAttributeValue(
+              item,
+              extraAttributeValues[item.model],
+            );
+
             if (selection.isCollapsed) {
               const node = firstPosition.textNode || firstPosition.nodeBefore;
-              if (extraAttributeValues[item.model]) {
+              if (value !== undefined) {
                 writer.setAttribute(
                   item.model,
-                  // for bool type options, if the value is set to true, set the attribute with empty value
-                  // see https://github.com/craftcms/ckeditor/issues/551 for more info
-                  item.type == 'bool' && item.value == true
-                    ? ''
-                    : extraAttributeValues[item.model],
+                  value,
                   writer.createRangeOn(node),
                 );
               } else {
@@ -139,16 +141,8 @@ export default class CraftLinkEditing extends Plugin {
               );
 
               for (const range of ranges) {
-                if (extraAttributeValues[item.model]) {
-                  writer.setAttribute(
-                    item.model,
-                    // for bool type options, if the value is set to true, set the attribute with empty value
-                    // see https://github.com/craftcms/ckeditor/issues/606 for more info
-                    item.type == 'bool' && item.value == true
-                      ? ''
-                      : extraAttributeValues[item.model],
-                    range,
-                  );
+                if (value !== undefined) {
+                  writer.setAttribute(item.model, value, range);
                 } else {
                   writer.removeAttribute(item.model, range);
                 }
