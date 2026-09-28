@@ -1,5 +1,17 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- CKEditor packages registered by plugins that load after CKEditor, including from `Craft::$app->onInit()` callbacks, are now registered properly. ([#621](https://github.com/craftcms/ckeditor/issues/621))
+- CKEditor fields now only import third-party CKEditor packages, and register their asset bundles, when one of the package’s toolbar items is in the field’s toolbar. Packages without toolbar items are still loaded for every field.
+- Third-party CKEditor plugins are now referenced via namespace imports, so plugins with the same name from different packages no longer conflict. Custom config JS can still refer to them by name (e.g. `extraPlugins: [Tokens]`), as long as the name is unique.
+- Added `craft\ckeditor\Plugin::registerCkeditorPackageBundles()`.
+- Deprecated `craft\ckeditor\helpers\CkeditorConfig::getImportStatements()`.
+- Package asset bundles are no longer registered automatically whenever `CkeditorAsset` is registered.
+- Fixed a bug where package toolbar items were registered again each time a CKEditor field was rendered.
+- Fixed a bug where grouped toolbar items from third-party packages weren’t matched against the field’s toolbar.
+- Fixed a bug where all of a package’s toolbar items were shown as a single group in the toolbar builder, instead of as separately-placeable items and groups.
+
 ## 5.7.0 - 2026-08-10
 
 - Assets inserted as `<img>` tags now populate the `alt` attribute with the asset’s Alternative Text value. If left unedited, the `alt` attribute will stay in sync with the asset. ([#585](https://github.com/craftcms/ckeditor/pull/585))
@@ -13,7 +25,7 @@
 - Fixed a bug where images could be set to malformed URLs after saving via the Image Editor. ([#477](https://github.com/craftcms/ckeditor/issues/477), [#595](https://github.com/craftcms/ckeditor/issues/595))
 - Fixed a bug where the editor could become unresponsive after toggling an advanced link field’s lightswitch before choosing a link target. ([#612](https://github.com/craftcms/ckeditor/issues/612))
 - Fixed a styling issue with the Link modal. ([#610](https://github.com/craftcms/ckeditor/issues/610))
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-jcjm-q9x2-72xv)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. ([GHSA-jcjm-q9x2-72xv](https://github.com/craftcms/ckeditor/security/advisories/GHSA-jcjm-q9x2-72xv))
 
 ## 5.6.1 - 2026-05-13
 
