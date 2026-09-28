@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 5.8.0 - 2026-09-28
 
 - CKEditor packages registered by plugins that load after CKEditor, including from `Craft::$app->onInit()` callbacks, are now registered properly. ([#621](https://github.com/craftcms/ckeditor/issues/621))
 - CKEditor fields now only import third-party CKEditor packages, and register their asset bundles, when one of the package’s toolbar items is in the field’s toolbar. Packages without toolbar items are still loaded for every field.
