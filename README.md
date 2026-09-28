@@ -409,18 +409,12 @@ class TokensAsset extends BaseCkeditorPackageAsset
 Finally, register the asset bundle from your plugin’s `init()` method:
 
 ```php
-use craft\ckeditor\events\RegisterPackagesEvent;
-use craft\ckeditor\Plugin as CkeditorPlugin;
-use yii\base\Event;
-
-Event::on(CkeditorPlugin::class, CkeditorPlugin::EVENT_REGISTER_CKEDITOR_PACKAGES, function(RegisterPackagesEvent $event) {
-    $event->packages[TokensAsset::class] = 'tokens.js';
-});
+\craft\ckeditor\Plugin::registerCkeditorPackage(TokensAsset::class, 'tokens.js');
 ```
 
-The value should point to the main entry file for your JavaScript. In most cases, it will be the same as the only item in your `$js` array.
+The second parameter should point to the main entry file for your JavaScript. In most cases, it will be the same as the only item in your `$js` array.
 
-Packages aren’t collected until Craft has finished initializing, so you can register yours from `init()` or a `Craft::$app->onInit()` callback, and it doesn’t matter which order plugins are loaded in. (Calling `\craft\ckeditor\Plugin::registerCkeditorPackage(TokensAsset::class, 'tokens.js')` works too.)
+Packages aren’t loaded until they’re needed, so you can also register yours from a `Craft::$app->onInit()` callback, and it doesn’t matter which order plugins are loaded in.
 
 Each CKEditor field only imports your package and registers its asset bundle if one of the package’s `$toolbarItems` is in the field’s toolbar. Packages without toolbar items aren’t tied to the toolbar:
 

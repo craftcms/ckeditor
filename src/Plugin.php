@@ -10,7 +10,6 @@ namespace craft\ckeditor;
 use Craft;
 use craft\base\Element;
 use craft\ckeditor\deletionblockers\ReferenceDeletionBlocker;
-use craft\ckeditor\events\RegisterPackagesEvent;
 use craft\ckeditor\helpers\CkeditorConfig;
 use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
@@ -22,7 +21,6 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\UrlHelper;
 use craft\services\Fields;
 use craft\web\View;
-use yii\base\Application;
 use yii\base\Event;
 
 /**
@@ -36,27 +34,10 @@ class Plugin extends \craft\base\Plugin
     public const TABLE_REFERENCES = '{{%ckeditor_references}}';
 
     /**
-     * @event RegisterPackagesEvent The event that is triggered when registering CKEditor packages.
-     *
-     * Packages are collected the first time they’re needed, so handlers can be attached from any plugin or
-     * module’s `init()` method, regardless of load order.
-     *
-     * ```php
-     * use craft\ckeditor\events\RegisterPackagesEvent;
-     * use craft\ckeditor\Plugin;
-     * use yii\base\Event;
-     *
-     * Event::on(Plugin::class, Plugin::EVENT_REGISTER_CKEDITOR_PACKAGES, function(RegisterPackagesEvent $event) {
-     *     $event->packages[TokensAsset::class] = 'tokens.js';
-     * });
-     * ```
-     *
-     * @since 5.8.0
-     */
-    public const EVENT_REGISTER_CKEDITOR_PACKAGES = 'registerCkeditorPackages';
-
-    /**
      * Registers an asset bundle for a CKEditor package.
+     *
+     * Packages aren’t loaded until they’re needed, so this can be called from a plugin or module’s `init()`
+     * method or a `Craft::$app->onInit()` callback, regardless of load order.
      *
      * @param string $name The asset bundle class name. The asset bundle should extend
      * [[\craft\ckeditor\web\assets\BaseCkeditorPackageAsset]].
@@ -67,8 +48,8 @@ class Plugin extends \craft\base\Plugin
     {
         self::$ckeditorPackages[$name] = $entry;
 
-        // If packages have already been resolved, load this one right away
-        if (self::$packagesResolved) {
+        // If packages have already been loaded, load this one right away
+        if (self::$packagesLoaded) {
             self::loadCkeditorPackage($name, $entry);
         }
     }
@@ -76,27 +57,19 @@ class Plugin extends \craft\base\Plugin
     /**
      * Returns the registered CKEditor packages.
      *
-     * Packages registered via [[registerCkeditorPackage()]] and [[EVENT_REGISTER_CKEDITOR_PACKAGES]] are loaded
-     * the first time this is called. Until Craft has finished initializing, the event is triggered again on each
-     * call, so handlers attached from other plugins’ `Craft::$app->onInit()` callbacks aren’t missed.
+     * Packages registered via [[registerCkeditorPackage()]] are loaded the first time this is called. Any registered
+     * after that are loaded immediately.
      *
      * @return array<string,array{namespace:string,entry:string}> Package info, indexed by asset bundle class name
      * @internal
      */
     public static function getCkeditorPackages(): array
     {
-        if (!self::$packagesResolved) {
-            $event = new RegisterPackagesEvent([
-                'packages' => self::$ckeditorPackages,
-            ]);
-            Event::trigger(self::class, self::EVENT_REGISTER_CKEDITOR_PACKAGES, $event);
-
-            foreach ($event->packages as $name => $entry) {
+        if (!self::$packagesLoaded) {
+            self::$packagesLoaded = true;
+            foreach (self::$ckeditorPackages as $name => $entry) {
                 self::loadCkeditorPackage($name, $entry);
             }
-
-            // onInit() callbacks run while the app is still initializing, so only stop collecting once it’s done
-            self::$packagesResolved = Craft::$app->state >= Application::STATE_BEFORE_REQUEST;
         }
 
         return self::$loadedPackages;
@@ -158,7 +131,7 @@ class Plugin extends \craft\base\Plugin
     /**
      * @see getCkeditorPackages()
      */
-    private static bool $packagesResolved = false;
+    private static bool $packagesLoaded = false;
 
     public string $schemaVersion = '5.6.0.0';
 
