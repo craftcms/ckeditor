@@ -11,6 +11,7 @@
 - Fixed a bug where package toolbar items were registered again each time a CKEditor field was rendered.
 - Fixed a bug where grouped toolbar items from third-party packages weren’t matched against the field’s toolbar.
 - Fixed a bug where all of a package’s toolbar items were shown as a single group in the toolbar builder, instead of as separately-placeable items and groups.
+- Fixed a bug where the “Displayed text” value was ignored when inserting a new element link, and the element’s title was used instead. ([#617](https://github.com/craftcms/ckeditor/pull/617))
 
 ## 5.7.0 - 2026-08-10
 
