@@ -22,6 +22,7 @@ import {
 import CraftLinkElementView from './linkelementview.js';
 import CraftLinkSitesView from './linksitesview.js';
 import CraftLinkAdvancedView from './linkadvancedview.js';
+import {resolveAdvancedFieldAttributeValue} from './linkutils.js';
 
 export default class CraftLinkUI extends Plugin {
   static get requires() {
@@ -447,7 +448,7 @@ export default class CraftLinkUI extends Plugin {
   /**
    * Show element selector modal for given element type (link option).
    */
-  _showElementSelectorModal(linkOption) {
+  _showElementSelectorModal(linkOption, displayText) {
     const editor = this.editor;
     const model = editor.model;
     const selection = model.document.selection;
@@ -514,25 +515,23 @@ export default class CraftLinkUI extends Plugin {
               let attributes = {linkHref: url};
 
               this.conversionData.forEach((item) => {
-                if (values[item.model]) {
-                  // for bool type options, if the value is set to true, set the attribute with empty value
-                  // see https://github.com/craftcms/ckeditor/issues/551 for more info
-                  attributes[item.model] =
-                    item.type == 'bool' && item.value == true
-                      ? ''
-                      : values[item.model];
+                const value = resolveAdvancedFieldAttributeValue(
+                  item,
+                  values[item.model],
+                );
+                if (value !== undefined) {
+                  attributes[item.model] = value;
                 }
               });
 
-              writer.insertText(
-                element.label,
-                attributes,
-                selection.getFirstPosition(),
-              );
+              const text = displayText || element.label;
+
+              writer.insertText(text, attributes, selection.getFirstPosition());
+
               if (range instanceof ModelRange) {
                 try {
                   const newRange = range.clone();
-                  newRange.end.path[1] += element.label.length;
+                  newRange.end.path[1] += text.length;
                   writer.setSelection(newRange);
                 } catch (e) {}
               }
