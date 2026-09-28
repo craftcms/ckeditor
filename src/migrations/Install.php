@@ -40,7 +40,7 @@ class Install extends Migration
      */
     public function safeDown(): bool
     {
-        echo "m260427_230945_references cannot be reverted.\n";
-        return false;
+        $this->dropTableIfExists(Plugin::TABLE_REFERENCES);
+        return true;
     }
 }
