@@ -1,5 +1,20 @@
 # Release Notes for CKEditor for Craft CMS
 
+## 5.8.0 - 2026-09-28
+
+- CKEditor packages registered by plugins that load after CKEditor, including from `Craft::$app->onInit()` callbacks, are now registered properly. ([#621](https://github.com/craftcms/ckeditor/issues/621))
+- CKEditor fields now only import third-party CKEditor packages, and register their asset bundles, when one of the package’s toolbar items is in the field’s toolbar. Packages without toolbar items are still loaded for every field.
+- Third-party CKEditor plugins are now referenced via namespace imports, so plugins with the same name from different packages no longer conflict. Custom config JS can still refer to them by name (e.g. `extraPlugins: [Tokens]`), as long as the name is unique.
+- Added `craft\ckeditor\Plugin::registerCkeditorPackageBundles()`.
+- Deprecated `craft\ckeditor\helpers\CkeditorConfig::getImportStatements()`.
+- Package asset bundles are no longer registered automatically whenever `CkeditorAsset` is registered.
+- Fixed a bug where package toolbar items were registered again each time a CKEditor field was rendered.
+- Fixed a bug where grouped toolbar items from third-party packages weren’t matched against the field’s toolbar.
+- Fixed a bug where all of a package’s toolbar items were shown as a single group in the toolbar builder, instead of as separately-placeable items and groups.
+- Fixed a bug where the “Displayed text” value was ignored when inserting a new element link, and the element’s title was used instead. ([#617](https://github.com/craftcms/ckeditor/pull/617))
+- Fixed a bug where links’ types would change to “URL” if a URL suffix was entered before an element was chosen. ([#619](https://github.com/craftcms/ckeditor/issues/619), [#624](https://github.com/craftcms/ckeditor/pull/624))
+- Fixed an error that could occur when uninstalling CKEditor. ([#623](https://github.com/craftcms/ckeditor/issues/623))
+
 ## 5.7.0 - 2026-08-10
 
 - Assets inserted as `<img>` tags now populate the `alt` attribute with the asset’s Alternative Text value. If left unedited, the `alt` attribute will stay in sync with the asset. ([#585](https://github.com/craftcms/ckeditor/pull/585))
