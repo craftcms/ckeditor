@@ -51,6 +51,7 @@ use craft\events\DuplicateNestedElementsEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\Assets;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -2532,11 +2533,6 @@ JS;
      */
     private function moveTempAssets(ElementInterface $element): void
     {
-        // Leave drafts’ uploads alone until they’re applied
-        if (!$element->getIsCanonical()) {
-            return;
-        }
-
         $assetIds = $this->getRefTargetIds($element->getFieldValue($this->handle), Asset::refHandle());
         if (empty($assetIds)) {
             return;
@@ -2557,11 +2553,28 @@ JS;
             return;
         }
 
-        try {
-            $uploadFolder = $assetsService->getFolderById($uploadField->resolveDynamicPathToFolderId($target));
-        } catch (InvalidFsException|InvalidSubpathException $e) {
-            Craft::warning("Couldn’t move temporary uploads for the “{$this->name}” field: {$e->getMessage()}", __METHOD__);
-            return;
+        // this matches what the code does for moving images with dynamic default upload locations;
+        // for canonical save, create the folder if needed and log a warning if the subpath can't be resolved;
+        // this kicks in applying an unpublished draft
+        if ($element->getRootOwner()->getIsCanonical()) {
+            try {
+                $uploadFolder = $assetsService->getFolderById($uploadField->resolveDynamicPathToFolderId($target));
+            } catch (InvalidFsException|InvalidSubpathException $e) {
+                Craft::warning("Couldn’t move temporary uploads for the “{$this->name}” field: {$e->getMessage()}", __METHOD__);
+                return;
+            }
+        } else {
+            // Like the Assets field, only move drafts’ uploads if the target folder already exists
+            $volume = Craft::$app->getVolumes()->getVolumeByUid($this->defaultUploadLocationVolume);
+            if (!$volume) {
+                return;
+            }
+
+            try {
+                [, $uploadFolder] = AssetsHelper::resolveSubpath($volume, $this->defaultUploadLocationSubpath, $target);
+            } catch (InvalidSubpathException) {
+                return;
+            }
         }
 
         // Nowhere better to put them yet
