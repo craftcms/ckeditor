@@ -1270,9 +1270,8 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
 
         if (
             $this->imageMode === self::IMAGE_MODE_IMG &&
+            $this->_hasDynamicUploadSubpath() &&
             !$element->propagating &&
-            $this->defaultUploadLocationVolume &&
-            str_contains($this->defaultUploadLocationSubpath ?? '', '{') &&
             !$element->getRootOwner()->getIsRevision()
         ) {
             $this->moveTempAssets($element);
@@ -2475,6 +2474,25 @@ JS;
             return null;
         }
 
+        // this kicks in when the image mode is set to image tags, and we have a dynamic upload subpath
+        // Don't create dynamic folders just by rendering the field; temp uploads get moved once the element is saved
+        if ($this->imageMode === self::IMAGE_MODE_IMG && $this->_hasDynamicUploadSubpath()) {
+            $volume = Craft::$app->getVolumes()->getVolumeByUid($this->defaultUploadLocationVolume);
+            if (!$volume) {
+                Craft::warning("Couldn’t resolve the default upload folder for the “{$this->name}” field: invalid volume.", __METHOD__);
+                return null;
+            }
+
+            try {
+                [, $folder] = AssetsHelper::resolveSubpath($volume, $this->defaultUploadLocationSubpath, $target);
+            } catch (InvalidSubpathException) {
+                $folder = null;
+            }
+
+            return $folder->id ?? Craft::$app->getAssets()->getUserTemporaryUploadFolder()->id;
+        }
+
+        // this kicks in for all other cases (including image tags with static subpath and image entries)
         try {
             return $uploadField->resolveDynamicPathToFolderId($target);
         } catch (InvalidFsException $e) {
@@ -2485,6 +2503,17 @@ JS;
             Craft::warning("Couldn’t resolve the default upload folder for the “{$this->name}” field: {$e->getMessage()}", __METHOD__);
             return Craft::$app->getAssets()->getUserTemporaryUploadFolder()->id;
         }
+    }
+
+    /**
+     * Returns whether images get uploaded to a dynamic subpath that’s moved into once the element is saved.
+     */
+    private function _hasDynamicUploadSubpath(): bool
+    {
+        return (
+            $this->defaultUploadLocationVolume &&
+            str_contains($this->defaultUploadLocationSubpath ?? '', '{')
+        );
     }
 
     /**
