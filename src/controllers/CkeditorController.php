@@ -64,10 +64,7 @@ class CkeditorController extends Controller
         // Temp uploads never get a URL, but they can still be shown if the temp upload filesystem has public URLs
         if (!$url && !$transform) {
             $fs = $asset->getVolume()->getFs();
-            if (
-                AssetsHelper::isTempUploadFs($fs) &&
-                $asset->uploaderId === Craft::$app->getUser()->getId()
-            ) {
+            if (AssetsHelper::isTempUploadFs($fs) && $fs->hasUrls) {
                 $url = AssetsHelper::generateUrl($asset);
             }
         }
