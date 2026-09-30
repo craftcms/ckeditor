@@ -114,6 +114,22 @@ export default class CraftLinkEditing extends Plugin {
           editor.execute('link', ...args);
 
           const firstPosition = selection.getFirstPosition();
+          let linkRange = null;
+
+          if (selection.isCollapsed) {
+            // after the display text has been changed, the link can consist of multiple text nodes,
+            // so the extra attributes have to be applied to the whole link, not just the node by the caret
+            // see https://github.com/craftcms/ckeditor/issues/469 for more info
+            const node = firstPosition.textNode || firstPosition.nodeBefore;
+            linkRange = node?.hasAttribute('linkHref')
+              ? findAttributeRange(
+                  firstPosition,
+                  'linkHref',
+                  node.getAttribute('linkHref'),
+                  editor.model,
+                )
+              : writer.createRangeOn(node);
+          }
 
           this.conversionData.forEach((item) => {
             const value = resolveAdvancedFieldAttributeValue(
@@ -122,15 +138,10 @@ export default class CraftLinkEditing extends Plugin {
             );
 
             if (selection.isCollapsed) {
-              const node = firstPosition.textNode || firstPosition.nodeBefore;
               if (value !== undefined) {
-                writer.setAttribute(
-                  item.model,
-                  value,
-                  writer.createRangeOn(node),
-                );
+                writer.setAttribute(item.model, value, linkRange);
               } else {
-                writer.removeAttribute(item.model, writer.createRangeOn(node));
+                writer.removeAttribute(item.model, linkRange);
               }
             } else {
               // one case where selection is considered not collapsed is when you highlight a text, add a link to it,
