@@ -15,6 +15,7 @@ use craft\ckeditor\Field;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\fieldlayoutelements\CustomField;
+use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\ElementHelper;
 use craft\web\Controller;
 use Throwable;
@@ -58,8 +59,18 @@ class CkeditorController extends Controller
             throw new NotFoundHttpException('Image not found');
         }
 
+        $url = $asset->getUrl($transform, false);
+
+        // Temp uploads never get a URL, but they can still be shown if the temp upload filesystem has public URLs
+        if (!$url && !$transform) {
+            $fs = $asset->getVolume()->getFs();
+            if (AssetsHelper::isTempUploadFs($fs) && $fs->hasUrls) {
+                $url = AssetsHelper::generateUrl($asset);
+            }
+        }
+
         return $this->asJson([
-            'url' => $asset->getUrl($transform, false),
+            'url' => $url,
             'width' => $asset->getWidth($transform),
             'height' => $asset->getHeight($transform),
         ]);
