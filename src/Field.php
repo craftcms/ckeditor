@@ -1271,7 +1271,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             $this->imageMode === self::IMAGE_MODE_IMG &&
             $this->defaultUploadLocationVolume &&
             !$element->propagating &&
-            !ElementHelper::rootElement($element)->getIsRevision()
+            !$element->getRootOwner()->getIsRevision()
         ) {
             $this->moveTempAssets($element);
         }
