@@ -82,6 +82,36 @@ export default class CraftLinkEditing extends Plugin {
         },
       });
     }
+
+    // when the link's text is changed, GHS's <a> (e.g. from a style) can get created first, and the link's <a>
+    // gets merged into it, losing the "link" custom property, which CKEditor's LinkUI relies on;
+    // this converter ensures that after a link is drawn, it finds its <a> and makes sure it's still marked as a link
+    conversion.for('editingDowncast').add((dispatcher) => {
+      dispatcher.on(
+        'attribute:linkHref',
+        (evt, data, {mapper, writer}) => {
+          // when there's no link, or when the "link" is something other than text, bail
+          if (!data.attributeNewValue || !data.item.is('$textProxy')) {
+            return;
+          }
+
+          const viewRange = mapper.toViewRange(data.range);
+
+          for (const item of viewRange.getItems()) {
+            for (const ancestor of item.getAncestors()) {
+              if (
+                ancestor.is('attributeElement', 'a') &&
+                ancestor.hasAttribute('href') &&
+                !ancestor.getCustomProperty('link')
+              ) {
+                writer.setCustomProperty('link', true, ancestor);
+              }
+            }
+          }
+        },
+        {priority: 'low'},
+      );
+    });
   }
 
   _adjustLinkCommand() {
