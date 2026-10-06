@@ -334,7 +334,7 @@ class nd extends du {
     }
     const O = this.editor.config.get("defaultTransform"), K = this._isTransformUrl(T.url);
     let i;
-    !K && O ? i = await this._getTransformUrl(T.assetId, O) : i = this._buildAssetUrl(
+    !T.url || !K && O ? i = await this._getTransformUrl(T.assetId, O) : i = this._buildAssetUrl(
       T.assetId,
       T.url,
       K ? transform : O

@@ -357,8 +357,8 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     const hasTransform = this._isTransformUrl(asset.url);
     let url;
 
-    // Do we need to apply the default transform?
-    if (!hasTransform && defaultTransform) {
+    // Do we need to apply the default transform, or is there no URL yet (e.g. it's a temp upload)?
+    if (!asset.url || (!hasTransform && defaultTransform)) {
       url = await this._getTransformUrl(asset.assetId, defaultTransform);
     } else {
       url = this._buildAssetUrl(
