@@ -6,7 +6,7 @@
     "extends @craftcms/browserslist-config"
   ],
   "devDependencies": {
-    "@ckeditor/ckeditor5-dev-translations": ">=47.6.0",
+    "@ckeditor/ckeditor5-dev-translations": ">=62.3.0",
     "@ckeditor/ckeditor5-inspector": ">=5.0.0",
     "ckeditor5": ">=48.5.2",
     "husky": "^9.1.7",
