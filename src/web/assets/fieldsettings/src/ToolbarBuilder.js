@@ -37,8 +37,10 @@ export default Garnish.Base.extend({
     this.readOnly = $(`#${id}`).hasClass('disabled');
 
     const editorContainer = document.createElement('DIV');
+    editorContainer.classList.add('hidden');
     const editorElement = document.createElement('DIV');
     editorContainer.appendChild(editorElement);
+    this.$container.append(editorContainer); // CKEditor 48.1+ requires the source element to be on the page
 
     create(editorElement, {
       linkOptions: [{elementType: 'craft\\elements\\Asset'}],
