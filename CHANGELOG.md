@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Updated CKEditor to 48.5.2. ([#633](https://github.com/craftcms/ckeditor/issues/633))
 - Fixed an `InvalidSubpathException` error that occurred when editing an element with a CKEditor field that had “Insert image” in its toolbar, if the field’s default upload location contained a variable that couldn’t be resolved yet (e.g. `{slug}`). ([#618](https://github.com/craftcms/ckeditor/issues/618), [#630](https://github.com/craftcms/ckeditor/pull/630))
 - Fixed a bug where links with styles and advanced link fields could be split into multiple links when their displayed text was changed. ([#631](https://github.com/craftcms/ckeditor/issues/631), [#632](https://github.com/craftcms/ckeditor/pull/632))
 - Fixed a bug where links with styles and advanced link fields could become difficult to edit or unlink. ([#631](https://github.com/craftcms/ckeditor/issues/631), [#632](https://github.com/craftcms/ckeditor/pull/632))

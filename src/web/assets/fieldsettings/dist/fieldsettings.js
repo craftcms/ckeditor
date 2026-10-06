@@ -25,8 +25,10 @@ const ToolbarBuilder = Garnish.Base.extend({
     ), this.$targetContainer = this.$container.find(
       ".ckeditor-tb--target .ck-toolbar__items"
     ), this.$input = this.$container.find("input"), this.value = JSON.parse(this.$input.val()), this.readOnly = $(`#${t}`).hasClass("disabled");
-    const o = document.createElement("DIV"), r = document.createElement("DIV");
-    o.appendChild(r), create(r, {
+    const o = document.createElement("DIV");
+    o.classList.add("hidden");
+    const r = document.createElement("DIV");
+    o.appendChild(r), this.$container.append(o), create(r, {
       linkOptions: [{ elementType: "craft\\elements\\Asset" }],
       imageSources: ["*"],
       entryTypeOptions: [{ label: "fake", value: "fake" }],
