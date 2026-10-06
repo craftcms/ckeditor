@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed an `InvalidSubpathException` error that occurred when editing an element with a CKEditor field that had “Insert image” in its toolbar, if the field’s default upload location contained a variable that couldn’t be resolved yet (e.g. `{slug}`). ([#618](https://github.com/craftcms/ckeditor/issues/618), [#630](https://github.com/craftcms/ckeditor/pull/630))
+
 ## 5.8.0 - 2026-09-28
 
 - CKEditor packages registered by plugins that load after CKEditor, including from `Craft::$app->onInit()` callbacks, are now registered properly. ([#621](https://github.com/craftcms/ckeditor/issues/621))
