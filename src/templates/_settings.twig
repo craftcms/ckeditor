@@ -1,0 +1,14 @@
+{% import '_includes/forms.twig' as forms %}
+
+{{ forms.autosuggestField({
+    first: true,
+    label: 'License Key'|t('ckeditor'),
+    instructions: 'A commercial CKEditor license key. If left blank, CKEditor will be used under the GPL license.'|t('ckeditor'),
+    tip: 'This can be set to an environment variable.'|t('ckeditor'),
+    id: 'license-key',
+    name: 'licenseKey',
+    value: settings.licenseKey,
+    placeholder: 'GPL',
+    suggestEnvVars: true,
+    class: 'code',
+}) }}

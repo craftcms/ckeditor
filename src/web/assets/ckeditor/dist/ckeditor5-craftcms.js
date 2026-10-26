@@ -10733,7 +10733,7 @@ const kv = function(de) {
     }
   });
 }, Pv = async function(de, h) {
-  typeof de == "string" && (de = document.querySelector(`#${de}`)), h.licenseKey = "GPL", h.attachTo = de;
+  typeof de == "string" && (de = document.querySelector(`#${de}`)), h.licenseKey = h.licenseKey || "GPL", h.attachTo = de;
   const m = await Kb.create(h);
   Craft.showCkeditorInspector && Craft.userIsAdmin && vv.attach(m), m.editing.view.change((z) => {
     const K = m.editing.view.document.getRoot();
