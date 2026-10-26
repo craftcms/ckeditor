@@ -9,8 +9,10 @@ namespace craft\ckeditor;
 
 use Craft;
 use craft\base\Element;
+use craft\base\Model;
 use craft\ckeditor\deletionblockers\ReferenceDeletionBlocker;
 use craft\ckeditor\helpers\CkeditorConfig;
+use craft\ckeditor\models\Settings;
 use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
 use craft\ckeditor\web\assets\fieldsettings\FieldSettingsAsset;
@@ -27,6 +29,7 @@ use yii\base\Event;
  * CKEditor plugin.
  *
  * @method static Plugin getInstance()
+ * @method Settings getSettings()
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
 class Plugin extends \craft\base\Plugin
@@ -134,6 +137,7 @@ class Plugin extends \craft\base\Plugin
     private static bool $packagesLoaded = false;
 
     public string $schemaVersion = '5.6.0.0';
+    public bool $hasCpSettings = true;
 
     public function init(): void
     {
@@ -198,6 +202,24 @@ class Plugin extends \craft\base\Plugin
                 $entryManager->restoreNestedElements($element);
             }
         });
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function createSettingsModel(): ?Model
+    {
+        return new Settings();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function settingsHtml(): ?string
+    {
+        return Craft::$app->getView()->renderTemplate('ckeditor/_settings.twig', [
+            'settings' => $this->getSettings(),
+        ]);
     }
 
     /**
