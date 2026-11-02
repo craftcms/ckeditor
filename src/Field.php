@@ -17,6 +17,7 @@ use CraftCms\Ckeditor\Events\HtmlSanitizerConfigResolving;
 use CraftCms\Ckeditor\Events\LinkOptionsResolving;
 use CraftCms\Ckeditor\Gql\Generator;
 use CraftCms\Ckeditor\Support\CkeditorAssets;
+use CraftCms\Ckeditor\Ui\Controls\CkeditorControl;
 use CraftCms\Ckeditor\Support\CkeditorConfig;
 use CraftCms\Ckeditor\Support\CkeditorConfigSchema;
 use CraftCms\Ckeditor\Data\EntryType as CkeEntryType;
@@ -30,6 +31,7 @@ use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\ElementSources as ElementSourcesService;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Events\DraftApplying;
@@ -46,6 +48,7 @@ use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
+use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidFsException;
@@ -60,7 +63,6 @@ use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\HtmlSanitizers;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\ImageTransforms;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -74,13 +76,12 @@ use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\View\Enums\Position;
 use CraftCms\HtmlField\HtmlField;
 use CraftCms\HtmlField\HtmlFieldData;
-use CraftCms\Yii2Adapter\Field\Concerns\LegacyFieldControl;
-use CraftCms\Yii2Adapter\Field\Concerns\LegacyFieldHtml;
-use CraftCms\Yii2Adapter\Field\Contracts\LegacyField;
+use CraftCms\Yii2Adapter\Ui\Contracts\LegacySettingsComponent;
 use CraftCms\Yii2Adapter\Ui\Concerns\LegacySettingsUi;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
@@ -111,12 +112,9 @@ class Field extends HtmlField implements
     ElementContainerFieldInterface,
     MergeableFieldInterface,
     CrossSiteCopyableFieldInterface,
-    LegacyField
+    LegacySettingsComponent
 {
-    // The control panel input and settings UI still render legacy HTML through the Yii 2 adapter
-    // until native UI controls replace them.
-    use LegacyFieldControl;
-    use LegacyFieldHtml;
+    // The settings UI still renders legacy HTML through the Yii 2 adapter until native UI controls replace it.
     use LegacySettingsUi;
 
     /** @since 5.0.0 */
@@ -145,7 +143,7 @@ class Field extends HtmlField implements
     #[Override]
     public static function icon(): string
     {
-        return dirname(__DIR__) . '/resources/icon.svg';
+        return 'paragraph';
     }
 
     /**
@@ -1515,25 +1513,61 @@ class Field extends HtmlField implements
     }
 
     #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
+    public function uiControl(FieldContext $context): Control
     {
-        return $this->_inputHtml($value, $element, false);
-    }
+        $element = $context->element;
 
-    #[Override]
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
-    {
-        return $this->_inputHtml($value, $element, true);
+        // Craft calls this on the layout’s source field, which doesn’t know its layout element,
+        // so defer to the field instance from the element’s layout when there is one
+        if (!$this->layoutElement && $element) {
+            $path = is_array($context->path) ? $context->path : explode('.', $context->path);
+            $instance = $element->getFieldLayout()?->getFieldByHandle((string)end($path));
+            if ($instance instanceof self && $instance->layoutElement) {
+                return $instance->uiControl($context);
+            }
+        }
+
+        $readOnly = $context->mode !== ControlMode::Editable;
+        $containerId = sprintf('cke-%s', Str::random(10));
+
+        $assets = app(CkeditorAssets::class);
+        [$module, $namespaces] = $this->editorModule($element);
+        $editorAssets = $assets->editorAssetUrls();
+        $packageAssets = $assets->packageAssetUrls($namespaces);
+
+        return CkeditorControl::make($context->path)
+            ->value($this->prepValueForInput($context->value, $element, $readOnly))
+            ->mode($readOnly ? ($context->mode === ControlMode::Disabled ? ControlMode::Disabled : ControlMode::ReadOnly) : ControlMode::Editable)
+            ->module($module)
+            ->containerId($containerId)
+            ->showWordCount($this->showWordCount)
+            ->css($this->scopedCss($containerId))
+            ->assets(array_map(
+                fn(string $key) => array_values(array_unique([...$editorAssets[$key], ...$packageAssets[$key]])),
+                ['styles' => 'styles', 'scripts' => 'scripts', 'modules' => 'modules'],
+            ))
+            ->globals($assets->editorGlobals())
+            ->owner($element?->id ? [
+                'ownerElementType' => $element::class,
+                'ownerId' => $element->id,
+                'ownerSiteId' => $element->siteId,
+                'ownerIsDerivative' => $element->getIsDerivative(),
+                'ownerIsInDerivativeTree' => ElementHelper::isDraftOrRevision($element),
+                'ownerIsUnpublishedDraft' => $element->getIsUnpublishedDraft(),
+                'ownerHasDrafts' => $element->getRootOwner()::hasDrafts(),
+            ] : null);
     }
 
     /**
-     * Returns the legacy HTML for the CKEditor input (rendered through the Yii 2 adapter).
+     * Returns the JavaScript module that creates the editor for this field, and the CKEditor package namespaces it imports.
+     *
+     * The module’s default export receives the source element (a `<textarea>`) and an options object
+     * (`containerId`, `wordCountElement`, `readOnly`), and resolves to the editor.
+     *
+     * @return array{0:string,1:string[]}
      */
-    private function _inputHtml(mixed $value, ?ElementInterface $element, bool $static): string
+    private function editorModule(?ElementInterface $element): array
     {
-        $assets = app(CkeditorAssets::class);
-        $assets->registerEditorAssets();
-
         $transforms = $this->_transforms();
 
         if ($this->defaultTransform) {
@@ -1571,13 +1605,6 @@ class Field extends HtmlField implements
         }
 
         $toolbar = array_values($toolbar);
-
-        $id = Html::id($this->handle);
-        $idJs = Json::encode(InputNamespace::namespaceId($id));
-        $wordCountId = "$id-counts";
-        $wordCountIdJs = Json::encode(InputNamespace::namespaceId($wordCountId));
-        $inputId = Html::id('input-ckeditor-' . $id);
-        $namespacedInputId = InputNamespace::namespaceId($inputId);
 
         $baseConfig = array_filter([
             'licenseKey' => app(Settings::class)->getLicenseKey(),
@@ -1625,6 +1652,7 @@ class Field extends HtmlField implements
             'imageFieldHandle' => $this->getImageField()?->handle,
             'assetSelectionCriteria' => $this->_assetSelectionCriteria(),
             'defaultUploadFolderId' => $this->_defaultUploadFolderId($element),
+            'layoutElementUid' => $this->layoutElement?->uid,
             'linkOptions' => $this->_linkOptions($element),
             'advancedLinkFields' => $this->_advancedLinkFields(),
             'table' => [
@@ -1668,7 +1696,6 @@ class Field extends HtmlField implements
             $removePlugins->all(),
             isset($this->options) ? null : $configJs,
         );
-        $assets->registerPackageAssets($namespaces);
 
         $configPlugins = '[' . implode(',', $pluginRefs) . ']';
 
@@ -1677,22 +1704,24 @@ class Field extends HtmlField implements
         $importCompliantUiLanguage = CkeditorAssets::getImportCompliantLanguage(CkeditorAssets::uiLanguage());
         $uiTranslationImport = "import coreTranslations from 'ckeditor5/translations/$importCompliantUiLanguage.js';";
 
-        HtmlStack::scriptWithVars(fn(
-            $baseConfigJs,
-            $toolbarJs,
-            $languageJs,
-            $showWordCountJs,
-            $wordLimitJs,
-            $characterLimitJs,
-            $imageMode,
-            $namespacedInputIdJs,
-        ) => <<<JS
+        $languageJs = Json::encode([
+            'ui' => $uiLanguage,
+            'content' => $element?->getSite()->language ?? app()->getLocale(),
+            'textPartLanguage' => static::textPartLanguage(),
+        ]);
+        $baseConfigJs = Json::encode($event->baseConfig);
+        $toolbarJs = Json::encode($event->toolbar);
+        $showWordCountJs = Json::encode($this->showWordCount);
+        $wordLimitJs = Json::encode($this->wordLimit ?: 0);
+        $characterLimitJs = Json::encode($this->characterLimit ?: 0);
+
+        $module = <<<JS
 $imports
 $uiTranslationImport
 import {create} from '@craftcms/ckeditor';
 
-(($) => {
-  let instance;
+export default async function (element, options = {}) {
+  const $ = jQuery;
   const customConfig = $configJs;
   const config = Object.assign({
     translations: [coreTranslations],
@@ -1746,7 +1775,7 @@ import {create} from '@craftcms/ckeditor';
     const fullscreenConfig = customConfig?.fullscreen ?? {};
     const userOnEnterCallback = fullscreenConfig?.onEnterCallback;
     const userOnLeaveCallback = fullscreenConfig?.onLeaveCallback;
-    const fieldInputId = $namespacedInputIdJs;
+    const fieldInputId = options.containerId;
     config.fullscreen = {
       ...fullscreenConfig,
       onEnterCallback: (container) => {
@@ -1782,7 +1811,7 @@ import {create} from '@craftcms/ckeditor';
           num: stats.characters
         }));
       }
-      const container = $('#' + $wordCountIdJs);
+      const container = $(options.wordCountElement);
       container.html(Craft.escapeHtml(statText.join(', ')) || '&nbsp;');
       if ($wordLimitJs) {
         if (stats.words > $wordLimitJs) {
@@ -1811,75 +1840,45 @@ import {create} from '@craftcms/ckeditor';
     config.removePlugins.push(...extraRemovePlugins);
   }
 
-  instance = create($idJs, config);
+  // the Craft 6 control panel’s owner bridge (see resources/assets/control/ckeditor-control.js)
+  config.craftOwner = options.owner ?? null;
 
-  if (Boolean($static)) {
-    instance.then((editor) => {
-      editor.enableReadOnlyMode($idJs);
-    });
+  const editor = await create(element, config);
+
+  if (options.readOnly) {
+    editor.enableReadOnlyMode('craft-read-only');
   }
-})(jQuery);
-JS,
-            [
-                $event->baseConfig,
-                $event->toolbar,
-                [
-                    'ui' => $uiLanguage,
-                    'content' => $element?->getSite()->language ?? app()->getLocale(),
-                    'textPartLanguage' => static::textPartLanguage(),
-                ],
-                $this->showWordCount,
-                $this->wordLimit ?: 0,
-                $this->characterLimit ?: 0,
-                $this->imageMode,
-                $namespacedInputId,
-            ],
-            Position::BodyEnd,
-            ['type' => 'module'],
-        );
 
-        $value = $this->prepValueForInput($value, $element, $static);
-        $html = Html::textarea($this->handle, $value, [
-            'id' => $id,
-            'class' => 'hidden',
-        ])->render();
+  return editor;
+}
+JS;
 
-        if ($this->showWordCount) {
-            $html .= Html::tag('div', '&nbsp;', [
-                'id' => $wordCountId,
-                'class' => ['ck-word-count', 'light', 'smalltext'],
-            ]);
-        }
+        return [$module, $namespaces];
+    }
 
+    /**
+     * Returns the field’s custom CSS, scoped to the editor container.
+     */
+    private function scopedCss(string $containerId): ?string
+    {
         $css = $this->css();
-        if ($css) {
-            $imports = [];
-            preg_match_all('/@import .+;?/m', $css, $importMatches);
-            for ($i = 0; $i < count($importMatches[0]); $i++) {
-                $imports[] = $importMatches[0][$i];
-                $css = str_replace($importMatches[0][$i], '', $css);
-            }
-            if (!empty($imports)) {
-                HtmlStack::css(implode("\n", $imports));
-            }
-            $css = trim($css);
-            if ($css !== '') {
-                // the id is needed for the regular field
-                // the class is used by the fullscreen mode (there can only be one at the time)
-                HtmlStack::css("#{$namespacedInputId}, .{$namespacedInputId} { $css }");
-            }
+        if (!$css) {
+            return null;
         }
 
-        return Html::tag('div', $html, [
-            'class' => array_keys(array_filter([
-                'ckeditor-container' => true,
-                'ck-with-show-word-count' => $this->showWordCount,
-            ])),
-            'id' => $inputId,
-            'data' => [
-                'element-id' => $element?->id,
-            ],
-        ]);
+        // @import rules must come first
+        $imports = [];
+        preg_match_all('/@import .+;?/m', $css, $importMatches);
+        foreach ($importMatches[0] as $import) {
+            $imports[] = $import;
+            $css = str_replace($import, '', $css);
+        }
+
+        $css = trim($css);
+
+        // the id is needed for the regular field
+        // the class is used by the fullscreen mode (there can only be one at the time)
+        return trim(implode("\n", $imports) . ($css !== '' ? "\n#$containerId, .$containerId { $css }" : '')) ?: null;
     }
 
     private function configJs(): string

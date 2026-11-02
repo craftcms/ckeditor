@@ -162,9 +162,14 @@ const handleClipboard = function (editor, plugins) {
         const $editorElement = $(editor.ui.view.element);
         const $parentForm = $editorElement.parents('form');
         let elementEditor = $parentForm.data('elementEditor');
+        const owner = editor.config.get('craftOwner');
 
         // ensure we're working with a draft
-        await elementEditor.ensureIsDraftOrRevision();
+        if (elementEditor) {
+          await elementEditor.ensureIsDraftOrRevision();
+        } else if (owner) {
+          ownerId = await owner.prepare();
+        }
 
         // get the target owner id, in case we're pasting to a different element all together
 
@@ -180,13 +185,15 @@ const handleClipboard = function (editor, plugins) {
 
         // if we still didn't get the ownerId this way, get it form the element editor
         if (ownerId == null) {
-          ownerId = elementEditor.settings.elementId;
+          ownerId = elementEditor
+            ? elementEditor.settings.elementId
+            : editor.config.get('nestedElementAttributes')?.ownerId;
         }
 
         // get the target field id, in case we're pasting to a different field all together (not different instance, different field)
-        layoutElementUid = $editorElement
-          .parents('.field')
-          .data('layoutElement');
+        layoutElementUid =
+          editor.config.get('layoutElementUid') ??
+          $editorElement.parents('.field').data('layoutElement');
 
         // for each nested entry ID we found
         for (let i = 0; i < matches.length; i++) {

@@ -216,7 +216,9 @@ export default class CraftEntriesUI extends Plugin {
     button.set({
       isEnabled: true,
       label: Craft.t('app', 'Edit {type}', {
-        type: Craft.elementTypeNames['craft\\elements\\Entry'][2],
+        type: (Craft.elementTypeNames[
+          'CraftCms\\Cms\\Entry\\Elements\\Entry'
+        ] ?? Craft.elementTypeNames['craft\\elements\\Entry'])[2],
       }),
       tooltip: true,
       withText: true,
@@ -265,6 +267,13 @@ export default class CraftEntriesUI extends Plugin {
     const editor = this.editor;
     const model = editor.model;
     const elementEditor = this.getElementEditor();
+    const owner = editor.config.get('craftOwner');
+
+    // Craft 6 control panel: open the entry in a native slideout, which saves changes into the owner’s draft
+    if (!elementEditor && owner && Craft.openSlideout) {
+      this._openNativeEditEntrySlideout(entryId, siteId, modelElement, owner);
+      return;
+    }
 
     let $element = this._getCardElement(entryId);
     const ownerId = $element.data('owner-id');
@@ -351,6 +360,59 @@ export default class CraftEntriesUI extends Plugin {
   }
 
   /**
+   * Opens a native (Craft 6) slideout for an existing entry.
+   *
+   * Changes are saved into the owner’s draft, via the owner bridge’s `prepare()`.
+   *
+   * @private
+   */
+  _openNativeEditEntrySlideout(entryId, siteId, modelElement, owner) {
+    const editor = this.editor;
+    const model = editor.model;
+    const $element = this._getCardElement(entryId);
+    const params = {
+      elementId: entryId,
+      siteId: siteId,
+    };
+
+    const parents = $element.parents('.field');
+    if (parents.length && $(parents[0]).hasClass('has-errors')) {
+      params.prevalidate = 1;
+    }
+
+    Craft.openSlideout(Craft.getActionUrl('elements/edit', params), {
+      opener: $element[0] ?? null,
+      prepareNestedOwner: () => owner.prepare(),
+      onSaved: (result) => {
+        if (result?.draft) {
+          return;
+        }
+
+        const savedId = parseInt(
+          result?.data?.element?.id ?? result?.data?.id ?? entryId,
+          10,
+        );
+
+        if (savedId && savedId != entryId) {
+          // the entry was saved for the owner’s draft, so it has a new ID
+          editor.editing.model.change((writer) => {
+            writer.setAttribute('entryId', savedId, modelElement);
+          });
+        }
+
+        Craft.refreshElementInstances(savedId || entryId);
+        owner.refresh();
+      },
+      onClosed: () => {
+        model.change((writer) => {
+          writer.setSelection(writer.createPositionAfter(modelElement));
+        });
+        editor.editing.view.focus();
+      },
+    });
+  }
+
+  /**
    * Creates new entry and opens the element editor for it
    *
    * @param entryTypeId
@@ -370,6 +432,7 @@ export default class CraftEntriesUI extends Plugin {
     });
 
     const elementEditor = this.getElementEditor();
+    const owner = editor.config.get('craftOwner');
 
     if (elementEditor) {
       await elementEditor.markDeltaNameAsModified(editor.sourceElement.name);
@@ -377,6 +440,9 @@ export default class CraftEntriesUI extends Plugin {
       params.ownerId = elementEditor.getDraftElementId(
         nestedElementAttributes.ownerId,
       );
+    } else if (owner) {
+      // make sure the owner is a draft, and create the entry for it
+      params.ownerId = await owner.prepare();
     }
 
     let data;

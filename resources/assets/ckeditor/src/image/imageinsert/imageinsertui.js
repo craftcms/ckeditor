@@ -98,9 +98,9 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       kind: 'image',
     });
 
-    Craft.createElementSelectorModal('craft\\elements\\Asset', {
+    Craft.createElementSelectorModal('CraftCms\\Cms\\Asset\\Elements\\Asset', {
       ...this._imageModalSettings,
-      storageKey: `ckeditor:${this.pluginName}:'craft\\elements\\Asset'`,
+      storageKey: `ckeditor:${this.pluginName}:'CraftCms\\Cms\\Asset\\Elements\\Asset'`,
       sources,
       criteria,
       defaultSiteId: config.get('elementSiteId'),
@@ -175,12 +175,17 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       ...nestedElementAttributes,
     };
 
+    const owner = editor.config.get('craftOwner');
+
     if (elementEditor) {
       await elementEditor.markDeltaNameAsModified(editor.sourceElement.name);
       // replace the owner ID with the new one, maybe?
       params.ownerId = elementEditor.getDraftElementId(
         nestedElementAttributes.ownerId,
       );
+    } else if (owner) {
+      // make sure the owner is a draft, and create the entry for it
+      params.ownerId = await owner.prepare();
     }
 
     let response;

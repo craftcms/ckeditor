@@ -10,6 +10,7 @@ namespace CraftCms\Ckeditor;
 use CraftCms\Ckeditor\Console\Commands\ConvertMatrixCommand;
 use CraftCms\Ckeditor\Console\Commands\ConvertRedactorCommand;
 use CraftCms\Ckeditor\Support\CkeditorAssets;
+use CraftCms\Ckeditor\Ui\Controls\CkeditorControl;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Field\NestedEntryFieldTypes;
 use CraftCms\Cms\Plugin\Plugin as BasePlugin;
@@ -18,6 +19,7 @@ use CraftCms\Cms\Ui\Controls\Text;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiControlTypes;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -42,14 +44,19 @@ class Plugin extends BasePlugin
     protected array $publishables = [
         __DIR__ . '/../resources/assets/ckeditor/dist' => 'ckeditor',
         __DIR__ . '/../resources/assets/fieldsettings/dist' => 'fieldsettings',
+        __DIR__ . '/../resources/assets/control/ckeditor-control.js' => 'control/ckeditor-control.js',
+    ];
+    protected array $scripts = [
+        __DIR__ . '/../resources/assets/control/register.js' => 'control/register.js',
     ];
 
     /**
      * Boots the plugin.
      */
-    public function boot(NestedEntryFieldTypes $nestedEntryFieldTypes): void
+    public function boot(NestedEntryFieldTypes $nestedEntryFieldTypes, UiControlTypes $controlTypes): void
     {
         $nestedEntryFieldTypes->register(Field::class);
+        $controlTypes->register(CkeditorControl::class);
         $this->app->bind(Settings::class, fn() => $this->getSettings());
 
         if (request()->isCpRequest() && !app()->runningInConsole()) {

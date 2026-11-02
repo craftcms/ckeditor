@@ -133,21 +133,34 @@ class CkeditorAssets
     }
 
     /**
-     * Registers the assets a CKEditor input needs.
+     * Returns the assets a CKEditor input needs.
+     *
+     * @return array{styles:string[],scripts:string[],modules:string[]}
      */
-    public function registerEditorAssets(): void
+    public function editorAssetUrls(): array
     {
-        HtmlStack::cssFile($this->url('ckeditor/lib/ckeditor5.css'));
-        HtmlStack::cssFile($this->url('ckeditor/ckeditor.css'));
+        return [
+            'styles' => [
+                $this->url('ckeditor/lib/ckeditor5.css'),
+                $this->url('ckeditor/ckeditor.css'),
+            ],
+            'scripts' => array_values(array_filter([
+                $this->translationUrl(
+                    dirname($this->plugin->getBasePath()) . '/resources/assets/ckeditor/dist/translations',
+                    $this->url('ckeditor/translations', false),
+                ),
+            ])),
+            'modules' => [],
+        ];
+    }
 
-        // Import map shim
-        HtmlStack::jsFile('https://ga.jspm.io/npm:es-module-shims@2.0.10/dist/es-module-shims.js', ['async' => true]);
-        HtmlStack::jsFile($this->url('ckeditor/ckeditor5-craftcms.js'), ['type' => 'module']);
-        $this->registerTranslation(
-            dirname($this->plugin->getBasePath()) . '/resources/assets/ckeditor/dist/translations',
-            $this->url('ckeditor/translations', false),
-        );
-
+    /**
+     * Returns the global settings the CKEditor JavaScript reads.
+     *
+     * @return array{localizedRefHandles:string[],showInspector:bool,revAssetUrls:bool}
+     */
+    public function editorGlobals(): array
+    {
         $refHandles = [];
         foreach ($this->elementTypes->types() as $elementType) {
             if ($elementType::isLocalized() && ($refHandle = $elementType::refHandle()) !== null) {
@@ -155,17 +168,42 @@ class CkeditorAssets
             }
         }
 
+        return [
+            'localizedRefHandles' => $refHandles,
+            'showInspector' => (bool)Env::get('CRAFT_SHOW_CKEDITOR_INSPECTOR'),
+            'revAssetUrls' => Cms::config()->revAssetUrls,
+        ];
+    }
+
+    /**
+     * Registers the assets a CKEditor input needs.
+     */
+    public function registerEditorAssets(): void
+    {
+        $urls = $this->editorAssetUrls();
+
+        foreach ($urls['styles'] as $url) {
+            HtmlStack::cssFile($url);
+        }
+
+        // Import map shim
+        HtmlStack::jsFile('https://ga.jspm.io/npm:es-module-shims@2.0.10/dist/es-module-shims.js', ['async' => true]);
+        HtmlStack::jsFile($this->url('ckeditor/ckeditor5-craftcms.js'), ['type' => 'module']);
+
+        foreach ($urls['scripts'] as $url) {
+            HtmlStack::jsFile($url);
+        }
+
+        $globals = $this->editorGlobals();
+
         HtmlStack::scriptWithVars(fn($refHandles) => <<<JS
 window.CKE_LOCALIZED_REF_HANDLES = $refHandles;
-JS, [$refHandles], Position::Head, ['type' => 'module']);
+JS, [$globals['localizedRefHandles']], Position::Head, ['type' => 'module']);
 
         HtmlStack::jsWithVars(fn($attach, $revAssetUrls) => <<<JS
 Craft.showCkeditorInspector = $attach;
 Craft.revAssetUrls = $revAssetUrls;
-JS, [
-            (bool)Env::get('CRAFT_SHOW_CKEDITOR_INSPECTOR'),
-            Cms::config()->revAssetUrls,
-        ], Position::BodyEnd);
+JS, [$globals['showInspector'], $globals['revAssetUrls']], Position::BodyEnd);
     }
 
     /**
@@ -187,6 +225,33 @@ JS, [
      */
     public function registerPackageAssets(?array $namespaces = null): void
     {
+        $urls = $this->packageAssetUrls($namespaces);
+
+        foreach ($urls['modules'] as $url) {
+            HtmlStack::jsFile($url, ['type' => 'module']);
+        }
+
+        foreach ($urls['styles'] as $url) {
+            HtmlStack::cssFile($url);
+        }
+
+        foreach ($urls['scripts'] as $url) {
+            HtmlStack::jsFile($url);
+        }
+    }
+
+    /**
+     * Returns the assets for the registered packages.
+     *
+     * Packages that don’t provide any CKEditor plugins (e.g. global functionality) are always included.
+     *
+     * @param string[]|null $namespaces The package namespaces whose assets should be included, or `null` for all packages
+     * @return array{styles:string[],scripts:string[],modules:string[]}
+     */
+    public function packageAssetUrls(?array $namespaces = null): array
+    {
+        $urls = ['styles' => [], 'scripts' => [], 'modules' => []];
+
         foreach ($this->packages as $package) {
             if (
                 $namespaces !== null &&
@@ -196,16 +261,18 @@ JS, [
                 continue;
             }
 
-            HtmlStack::jsFile($package->url, ['type' => 'module']);
-
-            foreach ($package->styles as $url) {
-                HtmlStack::cssFile($url);
-            }
+            $urls['modules'][] = $package->url;
+            array_push($urls['styles'], ...$package->styles);
 
             if ($package->translationsPath && $package->translationsUrl) {
-                $this->registerTranslation($package->translationsPath, $package->translationsUrl);
+                $translationUrl = $this->translationUrl($package->translationsPath, $package->translationsUrl);
+                if ($translationUrl) {
+                    $urls['scripts'][] = $translationUrl;
+                }
             }
         }
+
+        return $urls;
     }
 
     /**
@@ -227,13 +294,13 @@ JS, [
         return $versioned ? sprintf('%s?v=%s', $url, $this->plugin->version) : $url;
     }
 
-    private function registerTranslation(string $path, string $url): void
+    private function translationUrl(string $path, string $url): ?string
     {
         $language = app()->getLocale();
 
         if (in_array($language, ['en', 'en-US'])) {
             // that's what the source files use
-            return;
+            return null;
         }
 
         $language = static::uiLanguage();
@@ -245,9 +312,10 @@ JS, [
 
         foreach ($languages as $language) {
             if (file_exists("$path/$language.js")) {
-                HtmlStack::jsFile("$url/$language.js");
-                return;
+                return "$url/$language.js";
             }
         }
+
+        return null;
     }
 }

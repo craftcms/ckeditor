@@ -43,7 +43,7 @@ export default Garnish.Base.extend({
     this.$container.append(editorContainer); // CKEditor 48.1+ requires the source element to be on the page
 
     create(editorElement, {
-      linkOptions: [{elementType: 'craft\\elements\\Asset'}],
+      linkOptions: [{elementType: 'CraftCms\\Cms\\Asset\\Elements\\Asset'}],
       imageSources: ['*'],
       entryTypeOptions: [{label: 'fake', value: 'fake'}],
       plugins,
