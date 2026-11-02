@@ -7,7 +7,6 @@
 
 namespace CraftCms\Ckeditor\Support;
 
-use CraftCms\Ckeditor\Plugin;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Collection;
 
@@ -281,8 +280,6 @@ final class CkeditorConfig
      */
     public static function getPluginsByPackage(?string $name = null): array
     {
-        Plugin::getCkeditorPackages();
-
         if (!$name) {
             return self::$pluginsByPackage;
         }
@@ -310,7 +307,6 @@ final class CkeditorConfig
      */
     public static function getToolbarItems(): array
     {
-        Plugin::getCkeditorPackages();
         return self::$toolbarItems;
     }
 
@@ -449,8 +445,6 @@ final class CkeditorConfig
      */
     private static function pluginsForToolbar(array $toolbar, array $removePlugins): array
     {
-        Plugin::getCkeditorPackages();
-
         $unused = collect(self::$pluginButtonMap)
             ->filter(fn(array $item) =>
                 // If there are no buttons defined, always load it

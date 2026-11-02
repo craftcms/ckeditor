@@ -8,7 +8,6 @@
 namespace CraftCms\Ckeditor;
 
 use Closure;
-use Craft;
 use CraftCms\Ckeditor\Data\BaseChunk;
 use CraftCms\Ckeditor\Data\Entry as EntryChunk;
 use CraftCms\Ckeditor\Data\FieldData;
@@ -17,14 +16,12 @@ use CraftCms\Ckeditor\Events\EditorConfigResolving;
 use CraftCms\Ckeditor\Events\HtmlSanitizerConfigResolving;
 use CraftCms\Ckeditor\Events\LinkOptionsResolving;
 use CraftCms\Ckeditor\Gql\Generator;
+use CraftCms\Ckeditor\Support\CkeditorAssets;
 use CraftCms\Ckeditor\Support\CkeditorConfig;
 use CraftCms\Ckeditor\Support\CkeditorConfigSchema;
 use CraftCms\Ckeditor\Data\EntryType as CkeEntryType;
-use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
-use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
-use craft\ckeditor\web\assets\fieldsettings\FieldSettingsAsset;
-use craft\web\View;
 use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cp\Html\ElementHtml;
@@ -63,8 +60,10 @@ use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\HtmlSanitizers;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\ImageTransforms;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
@@ -76,6 +75,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\Enums\Position;
 use CraftCms\HtmlField\HtmlField;
 use CraftCms\HtmlField\HtmlFieldData;
 use CraftCms\Yii2Adapter\Field\Concerns\LegacyFieldControl;
@@ -98,6 +98,7 @@ use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * CKEditor field type
@@ -1105,12 +1106,12 @@ class Field extends HtmlField implements
      */
     private function settingsHtml(bool $readOnly): string
     {
-        $view = Craft::$app->getView();
-        $bundle = $view->registerAssetBundle(FieldSettingsAsset::class);
+        $assets = app(CkeditorAssets::class);
+        $assets->registerFieldSettingsAssets();
 
         // The toolbar builder needs every package
         [$importStatements, $pluginRefs] = CkeditorConfig::getImports();
-        Plugin::registerCkeditorPackageBundles($view);
+        $assets->registerPackageAssets();
 
         $userGroupOptions = [
             [
@@ -1146,7 +1147,7 @@ class Field extends HtmlField implements
             ];
         }
 
-        $jsonSchemaUri = sprintf('https://craft-code-editor.com/%s', $view->namespaceInputId('config-options-json'));
+        $jsonSchemaUri = sprintf('https://craft-code-editor.com/%s', InputNamespace::namespaceId('config-options-json'));
 
         $configMode = match (true) {
             !empty($this->js) => 'js',
@@ -1159,12 +1160,12 @@ class Field extends HtmlField implements
             default => 'css',
         };
 
-        return $view->renderTemplate('ckeditor/_field-settings.twig', [
+        return template('ckeditor/_field-settings.twig', [
             'field' => $this,
             'importStatements' => $importStatements,
-            'toolbarBuilderId' => $view->namespaceInputId('toolbar-builder'),
-            'configOptionsId' => $view->namespaceInputId('config-options'),
-            'cssOptionsId' => $view->namespaceInputId('css-options'),
+            'toolbarBuilderId' => InputNamespace::namespaceId('toolbar-builder'),
+            'configOptionsId' => InputNamespace::namespaceId('config-options'),
+            'cssOptionsId' => InputNamespace::namespaceId('css-options'),
             'toolbarItems' => CkeditorConfig::normalizeToolbarItems(CkeditorConfig::getToolbarItems()),
             'plugins' => $pluginRefs,
             'jsonSchema' => CkeditorConfigSchema::create(),
@@ -1185,7 +1186,7 @@ class Field extends HtmlField implements
                 includeExtensions: true,
             ),
             'htmlSanitizerOptions' => $this->htmlSanitizerOptions(),
-            'baseIconsUrl' => "$bundle->baseUrl/images",
+            'baseIconsUrl' => $assets->url('fieldsettings/images', false),
             'volumeOptions' => $volumeOptions,
             'transformOptions' => $transformOptions,
             'defaultTransformOptions' => array_merge([
@@ -1197,6 +1198,8 @@ class Field extends HtmlField implements
             'configMode' => $configMode,
             'cssMode' => $cssMode,
             'readOnly' => $readOnly,
+            'enableGql' => Cms::config()->enableGql,
+            'inputNamespace' => InputNamespace::get(),
         ]);
     }
 
@@ -1528,8 +1531,8 @@ class Field extends HtmlField implements
      */
     private function _inputHtml(mixed $value, ?ElementInterface $element, bool $static): string
     {
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(CkeditorAsset::class);
+        $assets = app(CkeditorAssets::class);
+        $assets->registerEditorAssets();
 
         $transforms = $this->_transforms();
 
@@ -1570,18 +1573,18 @@ class Field extends HtmlField implements
         $toolbar = array_values($toolbar);
 
         $id = Html::id($this->handle);
-        $idJs = Json::encode($view->namespaceInputId($id));
+        $idJs = Json::encode(InputNamespace::namespaceId($id));
         $wordCountId = "$id-counts";
-        $wordCountIdJs = Json::encode($view->namespaceInputId($wordCountId));
+        $wordCountIdJs = Json::encode(InputNamespace::namespaceId($wordCountId));
         $inputId = Html::id('input-ckeditor-' . $id);
-        $namespacedInputId = $view->namespaceInputId($inputId);
+        $namespacedInputId = InputNamespace::namespaceId($inputId);
 
         $baseConfig = array_filter([
             'licenseKey' => app(Settings::class)->getLicenseKey(),
             'defaultTransform' => $defaultTransform?->handle,
             'elementSiteId' => $element?->siteId,
             'accessibleFieldName' => $this->_accessibleFieldName($element),
-            'describedBy' => $this->_describedBy($view),
+            'describedBy' => $this->_describedBy(),
             'entryTypeOptions' => $this->_entryTypeOptions(),
             'findAndReplace' => [
                 'uiType' => 'dropdown',
@@ -1665,16 +1668,16 @@ class Field extends HtmlField implements
             $removePlugins->all(),
             isset($this->options) ? null : $configJs,
         );
-        Plugin::registerCkeditorPackageBundles($view, $namespaces);
+        $assets->registerPackageAssets($namespaces);
 
         $configPlugins = '[' . implode(',', $pluginRefs) . ']';
 
         // Add the translation import
-        $uiLanguage = BaseCkeditorPackageAsset::uiLanguage();
-        $importCompliantUiLanguage = BaseCkeditorPackageAsset::getImportCompliantLanguage(BaseCkeditorPackageAsset::uiLanguage());
+        $uiLanguage = CkeditorAssets::uiLanguage();
+        $importCompliantUiLanguage = CkeditorAssets::getImportCompliantLanguage(CkeditorAssets::uiLanguage());
         $uiTranslationImport = "import coreTranslations from 'ckeditor5/translations/$importCompliantUiLanguage.js';";
 
-        $view->registerScriptWithVars(fn(
+        HtmlStack::scriptWithVars(fn(
             $baseConfigJs,
             $toolbarJs,
             $languageJs,
@@ -1831,8 +1834,8 @@ JS,
                 $this->imageMode,
                 $namespacedInputId,
             ],
-            View::POS_END,
-            ['type' => 'module']
+            Position::BodyEnd,
+            ['type' => 'module'],
         );
 
         $value = $this->prepValueForInput($value, $element, $static);
@@ -1857,13 +1860,13 @@ JS,
                 $css = str_replace($importMatches[0][$i], '', $css);
             }
             if (!empty($imports)) {
-                $view->registerCss(implode("\n", $imports));
+                HtmlStack::css(implode("\n", $imports));
             }
             $css = trim($css);
             if ($css !== '') {
                 // the id is needed for the regular field
                 // the class is used by the fullscreen mode (there can only be one at the time)
-                $view->registerCss("#{$namespacedInputId}, .{$namespacedInputId} { $css }");
+                HtmlStack::css("#{$namespacedInputId}, .{$namespacedInputId} { $css }");
             }
         }
 
@@ -2342,7 +2345,7 @@ JS;
             return [];
         }
 
-        $sources = Collection::make(Craft::$app->getCategories()->getAllGroups())
+        $sources = Collection::make(\Craft::$app->getCategories()->getAllGroups())
             ->filter(fn($group) => $group->getSiteSettings()[$element->siteId]?->hasUrls ?? false)
             ->map(fn($group) => "group:$group->uid")
             ->values()
@@ -2630,11 +2633,11 @@ JS;
     /**
      * Namespaces field's $describedBy value to be passed to the field.
      */
-    private function _describedBy(View $view): string
+    private function _describedBy(): string
     {
         if (!empty($this->describedBy)) {
             $describedByArray = explode(' ', $this->describedBy);
-            $namespace = trim(preg_replace('/\[|\]/', '-', $view->getNamespace() ?? ''), '-');
+            $namespace = trim(preg_replace('/\[|\]/', '-', InputNamespace::get() ?? ''), '-');
             foreach ($describedByArray as $key => $item) {
                 $describedByArray[$key] = "$namespace-$item";
             }

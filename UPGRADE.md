@@ -121,6 +121,68 @@ Event::listen(function(LinkOptionsResolving $event): void {
 
 The GraphQL classes moved from `craft\ckeditor\gql` to `CraftCms\Ckeditor\Gql` (`Generator`, `CkeditorData` and `CkeditorMarkup`). The schema is unchanged.
 
+### Console commands
+
+The console commands are now Artisan commands. The old command names still work as aliases.
+
+| Before | After |
+| --- | --- |
+| `php craft ckeditor/convert` / `ckeditor/convert/redactor` | `php artisan ckeditor:convert:redactor` |
+| `php craft ckeditor/convert/matrix <handle>` | `php artisan ckeditor:convert:matrix <handle>` |
+
+- `ckeditor:convert:matrix` now generates a Laravel content migration in `database/migrations/`, which extends `CraftCms\Ckeditor\Database\Migrations\BaseConvertMatrixContentMigration`. Run it on other environments with `php artisan craft:migrate:all`.
+- Removed `craft\ckeditor\migrations\BaseConvertMatrixContentMigration`. Content migrations it generated under Craft 5 should have run before upgrading.
+- Removed `craft\ckeditor\console\controllers\ConvertController`, `craft\ckeditor\console\actions\ConvertMatrix` and `craft\ckeditor\console\actions\ConvertRedactor`. `craft\ckeditor\console\ToolbarBuilder` is now `CraftCms\Ckeditor\Console\ToolbarBuilder`.
+
+### CKEditor packages and assets
+
+Yii asset bundles are gone. CKEditor’s own files are published to `public/vendor/craftcms/ckeditor/`, and packages that provide CKEditor plugins are registered as `CkeditorPackage` objects.
+
+| Before | After |
+| --- | --- |
+| `craft\ckeditor\web\assets\BaseCkeditorPackageAsset` | `CraftCms\Ckeditor\Data\CkeditorPackage` |
+| `craft\ckeditor\Plugin::registerCkeditorPackage()` | `CraftCms\Ckeditor\Support\CkeditorAssets::registerPackage()` |
+| `craft\ckeditor\Plugin::registerCkeditorPackageBundles()` | `CraftCms\Ckeditor\Support\CkeditorAssets::registerPackageAssets()` |
+| `craft\ckeditor\Plugin::getCkeditorPackages()` | `CraftCms\Ckeditor\Support\CkeditorAssets::getPackages()` |
+| `BaseCkeditorPackageAsset::uiLanguage()` / `getImportCompliantLanguage()` | `CkeditorAssets::uiLanguage()` / `getImportCompliantLanguage()` |
+| `craft\ckeditor\web\assets\ckeditor\CkeditorAsset` | Removed. Use `CkeditorAssets::registerEditorAssets()`. |
+| `craft\ckeditor\web\assets\fieldsettings\FieldSettingsAsset` | Removed. Use `CkeditorAssets::registerFieldSettingsAssets()`. |
+| `CkeditorAsset::EVENT_PUBLISH` | Removed (deprecated since 3.5.0). |
+
+Before:
+
+```php
+use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
+
+class TokensAsset extends BaseCkeditorPackageAsset
+{
+    public $sourcePath = __DIR__ . '/build';
+    public string $namespace = '@craftcms/ckeditor5-tokens';
+    public $js = [['tokens.js', 'type' => 'module']];
+    public array $pluginNames = ['Tokens'];
+    public array $toolbarItems = ['tokens'];
+}
+
+\craft\ckeditor\Plugin::registerCkeditorPackage(TokensAsset::class, 'tokens.js');
+```
+
+After (from your plugin’s `boot()` method, with the package’s files published via `$publishables`):
+
+```php
+use CraftCms\Ckeditor\Data\CkeditorPackage;
+use CraftCms\Ckeditor\Support\CkeditorAssets;
+
+public function boot(CkeditorAssets $ckeditorAssets): void
+{
+    $ckeditorAssets->registerPackage(new CkeditorPackage(
+        namespace: '@craftcms/ckeditor5-tokens',
+        url: $this->asset('tokens/tokens.js'),
+        pluginNames: ['Tokens'],
+        toolbarItems: ['tokens'],
+    ));
+}
+```
+
 ### HTML sanitizing
 
 CKEditor field values are now sanitized with Craft’s HTML sanitizers (`CraftCms\Cms\Support\Facades\HtmlSanitizers`, built on `symfony/html-sanitizer`) instead of HTML Purifier, via `craftcms/html-field` 4.
@@ -159,4 +221,5 @@ Event::listen(function(HtmlSanitizerConfigResolving $event): void {
 
 ### Config files
 
-CKEditor config files (custom JS/JSON config and CSS files referenced by field settings) are read from `config/craft/ckeditor/` instead of `config/ckeditor/`.
+- CKEditor config files (custom JS/JSON config and CSS files referenced by field settings) are read from `config/craft/ckeditor/` instead of `config/ckeditor/`.
+- The plugin settings config file moved from `config/ckeditor.php` to `config/craft/ckeditor.php`. Use Laravel’s `env()` instead of `craft\helpers\App::env()`.

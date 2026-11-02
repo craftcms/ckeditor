@@ -370,7 +370,7 @@
       } %}
         {% if jsFileOptions|length %}
           <p class="light mb-xs">
-            {{ 'Choose a JS/JSON file within `config/ckeditor/`.'|t('ckeditor')|md(inlineOnly=true) }}
+            {{ 'Choose a JS/JSON file within `config/craft/ckeditor/`.'|t('ckeditor')|md(inlineOnly=true) }}
           </p>
           {{ forms.select({
             id: 'config-options-file',
@@ -380,7 +380,7 @@
           }) }}
         {% else %}
           <p class="warning with-icon">
-            {{ 'No JS/JSON files exist within `config/ckeditor/`.'|t('ckeditor')|md(inlineOnly=true) }}
+            {{ 'No JS/JSON files exist within `config/craft/ckeditor/`.'|t('ckeditor')|md(inlineOnly=true) }}
           </p>
         {% endif %}
       {% endtag %}
@@ -457,7 +457,7 @@
       } %}
         {% if cssFileOptions|length %}
           <p class="light mb-xs">
-            {{ 'Choose a CSS file within `config/ckeditor/`.'|t('ckeditor')|md(inlineOnly=true) }}
+            {{ 'Choose a CSS file within `config/craft/ckeditor/`.'|t('ckeditor')|md(inlineOnly=true) }}
           </p>
           {{ forms.select({
             id: 'css-options-file',
@@ -467,7 +467,7 @@
           }) }}
         {% else %}
           <p class="warning with-icon">
-            {{ 'No CSS files exist within `config/ckeditor/`.'|t('ckeditor')|md(inlineOnly=true) }}
+            {{ 'No CSS files exist within `config/craft/ckeditor/`.'|t('ckeditor')|md(inlineOnly=true) }}
           </p>
         {% endif %}
       {% endtag %}
@@ -579,7 +579,7 @@
     </div>
   {% endif %}
 
-  {% if craft.app.config.general.enableGql %}
+  {% if enableGql %}
     {{ forms.selectField({
       label: 'GraphQL Mode'|t('app'),
       id: 'graphql-mode',
@@ -631,7 +631,7 @@ const updateImageField = () => {
   const entryTypes = Object.values(Garnish.getPostData(entryTypeSelect.$container));
   Craft.sendActionRequest('POST', 'ckeditor/field-settings/render-image-field', {
     data: {
-      namespace: {{ view.getNamespace()|json_encode|raw }},
+      namespace: {{ inputNamespace|json_encode|raw }},
       entryTypes,
       value: $("#{{ 'image-field'|namespaceInputId }}").val(),
     },

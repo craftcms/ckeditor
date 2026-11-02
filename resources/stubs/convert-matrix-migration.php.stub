@@ -1,19 +1,10 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
-namespace craft\migrations;
 
 /**
- * This view is used by app/console/controllers/MigrateController.php.
+ * This view is used by the `ckeditor:convert:matrix` command.
  *
  * The following variables are available in this view:
  */
-/** @var string $namespace */
-/** @var string $className */
 /** @var string $ckeFieldUid */
 /** @var string|null $htmlEntryTypeUid */
 /** @var string|null $htmlFieldUid */
@@ -23,18 +14,13 @@ namespace craft\migrations;
 echo "<?php\n";
 ?>
 
-namespace <?= $namespace ?>;
+use CraftCms\Ckeditor\Database\Migrations\BaseConvertMatrixContentMigration;
 
-use craft\ckeditor\migrations\BaseConvertMatrixContentMigration;
-
-/**
- * <?= $className ?> migration.
- */
-class <?= $className ?> extends BaseConvertMatrixContentMigration
+return new class extends BaseConvertMatrixContentMigration
 {
     public string $ckeFieldUid = '<?= $ckeFieldUid ?>';
     public ?string $htmlEntryTypeUid = <?= $htmlEntryTypeUid ? "'$htmlEntryTypeUid'" : 'null' ?>;
     public ?string $htmlFieldUid = <?= $htmlFieldUid ? "'$htmlFieldUid'" : 'null' ?>;
     public string $markdownFlavor = '<?= $markdownFlavor ?>';
     public bool $preserveHtmlEntries = <?= var_export($preserveHtmlEntries) ?>;
-}
+};

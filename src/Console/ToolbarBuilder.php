@@ -5,7 +5,7 @@
  * @license GPL-3.0-or-later
  */
 
-namespace craft\ckeditor\console;
+namespace CraftCms\Ckeditor\Console;
 
 use ArrayIterator;
 use Traversable;

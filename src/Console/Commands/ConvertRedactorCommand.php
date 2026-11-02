@@ -5,34 +5,44 @@
  * @license GPL-3.0-or-later
  */
 
-namespace craft\ckeditor\console\actions;
+namespace CraftCms\Ckeditor\Console\Commands;
 
-use Craft;
-use craft\ckeditor\console\controllers\ConvertController;
-use craft\ckeditor\console\ToolbarBuilder;
+use CraftCms\Ckeditor\Console\ToolbarBuilder;
 use CraftCms\Ckeditor\Field;
-use craft\errors\OperationAbortedException;
-use craft\fields\MissingField;
-use craft\helpers\Console;
-use craft\helpers\Json;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\helpers\StringHelper;
-use craft\services\ProjectConfig;
-use yii\base\Action;
-use yii\base\Exception;
-use yii\base\InvalidArgumentException;
-use yii\console\ExitCode;
-use yii\helpers\Inflector;
+use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Field\MissingField;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
+use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Str;
+use Illuminate\Console\Command;
+use InvalidArgumentException;
+use RuntimeException;
+
+use function Laravel\Prompts\confirm;
 
 /**
  * Converts Redactor fields to CKEditor
  *
- * @property ConvertController $controller
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.2.0
  */
-class ConvertRedactor extends Action
+class ConvertRedactorCommand extends Command
 {
+    use CraftCommand;
+
+    #[\Override]
+    protected $signature = 'ckeditor:convert:redactor';
+
+    #[\Override]
+    protected $description = 'Converts Redactor fields to CKEditor.';
+
+    #[\Override]
+    protected $aliases = ['ckeditor/convert', 'ckeditor/convert/redactor'];
+
+    private const string LEGACY_MISSING_FIELD = 'craft\\fields\\MissingField';
+
     private ProjectConfig $projectConfig;
 
     private array $defaultRedactorConfig = [
@@ -156,33 +166,31 @@ class ConvertRedactor extends Action
     ];
 
     /**
-     * Converts Redactor fields to CKEditor
-     *
-     * @return int
+     * Converts Redactor fields to CKEditor.
      */
-    public function run(): int
+    public function handle(ProjectConfig $projectConfig): int
     {
-        if (!$this->controller->interactive) {
-            $this->controller->stderr("This command must be run interactively.\n");
-            return ExitCode::UNSPECIFIED_ERROR;
+        if (!$this->input->isInteractive()) {
+            $this->components->error('This command must be run interactively.');
+            return self::FAILURE;
         }
 
-        $this->projectConfig = Craft::$app->getProjectConfig();
+        $this->projectConfig = $projectConfig;
 
         // Find Redactor fields
         $fields = null;
-        $this->controller->do('Looking for Redactor fields in the project config', function() use (&$fields) {
+        $this->components->task('Looking for Redactor fields in the project config', function() use (&$fields) {
             $fields = $this->findFields('craft\\redactor\\Field');
         });
 
         if (empty($fields)) {
-            $this->controller->stdout("   No Redactor fields found.\n", Console::FG_YELLOW);
-            return ExitCode::OK;
+            $this->stdout("   No Redactor fields found.\n", 'yellow');
+            return self::SUCCESS;
         }
 
-        $this->controller->stdout(PHP_EOL);
+        $this->stdout(PHP_EOL);
         $this->outputFields($fields, 'Redactor');
-        $this->controller->stdout(PHP_EOL);
+        $this->stdout(PHP_EOL);
 
         // Map the Redactor configs to CKEditor configs
         /** @var array<string,array> $redactorConfigs */
@@ -190,11 +198,11 @@ class ConvertRedactor extends Action
         $convertedFields = [];
 
         foreach ($fields as $path => $field) {
-            $this->controller->stdout(' → ', Console::FG_GREY);
-            $this->controller->stdout($this->controller->markdownToAnsi(sprintf('Converting %s', $this->pathAndHandleMarkdown($path, $field))));
-            $this->controller->stdout(' …', Console::FG_GREY);
+            $this->stdout(' → ', 'gray');
+            $this->stdout($this->markdownToAnsi(sprintf('Converting %s', $this->pathAndHandleMarkdown($path, $field))));
+            $this->stdout(' …', 'gray');
 
-            if ($field['type'] === MissingField::class) {
+            if (in_array($field['type'], [MissingField::class, self::LEGACY_MISSING_FIELD], true)) {
                 $field['settings'] = $field['settings']['settings'] ?? [];
             }
 
@@ -205,7 +213,7 @@ class ConvertRedactor extends Action
                     try {
                         $redactorConfig = Json::decode($field['settings']['manualConfig'] ?? '') ?? [];
                     } catch (InvalidArgumentException) {
-                        throw new Exception('`manualConfig` contains invalid JSON.');
+                        throw new RuntimeException('`manualConfig` contains invalid JSON.');
                     }
                 } else {
                     $basename = ($field['settings']['redactorConfig'] ?? $field['settings']['configFile'] ?? null) ?: 'Default.json';
@@ -218,14 +226,14 @@ class ConvertRedactor extends Action
                 // if the converted field's path is just fields.<uid> - set PC
                 if (str_starts_with($path, 'fields.')) {
                     $this->projectConfig->set($path, $field);
-                    $this->controller->stdout(" ✓ Field converted\n", Console::FG_GREEN);
+                    $this->stdout(" ✓ Field converted\n", 'green');
                 } else {
                     // otherwise we need to do more processing
                     $convertedFields[$path] = $field;
-                    $this->controller->stdout(" ~ Nested field will be converted later on\n", Console::FG_YELLOW);
+                    $this->stdout(" ~ Nested field will be converted later on\n", 'yellow');
                 }
             } catch (OperationAbortedException) {
-                $this->controller->stdout(" ✕ Field skipped\n", Console::FG_YELLOW);
+                $this->stdout(" ✕ Field skipped\n", 'yellow');
                 continue;
             }
         }
@@ -249,11 +257,11 @@ class ConvertRedactor extends Action
                 $field = reset($values['fields']);
                 if ($field) {
                     $this->projectConfig->set($values['originalPath'], $field);
-                    $this->controller->stdout(PHP_EOL);
-                    $this->controller->stdout(' → ', Console::FG_GREY);
-                    $this->controller->stdout($this->controller->markdownToAnsi(sprintf('Converting %s', $this->pathAndHandleMarkdown($values['originalPath'], $field))));
-                    $this->controller->stdout(' …', Console::FG_GREY);
-                    $this->controller->stdout(" ✓ Field converted", Console::FG_GREEN);
+                    $this->stdout(PHP_EOL);
+                    $this->stdout(' → ', 'gray');
+                    $this->stdout($this->markdownToAnsi(sprintf('Converting %s', $this->pathAndHandleMarkdown($values['originalPath'], $field))));
+                    $this->stdout(' …', 'gray');
+                    $this->stdout(" ✓ Field converted", 'green');
                 }
             } else {
                 // get the pc based on the preceding path (block), update it with the fields we have and that block should be set in PC
@@ -264,21 +272,21 @@ class ConvertRedactor extends Action
                     }
 
                     $this->projectConfig->set($path, $blockConfig);
-                    $this->controller->stdout(PHP_EOL);
-                    $this->controller->stdout(' → ', Console::FG_GREY);
-                    $this->controller->stdout($this->controller->markdownToAnsi(sprintf('Converting fields inside %s', $this->pathAndHandleMarkdown($path, $blockConfig))));
-                    $this->controller->stdout(' …', Console::FG_GREY);
-                    $this->controller->stdout(" ✓ Nested fields converted", Console::FG_GREEN);
+                    $this->stdout(PHP_EOL);
+                    $this->stdout(' → ', 'gray');
+                    $this->stdout($this->markdownToAnsi(sprintf('Converting fields inside %s', $this->pathAndHandleMarkdown($path, $blockConfig))));
+                    $this->stdout(' …', 'gray');
+                    $this->stdout(" ✓ Nested fields converted", 'green');
                 }
             }
         }
 
-        $this->controller->stdout("\n\n ✓ Finished converting Redactor fields.\n", Console::FG_GREEN, Console::BOLD);
-        $this->controller->stdout("\nCommit your project config changes, 
-and run `craft up` on other environments
-for the changes to take effect.\n", Console::FG_GREEN);
+        $this->stdout("\n\n ✓ Finished converting Redactor fields.\n", 'green', 'bold');
+        $this->stdout("\nCommit your project config changes, 
+and run `php artisan craft:migrate:all` on other environments
+for the changes to take effect.\n", 'green');
 
-        return ExitCode::OK;
+        return self::SUCCESS;
     }
 
     private function findFields(string $type): array
@@ -286,7 +294,7 @@ for the changes to take effect.\n", Console::FG_GREEN);
         return $this->projectConfig->find(fn(array $config) => (
             (($config['type'] ?? null) === $type) ||
             (
-                ($config['type'] ?? null) === MissingField::class &&
+                in_array($config['type'] ?? null, [MissingField::class, self::LEGACY_MISSING_FIELD], true) &&
                 ($config['settings']['expectedType'] ?? null) === $type
             )
         ));
@@ -294,17 +302,17 @@ for the changes to take effect.\n", Console::FG_GREEN);
 
     private function outputFields(array $fields, string $typeName): void
     {
-        $this->controller->stdout('   ');
+        $this->stdout('   ');
         $totalRedactorFields = count($fields);
-        $this->controller->stdout($this->controller->markdownToAnsi(sprintf(
+        $this->stdout($this->markdownToAnsi(sprintf(
             '**%s**',
             $totalRedactorFields === 1
                 ? "One $typeName field found:"
                 : "$totalRedactorFields $typeName fields found:"
         )));
-        $this->controller->stdout(PHP_EOL);
+        $this->stdout(PHP_EOL);
         foreach ($fields as $path => $field) {
-            $this->controller->stdout(sprintf(" - %s\n", $this->controller->markdownToAnsi($this->pathAndHandleMarkdown($path, $field))));
+            $this->stdout(sprintf(" - %s\n", $this->markdownToAnsi($this->pathAndHandleMarkdown($path, $field))));
         }
     }
 
@@ -317,17 +325,18 @@ for the changes to take effect.\n", Console::FG_GREEN);
     /**
      * @param string $basename
      * @return array
-     * @throws \Exception
      */
     private function resolveRedactorConfig(string $basename): array
     {
-        $redactorConfigPath = sprintf('%s/redactor/%s', Craft::$app->getPath()->getConfigPath(), $basename);
-
-        if (!is_file($redactorConfigPath)) {
-            return [];
+        // Craft 6 keeps Craft config files in config/craft/, but the Redactor configs may not have been moved there
+        foreach (["craft/redactor/$basename", "redactor/$basename"] as $path) {
+            $redactorConfigPath = config_path($path);
+            if (is_file($redactorConfigPath)) {
+                return Json::decodeFromFile($redactorConfigPath) ?? [];
+            }
         }
 
-        return Json::decodeFromFile($redactorConfigPath);
+        return [];
     }
 
     private function updateFieldSettings(array &$settings, array $redactorConfig): void
@@ -530,7 +539,7 @@ for the changes to take effect.\n", Console::FG_GREEN);
                         $settings['options']['style']['definitions'][] = [
                             'name' => $customFormat['title'],
                             'element' => $customFormat['args']['tag'],
-                            'classes' => StringHelper::split($customFormat['args']['class'], ' '),
+                            'classes' => self::split($customFormat['args']['class'], ' '),
                         ];
                         continue;
                     }
@@ -617,7 +626,7 @@ for the changes to take effect.\n", Console::FG_GREEN);
                 $settings['options']['style']['definitions'][] = [
                     'name' => $linkClass['label'],
                     'element' => 'a',
-                    'classes' => StringHelper::split($linkClass['class'], ' '),
+                    'classes' => self::split($linkClass['class'], ' '),
                 ];
             }
         }
@@ -652,9 +661,9 @@ for the changes to take effect.\n", Console::FG_GREEN);
                         empty($customStyle['args']['style'])
                     ) {
                         $settings['options']['style']['definitions'][] = [
-                            'name' => $customStyle['title'] ?? Inflector::camel2words($styleKey),
+                            'name' => $customStyle['title'] ?? Str::camel2words($styleKey),
                             'element' => $customStyle['args']['tag'],
-                            'classes' => StringHelper::split($customStyle['args']['class'], ' '),
+                            'classes' => self::split($customStyle['args']['class'], ' '),
                         ];
                         continue;
                     }
@@ -783,12 +792,12 @@ for the changes to take effect.\n", Console::FG_GREEN);
         // ---------------------------------------------------------------------
 
         if (!empty($unsupportedItems)) {
-            $this->controller->stdout("\n\n      ⚠️  The following Redactor config items aren’t supported by CKEditor:\n");
+            $this->stdout("\n\n      ⚠️  The following Redactor config items aren’t supported by CKEditor:\n");
             $this->outputList($unsupportedItems, '         ');
-            if (!$this->controller->confirm("\n      Continue anyway?", true)) {
+            if (!confirm("\n      Continue anyway?", true)) {
                 throw new OperationAbortedException();
             }
-            $this->controller->stdout('   ');
+            $this->stdout('   ');
         }
 
         $settings['toolbar'] = $ckeToolbar->buttons;
@@ -829,17 +838,64 @@ for the changes to take effect.\n", Console::FG_GREEN);
     private function outputList(array $items, string $indent = ''): void
     {
         foreach ($items as $key => $value) {
-            $this->controller->stdout("$indent - ");
+            $this->stdout("$indent - ");
             if (is_string($key)) {
-                $this->controller->stdout(sprintf('%s: ', $this->controller->markdownToAnsi("`$key`")));
+                $this->stdout(sprintf('%s: ', $this->markdownToAnsi("`$key`")));
             }
             if (is_array($value)) {
-                $this->controller->stdout(PHP_EOL);
+                $this->stdout(PHP_EOL);
                 $this->outputList($value, "$indent   ");
             } else {
-                $this->controller->stdout($this->controller->markdownToAnsi("`$value`"));
-                $this->controller->stdout(PHP_EOL);
+                $this->stdout($this->markdownToAnsi("`$value`"));
+                $this->stdout(PHP_EOL);
             }
         }
+    }
+
+    /**
+     * Writes text to the console, with optional styles (colors or `bold`).
+     */
+    private function stdout(string $text, string ...$styles): void
+    {
+        $options = [];
+        $fg = null;
+        foreach ($styles as $style) {
+            if ($style === 'bold') {
+                $options[] = 'bold';
+            } else {
+                $fg = $style;
+            }
+        }
+
+        if ($fg === null && empty($options)) {
+            $this->output->write($text);
+            return;
+        }
+
+        $format = implode(';', array_filter([
+            $fg ? "fg=$fg" : null,
+            $options ? 'options=' . implode(',', $options) : null,
+        ]));
+
+        $this->output->write("<$format>$text</>");
+    }
+
+    /**
+     * Converts basic Markdown (`**bold**` and `` `code` ``) to console formatting.
+     */
+    private function markdownToAnsi(string $markdown): string
+    {
+        $markdown = preg_replace('/\*\*(.+?)\*\*/', '<options=bold>$1</>', $markdown);
+        return preg_replace('/`(.+?)`/', '<fg=cyan>$1</>', $markdown);
+    }
+
+    /**
+     * Splits a string on spaces, removing empty values.
+     *
+     * @return string[]
+     */
+    private static function split(string $str): array
+    {
+        return array_values(array_filter(array_map('trim', explode(' ', $str)), fn(string $s) => $s !== ''));
     }
 }
