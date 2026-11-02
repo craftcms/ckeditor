@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license GPL-3.0-or-later
  */
@@ -15,6 +17,7 @@ use Illuminate\Support\Collection;
  * CkeditorConfigOptions helper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 final class CkeditorConfigSchema
@@ -605,7 +608,7 @@ final class CkeditorConfigSchema
     {
         // create defs based on the interfaces
         $defs = Collection::make(self::interfaces())
-            ->mapWithKeys(function($def, $name) {
+            ->mapWithKeys(function ($def, $name) {
                 $def += ['title' => $name];
                 if ((
                     $def['allOf'] ??
@@ -617,6 +620,7 @@ final class CkeditorConfigSchema
                 ) === false) {
                     $def += ['type' => 'object'];
                 }
+
                 return [$name => $def];
             })
             ->all();

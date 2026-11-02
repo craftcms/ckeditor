@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license GPL-3.0-or-later
  */
@@ -30,22 +32,29 @@ use function CraftCms\Cms\t;
  *
  * @method static Plugin getInstance()
  * @method Settings getSettings()
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
 class Plugin extends BasePlugin
 {
     public string $schemaVersion = '6.0.0.0';
+
     public string $minVersionRequired = '5.9.0';
+
     public bool $hasCpSettings = true;
+
     protected array $fieldTypes = [Field::class];
+
     protected array $commands = [
         ConvertMatrixCommand::class,
         ConvertRedactorCommand::class,
     ];
+
     protected array $publishables = [
-        __DIR__ . '/../resources/assets/ckeditor/dist' => 'ckeditor',
-        __DIR__ . '/../resources/assets/fieldsettings/dist' => 'fieldsettings',
+        __DIR__.'/../resources/assets/ckeditor/dist' => 'ckeditor',
+        __DIR__.'/../resources/assets/fieldsettings/dist' => 'fieldsettings',
     ];
+
     protected array $vite = [
         'resources/js/cp.ts',
     ];
@@ -57,22 +66,22 @@ class Plugin extends BasePlugin
     {
         $nestedEntryFieldTypes->register(Field::class);
         $controlTypes->register(CkeditorControl::class, EditorConfigControl::class);
-        $this->app->bind(Settings::class, fn() => $this->getSettings());
+        $this->app->bind(Settings::class, fn () => $this->getSettings());
 
-        if (request()->isCpRequest() && !app()->runningInConsole()) {
+        if (request()->isCpRequest() && ! app()->runningInConsole()) {
             // Wait until all plugins have booted, so packages registered from their boot() methods are included
-            $this->app->booted(fn() => $this->app->make(CkeditorAssets::class)->registerImportMap());
+            $this->app->booted(fn () => $this->app->make(CkeditorAssets::class)->registerImportMap());
         }
     }
 
     #[Override]
     protected static function createSettings(): ?PluginSettings
     {
-        return new Settings();
+        return new Settings;
     }
 
     #[Override]
-    public function settingsUi(UiContext $context = new UiContext()): ?Ui
+    public function settingsUi(UiContext $context = new UiContext): ?Ui
     {
         return Ui::make([
             UiField::make(t('License Key', category: 'ckeditor'), Text::make('licenseKey')

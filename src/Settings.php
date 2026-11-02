@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license GPL-3.0-or-later
  */
@@ -14,6 +16,7 @@ use CraftCms\Cms\Support\Env;
  * CKEditor plugin settings.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 5.10.0
  */
 class Settings extends PluginSettings
@@ -27,8 +30,6 @@ class Settings extends PluginSettings
 
     /**
      * Returns the parsed CKEditor license key.
-     *
-     * @return string|null
      */
     public function getLicenseKey(): ?string
     {

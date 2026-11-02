@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license GPL-3.0-or-later
  */
@@ -30,9 +32,13 @@ use RuntimeException;
 class BaseConvertMatrixContentMigration extends Migration
 {
     public string $ckeFieldUid;
+
     public ?string $htmlEntryTypeUid;
+
     public ?string $htmlFieldUid;
+
     public string $markdownFlavor;
+
     public bool $preserveHtmlEntries;
 
     /**
@@ -42,11 +48,11 @@ class BaseConvertMatrixContentMigration extends Migration
     {
         $ckeField = Fields::getFieldByUid($this->ckeFieldUid);
 
-        if (!$ckeField) {
+        if (! $ckeField) {
             throw new RuntimeException("Invalid field UUID: $this->ckeFieldUid");
         }
 
-        if (!$ckeField instanceof Field) {
+        if (! $ckeField instanceof Field) {
             throw new RuntimeException("$ckeField->name is not a CKEditor field.");
         }
 
@@ -55,13 +61,13 @@ class BaseConvertMatrixContentMigration extends Migration
 
         if ($this->htmlEntryTypeUid) {
             $htmlEntryType = EntryTypes::getEntryTypeByUid($this->htmlEntryTypeUid);
-            if (!$htmlEntryType) {
+            if (! $htmlEntryType) {
                 throw new RuntimeException("Invalid entry type UUID: $this->htmlEntryTypeUid");
             }
 
             if ($this->htmlFieldUid) {
                 $htmlFieldLayoutElement = $htmlEntryType->getFieldLayout()->getElementByUid($this->htmlFieldUid);
-                if (!$htmlFieldLayoutElement instanceof CustomField) {
+                if (! $htmlFieldLayoutElement instanceof CustomField) {
                     throw new RuntimeException("Invalid field layout element UUID: $this->htmlFieldUid");
                 }
                 $htmlField = $htmlFieldLayoutElement->getField();
@@ -70,7 +76,7 @@ class BaseConvertMatrixContentMigration extends Migration
 
         // get all the owner element IDs that have nested entries for this field
         $ownerIds = DB::table(Table::ENTRIES, 'e')
-            ->join(Table::ELEMENTS_OWNERS . ' as o', 'o.elementId', '=', 'e.id')
+            ->join(Table::ELEMENTS_OWNERS.' as o', 'o.elementId', '=', 'e.id')
             ->where('e.fieldId', $ckeField->id)
             ->groupBy('o.ownerId')
             ->pluck('o.ownerId')
@@ -90,7 +96,7 @@ class BaseConvertMatrixContentMigration extends Migration
                 ->trashed(null)
                 ->status(null)
                 ->collect()
-                ->groupBy(fn(Entry $entry) => $entry->siteId);
+                ->groupBy(fn (Entry $entry) => $entry->siteId);
 
             foreach ($groupedNestedEntries as $nestedEntries) {
                 // we're intentionally getting the site specific owner, from the nested entry
@@ -102,14 +108,14 @@ class BaseConvertMatrixContentMigration extends Migration
                 foreach ($nestedEntries as $entry) {
                     // only get the content if the nested entry is not soft-deleted
                     // or the owner is soft-deleted or the owner is a revision
-                    if ($entry->trashed && !$owner->trashed && !$owner->getIsRevision()) {
+                    if ($entry->trashed && ! $owner->trashed && ! $owner->getIsRevision()) {
                         continue;
                     }
 
                     // if the nested entry is the one containing the top-level field,
                     // get its content and place it before the rest of that entry’s content
                     if ($entry->getType()->uid === $htmlEntryType?->uid) {
-                        $textValue = (string)$entry->getFieldValue($htmlField->handle);
+                        $textValue = (string) $entry->getFieldValue($htmlField->handle);
                         if ($this->markdownFlavor !== 'none' && $htmlField instanceof PlainText) {
                             // Parse it as Markdown
                             $value .= Markdown::parse($textValue, $this->markdownFlavor);

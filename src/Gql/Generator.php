@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license GPL-3.0-or-later
  */
@@ -29,6 +31,7 @@ use GraphQL\Type\Definition\Type;
  * GraphQL data type generator
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.8.0
  */
 class Generator implements GeneratorInterface, SingleGeneratorInterface
@@ -43,12 +46,13 @@ class Generator implements GeneratorInterface, SingleGeneratorInterface
         /** @var Field $context */
         $handle = $context->layoutElement?->getOriginalHandle() ?? $context->handle;
         $typeName = "{$handle}_CkeditorField";
-        return GqlEntityRegistry::getOrCreate($typeName, fn() => new CkeditorData([
+
+        return GqlEntityRegistry::getOrCreate($typeName, fn () => new CkeditorData([
             'name' => $typeName,
-            'fields' => function() use ($context, $typeName) {
+            'fields' => function () use ($context, $typeName) {
                 $entryTypes = EntryTypeGenerator::generateTypes($context);
                 $entryArgs = EntryArguments::getArguments();
-                
+
                 foreach ($context->getFieldLayoutProviders() as $entryType) {
                     $entryArgs += Gql::getFieldLayoutArguments($entryType->getFieldLayout());
                 }
@@ -121,9 +125,9 @@ class Generator implements GeneratorInterface, SingleGeneratorInterface
                     'chunks' => [
                         'type' => Type::nonNull(Type::listOf(GqlHelper::getUnionType("{$typeName}_chunks", [
                             ...$entryTypes,
-                            'CkeditorMarkup' => GqlEntityRegistry::getOrCreate('CkeditorMarkup', fn() => new CkeditorMarkup([
+                            'CkeditorMarkup' => GqlEntityRegistry::getOrCreate('CkeditorMarkup', fn () => new CkeditorMarkup([
                                 'name' => 'CkeditorMarkup',
-                                'fields' => fn() => [
+                                'fields' => fn () => [
                                     'html' => [
                                         'type' => Type::string(),
                                         'description' => 'The parsed chunk value as HTML.',
@@ -143,16 +147,17 @@ class Generator implements GeneratorInterface, SingleGeneratorInterface
                                     ],
                                 ],
                             ])),
-                        ], function(Markup|EntryElement $value) {
+                        ], function (Markup|EntryElement $value) {
                             return $value instanceof EntryElement ? $value->getGqlTypeName() : 'CkeditorMarkup';
                         }))),
                         'description' => 'The content split into chunks of markup and nested entries.',
-                        'resolve' => function(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo) {
+                        'resolve' => function (mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo) {
                             /** @var FieldData $source */
-                            return array_map(function(BaseChunk $chunk) {
+                            return array_map(function (BaseChunk $chunk) {
                                 if ($chunk instanceof Entry) {
                                     return $chunk->getEntry();
                                 }
+
                                 /** @var Markup $chunk */
                                 return $chunk;
                             }, $source->getChunks()->all());

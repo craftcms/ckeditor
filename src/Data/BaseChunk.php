@@ -2,6 +2,7 @@
 
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license MIT
  */
@@ -16,22 +17,20 @@ use LogicException;
  *
  * @property-read string $type
  * @property-read string $html
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.1.0
  */
 abstract class BaseChunk implements SafeHtml
 {
     /**
      * Returns the chunk type.
-     *
-     * @return string
      */
     abstract public function getType(): string;
 
     /**
      * Returns the chunk’s HTML.
-     *
-     * @return string
      */
     abstract public function getHtml(): string;
 

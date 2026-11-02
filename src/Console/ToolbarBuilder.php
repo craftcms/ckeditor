@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license GPL-3.0-or-later
  */
@@ -14,17 +16,17 @@ use Traversable;
  * Toolbar builder
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 5.0.0
  */
 class ToolbarBuilder
 {
     /**
-     * @param string[] $buttons The toolbar configuration
+     * @param  string[]  $buttons  The toolbar configuration
      */
     public function __construct(
         public array $buttons = [],
-    ) {
-    }
+    ) {}
 
     public function hasButton(string $button): bool
     {
@@ -38,14 +40,14 @@ class ToolbarBuilder
 
     public function addButton(string $button): void
     {
-        if ($button === '|' || !$this->hasButton($button)) {
+        if ($button === '|' || ! $this->hasButton($button)) {
             $this->buttons[] = $button;
         }
     }
 
     public function addButtonAt(string $button, int $pos): void
     {
-        if ($button === '|' || !$this->hasButton($button)) {
+        if ($button === '|' || ! $this->hasButton($button)) {
             array_splice($this->buttons, $pos, 0, [$button]);
         }
     }

@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license GPL-3.0-or-later
  */
@@ -27,8 +29,11 @@ use Override;
 class EditorConfigControl extends Control
 {
     private string $html = '';
+
     private string $module = '';
+
     private ?string $part = null;
+
     private ?string $group = null;
 
     /** @var array{styles:string[],scripts:string[],modules:string[]} */
@@ -44,7 +49,7 @@ class EditorConfigControl extends Control
     {
         return Html::hiddenInput($attributes['name'] ?? '', Json::encode($value ?? []), [
             'id' => $attributes['id'],
-        ]) . ($control->props['html'] ?? '');
+        ]).($control->props['html'] ?? '');
     }
 
     public function component(): string
@@ -54,75 +59,68 @@ class EditorConfigControl extends Control
 
     /**
      * Sets the server-rendered settings markup.
-     *
-     * @param string $html
-     * @return static
      */
     public function html(string $html): static
     {
         $this->html = $html;
+
         return $this;
     }
 
     /**
      * Sets the JavaScript module that initializes the toolbar builder and config options.
-     *
-     * @param string $module
-     * @return static
      */
     public function module(string $module): static
     {
         $this->module = $module;
+
         return $this;
     }
 
     /**
      * Sets which part of the settings this control holds, and the group it shares with the other part, if any.
-     *
-     * @param string $part
-     * @param string|null $group
-     * @return static
      */
     public function part(string $part, ?string $group): static
     {
         $this->part = $part;
         $this->group = $group;
+
         return $this;
     }
 
     /**
      * Sets the CSS files, classic scripts and module scripts the settings need.
      *
-     * @param array{styles:string[],scripts:string[],modules:string[]} $assets
-     * @return static
+     * @param  array{styles:string[],scripts:string[],modules:string[]}  $assets
      */
     public function assets(array $assets): static
     {
         $this->assets = $assets;
+
         return $this;
     }
 
     /**
      * Sets the code editor (Monaco) settings.
      *
-     * @param array<string,mixed> $codeEditor
-     * @return static
+     * @param  array<string,mixed>  $codeEditor
      */
     public function codeEditor(array $codeEditor): static
     {
         $this->codeEditor = $codeEditor;
+
         return $this;
     }
 
     /**
      * Sets global settings the CKEditor JavaScript reads.
      *
-     * @param array<string,mixed> $globals
-     * @return static
+     * @param  array<string,mixed>  $globals
      */
     public function globals(array $globals): static
     {
         $this->globals = $globals;
+
         return $this;
     }
 

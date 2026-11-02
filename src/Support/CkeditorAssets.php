@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license GPL-3.0-or-later
  */
@@ -35,8 +37,6 @@ class CkeditorAssets
 
     /**
      * Returns the language code CKEditor’s UI should use, based on the app language.
-     *
-     * @return string
      */
     public static function uiLanguage(): string
     {
@@ -52,9 +52,6 @@ class CkeditorAssets
     /**
      * Returns a language code that CKEditor has translations for, falling back to the language without its
      * territory, and then to English.
-     *
-     * @param string $language
-     * @return string
      */
     public static function getImportCompliantLanguage(string $language): string
     {
@@ -80,8 +77,7 @@ class CkeditorAssets
     public function __construct(
         private readonly Plugin $plugin,
         private readonly ElementTypes $elementTypes,
-    ) {
-    }
+    ) {}
 
     /**
      * Registers a CKEditor package.
@@ -89,14 +85,12 @@ class CkeditorAssets
      * Each CKEditor field only imports a package (and registers its assets) if one of its toolbar items is in the
      * field’s toolbar. A package without toolbar items has its plugins loaded for every field, and a package without
      * plugins or toolbar items has its assets registered for every field, for their side effects.
-     *
-     * @param CkeditorPackage $package
      */
     public function registerPackage(CkeditorPackage $package): void
     {
         $this->packages[$package->namespace] = $package;
 
-        if (!empty($package->pluginNames) || !empty($package->toolbarItems)) {
+        if (! empty($package->pluginNames) || ! empty($package->toolbarItems)) {
             CkeditorConfig::registerPackage($package->namespace, [
                 'plugins' => $package->pluginNames,
                 'toolbarItems' => $package->toolbarItems,
@@ -146,7 +140,7 @@ class CkeditorAssets
             ],
             'scripts' => array_filter([
                 $this->translationUrl(
-                    dirname($this->plugin->getBasePath()) . '/resources/assets/ckeditor/dist/translations',
+                    dirname($this->plugin->getBasePath()).'/resources/assets/ckeditor/dist/translations',
                     $this->url('ckeditor/translations', false),
                 ),
             ]),
@@ -170,7 +164,7 @@ class CkeditorAssets
 
         return [
             'localizedRefHandles' => $refHandles,
-            'showInspector' => (bool)Env::get('CRAFT_SHOW_CKEDITOR_INSPECTOR'),
+            'showInspector' => (bool) Env::get('CRAFT_SHOW_CKEDITOR_INSPECTOR'),
             'revAssetUrls' => Cms::config()->revAssetUrls,
         ];
     }
@@ -196,11 +190,11 @@ class CkeditorAssets
 
         $globals = $this->editorGlobals();
 
-        HtmlStack::scriptWithVars(fn($refHandles) => <<<JS
+        HtmlStack::scriptWithVars(fn ($refHandles) => <<<JS
 window.CKE_LOCALIZED_REF_HANDLES = $refHandles;
 JS, [$globals['localizedRefHandles']], Position::Head, ['type' => 'module']);
 
-        HtmlStack::jsWithVars(fn($attach, $revAssetUrls) => <<<JS
+        HtmlStack::jsWithVars(fn ($attach, $revAssetUrls) => <<<JS
 Craft.showCkeditorInspector = $attach;
 Craft.revAssetUrls = $revAssetUrls;
 JS, [$globals['showInspector'], $globals['revAssetUrls']], Position::BodyEnd);
@@ -221,7 +215,7 @@ JS, [$globals['showInspector'], $globals['revAssetUrls']], Position::BodyEnd);
      *
      * Packages that don’t provide any CKEditor plugins (e.g. global functionality) are always registered.
      *
-     * @param string[]|null $namespaces The package namespaces whose assets should be registered, or `null` for all packages
+     * @param  string[]|null  $namespaces  The package namespaces whose assets should be registered, or `null` for all packages
      */
     public function registerPackageAssets(?array $namespaces = null): void
     {
@@ -245,7 +239,7 @@ JS, [$globals['showInspector'], $globals['revAssetUrls']], Position::BodyEnd);
      *
      * Packages that don’t provide any CKEditor plugins (e.g. global functionality) are always included.
      *
-     * @param string[]|null $namespaces The package namespaces whose assets should be included, or `null` for all packages
+     * @param  string[]|null  $namespaces  The package namespaces whose assets should be included, or `null` for all packages
      * @return array{styles:string[],scripts:string[],modules:string[]}
      */
     public function packageAssetUrls(?array $namespaces = null): array
@@ -255,8 +249,8 @@ JS, [$globals['showInspector'], $globals['revAssetUrls']], Position::BodyEnd);
         foreach ($this->packages as $package) {
             if (
                 $namespaces !== null &&
-                !in_array($package->namespace, $namespaces, true) &&
-                !empty(CkeditorConfig::getPluginsByPackage($package->namespace))
+                ! in_array($package->namespace, $namespaces, true) &&
+                ! empty(CkeditorConfig::getPluginsByPackage($package->namespace))
             ) {
                 continue;
             }
@@ -278,9 +272,8 @@ JS, [$globals['showInspector'], $globals['revAssetUrls']], Position::BodyEnd);
     /**
      * Returns the URL to a published CKEditor asset.
      *
-     * @param string $path The path within the published asset folder
-     * @param bool $versioned Whether a cache-busting query string should be added
-     * @return string
+     * @param  string  $path  The path within the published asset folder
+     * @param  bool  $versioned  Whether a cache-busting query string should be added
      */
     public function url(string $path, bool $versioned = true): string
     {

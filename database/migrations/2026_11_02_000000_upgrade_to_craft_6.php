@@ -37,7 +37,7 @@ return new class extends Migration
         $projectConfig->muteEvents = true;
 
         try {
-            $fieldConfigs = $projectConfig->find(fn(array $item) => ($item['type'] ?? null) === self::OLD_FIELD_TYPE);
+            $fieldConfigs = $projectConfig->find(fn (array $item) => ($item['type'] ?? null) === self::OLD_FIELD_TYPE);
 
             foreach (array_keys($fieldConfigs) as $path) {
                 $projectConfig->set("$path.type", Field::class);
@@ -49,7 +49,7 @@ return new class extends Migration
 
     private function moveReferences(): void
     {
-        if (!Schema::hasTable('ckeditor_references')) {
+        if (! Schema::hasTable('ckeditor_references')) {
             return;
         }
 
@@ -57,9 +57,9 @@ return new class extends Migration
             DB::table('ckeditor_references')
                 ->select(['fieldId', 'fieldInstanceUid', 'sourceId', 'sourceSiteId', 'targetId'])
                 ->orderBy('id')
-                ->chunk(500, function(Collection $rows) {
+                ->chunk(500, function (Collection $rows) {
                     DB::table(Table::FIELDREFERENCES)->insertOrIgnore(
-                        $rows->map(fn(object $row) => (array)$row)->all(),
+                        $rows->map(fn (object $row) => (array) $row)->all(),
                     );
                 });
         }

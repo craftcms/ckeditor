@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license GPL-3.0-or-later
  */
@@ -26,6 +28,7 @@ use function Laravel\Prompts\confirm;
  * Converts Redactor fields to CKEditor
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.2.0
  */
 class ConvertRedactorCommand extends Command
@@ -170,8 +173,9 @@ class ConvertRedactorCommand extends Command
      */
     public function handle(ProjectConfig $projectConfig): int
     {
-        if (!$this->input->isInteractive()) {
+        if (! $this->input->isInteractive()) {
             $this->components->error('This command must be run interactively.');
+
             return self::FAILURE;
         }
 
@@ -179,12 +183,13 @@ class ConvertRedactorCommand extends Command
 
         // Find Redactor fields
         $fields = null;
-        $this->components->task('Looking for Redactor fields in the project config', function() use (&$fields) {
+        $this->components->task('Looking for Redactor fields in the project config', function () use (&$fields) {
             $fields = $this->findFields('craft\\redactor\\Field');
         });
 
         if (empty($fields)) {
             $this->stdout("   No Redactor fields found.\n", 'yellow');
+
             return self::SUCCESS;
         }
 
@@ -234,6 +239,7 @@ class ConvertRedactorCommand extends Command
                 }
             } catch (OperationAbortedException) {
                 $this->stdout(" ✕ Field skipped\n", 'yellow');
+
                 continue;
             }
         }
@@ -243,7 +249,7 @@ class ConvertRedactorCommand extends Command
         foreach ($convertedFields as $path => $field) {
             $prePath = rtrim(substr($path, 0, strrpos($path, '.')), '.fields.');
             $fieldUid = substr($path, strrpos($path, '.') + 1);
-            if (!isset($groupedFields[$prePath])) {
+            if (! isset($groupedFields[$prePath])) {
                 $groupedFields[$prePath] = [];
             }
             $groupedFields[$prePath]['fields'][$fieldUid] = $field;
@@ -261,7 +267,7 @@ class ConvertRedactorCommand extends Command
                     $this->stdout(' → ', 'gray');
                     $this->stdout($this->markdownToAnsi(sprintf('Converting %s', $this->pathAndHandleMarkdown($values['originalPath'], $field))));
                     $this->stdout(' …', 'gray');
-                    $this->stdout(" ✓ Field converted", 'green');
+                    $this->stdout(' ✓ Field converted', 'green');
                 }
             } else {
                 // get the pc based on the preceding path (block), update it with the fields we have and that block should be set in PC
@@ -276,7 +282,7 @@ class ConvertRedactorCommand extends Command
                     $this->stdout(' → ', 'gray');
                     $this->stdout($this->markdownToAnsi(sprintf('Converting fields inside %s', $this->pathAndHandleMarkdown($path, $blockConfig))));
                     $this->stdout(' …', 'gray');
-                    $this->stdout(" ✓ Nested fields converted", 'green');
+                    $this->stdout(' ✓ Nested fields converted', 'green');
                 }
             }
         }
@@ -291,7 +297,7 @@ for the changes to take effect.\n", 'green');
 
     private function findFields(string $type): array
     {
-        return $this->projectConfig->find(fn(array $config) => (
+        return $this->projectConfig->find(fn (array $config) => (
             (($config['type'] ?? null) === $type) ||
             (
                 in_array($config['type'] ?? null, [MissingField::class, self::LEGACY_MISSING_FIELD], true) &&
@@ -318,14 +324,11 @@ for the changes to take effect.\n", 'green');
 
     private function pathAndHandleMarkdown(string $path, array $config): string
     {
-        $handle = !empty($config['handle']) ? " (`{$config['handle']}`)" : '';
+        $handle = ! empty($config['handle']) ? " (`{$config['handle']}`)" : '';
+
         return "`$path`$handle";
     }
 
-    /**
-     * @param string $basename
-     * @return array
-     */
     private function resolveRedactorConfig(string $basename): array
     {
         // Craft 6 keeps Craft config files in config/craft/, but the Redactor configs may not have been moved there
@@ -360,7 +363,7 @@ for the changes to take effect.\n", 'green');
         }
 
         // apply `buttonsHide` to `buttons`
-        if (!empty($fullRedactorConfig['buttonsHide'])) {
+        if (! empty($fullRedactorConfig['buttonsHide'])) {
             foreach ($fullRedactorConfig['buttonsHide'] as $button) {
                 $redactorToolbar->removeButton($button);
             }
@@ -375,8 +378,8 @@ for the changes to take effect.\n", 'green');
 
         // apply `buttonsAddAfter` to `buttons`
         if (
-            !empty($fullRedactorConfig['buttonsAddAfter']['after']) &&
-            !empty($fullRedactorConfig['buttonsAddAfter']['buttons'])
+            ! empty($fullRedactorConfig['buttonsAddAfter']['after']) &&
+            ! empty($fullRedactorConfig['buttonsAddAfter']['buttons'])
         ) {
             $pos = $redactorToolbar->getButtonPos($fullRedactorConfig['buttonsAddAfter']['after']);
             if ($pos !== false) {
@@ -388,8 +391,8 @@ for the changes to take effect.\n", 'green');
 
         // apply `buttonsAddBefore` to `buttons`
         if (
-            !empty($fullRedactorConfig['buttonsAddBefore']['after']) &&
-            !empty($fullRedactorConfig['buttonsAddBefore']['buttons'])
+            ! empty($fullRedactorConfig['buttonsAddBefore']['after']) &&
+            ! empty($fullRedactorConfig['buttonsAddBefore']['buttons'])
         ) {
             $pos = $redactorToolbar->getButtonPos($fullRedactorConfig['buttonsAddBefore']['after']);
             if ($pos !== false) {
@@ -401,29 +404,45 @@ for the changes to take effect.\n", 'green');
         }
 
         // add plugin-supplied buttons
-        if (!empty($fullRedactorConfig['plugins'])) {
+        if (! empty($fullRedactorConfig['plugins'])) {
             foreach ($fullRedactorConfig['plugins'] as $plugin) {
                 if (in_array($plugin, $this->ignoredRedactorPlugins, true)) {
                     continue;
                 }
 
                 switch ($plugin) {
-                    case 'alignment': $redactorToolbar->addButton('alignment'); break;
-                    case 'clips': $redactorToolbar->addButton('clips'); break;
-                    case 'counter': $settings['showWordCount'] = true; break;
-                    case 'fontcolor': $redactorToolbar->addButton('fontcolor'); break;
-                    case 'fontfamily': $redactorToolbar->addButton('fontfamily'); break;
-                    case 'fontsize': $redactorToolbar->addButton('fontsize'); break;
-                    case 'fullscreen': $redactorToolbar->addButton('fullscreen'); break;
-                    case 'inlinestyle': $redactorToolbar->addButtonAfter('inline', 'format'); break;
-                    case 'pagebreak': $redactorToolbar->addButton('pagebreak'); break;
-                    case 'properties': $redactorToolbar->addButton('properties'); break;
-                    case 'specialchars': $redactorToolbar->addButton('specialchars'); break;
-                    case 'table': $redactorToolbar->addButtonBefore('table', 'link'); break;
-                    case 'textdirection': $redactorToolbar->addButton('textdirection'); break;
-                    case 'variable': $redactorToolbar->addButton('variable'); break;
-                    case 'video': $redactorToolbar->addButtonAfter('video', 'image'); break;
-                    case 'widget': $redactorToolbar->addButton('widget'); break;
+                    case 'alignment': $redactorToolbar->addButton('alignment');
+                        break;
+                    case 'clips': $redactorToolbar->addButton('clips');
+                        break;
+                    case 'counter': $settings['showWordCount'] = true;
+                        break;
+                    case 'fontcolor': $redactorToolbar->addButton('fontcolor');
+                        break;
+                    case 'fontfamily': $redactorToolbar->addButton('fontfamily');
+                        break;
+                    case 'fontsize': $redactorToolbar->addButton('fontsize');
+                        break;
+                    case 'fullscreen': $redactorToolbar->addButton('fullscreen');
+                        break;
+                    case 'inlinestyle': $redactorToolbar->addButtonAfter('inline', 'format');
+                        break;
+                    case 'pagebreak': $redactorToolbar->addButton('pagebreak');
+                        break;
+                    case 'properties': $redactorToolbar->addButton('properties');
+                        break;
+                    case 'specialchars': $redactorToolbar->addButton('specialchars');
+                        break;
+                    case 'table': $redactorToolbar->addButtonBefore('table', 'link');
+                        break;
+                    case 'textdirection': $redactorToolbar->addButton('textdirection');
+                        break;
+                    case 'variable': $redactorToolbar->addButton('variable');
+                        break;
+                    case 'video': $redactorToolbar->addButtonAfter('video', 'image');
+                        break;
+                    case 'widget': $redactorToolbar->addButton('widget');
+                        break;
                     default: $unsupportedItems['plugins'][] = $plugin;
                 }
             }
@@ -487,7 +506,7 @@ for the changes to take effect.\n", 'green');
                 case 'lists':
                     $ckeToolbar->addButton('bulletedList');
                     $ckeToolbar->addButton('numberedList');
-                // no break
+                    // no break
                 case 'orderedlist':
                     $ckeToolbar->addButton('numberedList');
                     break;
@@ -523,16 +542,16 @@ for the changes to take effect.\n", 'green');
         // Only deal with formatting options if the Redactor field had a `format` button
         if ($ckeToolbar->hasButton('heading')) {
             // Register custom formats as styles
-            if (!empty($fullRedactorConfig['formattingAdd'])) {
+            if (! empty($fullRedactorConfig['formattingAdd'])) {
                 foreach ($fullRedactorConfig['formattingAdd'] as $key => $customFormat) {
                     if (($customFormat['args']['type'] ?? null) === 'remove') {
                         continue;
                     }
                     if (
-                        !empty($customFormat['title']) &&
+                        ! empty($customFormat['title']) &&
                         in_array($customFormat['api'] ?? null, ['module.block.format', 'module.inline.format', null]) &&
-                        !empty($customFormat['args']['tag']) &&
-                        !empty($customFormat['args']['class']) &&
+                        ! empty($customFormat['args']['tag']) &&
+                        ! empty($customFormat['args']['class']) &&
                         empty($customFormat['args']['attr']) &&
                         empty($customFormat['args']['style'])
                     ) {
@@ -541,13 +560,14 @@ for the changes to take effect.\n", 'green');
                             'element' => $customFormat['args']['tag'],
                             'classes' => self::split($customFormat['args']['class'], ' '),
                         ];
+
                         continue;
                     }
 
                     if (
                         in_array($customFormat['api'] ?? null, ['module.block.format', 'module.inline.format', null]) &&
                         is_array($customFormat['args'] ?? null) &&
-                        !empty($customFormat['args']['tag']) &&
+                        ! empty($customFormat['args']['tag']) &&
                         empty($customFormat['args']['class']) &&
                         empty($customFormat['args']['attr']) &&
                         empty($customFormat['args']['style'])
@@ -557,6 +577,7 @@ for the changes to take effect.\n", 'green');
                         if ($button) {
                             $ckeToolbar->addButtonAfter($button, $lastFormattingButton);
                             $lastFormattingButton = $button;
+
                             continue;
                         }
                     }
@@ -567,7 +588,7 @@ for the changes to take effect.\n", 'green');
 
             // apply `formattingHide` to `formatting`
             $formats = $fullRedactorConfig['formatting'] ?: [];
-            if (!empty($fullRedactorConfig['formattingHide'])) {
+            if (! empty($fullRedactorConfig['formattingHide'])) {
                 foreach ($fullRedactorConfig['formattingHide'] as $format) {
                     $pos = array_search($format, $formats);
                     if ($pos !== false) {
@@ -582,7 +603,7 @@ for the changes to take effect.\n", 'green');
 
             foreach ($formats as $format) {
                 if (in_array($format, ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'], true)) {
-                    $settings['headingLevels'][] = (int)$format[1];
+                    $settings['headingLevels'][] = (int) $format[1];
                 } elseif ($format !== 'p') {
                     switch ($format) {
                         case 'blockquote':
@@ -617,10 +638,11 @@ for the changes to take effect.\n", 'green');
         }
 
         // redactor-link-styles
-        if (!empty($fullRedactorConfig['linkClasses'])) {
+        if (! empty($fullRedactorConfig['linkClasses'])) {
             foreach ($fullRedactorConfig['linkClasses'] as $linkClass) {
                 if (empty($linkClass['label']) || empty($linkClass['class'])) {
                     $unsupportedItems['linkClasses'][] = Json::encode($linkClass);
+
                     continue;
                 }
                 $settings['options']['style']['definitions'][] = [
@@ -633,16 +655,16 @@ for the changes to take effect.\n", 'green');
 
         // redactor-custom-styles
         $customStylesKey = isset($fullRedactorConfig['customStyles']) ? 'customStyles' : 'customstyles';
-        if (!empty($fullRedactorConfig[$customStylesKey])) {
+        if (! empty($fullRedactorConfig[$customStylesKey])) {
             foreach ($fullRedactorConfig[$customStylesKey] as $itemKey => $customStyleItem) {
                 if (isset($customStyleItem['dropdown'])) {
                     $customStyles = $customStyleItem['dropdown'];
-                    $addUnsupportedCustomStyle = function($key, $value) use (&$unsupportedItems, $customStylesKey, $itemKey) {
+                    $addUnsupportedCustomStyle = function ($key, $value) use (&$unsupportedItems, $customStylesKey, $itemKey) {
                         $unsupportedItems[$customStylesKey][$itemKey]['dropdown'][$key] = $value;
                     };
                 } else {
                     $customStyles = [$customStyleItem];
-                    $addUnsupportedCustomStyle = function($key, $value) use (&$unsupportedItems, $customStylesKey, $itemKey) {
+                    $addUnsupportedCustomStyle = function ($key, $value) use (&$unsupportedItems, $customStylesKey, $itemKey) {
                         $unsupportedItems[$customStylesKey][$itemKey] = $value;
                     };
                 }
@@ -655,8 +677,8 @@ for the changes to take effect.\n", 'green');
                     if (
                         in_array($customStyle['api'] ?? null, ['module.block.format', 'module.inline.format', null]) &&
                         is_array($customStyle['args'] ?? null) &&
-                        !empty($customStyle['args']['tag']) &&
-                        !empty($customStyle['args']['class']) &&
+                        ! empty($customStyle['args']['tag']) &&
+                        ! empty($customStyle['args']['class']) &&
                         empty($customStyle['args']['attr']) &&
                         empty($customStyle['args']['style'])
                     ) {
@@ -665,6 +687,7 @@ for the changes to take effect.\n", 'green');
                             'element' => $customStyle['args']['tag'],
                             'classes' => self::split($customStyle['args']['class'], ' '),
                         ];
+
                         continue;
                     }
 
@@ -674,7 +697,7 @@ for the changes to take effect.\n", 'green');
                             is_string($customStyle['args'] ?? null) ||
                             (
                                 is_array($customStyle['args'] ?? null) &&
-                                !empty($customStyle['args']['tag']) &&
+                                ! empty($customStyle['args']['tag']) &&
                                 empty($customStyle['args']['class']) &&
                                 empty($customStyle['args']['attr']) &&
                                 empty($customStyle['args']['style'])
@@ -692,6 +715,7 @@ for the changes to take effect.\n", 'green');
                         if ($button) {
                             $ckeToolbar->addButtonAfter($button, $lastFormattingButton);
                             $lastFormattingButton = $button;
+
                             continue;
                         }
                     }
@@ -701,7 +725,7 @@ for the changes to take effect.\n", 'green');
             }
         }
 
-        if (!empty($settings['options']['style']['definitions'])) {
+        if (! empty($settings['options']['style']['definitions'])) {
             $ckeToolbar->addButtonAfter('style', 'heading');
         }
 
@@ -762,22 +786,22 @@ for the changes to take effect.\n", 'green');
                     }
                     break;
                 case 'source':
-                    if (!$value) {
+                    if (! $value) {
                         $ckeToolbar->removeButton('sourceEditing');
                     }
                     break;
 
-                // Unsupported options
+                    // Unsupported options
                 case 'inline':
                 case 'linkNofollow':
                 case 'linkTarget':
                 case 'linkTitle':
                 case 'preClass':
-                    if (!$value) {
+                    if (! $value) {
                         // not a problem if it's falsy
                         break;
                     }
-                // no break
+                    // no break
                 default:
                     $unsupportedItems[$key] = match (true) {
                         (is_string($value) || is_numeric($value)) => $value,
@@ -791,17 +815,17 @@ for the changes to take effect.\n", 'green');
         // Wrap it up
         // ---------------------------------------------------------------------
 
-        if (!empty($unsupportedItems)) {
+        if (! empty($unsupportedItems)) {
             $this->stdout("\n\n      ⚠️  The following Redactor config items aren’t supported by CKEditor:\n");
             $this->outputList($unsupportedItems, '         ');
-            if (!confirm("\n      Continue anyway?", true)) {
-                throw new OperationAbortedException();
+            if (! confirm("\n      Continue anyway?", true)) {
+                throw new OperationAbortedException;
             }
             $this->stdout('   ');
         }
 
         $settings['toolbar'] = $ckeToolbar->buttons;
-        $settings['enableSourceEditingForNonAdmins'] = (bool)($settings['showHtmlButtonForNonAdmins'] ?? false);
+        $settings['enableSourceEditingForNonAdmins'] = (bool) ($settings['showHtmlButtonForNonAdmins'] ?? false);
 
         unset(
             $settings['cleanupHtml'],
@@ -869,12 +893,13 @@ for the changes to take effect.\n", 'green');
 
         if ($fg === null && empty($options)) {
             $this->output->write($text);
+
             return;
         }
 
         $format = implode(';', array_filter([
             $fg ? "fg=$fg" : null,
-            $options ? 'options=' . implode(',', $options) : null,
+            $options ? 'options='.implode(',', $options) : null,
         ]));
 
         $this->output->write("<$format>$text</>");
@@ -886,6 +911,7 @@ for the changes to take effect.\n", 'green');
     private function markdownToAnsi(string $markdown): string
     {
         $markdown = preg_replace('/\*\*(.+?)\*\*/', '<options=bold>$1</>', $markdown);
+
         return preg_replace('/`(.+?)`/', '<fg=cyan>$1</>', $markdown);
     }
 
@@ -896,6 +922,6 @@ for the changes to take effect.\n", 'green');
      */
     private static function split(string $str, string $delimiter = ' '): array
     {
-        return array_values(array_filter(array_map('trim', explode($delimiter, $str)), fn(string $s) => $s !== ''));
+        return array_values(array_filter(array_map('trim', explode($delimiter, $str)), fn (string $s) => $s !== ''));
     }
 }

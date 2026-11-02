@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license GPL-3.0-or-later
  */
@@ -25,14 +27,13 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 class LinkOptionsResolving
 {
     /**
-     * @param Field $field The CKEditor field
-     * @param ElementInterface|null $element The element being edited, if there is one
-     * @param array[] $linkOptions The link options
+     * @param  Field  $field  The CKEditor field
+     * @param  ElementInterface|null  $element  The element being edited, if there is one
+     * @param  array[]  $linkOptions  The link options
      */
     public function __construct(
         public readonly Field $field,
         public readonly ?ElementInterface $element,
         public array $linkOptions,
-    ) {
-    }
+    ) {}
 }

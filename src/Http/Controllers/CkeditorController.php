@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license GPL-3.0-or-later
  */
@@ -35,6 +37,7 @@ use function CraftCms\Cms\t;
  * CKEditor controller
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.4.0
  */
 class CkeditorController
@@ -43,9 +46,6 @@ class CkeditorController
 
     /**
      * Returns an image’s URL and dimensions.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function imageUrl(Request $request): JsonResponse
     {
@@ -56,7 +56,7 @@ class CkeditorController
         $url = $asset->getUrl($transform);
 
         // Temp uploads never get a URL, but they can still be shown if the temp upload volume has public URLs
-        if (!$url && !$transform) {
+        if (! $url && ! $transform) {
             $volume = $asset->getVolume();
             if ($volume->isTemporary() && $volume->hasUrls) {
                 $url = AssetsHelper::generateUrl($asset);
@@ -72,9 +72,6 @@ class CkeditorController
 
     /**
      * Returns card HTML for an entry, based on the `entryId` and `siteId` params.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function entryCardHtml(Request $request): JsonResponse
     {
@@ -106,8 +103,6 @@ class CkeditorController
     /**
      * Duplicates a nested entry and returns the duplicate’s ID.
      *
-     * @param Request $request
-     * @return Response
      * @since 4.0.0
      */
     public function duplicateNestedEntry(Request $request): Response
@@ -133,8 +128,8 @@ class CkeditorController
         $user = $this->currentUser();
         abort_unless($user->can('view', $entry), 403, 'User not authorized to view this element.');
 
-        if ($targetOwnerId !== null && $entry->primaryOwnerId !== (int)$targetOwnerId) {
-            $owner = Elements::getElementById((int)$targetOwnerId, null, $targetSiteId);
+        if ($targetOwnerId !== null && $entry->primaryOwnerId !== (int) $targetOwnerId) {
+            $owner = Elements::getElementById((int) $targetOwnerId, null, $targetSiteId);
         } else {
             $owner = $entry->getOwner();
         }
@@ -142,7 +137,7 @@ class CkeditorController
         abort_unless($owner && $user->can('save', $owner), 403, 'User not authorized to edit this element.');
 
         // check if the target field accepts the entry type we're trying to duplicate
-        if ($targetEntryTypeIds !== null && !in_array($entry->typeId, $targetEntryTypeIds)) {
+        if ($targetEntryTypeIds !== null && ! in_array($entry->typeId, $targetEntryTypeIds)) {
             return $this->asFailure(t('This field doesn’t allow nested {type} entries.', [
                 'type' => $entry->getType()->getUiLabel(),
             ], 'ckeditor'));
@@ -154,11 +149,11 @@ class CkeditorController
         }
 
         $newAttrs = [];
-        if ($targetSiteId !== null && $entry->siteId !== (int)$targetSiteId) {
-            $newAttrs['siteId'] = (int)$targetSiteId;
+        if ($targetSiteId !== null && $entry->siteId !== (int) $targetSiteId) {
+            $newAttrs['siteId'] = (int) $targetSiteId;
         }
-        if ($targetOwnerId !== null && $entry->primaryOwnerId !== (int)$targetOwnerId) {
-            $newAttrs['primaryOwnerId'] = (int)$targetOwnerId;
+        if ($targetOwnerId !== null && $entry->primaryOwnerId !== (int) $targetOwnerId) {
+            $newAttrs['primaryOwnerId'] = (int) $targetOwnerId;
         }
         if ($targetFieldId !== null && $entry->fieldId !== $targetFieldId) {
             $newAttrs['fieldId'] = $targetFieldId;
@@ -180,9 +175,6 @@ class CkeditorController
 
     /**
      * Returns whether the current user can preview and edit an image.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function imagePermissions(Request $request): JsonResponse
     {
@@ -207,9 +199,6 @@ class CkeditorController
 
     /**
      * Returns an image’s alternative text.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function imageAlt(Request $request): JsonResponse
     {
@@ -226,9 +215,6 @@ class CkeditorController
     /**
      * Returns an element rendered for the control panel, along with the IDs of the sites it supports.
      *
-     * @param Request $request
-     * @param RenderController $renderController
-     * @return JsonResponse
      * @since 5.0.0
      */
     public function renderElementWithSupportedSites(Request $request, RenderController $renderController): JsonResponse
@@ -250,7 +236,7 @@ class CkeditorController
 
         if ($element) {
             $siteIds = array_map(
-                fn(array $site) => $site['siteId'],
+                fn (array $site) => $site['siteId'],
                 ElementHelper::supportedSitesForElement($element),
             );
         }
@@ -265,9 +251,6 @@ class CkeditorController
 
     /**
      * Creates a nested entry for images added to a field in “entries” image mode.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function createImageEntry(Request $request): JsonResponse
     {
@@ -278,9 +261,9 @@ class CkeditorController
             'assetIds' => ['required'],
         ]);
 
-        $fieldId = (int)$request->input('fieldId');
-        $ownerId = (int)$request->input('ownerId');
-        $siteId = (int)$request->input('siteId');
+        $fieldId = (int) $request->input('fieldId');
+        $ownerId = (int) $request->input('ownerId');
+        $siteId = (int) $request->input('siteId');
 
         $owner = Elements::getElementById($ownerId, siteId: $siteId);
         abort_unless($owner !== null, 400, "Invalid owner ID: $ownerId");
@@ -293,7 +276,7 @@ class CkeditorController
         $imageField = $field->getImageField();
 
         abort_if(
-            $field->imageMode !== Field::IMAGE_MODE_ENTRIES || !$imageEntryType || !$imageField,
+            $field->imageMode !== Field::IMAGE_MODE_ENTRIES || ! $imageEntryType || ! $imageField,
             400,
             "Invalid CKEditor field: $fieldId",
         );
@@ -308,7 +291,7 @@ class CkeditorController
         $entry->setFieldValue($imageField->handle, $request->input('assetIds'));
         $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
 
-        if (!Elements::saveElement($entry)) {
+        if (! Elements::saveElement($entry)) {
             abort(500, sprintf('Could not save the nested entry: %s', implode(', ', $entry->errors()->all())));
         }
 
@@ -337,7 +320,7 @@ class CkeditorController
 
     private function layoutElementField(?ElementInterface $owner, ?string $layoutElementUid): ?Field
     {
-        if (!$owner || !$layoutElementUid) {
+        if (! $owner || ! $layoutElementUid) {
             return null;
         }
 

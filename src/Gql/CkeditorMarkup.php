@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license GPL-3.0-or-later
  */
@@ -15,6 +17,7 @@ use GraphQL\Type\Definition\ResolveInfo;
  * Markup GraphQL data type
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.8.0
  */
 class CkeditorMarkup extends ObjectType

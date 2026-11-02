@@ -2,6 +2,7 @@
 
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license MIT
  */
@@ -30,19 +31,23 @@ use Twig\Markup as TwigMarkup;
  * Stores the data for CKEditor fields.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.1.0
  */
-class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
+class FieldData extends HtmlFieldData implements Countable, IteratorAggregate
 {
     /**
      * @var Collection<BaseChunk>
      */
     private Collection $chunks;
+
     private bool $loadedEntries = false;
+
     private bool $rendered = false;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @noinspection PhpMissingParentConstructorInspection
      */
     public function __construct(string $content, ?int $siteId = null, private readonly ?Field $field = null)
@@ -54,6 +59,7 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
     public function __toString(): string
     {
         $this->render();
+
         return parent::__toString();
     }
 
@@ -89,13 +95,13 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
     public function jsonSerialize(): mixed
     {
         $this->render();
+
         return parent::jsonSerialize();
     }
 
     /**
      * Returns a collection of the content chunks.
      *
-     * @param bool $enabledEntriesOnly
      * @return Collection<BaseChunk>
      */
     public function getChunks(bool $enabledEntriesOnly = true): Collection
@@ -104,8 +110,9 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
 
         if ($enabledEntriesOnly) {
             $this->loadEntries();
-            return $this->chunks->filter(fn(BaseChunk $chunk) => (
-                !$chunk instanceof Entry ||
+
+            return $this->chunks->filter(fn (BaseChunk $chunk) => (
+                ! $chunk instanceof Entry ||
                 $chunk->getEntry()?->getStatus() === EntryElement::STATUS_LIVE
             ));
         }
@@ -123,7 +130,7 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
 
         if (
             $this->field?->parseEmbeds &&
-            (!request()->isCpRequest() || $this->isGqlRequest())
+            (! request()->isCpRequest() || $this->isGqlRequest())
         ) {
             $content = $this->parseEmbeds($content);
         }
@@ -141,8 +148,8 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
 
             $attributes = Html::parseTagAttributes($content, $pos);
             $entryId = $attributes['data-entry-id'] ?? null;
-            if (!empty($entryId)) {
-                $this->chunks->push(new Entry((int)$entryId, $this));
+            if (! empty($entryId)) {
+                $this->chunks->push(new Entry((int) $entryId, $this));
             }
 
             $offset = $gtPos + 1;
@@ -160,7 +167,7 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
     {
         try {
             return request()->route()?->getController() instanceof GqlApiController;
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return false;
         }
     }
@@ -183,9 +190,9 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
             }
 
             $tag = substr($content, $pos, $endPos - $pos);
-            if (!isset($urls[$tag])) {
+            if (! isset($urls[$tag])) {
                 $attributes = Html::parseTagAttributes($content, $pos);
-                if (!empty($attributes['url'])) {
+                if (! empty($attributes['url'])) {
                     $urls[$tag] = $attributes['url'];
                 }
             }
@@ -197,15 +204,17 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
             return $content;
         }
 
-        $crawler = new Crawler(new GuzzleClient());
+        $crawler = new Crawler(new GuzzleClient);
         $embed = new Embed($crawler);
 
         try {
             $infos = $embed->getMulti(...$urls);
-            $html = array_map(fn(Extractor $info) => $info->code->html, $infos);
+            $html = array_map(fn (Extractor $info) => $info->code->html, $infos);
+
             return str_replace(array_keys($urls), $html, $content);
         } catch (Throwable $e) {
             report($e);
+
             return $content;
         }
     }
@@ -228,17 +237,16 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
     /**
      * Returns an entry query prepped to fetch the nested entries.
      *
-     * @return EntryQuery
      * @since 4.8.0
      */
     public function getEntries(): EntryQuery
     {
         $this->parse();
-        $entryChunks = $this->chunks->filter(fn(BaseChunk $chunk) => $chunk instanceof Entry);
-        $entryIds = $entryChunks->map(fn(Entry $chunk) => $chunk->entryId)->all();
+        $entryChunks = $this->chunks->filter(fn (BaseChunk $chunk) => $chunk instanceof Entry);
+        $entryIds = $entryChunks->map(fn (Entry $chunk) => $chunk->entryId)->all();
         $query = EntryElement::find();
 
-        if (!empty($entryIds)) {
+        if (! empty($entryIds)) {
             $query
                 ->id($entryIds)
                 ->siteId($this->siteId)
@@ -263,10 +271,10 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
             return;
         }
 
-        $entryChunks = $this->chunks->filter(fn(BaseChunk $chunk) => $chunk instanceof Entry);
+        $entryChunks = $this->chunks->filter(fn (BaseChunk $chunk) => $chunk instanceof Entry);
         if ($entryChunks->isNotEmpty()) {
             $entries = $this->getEntries()->indexBy('id')->all();
-            $entryChunks->each(function(Entry $chunk) use ($entries) {
+            $entryChunks->each(function (Entry $chunk) use ($entries) {
                 $chunk->setEntry($entries[$chunk->entryId] ?? null);
             });
         }
@@ -280,7 +288,7 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
             return;
         }
 
-        $content = $this->getChunks()->map(fn(BaseChunk $chunk) => $chunk->getHtml())->join('');
+        $content = $this->getChunks()->map(fn (BaseChunk $chunk) => $chunk->getHtml())->join('');
         TwigMarkup::__construct($content, 'UTF-8');
 
         $this->rendered = true;

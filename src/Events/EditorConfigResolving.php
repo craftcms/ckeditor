@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license GPL-3.0-or-later
  */
@@ -20,16 +22,15 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 class EditorConfigResolving
 {
     /**
-     * @param Field $field The CKEditor field
-     * @param ElementInterface|null $element The element being edited, if there is one
-     * @param array $baseConfig The base editor config that the field’s config options will be merged into
-     * @param string[] $toolbar The toolbar items
+     * @param  Field  $field  The CKEditor field
+     * @param  ElementInterface|null  $element  The element being edited, if there is one
+     * @param  array  $baseConfig  The base editor config that the field’s config options will be merged into
+     * @param  string[]  $toolbar  The toolbar items
      */
     public function __construct(
         public readonly Field $field,
         public readonly ?ElementInterface $element,
         public array $baseConfig,
         public array $toolbar,
-    ) {
-    }
+    ) {}
 }

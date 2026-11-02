@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -18,6 +20,7 @@ use function CraftCms\Cms\t;
  * EntryType model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 5.0.0
  */
 class EntryType extends CraftEntryType
@@ -27,9 +30,6 @@ class EntryType extends CraftEntryType
     /**
      * Creates a CKEditor entry type from a Craft entry type, copying its state.
      *
-     * @param CraftEntryType $entryType
-     * @param bool $expanded
-     * @return self
      * @since 6.0.0
      */
     public static function fromEntryType(CraftEntryType $entryType, bool $expanded = false): self
@@ -43,7 +43,7 @@ class EntryType extends CraftEntryType
                     $property->isStatic() ||
                     $property->isVirtual() ||
                     $property->getDeclaringClass()->getName() !== $class->getName() ||
-                    !$property->isInitialized($entryType)
+                    ! $property->isInitialized($entryType)
                 ) {
                     continue;
                 }

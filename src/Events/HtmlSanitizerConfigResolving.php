@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license GPL-3.0-or-later
  */
@@ -26,12 +28,11 @@ use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 class HtmlSanitizerConfigResolving
 {
     /**
-     * @param Field $field The CKEditor field
-     * @param HtmlSanitizerConfig $config The sanitizer config
+     * @param  Field  $field  The CKEditor field
+     * @param  HtmlSanitizerConfig  $config  The sanitizer config
      */
     public function __construct(
         public readonly Field $field,
         public HtmlSanitizerConfig $config,
-    ) {
-    }
+    ) {}
 }

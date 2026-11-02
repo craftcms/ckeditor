@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license GPL-3.0-or-later
  */
@@ -10,6 +12,7 @@ namespace CraftCms\Ckeditor;
 use Closure;
 use CraftCms\Ckeditor\Data\BaseChunk;
 use CraftCms\Ckeditor\Data\Entry as EntryChunk;
+use CraftCms\Ckeditor\Data\EntryType as CkeEntryType;
 use CraftCms\Ckeditor\Data\FieldData;
 use CraftCms\Ckeditor\Data\Markup;
 use CraftCms\Ckeditor\Events\EditorConfigResolving;
@@ -17,15 +20,14 @@ use CraftCms\Ckeditor\Events\HtmlSanitizerConfigResolving;
 use CraftCms\Ckeditor\Events\LinkOptionsResolving;
 use CraftCms\Ckeditor\Gql\Generator;
 use CraftCms\Ckeditor\Support\CkeditorAssets;
-use CraftCms\Ckeditor\Ui\Controls\CkeditorControl;
-use CraftCms\Ckeditor\Ui\Controls\EditorConfigControl;
 use CraftCms\Ckeditor\Support\CkeditorConfig;
 use CraftCms\Ckeditor\Support\CkeditorConfigSchema;
-use CraftCms\Ckeditor\Data\EntryType as CkeEntryType;
+use CraftCms\Ckeditor\Ui\Controls\CkeditorControl;
+use CraftCms\Ckeditor\Ui\Controls\EditorConfigControl;
 use CraftCms\Cms\Asset\AssetsHelper;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
@@ -116,15 +118,14 @@ use function CraftCms\Cms\template;
  *
  * @property string|null $json
  * @property CkeEntryType[] $entryTypes
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
-class Field extends HtmlField implements
-    ElementContainerFieldInterface,
-    MergeableFieldInterface,
-    CrossSiteCopyableFieldInterface
+class Field extends HtmlField implements CrossSiteCopyableFieldInterface, ElementContainerFieldInterface, MergeableFieldInterface
 {
     /** @since 5.0.0 */
     public const IMAGE_MODE_IMG = 'img';
+
     /** @since 5.0.0 */
     public const IMAGE_MODE_ENTRIES = 'entries';
 
@@ -154,6 +155,7 @@ class Field extends HtmlField implements
 
     /**
      * @return array Returns the default `language.textPartLanguage` config option that should be used.
+     *
      * @since 3.5.0
      * @see https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-LanguageConfig.html#member-textPartLanguage
      */
@@ -162,7 +164,7 @@ class Field extends HtmlField implements
         $appLanguage = app()->getLocale();
 
         return Collection::make(I18N::getSiteLocales())
-            ->map(fn(Locale $locale) => array_filter([
+            ->map(fn (Locale $locale) => array_filter([
                 'title' => $locale->getDisplayName($appLanguage),
                 'languageCode' => $locale->id,
                 'textDirection' => $locale->getOrientation() === 'rtl' ? 'rtl' : null,
@@ -181,18 +183,16 @@ class Field extends HtmlField implements
     /**
      * Returns the nested element manager for a given CKEditor field.
      *
-     * @param self $field
-     * @return NestedElementManager
      * @since 4.0.0
      */
     public static function entryManager(self $field): NestedElementManager
     {
         self::registerListeners();
 
-        if (!isset(self::$entryManagers[$field->id])) {
+        if (! isset(self::$entryManagers[$field->id])) {
             self::$entryManagers[$field->id] = new NestedElementManager(
                 Entry::class,
-                fn(ElementInterface $owner) => self::createEntryQuery($owner, $field),
+                fn (ElementInterface $owner) => self::createEntryQuery($owner, $field),
                 [
                     'field' => $field,
                     'propagationMethod' => match (TranslationMethod::from($field->translationMethod)) {
@@ -206,7 +206,7 @@ class Field extends HtmlField implements
                     'criteria' => [
                         'fieldId' => $field->id,
                     ],
-                    'valueGetter' => fn(ElementInterface $owner, bool $fetchAll = false) => self::nestedEntries($owner, $field),
+                    'valueGetter' => fn (ElementInterface $owner, bool $fetchAll = false) => self::nestedEntries($owner, $field),
                     'valueSetter' => false,
                 ],
             );
@@ -227,9 +227,9 @@ class Field extends HtmlField implements
         self::$registeredListeners = true;
 
         // NestedElementRevisionsCreated extends NestedElementsDuplicated, so this catches both
-        Event::listen(NestedElementsDuplicated::class, function(NestedElementsDuplicated $event) {
+        Event::listen(NestedElementsDuplicated::class, function (NestedElementsDuplicated $event) {
             $field = $event->manager->field;
-            if (!$field instanceof self) {
+            if (! $field instanceof self) {
                 return;
             }
 
@@ -247,7 +247,7 @@ class Field extends HtmlField implements
         // the duplication is triggered twice - from applying the draft and from removing the draft data,
         // so the nested entries get duplicated and adjusted twice
         // causing the nested entry in the site we propagated to, to have a wrong ID
-        Event::listen(DraftApplying::class, function(DraftApplying $event) {
+        Event::listen(DraftApplying::class, function (DraftApplying $event) {
             if ($event->draft?->propagateAll && $event->draft->getIsUnpublishedDraft()) {
                 $event->draft->propagateAll = false;
             }
@@ -259,10 +259,10 @@ class Field extends HtmlField implements
      */
     private static function nestedEntries(ElementInterface $owner, self $field): Collection
     {
-        $entryIds = array_merge(...array_map(function(self $fieldInstance) use ($owner) {
+        $entryIds = array_merge(...array_map(function (self $fieldInstance) use ($owner) {
             /** @var FieldData|null $value */
             $value = $owner->getFieldValue($fieldInstance->handle);
-            if (!$value) {
+            if (! $value) {
                 return [];
             }
             // ensure the siteId is set;
@@ -270,9 +270,10 @@ class Field extends HtmlField implements
             if ($value->getSiteId() === null) {
                 $value->setSiteId($owner->siteId);
             }
+
             return $value->getChunks(false)
-                ->filter(fn(BaseChunk $chunk) => $chunk instanceof EntryChunk)
-                ->map(fn(EntryChunk $chunk) => $chunk->entryId)
+                ->filter(fn (BaseChunk $chunk) => $chunk instanceof EntryChunk)
+                ->map(fn (EntryChunk $chunk) => $chunk->entryId)
                 ->all();
         }, self::fieldInstances($owner, $field)));
 
@@ -281,7 +282,7 @@ class Field extends HtmlField implements
             ->status(null)
             ->trashed(null);
 
-        if (!empty($entryIds)) {
+        if (! empty($entryIds)) {
             $query->orderBy(new FixedOrderExpression('elements.id', $entryIds));
         }
 
@@ -293,9 +294,9 @@ class Field extends HtmlField implements
             $queriedEntryIds[$entry->id] = true;
         }
 
-        $missingEntryIds = array_values(array_filter($entryIds, fn($entryId) => !isset($queriedEntryIds[$entryId])));
+        $missingEntryIds = array_values(array_filter($entryIds, fn ($entryId) => ! isset($queriedEntryIds[$entryId])));
 
-        if (!empty($missingEntryIds)) {
+        if (! empty($missingEntryIds)) {
             // this could happen if any entries had been removed from the content,
             // so their ownership had been deleted from the draft.
             $missingEntries = self::createEntryQuery($owner, $field, false)
@@ -303,8 +304,8 @@ class Field extends HtmlField implements
                 ->trashed(null)
                 ->all();
 
-            if (!empty($missingEntries)) {
-                $maxSortOrder = $entries->max(fn(Entry $entry) => $entry->getSortOrder()) ?? 0;
+            if (! empty($missingEntries)) {
+                $maxSortOrder = $entries->max(fn (Entry $entry) => $entry->getSortOrder()) ?? 0;
                 foreach ($missingEntries as $i => $entry) {
                     $entry->setSortOrder($maxSortOrder + $i + 1);
                 }
@@ -319,7 +320,8 @@ class Field extends HtmlField implements
     private static function fieldInstances(ElementInterface $element, self $field): array
     {
         $customFields = $element->getFieldLayout()?->getCustomFields() ?? [];
-        return array_values(array_filter($customFields, fn(FieldInterface $f) => $f->id === $field->id));
+
+        return array_values(array_filter($customFields, fn (FieldInterface $f) => $f->id === $field->id));
     }
 
     private static function createEntryQuery(?ElementInterface $owner, self $field, bool $setOwner = true): EntryQuery
@@ -362,7 +364,7 @@ class Field extends HtmlField implements
     private static function afterCreateRevisions(NestedElementRevisionsCreated $event, self $field): void
     {
         $localized = $event->target->getLocalized();
-        if (!$localized instanceof Collection) {
+        if (! $localized instanceof Collection) {
             $localized = $localized->status(null)->all();
         }
 
@@ -384,7 +386,7 @@ class Field extends HtmlField implements
     ): void {
         // Filter out any IDs that haven't changed
         $newEntryIds = Collection::make($newEntryIds)
-            ->filter(fn(int $newId, int $oldId) => $newId !== $oldId)
+            ->filter(fn (int $newId, int $oldId) => $newId !== $oldId)
             ->all();
         if (empty($newEntryIds)) {
             return;
@@ -395,12 +397,12 @@ class Field extends HtmlField implements
         foreach (self::fieldInstances($owner, $field) as $fieldInstance) {
             /** @var FieldData|null $value */
             $value = $owner->getFieldValue($fieldInstance->handle);
-            if (!$value) {
+            if (! $value) {
                 continue;
             }
 
             $chunks = $value->getChunks(false);
-            if (!$chunks->contains(fn(BaseChunk $chunk) => (
+            if (! $chunks->contains(fn (BaseChunk $chunk) => (
                 $chunk instanceof EntryChunk &&
                 isset($newEntryIds[$chunk->entryId])
             ))) {
@@ -408,13 +410,14 @@ class Field extends HtmlField implements
             }
 
             $newValue = $chunks
-                ->map(function(BaseChunk $chunk) use ($newEntryIds) {
+                ->map(function (BaseChunk $chunk) use ($newEntryIds) {
                     if ($chunk instanceof Markup) {
                         return $chunk->rawHtml;
                     }
 
                     /** @var EntryChunk $chunk */
                     $id = $newEntryIds[$chunk->entryId] ?? $chunk->entryId;
+
                     return sprintf('<craft-entry data-entry-id="%s">&nbsp;</craft-entry>', $id);
                 })
                 ->join('');
@@ -431,14 +434,16 @@ class Field extends HtmlField implements
 
     /** @var array<string|false> */
     private static array $cssFileContents = [];
+
     /** @var array<array|false> */
     private static array $jsonFileContents = [];
+
     /** @var array<string|false> */
     private static array $jsFileContents = [];
 
     private static function cssFileContents(string $file): ?string
     {
-        if (!isset(self::$cssFileContents[$file])) {
+        if (! isset(self::$cssFileContents[$file])) {
             $path = self::configFilePath($file);
             if (file_exists($path)) {
                 self::$cssFileContents[$file] = file_get_contents($path);
@@ -447,17 +452,18 @@ class Field extends HtmlField implements
                 Log::warning("Could not load CKEditor CSS file \"$file\".", [__METHOD__]);
             }
         }
+
         return self::$cssFileContents[$file] ?: null;
     }
 
     private static function jsonFileContents(string $file): array
     {
-        if (!isset(self::$jsonFileContents[$file])) {
+        if (! isset(self::$jsonFileContents[$file])) {
             $path = self::configFilePath($file);
             try {
                 self::$jsonFileContents[$file] = Json::decodeFromFile($path) ?? [];
             } catch (InvalidArgumentException $e) {
-                Log::warning("Could not decode JSON from CKEditor config file \"$file\": " . $e->getMessage(), [__METHOD__]);
+                Log::warning("Could not decode JSON from CKEditor config file \"$file\": ".$e->getMessage(), [__METHOD__]);
                 self::$jsonFileContents[$file] = [];
             }
         }
@@ -467,7 +473,7 @@ class Field extends HtmlField implements
 
     private static function jsFileContents(string $file): ?string
     {
-        if (!isset(self::$jsFileContents[$file])) {
+        if (! isset(self::$jsFileContents[$file])) {
             $path = self::configFilePath($file);
             if (file_exists($path)) {
                 self::$jsFileContents[$file] = file_get_contents($path);
@@ -476,14 +482,13 @@ class Field extends HtmlField implements
                 Log::warning("Could not load CKEditor config JS file \"$file\".", [__METHOD__]);
             }
         }
+
         return self::$jsFileContents[$file] ?: null;
     }
 
     /**
      * Returns the path to a file in the `config/craft/ckeditor/` folder.
      *
-     * @param string $file
-     * @return string
      * @since 5.3.0
      */
     public static function configFilePath(string $file): string
@@ -494,8 +499,6 @@ class Field extends HtmlField implements
     /**
      * Normalizes an entry type into a `CraftCms\Ckeditor\Data\EntryType` object.
      *
-     * @param EntryType|CkeEntryType|string|array $entryType
-     * @return CkeEntryType|null
      * @since 5.0.0
      */
     public static function entryType(EntryType|CkeEntryType|string|array $entryType): ?CkeEntryType
@@ -512,16 +515,16 @@ class Field extends HtmlField implements
 
         if (is_array($entryType)) {
             // getEntryType() throws for configs that don’t identify an entry type
-            if (!isset($entryType['id']) && !isset($entryType['uid'])) {
+            if (! isset($entryType['id']) && ! isset($entryType['uid'])) {
                 return null;
             }
 
-            $expanded = (bool)($entryType['expanded'] ?? false);
+            $expanded = (bool) ($entryType['expanded'] ?? false);
         }
 
         $craftEntryType = EntryTypes::getEntryType($entryType);
 
-        if (!$craftEntryType) {
+        if (! $craftEntryType) {
             return null;
         }
 
@@ -530,102 +533,119 @@ class Field extends HtmlField implements
 
     /**
      * @var string[] Toolbar configuration
+     *
      * @since 5.0.0
      */
     public array $toolbar = ['heading', '|', 'bold', 'italic', 'link'];
 
     /**
      * @var int[]|false The available heading levels
+     *
      * @since 5.0.0
      */
     public array|false $headingLevels = [1, 2, 3, 4, 5, 6];
 
     /**
      * @var array|null The advanced link options available when adding a link
+     *
      * @since 5.0.0
      */
     public ?array $advancedLinkFields = [];
 
     /**
      * @var array|null Additional CKEditor config options
+     *
      * @since 5.0.0
      */
     public ?array $options = null;
 
     /**
      * @var string|null JavaScript code that returns additional CKEditor config properties as an object
+     *
      * @since 5.0.0
      */
     public ?string $js = null;
 
     /**
      * @var string|null The config file that should be used to configure CKEditor.
+     *
      * @since 5.3.0
      */
     public ?string $jsFile = null;
 
     /**
      * @var string|null CSS styles that should be registered for the field.
+     *
      * @since 5.0.0
      */
     public ?string $css = null;
 
     /**
      * @var string|null The CSS file that should be used to style CKEditor contents.
+     *
      * @since 5.3.0
      */
     public ?string $cssFile = null;
 
     /**
      * @var int|null The total number of words allowed.
+     *
      * @since 3.5.0
      */
     public ?int $wordLimit = null;
 
     /**
      * @var int|null The total number of characters allowed.
+     *
      * @since 4.8.0
      */
     public ?int $characterLimit = null;
 
     /**
      * @var bool Whether the word count should be shown below the field.
+     *
      * @since 3.2.0
      */
     public bool $showWordCount = false;
 
     /**
      * @var bool Whether `<oembed>` tags should be parsed and replaced with the provider’s embed code.
+     *
      * @since 4.9.0
      */
     public bool $parseEmbeds = false;
 
     /**
      * @var string How new images should be added to the field contents
+     *
      * @since 5.0.0
      */
     public string $imageMode = self::IMAGE_MODE_IMG;
 
     /**
      * @var string|array|null The volumes that should be available for image selection.
+     *
      * @since 1.2.0
      */
     public string|array|null $availableVolumes = '*';
 
     /**
      * @var string|null The default volume used to upload images into field via drag & drop mechanism
+     *
      * @since 4.12.0
      */
-    public string|null $defaultUploadLocationVolume = null;
+    public ?string $defaultUploadLocationVolume = null;
 
     /**
      * @var string|null The default subpath used to upload images into field via drag & drop mechanism
+     *
      * @since 4.12.0
      */
-    public string|null $defaultUploadLocationSubpath = null;
+    public ?string $defaultUploadLocationSubpath = null;
 
     /**
      * @var string|array|null The transforms available when selecting an image.
+     *
      * @since 1.2.0
      */
     public string|array|null $availableTransforms = '*';
@@ -637,6 +657,7 @@ class Field extends HtmlField implements
 
     /**
      * @var string|null The entry type UUID used to store images.
+     *
      * @see getImageEntryType()
      * @since 5.0.0
      */
@@ -644,6 +665,7 @@ class Field extends HtmlField implements
 
     /**
      * @var string|null The Assets field’s layout element UUID used to store images.
+     *
      * @see getImageField()
      * @since 5.0.0
      */
@@ -651,31 +673,36 @@ class Field extends HtmlField implements
 
     /**
      * @var string|string[]|null User groups whose members should be able to see the “Source” button
+     *
      * @since 4.5.0
      */
     public string|array|null $sourceEditingGroups = ['__ADMINS__'];
 
     /**
      * @var bool Whether to show volumes the user doesn’t have permission to view.
+     *
      * @since 1.2.0
      */
     public bool $showUnpermittedVolumes = false;
 
     /**
      * @var bool Whether to show files the user doesn’t have permission to view, per the
-     * “View files uploaded by other users” permission.
+     *           “View files uploaded by other users” permission.
+     *
      * @since 1.2.0
      */
     public bool $showUnpermittedFiles = false;
 
     /**
      * @var bool Whether GraphQL values should be returned as objects with `content`, `chunks`, etc., sub-fields.
+     *
      * @since 4.8.0
      */
     public bool $fullGraphqlData = true;
 
     /**
      * @var string|null JSON code that defines additional CKEditor config properties as an object
+     *
      * @see getJson()
      * @see setJson()
      */
@@ -683,13 +710,14 @@ class Field extends HtmlField implements
 
     /**
      * @var CkeEntryType[] The field’s available entry types
+     *
      * @see getEntryTypes()
      * @see setEntryTypes()
      */
     private array $_entryTypes = [];
 
     /**
-     * @see htmlSanitizer()
+     * @see HtmlSanitizer()
      */
     private HtmlSanitizerInterface $_htmlSanitizer;
 
@@ -797,9 +825,9 @@ class Field extends HtmlField implements
 
         if (isset($config['limitUnit'], $config['fieldLimit'])) {
             if ($config['limitUnit'] === 'chars') {
-                $config['characterLimit'] = (int)$config['fieldLimit'] ?: null;
+                $config['characterLimit'] = (int) $config['fieldLimit'] ?: null;
             } else {
-                $config['wordLimit'] = (int)$config['fieldLimit'] ?: null;
+                $config['wordLimit'] = (int) $config['fieldLimit'] ?: null;
             }
             unset($config['limitUnit'], $config['fieldLimit']);
         }
@@ -832,24 +860,23 @@ class Field extends HtmlField implements
     /**
      * Returns the JSON-encoded config options.
      *
-     * @return string|null
      * @since 5.0.0
      */
     public function getJson(): ?string
     {
-        if (!isset($this->_json)) {
+        if (! isset($this->_json)) {
             if (isset($this->options)) {
                 $json = Json::encode($this->options, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
                 $this->_json = str_replace('    ', '  ', $json);
             }
         }
+
         return $this->_json;
     }
 
     /**
      * Sets the config options from a JSON string.
      *
-     * @param string|null $json
      * @since 5.0.0
      */
     public function setJson(?string $json): void
@@ -867,6 +894,7 @@ class Field extends HtmlField implements
      * Returns the available entry types.
      *
      * @return CkeEntryType[]
+     *
      * @since 4.0.0
      */
     public function getEntryTypes(): array
@@ -877,13 +905,14 @@ class Field extends HtmlField implements
     /**
      * Sets the available entry types.
      *
-     * @param array<EntryType|CkeEntryType|string|array> $entryTypes The entry types, or their IDs or UUIDs
+     * @param  array<EntryType|CkeEntryType|string|array>  $entryTypes  The entry types, or their IDs or UUIDs
+     *
      * @since 4.0.0
      */
     public function setEntryTypes(array $entryTypes): void
     {
         $this->_entryTypes = array_values(array_filter(array_map(
-            fn($config) => static::entryType($config),
+            fn ($config) => static::entryType($config),
             $entryTypes
         )));
     }
@@ -891,36 +920,35 @@ class Field extends HtmlField implements
     /**
      * Returns the entry type used to store images.
      *
-     * @return CkeEntryType|null
      * @since 5.0.0
      */
     public function getImageEntryType(): ?CkeEntryType
     {
-        if (!$this->imageEntryTypeUid) {
+        if (! $this->imageEntryTypeUid) {
             return null;
         }
 
         return Arr::first(
             $this->getEntryTypes(),
-            fn(CkeEntryType $entryType) => $entryType->uid === $this->imageEntryTypeUid,
+            fn (CkeEntryType $entryType) => $entryType->uid === $this->imageEntryTypeUid,
         );
     }
 
     /**
      * Returns the Assets field used to store images.
      *
-     * @return Assets|null
      * @since 5.0.0
      */
     public function getImageField(): ?Assets
     {
-        if (!$this->imageFieldUid) {
+        if (! $this->imageFieldUid) {
             return null;
         }
 
         /** @var CustomField|null $layoutElement */
         $layoutElement = $this->getImageEntryType()?->getFieldLayout()->getElementByUid($this->imageFieldUid);
         $field = $layoutElement?->getField();
+
         return $field instanceof Assets ? $field : null;
     }
 
@@ -941,7 +969,7 @@ class Field extends HtmlField implements
             'characterLimit' => ['nullable', 'integer', 'min:1'],
             'json' => [
                 'nullable',
-                function(string $attribute, mixed $value, Closure $fail) {
+                function (string $attribute, mixed $value, Closure $fail) {
                     try {
                         $this->options = Json::decode($value);
                     } catch (InvalidArgumentException) {
@@ -964,12 +992,12 @@ class Field extends HtmlField implements
             ElementRules::SCENARIO_DEFAULT,
             ElementRules::SCENARIO_LIVE,
         )) {
-            $rules[] = fn(string $attribute, mixed $value, Closure $fail) => $this->validateEntries($element, $value, $fail);
+            $rules[] = fn (string $attribute, mixed $value, Closure $fail) => $this->validateEntries($element, $value, $fail);
         }
 
         if ($this->characterLimit) {
-            $rules[] = function(string $attribute, mixed $value, Closure $fail) {
-                $value = strip_tags((string)$value);
+            $rules[] = function (string $attribute, mixed $value, Closure $fail) {
+                $value = strip_tags((string) $value);
                 $value = preg_replace(Str::invisibleCharsPattern(), '', $value);
                 if (mb_strlen($value) > $this->characterLimit) {
                     $fail(t('{field} should contain at most {max, number} {max, plural, one{character} other{characters}}.', [
@@ -979,8 +1007,8 @@ class Field extends HtmlField implements
                 }
             };
         } elseif ($this->wordLimit) {
-            $rules[] = function(string $attribute, mixed $value, Closure $fail) {
-                $value = html_entity_decode((string)$value);
+            $rules[] = function (string $attribute, mixed $value, Closure $fail) {
+                $value = html_entity_decode((string) $value);
                 $value = preg_replace(
                     ['/<br>/', '/></'],
                     [' ', '/> </'],
@@ -1005,18 +1033,18 @@ class Field extends HtmlField implements
 
     private function validateEntries(ElementInterface $element, mixed $value, Closure $fail): void
     {
-        if (!$value instanceof FieldData) {
+        if (! $value instanceof FieldData) {
             return;
         }
 
         $chunks = $value->getChunks(false)
-            ->filter(fn(BaseChunk $chunk) => !$chunk instanceof EntryChunk || $chunk->getEntry() !== null);
+            ->filter(fn (BaseChunk $chunk) => ! $chunk instanceof EntryChunk || $chunk->getEntry() !== null);
 
         /** @var Entry[] $entries */
         $entries = $chunks
-            ->filter(fn(BaseChunk $chunk) => $chunk instanceof EntryChunk)
-            ->keyBy(fn(EntryChunk $chunk) => $chunk->entryId)
-            ->map(fn(EntryChunk $chunk) => $chunk->getEntry())
+            ->filter(fn (BaseChunk $chunk) => $chunk instanceof EntryChunk)
+            ->keyBy(fn (EntryChunk $chunk) => $chunk->entryId)
+            ->map(fn (EntryChunk $chunk) => $chunk->getEntry())
             ->all();
 
         $scenario = $element->ruleset->getScenario();
@@ -1032,12 +1060,12 @@ class Field extends HtmlField implements
                 $entry->ruleset->useScenario($scenario);
             }
 
-            if (!$entry->validate()) {
+            if (! $entry->validate()) {
                 $invalidEntryIds[] = $entry->id;
             }
         }
 
-        if (!empty($invalidEntryIds)) {
+        if (! empty($invalidEntryIds)) {
             $element->addInvalidNestedElementIds($invalidEntryIds);
             $fail(t('Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.', [
                 'count' => count($invalidEntryIds),
@@ -1049,7 +1077,7 @@ class Field extends HtmlField implements
     #[Override]
     public function getContentGqlType(): Type|array
     {
-        if (!$this->fullGraphqlData) {
+        if (! $this->fullGraphqlData) {
             return parent::getContentGqlType();
         }
 
@@ -1079,7 +1107,7 @@ class Field extends HtmlField implements
 
         $owner ??= $element->duplicateOf;
 
-        if (!$owner) {
+        if (! $owner) {
             return [Sites::getPrimarySite()->id];
         }
 
@@ -1090,6 +1118,7 @@ class Field extends HtmlField implements
     public function canViewElement(NestedElementInterface $element, User $user): ?bool
     {
         $owner = $element->getOwner();
+
         return $owner && $user->can('view', $owner);
     }
 
@@ -1097,6 +1126,7 @@ class Field extends HtmlField implements
     public function canSaveElement(NestedElementInterface $element, User $user): ?bool
     {
         $owner = $element->getOwner();
+
         return $owner && $user->can('save', $owner);
     }
 
@@ -1104,6 +1134,7 @@ class Field extends HtmlField implements
     public function canDuplicateElement(NestedElementInterface $element, User $user): ?bool
     {
         $owner = $element->getOwner();
+
         return $owner && $user->can('save', $owner);
     }
 
@@ -1111,6 +1142,7 @@ class Field extends HtmlField implements
     public function canDeleteElement(NestedElementInterface $element, User $user): ?bool
     {
         $owner = $element->getOwner();
+
         return $owner && $user->can('save', $owner);
     }
 
@@ -1121,7 +1153,7 @@ class Field extends HtmlField implements
     }
 
     #[Override]
-    public function settingsUi(UiContext $context = new UiContext()): ?Ui
+    public function settingsUi(UiContext $context = new UiContext): ?Ui
     {
         $userGroupOptions = [
             ['label' => t('Admins'), 'value' => '__ADMINS__'],
@@ -1133,13 +1165,13 @@ class Field extends HtmlField implements
         }
 
         $volumeOptions = Collection::make(Volumes::getAllVolumes())
-            ->filter(fn(Volume $volume) => $volume->hasUrls)
-            ->map(fn(Volume $volume) => ['label' => $volume->name, 'value' => $volume->uid])
+            ->filter(fn (Volume $volume) => $volume->hasUrls)
+            ->map(fn (Volume $volume) => ['label' => $volume->name, 'value' => $volume->uid])
             ->values()
             ->all();
 
         $transformOptions = Collection::make(ImageTransforms::getAllTransforms())
-            ->map(fn(ImageTransform $transform) => ['label' => $transform->name, 'value' => $transform->uid])
+            ->map(fn (ImageTransform $transform) => ['label' => $transform->name, 'value' => $transform->uid])
             ->values()
             ->all();
 
@@ -1157,7 +1189,7 @@ class Field extends HtmlField implements
                 ->control(EntryTypeSelect::make('entryTypes')
                     ->allowOverrides()
                     ->extraValueKeys(['expanded'])
-                    ->value(array_map(fn(CkeEntryType $entryType) => $entryType->getUsageConfig(), $entryTypes))
+                    ->value(array_map(fn (CkeEntryType $entryType) => $entryType->getUsageConfig(), $entryTypes))
                     ->reactive()),
         ]);
 
@@ -1165,16 +1197,16 @@ class Field extends HtmlField implements
             UiField::make(t('Heading Levels', category: 'ckeditor'))
                 ->control(Choice::make('headingLevels')
                     ->multiple()
-                    ->options(array_map(fn(int $level) => [
+                    ->options(array_map(fn (int $level) => [
                         'label' => t('Heading {level}', ['level' => $level], 'ckeditor'),
-                        'value' => (string)$level,
+                        'value' => (string) $level,
                     ], range(1, 6)))
                     ->value(array_map('strval', $this->headingLevels ?: []))),
             UiField::make(t('Advanced Link Fields', category: 'ckeditor'))
                 ->control(Choice::make('advancedLinkFields')
                     ->multiple()
                     ->sortable()
-                    ->options(array_map(fn(array $option) => [
+                    ->options(array_map(fn (array $option) => [
                         'label' => $option['label'],
                         'value' => $option['value'],
                     ], CkeditorConfig::advanceLinkOptions()))
@@ -1341,11 +1373,11 @@ class Field extends HtmlField implements
         [$importStatements, $pluginRefs] = CkeditorConfig::getImports();
 
         $configMode = match (true) {
-            !empty($this->js) => 'js',
-            !empty($this->jsFile) => 'file',
+            ! empty($this->js) => 'js',
+            ! empty($this->jsFile) => 'file',
             default => 'json',
         };
-        $cssMode = !empty($this->cssFile) ? 'file' : 'css';
+        $cssMode = ! empty($this->cssFile) ? 'file' : 'css';
 
         $jsFileOptions = $this->configOptions(
             dir: 'ckeditor',
@@ -1360,7 +1392,7 @@ class Field extends HtmlField implements
             includeExtensions: true,
         );
 
-        $html = InputNamespace::with($prefix, fn() => template('ckeditor/_editor-config.twig', [
+        $html = InputNamespace::with($prefix, fn () => template('ckeditor/_editor-config.twig', [
             'field' => $this,
             'toolbarItems' => CkeditorConfig::normalizeToolbarItems(CkeditorConfig::getToolbarItems()),
             'jsFileOptions' => $jsFileOptions,
@@ -1380,11 +1412,11 @@ class Field extends HtmlField implements
         $settingsJs = Json::encode([
             'jsonSchemaUri' => $jsonSchemaUri,
             'configMode' => $configMode,
-            'hasJsFiles' => !empty($jsFileOptions),
+            'hasJsFiles' => ! empty($jsFileOptions),
             'cssMode' => $cssMode,
-            'hasCssFiles' => !empty($cssFileOptions),
+            'hasCssFiles' => ! empty($cssFileOptions),
         ]);
-        $plugins = '[' . implode(',', $pluginRefs) . ']';
+        $plugins = '['.implode(',', $pluginRefs).']';
 
         // The toolbar builder updates the config options, so the toolbar and config options parts share a module
         $module = $part === 'styles' ? <<<JS
@@ -1487,7 +1519,7 @@ JS;
             ...parent::getSettings(),
             'headingLevels' => $this->headingLevels ?: false,
             'entryTypes' => array_map(
-                fn(CkeEntryType $entryType) => $entryType->getUsageConfig(),
+                fn (CkeEntryType $entryType) => $entryType->getUsageConfig(),
                 $this->getEntryTypes(),
             ),
         ];
@@ -1510,7 +1542,7 @@ JS;
             $value = $value->getRawContent();
         }
 
-        if (!$value) {
+        if (! $value) {
             return null;
         }
 
@@ -1539,8 +1571,8 @@ JS;
         if (
             $this->imageMode === self::IMAGE_MODE_IMG &&
             $this->_hasDynamicUploadSubpath() &&
-            !$element->propagating &&
-            !$element->getRootOwner()->getIsRevision()
+            ! $element->propagating &&
+            ! $element->getRootOwner()->getIsRevision()
         ) {
             $this->moveTempAssets($element);
         }
@@ -1561,7 +1593,7 @@ JS;
     #[Override]
     public function beforeElementDelete(ElementInterface $element): bool
     {
-        if (!parent::beforeElementDelete($element)) {
+        if (! parent::beforeElementDelete($element)) {
             return false;
         }
 
@@ -1590,7 +1622,8 @@ JS;
     private function isFirstInstance(ElementInterface $element): bool
     {
         $first = self::fieldInstances($element, $this)[0] ?? null;
-        return !$first || $first->layoutElement?->uid === $this->layoutElement?->uid;
+
+        return ! $first || $first->layoutElement?->uid === $this->layoutElement?->uid;
     }
 
     private function getRefTargetIds(FieldData|string|null $value, ?string $refHandle = null): array
@@ -1599,7 +1632,7 @@ JS;
             $value = $value->getRawContent();
         }
 
-        if (!$value) {
+        if (! $value) {
             return [];
         }
 
@@ -1611,7 +1644,7 @@ JS;
                 is_numeric($ref) &&
                 ($refHandle === null || $matches['elementType'][$i] === $refHandle)
             ) {
-                $refIds[] = (int)$ref;
+                $refIds[] = (int) $ref;
             }
         }
 
@@ -1629,15 +1662,16 @@ JS;
     {
         /** @var FieldData|null $fromValue */
         $fromValue = $from->getFieldValue($this->handle);
-        if (!$fromValue) {
+        if (! $fromValue) {
             $to->setFieldValue($this->handle, null);
+
             return;
         }
 
         $chunks = $fromValue->getChunks(false);
-        if ($chunks->contains(fn(BaseChunk $chunk) => $chunk instanceof EntryChunk)) {
+        if ($chunks->contains(fn (BaseChunk $chunk) => $chunk instanceof EntryChunk)) {
             $toValue = $chunks
-                ->map(function(BaseChunk $chunk) use ($to) {
+                ->map(function (BaseChunk $chunk) use ($to) {
                     if ($chunk instanceof Markup) {
                         return $chunk->rawHtml;
                     }
@@ -1667,20 +1701,17 @@ JS;
             if ($endPos === false) {
                 break;
             }
-            $r .= substr($html, $offset, $pos - $offset) . '{PAGEBREAK_MARKER}';
+            $r .= substr($html, $offset, $pos - $offset).'{PAGEBREAK_MARKER}';
             $offset = $endPos + 6;
         }
 
         if ($offset !== 0) {
-            $html = $r . substr($html, $offset);
+            $html = $r.substr($html, $offset);
         }
     }
 
     /**
      * Returns the HTML for a nested entry’s card.
-     *
-     * @param ElementInterface $entry
-     * @return string
      */
     public function getCardHtml(ElementInterface $entry): string
     {
@@ -1696,10 +1727,10 @@ JS;
         }
 
         return app(ElementHtml::class)->elementCardHtml($entry, [
-            'autoReload' => !$isRevision,
-            'showDraftName' => !$isRevision,
-            'showStatus' => !$isRevision,
-            'showThumb' => !$isRevision,
+            'autoReload' => ! $isRevision,
+            'showDraftName' => ! $isRevision,
+            'showStatus' => ! $isRevision,
+            'showThumb' => ! $isRevision,
             'attributes' => [
                 'class' => array_values(array_filter($classes)),
             ],
@@ -1711,12 +1742,11 @@ JS;
     /**
      * Returns an eager-loading map for the nested entries.
      *
-     * @param ElementInterface[] $sourceElements
-     * @return array|null|false
+     * @param  ElementInterface[]  $sourceElements
      */
     public function getEagerLoadingMap(array $sourceElements): array|null|false
     {
-        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
+        $sourceElementIds = array_map(fn (ElementInterface $element) => $element->id, $sourceElements);
 
         // Return any relation data on these elements, defined with this field
         $map = DB::table(Table::ELEMENTS_OWNERS, 'elements_owners')
@@ -1725,14 +1755,14 @@ JS;
                 'elements_owners.elementId as target',
             ])
             ->whereIn('elements_owners.ownerId', $sourceElementIds)
-            ->whereExists(fn(Builder $query) => $query
+            ->whereExists(fn (Builder $query) => $query
                 ->selectRaw('1')
                 ->from(Table::ENTRIES, 'entries')
                 ->whereColumn('entries.id', 'elements_owners.elementId')
                 ->where('entries.fieldId', $this->id))
             ->orderBy('elements_owners.sortOrder')
             ->get()
-            ->map(fn(object $row) => (array)$row)
+            ->map(fn (object $row) => (array) $row)
             ->all();
 
         return [
@@ -1749,8 +1779,9 @@ JS;
     #[Override]
     public function canMergeInto(FieldInterface $persistingField, ?string &$reason): bool
     {
-        if (!$persistingField instanceof self) {
+        if (! $persistingField instanceof self) {
             $reason = 'CKEditor fields can only be merged into other CKEditor fields.';
+
             return false;
         }
 
@@ -1783,9 +1814,9 @@ JS;
 
         // Craft calls this on the layout’s source field, which doesn’t know its layout element,
         // so defer to the field instance from the element’s layout when there is one
-        if (!$this->layoutElement && $element) {
+        if (! $this->layoutElement && $element) {
             $path = is_array($context->path) ? $context->path : explode('.', $context->path);
-            $instance = $element->getFieldLayout()?->getFieldByHandle((string)end($path));
+            $instance = $element->getFieldLayout()?->getFieldByHandle((string) end($path));
             if ($instance instanceof self && $instance->layoutElement) {
                 return $instance->uiControl($context);
             }
@@ -1807,7 +1838,7 @@ JS;
             ->showWordCount($this->showWordCount)
             ->css($this->scopedCss($containerId))
             ->assets(array_map(
-                fn(string $key) => array_values(array_unique([...$editorAssets[$key], ...$packageAssets[$key]])),
+                fn (string $key) => array_values(array_unique([...$editorAssets[$key], ...$packageAssets[$key]])),
                 ['styles' => 'styles', 'scripts' => 'scripts', 'modules' => 'modules'],
             ))
             ->globals($assets->editorGlobals())
@@ -1848,9 +1879,9 @@ JS;
             $createEntryBtnPos = array_search('createEntry', $toolbar);
             if ($createEntryBtnPos !== false) {
                 $entryTypes = $this->getEntryTypes();
-                if (!empty($entryTypes)) {
+                if (! empty($entryTypes)) {
                     $buttons = [
-                        ...array_map(fn(CkeEntryType $entryType) => "createEntry-$entryType->uid", $entryTypes),
+                        ...array_map(fn (CkeEntryType $entryType) => "createEntry-$entryType->uid", $entryTypes),
                         'createEntry',
                     ];
                 } else {
@@ -1864,7 +1895,7 @@ JS;
         }
 
         $user = currentUserElement();
-        if (!$user || !$this->isSourceEditingAllowed($user)) {
+        if (! $user || ! $this->isSourceEditingAllowed($user)) {
             $toolbar = array_diff($toolbar, ['sourceEditing']);
         }
 
@@ -1893,7 +1924,7 @@ JS;
                         'title' => 'Paragraph',
                         'class' => 'ck-heading_paragraph',
                     ],
-                    ...array_map(fn(int $level) => [
+                    ...array_map(fn (int $level) => [
                         'model' => "heading$level",
                         'view' => "h$level",
                         'title' => "Heading $level",
@@ -1903,7 +1934,7 @@ JS;
             ],
             'image' => [
                 'toolbar' => [
-                    ...(!empty($transforms) ? ['transformImage', '|'] : []),
+                    ...(! empty($transforms) ? ['transformImage', '|'] : []),
                     'toggleImageCaption',
                     'imageTextAlternative',
                     '|',
@@ -1961,7 +1992,7 @@ JS;
             isset($this->options) ? null : $configJs,
         );
 
-        $configPlugins = '[' . implode(',', $pluginRefs) . ']';
+        $configPlugins = '['.implode(',', $pluginRefs).']';
 
         // Add the translation import
         $uiLanguage = CkeditorAssets::uiLanguage();
@@ -2126,7 +2157,7 @@ JS;
     private function scopedCss(string $containerId): ?string
     {
         $css = $this->css();
-        if (!$css) {
+        if (! $css) {
             return null;
         }
 
@@ -2142,7 +2173,7 @@ JS;
 
         // the id is needed for the regular field
         // the class is used by the fullscreen mode (there can only be one at the time)
-        return trim(implode("\n", $imports) . ($css !== '' ? "\n#$containerId, .$containerId { $css }" : '')) ?: null;
+        return trim(implode("\n", $imports).($css !== '' ? "\n#$containerId, .$containerId { $css }" : '')) ?: null;
     }
 
     private function configJs(): string
@@ -2210,7 +2241,7 @@ JS;
             ->allowAttribute('target', ['a'])
             ->allowAttribute('rel', ['a']);
 
-        if (!empty($this->advancedLinkFields) && in_array('ariaLabel', $this->advancedLinkFields)) {
+        if (! empty($this->advancedLinkFields) && in_array('ariaLabel', $this->advancedLinkFields)) {
             $config = $config->allowAttribute('aria-label', ['a']);
         }
 
@@ -2254,28 +2285,28 @@ JS;
     /**
      * Returns the value prepped for the input.
      *
-     * @param FieldData|string|null $value
+     * @param  FieldData|string|null  $value
      */
     #[Override]
     protected function prepValueForInput($value, ?ElementInterface $element, bool $static = false): string
     {
         if ($value instanceof FieldData) {
             $chunks = $value->getChunks(false)
-                ->filter(fn(BaseChunk $chunk) => !$chunk instanceof EntryChunk || $chunk->getEntry() !== null);
+                ->filter(fn (BaseChunk $chunk) => ! $chunk instanceof EntryChunk || $chunk->getEntry() !== null);
 
             /** @var Entry[] $entries */
             $entries = $chunks
-                ->filter(fn(BaseChunk $chunk) => $chunk instanceof EntryChunk)
-                ->keyBy(fn(EntryChunk $chunk) => $chunk->entryId)
-                ->map(fn(EntryChunk $chunk) => $chunk->getEntry())
+                ->filter(fn (BaseChunk $chunk) => $chunk instanceof EntryChunk)
+                ->keyBy(fn (EntryChunk $chunk) => $chunk->entryId)
+                ->map(fn (EntryChunk $chunk) => $chunk->getEntry())
                 ->all();
 
-            if (!$static) {
+            if (! $static) {
                 $entries = Drafts::withProvisionalDrafts($entries);
             }
 
             $value = $chunks
-                ->map(function(BaseChunk $chunk) use ($static, $entries, $element) {
+                ->map(function (BaseChunk $chunk) use ($static, $entries, $element) {
                     if ($chunk instanceof Markup) {
                         return $chunk->rawHtml;
                     }
@@ -2368,16 +2399,16 @@ JS;
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         /** @var FieldData|null $value */
-        if (!$value) {
+        if (! $value) {
             return '';
         }
 
         $keywords = $value->getChunks()
-            ->filter(fn(BaseChunk $chunk) => $chunk instanceof Markup)
-            ->map(fn(Markup $chunk) => $chunk->getHtml())
+            ->filter(fn (BaseChunk $chunk) => $chunk instanceof Markup)
+            ->map(fn (Markup $chunk) => $chunk->getHtml())
             ->join(' ');
 
-        if (!DB::supportsMb4()) {
+        if (! DB::supportsMb4()) {
             $keywords = Str::encodeMb4($keywords);
         }
 
@@ -2406,10 +2437,11 @@ JS;
                 ]);
             } catch (InvalidHtmlTagException) {
                 $offset = $endPos;
+
                 continue;
             }
 
-            $value = substr($value, 0, $startPos) . $tag . substr($value, $endPos);
+            $value = substr($value, 0, $startPos).$tag.substr($value, $endPos);
             $offset = $startPos + strlen($tag);
         }
 
@@ -2417,8 +2449,9 @@ JS;
 
         return preg_replace_callback(
             '/(<figure\b[^>]*>\s*)(<iframe\b([^>]*)src="([^"]+)"([^>]*)>(.*?)<\/iframe>)/i',
-            function(array $match) use ($previewsInData) {
+            function (array $match) use ($previewsInData) {
                 $absUrl = Url::isProtocolRelativeUrl($match[4]) ? "https:$match[4]" : $match[4];
+
                 return $previewsInData
                     ? sprintf(
                         '%s<div data-oembed-url="%s">%s</div>',
@@ -2454,6 +2487,7 @@ JS;
             // if there's already a <code tag inside, leave it alone and carry on
             if (str_starts_with($preContent, '<code')) {
                 $offset = $startPos + strlen($preContent);
+
                 continue;
             }
 
@@ -2461,7 +2495,7 @@ JS;
                 'class' => 'language-plaintext',
             ]);
 
-            $value = substr($value, 0, $startPos) . $preContent . substr($value, $endPos);
+            $value = substr($value, 0, $startPos).$preContent.substr($value, $endPos);
             $offset = $startPos + strlen($preContent);
         }
 
@@ -2488,7 +2522,7 @@ JS;
         // sort by the order of $this->advancedLinkFields
         $fields = array_column($fields, null, 'value');
         $order = array_flip($this->advancedLinkFields);
-        uksort($fields, function($a, $b) use ($order) {
+        uksort($fields, function ($a, $b) use ($order) {
             return $order[$a] <=> $order[$b];
         });
 
@@ -2511,7 +2545,7 @@ JS;
         $sectionSources = $this->_entrySources($element);
         $volumeSources = $this->_assetSources(true);
 
-        if (!empty($sectionSources)) {
+        if (! empty($sectionSources)) {
             $linkOptions[] = [
                 'label' => Entry::displayName(),
                 'elementType' => Entry::class,
@@ -2525,7 +2559,7 @@ JS;
         $categoryClass = 'craft\elements\Category';
         if (class_exists($categoryClass)) {
             $categorySources = $this->_categorySources($element, $categoryClass);
-            if (!empty($categorySources)) {
+            if (! empty($categorySources)) {
                 $linkOptions[] = [
                     'label' => $categoryClass::displayName(),
                     'elementType' => $categoryClass,
@@ -2536,7 +2570,7 @@ JS;
             }
         }
 
-        if (!empty($volumeSources)) {
+        if (! empty($volumeSources)) {
             $linkOptions[] = [
                 'label' => Asset::displayName(),
                 'elementType' => Asset::class,
@@ -2552,7 +2586,7 @@ JS;
 
         // Fill in any missing ref handles
         foreach ($linkOptions as &$linkOption) {
-            if (!isset($linkOption['refHandle'])) {
+            if (! isset($linkOption['refHandle'])) {
                 /** @var class-string<ElementInterface> $class */
                 $class = $linkOption['elementType'];
                 $linkOption['refHandle'] = $class::refHandle() ?? $class;
@@ -2577,7 +2611,7 @@ JS;
                 $sectionSiteSettings = $section->getSiteSettings();
                 foreach ($sites as $site) {
                     if (isset($sectionSiteSettings[$site->id]) && $sectionSiteSettings[$site->id]->hasUrls) {
-                        $sources[] = 'section:' . $section->uid;
+                        $sources[] = 'section:'.$section->uid;
                         break;
                     }
                 }
@@ -2590,7 +2624,7 @@ JS;
             array_unshift($sources, 'singles');
         }
 
-        if (!empty($sources)) {
+        if (! empty($sources)) {
             array_unshift($sources, '*');
         }
 
@@ -2603,14 +2637,14 @@ JS;
      */
     private function _categorySources(?ElementInterface $element, string $categoryClass): array
     {
-        if (!$element) {
+        if (! $element) {
             return [];
         }
 
         // @phpstan-ignore class.notFound (categories only exist when the Yii 2 adapter is installed)
         $sources = Collection::make(\Craft::$app->getCategories()->getAllGroups())
-            ->filter(fn($group) => $group->getSiteSettings()[$element->siteId]->hasUrls ?? false)
-            ->map(fn($group) => "group:$group->uid")
+            ->filter(fn ($group) => $group->getSiteSettings()[$element->siteId]->hasUrls ?? false)
+            ->map(fn ($group) => "group:$group->uid")
             ->values()
             ->all();
 
@@ -2634,7 +2668,7 @@ JS;
             if ($field) {
                 $settings += [
                     'indexSettings' => [
-                        'showFolders' => !$field->restrictLocation || $field->allowSubfolders,
+                        'showFolders' => ! $field->restrictLocation || $field->allowSubfolders,
                     ],
                 ];
             }
@@ -2646,32 +2680,32 @@ JS;
     /**
      * Returns the available asset sources.
      *
-     * @param bool $withUrlsOnly Whether to only return volumes that have filesystems that have public URLs
+     * @param  bool  $withUrlsOnly  Whether to only return volumes that have filesystems that have public URLs
      * @return string[]
      */
     private function _assetSources(bool $withUrlsOnly = false): array
     {
-        if (!$this->availableVolumes) {
+        if (! $this->availableVolumes) {
             return [];
         }
 
         $volumes = Collection::make(Volumes::getAllVolumes());
 
         if (is_array($this->availableVolumes)) {
-            $volumes = $volumes->filter(fn(Volume $volume) => in_array($volume->uid, $this->availableVolumes));
+            $volumes = $volumes->filter(fn (Volume $volume) => in_array($volume->uid, $this->availableVolumes));
         }
 
-        if (!$this->showUnpermittedVolumes) {
-            $volumes = $volumes->filter(fn(Volume $volume) => Gate::allows("viewAssets:$volume->uid"));
+        if (! $this->showUnpermittedVolumes) {
+            $volumes = $volumes->filter(fn (Volume $volume) => Gate::allows("viewAssets:$volume->uid"));
         }
 
         if ($withUrlsOnly) {
             // only allow volumes that belong to FS that have public URLs
-            $volumes = $volumes->filter(fn(Volume $volume) => $volume->hasUrls);
+            $volumes = $volumes->filter(fn (Volume $volume) => $volume->hasUrls);
         }
 
         $sources = $volumes
-            ->map(fn(Volume $volume) => "volume:$volume->uid")
+            ->map(fn (Volume $volume) => "volume:$volume->uid")
             ->values()
             ->all();
 
@@ -2698,7 +2732,7 @@ JS;
     private function _defaultUploadFolderId(?ElementInterface $element): ?int
     {
         [$uploadField, $target] = $this->_uploadField($element) ?? [null, null];
-        if (!$uploadField) {
+        if (! $uploadField) {
             return null;
         }
 
@@ -2706,8 +2740,9 @@ JS;
         // Don't create dynamic folders just by rendering the field; temp uploads get moved once the element is saved
         if ($this->imageMode === self::IMAGE_MODE_IMG && $this->_hasDynamicUploadSubpath()) {
             $volume = Volumes::getVolumeByUid($this->defaultUploadLocationVolume);
-            if (!$volume) {
+            if (! $volume) {
                 Log::warning("Couldn’t resolve the default upload folder for the “{$this->name}” field: invalid volume.", [__METHOD__]);
+
                 return null;
             }
 
@@ -2725,10 +2760,12 @@ JS;
             return $uploadField->resolveDynamicPathToFolderId($target);
         } catch (InvalidFsException $e) {
             Log::warning("Couldn’t resolve the default upload folder for the “{$this->name}” field: {$e->getMessage()}", [__METHOD__]);
+
             return null;
         } catch (InvalidSubpathException $e) {
             // Don't take down the whole edit page over it
             Log::warning("Couldn’t resolve the default upload folder for the “{$this->name}” field: {$e->getMessage()}", [__METHOD__]);
+
             return AssetsService::getUserTemporaryUploadFolder()->id;
         }
     }
@@ -2738,10 +2775,9 @@ JS;
      */
     private function _hasDynamicUploadSubpath(): bool
     {
-        return (
+        return
             $this->defaultUploadLocationVolume &&
-            str_contains($this->defaultUploadLocationSubpath ?? '', '{')
-        );
+            str_contains($this->defaultUploadLocationSubpath ?? '', '{');
     }
 
     /**
@@ -2755,7 +2791,7 @@ JS;
         if ($this->imageMode === self::IMAGE_MODE_ENTRIES) {
             $imageField = $this->getImageField();
             $imageEntryType = $this->getImageEntryType();
-            if (!$imageField?->defaultUploadLocationSource || !$imageEntryType) {
+            if (! $imageField?->defaultUploadLocationSource || ! $imageEntryType) {
                 return null;
             }
 
@@ -2770,7 +2806,7 @@ JS;
             return [$imageField, $imageEntry];
         }
 
-        if (!$this->defaultUploadLocationVolume) {
+        if (! $this->defaultUploadLocationVolume) {
             return null;
         }
 
@@ -2805,7 +2841,7 @@ JS;
         }
 
         [$uploadField, $target] = $this->_uploadField($element) ?? [null, null];
-        if (!$uploadField) {
+        if (! $uploadField) {
             return;
         }
 
@@ -2817,12 +2853,13 @@ JS;
                 $uploadFolder = Folders::getFolderById($uploadField->resolveDynamicPathToFolderId($target));
             } catch (InvalidFsException|InvalidSubpathException $e) {
                 Log::warning("Couldn’t move temporary uploads for the “{$this->name}” field: {$e->getMessage()}", [__METHOD__]);
+
                 return;
             }
         } else {
             // Like the Assets field, only move drafts’ uploads if the target folder already exists
             $volume = Volumes::getVolumeByUid($this->defaultUploadLocationVolume);
-            if (!$volume) {
+            if (! $volume) {
                 return;
             }
 
@@ -2834,7 +2871,7 @@ JS;
         }
 
         // Nowhere better to put them yet
-        if (!$uploadFolder?->volumeId) {
+        if (! $uploadFolder?->volumeId) {
             return;
         }
 
@@ -2844,7 +2881,7 @@ JS;
             try {
                 AssetsService::moveAsset($asset, $uploadFolder);
             } catch (FsObjectNotFoundException $e) {
-                Log::warning('Couldn’t move asset because the file doesn’t exist: ' . $e->getMessage(), [__METHOD__]);
+                Log::warning('Couldn’t move asset because the file doesn’t exist: '.$e->getMessage(), [__METHOD__]);
                 report($e);
             }
         }
@@ -2856,8 +2893,8 @@ JS;
     private function _getCustomSources(string $elementType): array
     {
         return ElementSources::getSources($elementType, ElementSourcesService::CONTEXT_MODAL)
-            ->filter(fn(array $source) => $source['type'] === ElementSourcesService::TYPE_CUSTOM && isset($source['key']))
-            ->map(fn(array $source) => $source['key'])
+            ->filter(fn (array $source) => $source['type'] === ElementSourcesService::TYPE_CUSTOM && isset($source['key']))
+            ->map(fn (array $source) => $source['key'])
             ->values()
             ->all();
     }
@@ -2867,17 +2904,17 @@ JS;
      */
     private function _transforms(): array
     {
-        if ($this->imageMode !== self::IMAGE_MODE_IMG || !$this->availableTransforms) {
+        if ($this->imageMode !== self::IMAGE_MODE_IMG || ! $this->availableTransforms) {
             return [];
         }
 
         $transforms = Collection::make(ImageTransforms::getAllTransforms());
 
         if (is_array($this->availableTransforms)) {
-            $transforms = $transforms->filter(fn(ImageTransform $transform) => in_array($transform->uid, $this->availableTransforms));
+            $transforms = $transforms->filter(fn (ImageTransform $transform) => in_array($transform->uid, $this->availableTransforms));
         }
 
-        return $transforms->map(fn(ImageTransform $transform) => [
+        return $transforms->map(fn (ImageTransform $transform) => [
             'handle' => $transform->handle,
             'name' => $transform->name,
         ])->values()->all();
@@ -2888,9 +2925,9 @@ JS;
      */
     private function _accessibleFieldName(?ElementInterface $element = null): string
     {
-        return t($this->name, category: 'site') .
-            ($this->layoutElement?->required ? ' ' . t('Required', category: 'site') : '') .
-            ($this->getIsTranslatable($element) ? ' ' . $this->getTranslationDescription($element) : '');
+        return t($this->name, category: 'site').
+            ($this->layoutElement?->required ? ' '.t('Required', category: 'site') : '').
+            ($this->getIsTranslatable($element) ? ' '.$this->getTranslationDescription($element) : '');
     }
 
     /**
@@ -2898,7 +2935,7 @@ JS;
      */
     private function _describedBy(): string
     {
-        if (!empty($this->describedBy)) {
+        if (! empty($this->describedBy)) {
             $describedByArray = explode(' ', $this->describedBy);
             $namespace = trim(preg_replace('/\[|\]/', '-', InputNamespace::get() ?? ''), '-');
             foreach ($describedByArray as $key => $item) {
@@ -2913,7 +2950,7 @@ JS;
 
     private function _entryTypeOptions(): array
     {
-        return array_map(fn(CkeEntryType $entryType) => [
+        return array_map(fn (CkeEntryType $entryType) => [
             'color' => $entryType->getColor()?->value,
             'expanded' => $entryType->expanded,
             'icon' => $entryType->icon ? Icons::svg($entryType->icon) : null,
@@ -2926,7 +2963,6 @@ JS;
     /**
      * Returns whether non-admins can edit the source.
      *
-     * @return bool
      * @deprecated in 4.5.0
      */
     public function getEnableSourceEditingForNonAdmins(): bool
@@ -2937,7 +2973,6 @@ JS;
     /**
      * Sets whether non-admins can edit the source.
      *
-     * @param bool $value
      * @deprecated in 4.5.0
      */
     public function setEnableSourceEditingForNonAdmins(bool $value): void
@@ -2951,7 +2986,7 @@ JS;
         $wasValueEmpty = $this->isValueEmpty($to->getFieldValue($this->handle), $to);
         parent::propagateValue($from, $to);
 
-        if (!$from->propagateAll && $wasValueEmpty) {
+        if (! $from->propagateAll && $wasValueEmpty) {
             // NestedElementManager won't duplicate the nested entries automatically,
             // because the field has a value in the target site (the HTML content), so isValueEmpty() is false.
             self::entryManager($this)->duplicateNestedElements($from, $to, force: true);

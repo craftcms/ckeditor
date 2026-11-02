@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license GPL-3.0-or-later
  */
@@ -50,21 +52,24 @@ class ConvertMatrixCommand extends Command
      */
     public function handle(Fields $fieldsService, Migrator $migrator): int
     {
-        if (!$this->input->isInteractive()) {
+        if (! $this->input->isInteractive()) {
             $this->components->error('This command must be run interactively.');
+
             return self::FAILURE;
         }
 
         $fieldHandle = $this->argument('fieldHandle');
         $matrixField = $fieldsService->getFieldByHandle($fieldHandle);
 
-        if (!$matrixField) {
+        if (! $matrixField) {
             $this->components->error("Invalid field handle: $fieldHandle");
+
             return self::FAILURE;
         }
 
-        if (!$matrixField instanceof Matrix) {
+        if (! $matrixField instanceof Matrix) {
             $this->components->error("“{$matrixField->name}” is not a Matrix field.");
+
             return self::FAILURE;
         }
 
@@ -72,6 +77,7 @@ class ConvertMatrixCommand extends Command
         $htmlEntryType = $this->htmlEntryType($matrixField);
         if ($htmlEntryType === false) {
             $this->components->warn('Field conversion aborted.');
+
             return self::SUCCESS;
         }
 
@@ -108,15 +114,15 @@ class ConvertMatrixCommand extends Command
         }
 
         // ensure the CKEditor config has a "New entry" button
-        if (!in_array('createEntry', $ckeField->toolbar)) {
-            if (!empty($ckeField->toolbar)) {
+        if (! in_array('createEntry', $ckeField->toolbar)) {
+            if (! empty($ckeField->toolbar)) {
                 $ckeField->toolbar[] = '|';
             }
             $ckeField->toolbar[] = 'createEntry';
         }
 
-        $this->components->task("Saving the `$ckeField->name` field", function() use ($fieldsService, $ckeField) {
-            if (!$fieldsService->saveField($ckeField)) {
+        $this->components->task("Saving the `$ckeField->name` field", function () use ($fieldsService, $ckeField) {
+            if (! $fieldsService->saveField($ckeField)) {
                 throw new RuntimeException('Couldn’t save the field.');
             }
         });
@@ -124,7 +130,7 @@ class ConvertMatrixCommand extends Command
         $migrationName = sprintf('%s_convert_%s_to_ckeditor', now('UTC')->format('Y_m_d_His'), $ckeField->handle);
         $migrationPath = database_path("migrations/$migrationName.php");
 
-        $this->components->task('Generating the content migration', function() use (
+        $this->components->task('Generating the content migration', function () use (
             $ckeField,
             $htmlEntryType,
             $htmlField,
@@ -133,7 +139,7 @@ class ConvertMatrixCommand extends Command
             $migrationPath,
         ) {
             ob_start();
-            File::getRequire(dirname(__DIR__, 3) . '/resources/stubs/convert-matrix-migration.php.stub', [
+            File::getRequire(dirname(__DIR__, 3).'/resources/stubs/convert-matrix-migration.php.stub', [
                 'ckeFieldUid' => $ckeField->uid,
                 'htmlEntryTypeUid' => $htmlEntryType?->uid,
                 'htmlFieldUid' => $htmlField?->layoutElement->uid,
@@ -152,7 +158,7 @@ class ConvertMatrixCommand extends Command
 
         $this->components->success(sprintf(
             'Field converted to CKEditor. Commit `%s` and your project config changes, and run `php artisan craft:migrate:all` on other environments for the changes to take effect.',
-            str_replace(base_path() . DIRECTORY_SEPARATOR, '', $migrationPath),
+            str_replace(base_path().DIRECTORY_SEPARATOR, '', $migrationPath),
         ));
 
         return self::SUCCESS;
@@ -166,19 +172,20 @@ class ConvertMatrixCommand extends Command
         // look for entry types that have a CKEditor or Plain Text field
         /** @var Collection<string,EntryType> $eligibleEntryTypes */
         $eligibleEntryTypes = Collection::make($matrixField->getEntryTypes())
-            ->filter(fn(EntryType $entryType) => Collection::make($entryType->getFieldLayout()->getCustomFields())
-                ->contains(fn(FieldInterface $field) => $field instanceof Field || $field instanceof PlainText))
-            ->keyBy(fn(EntryType $entryType) => $entryType->handle);
+            ->filter(fn (EntryType $entryType) => Collection::make($entryType->getFieldLayout()->getCustomFields())
+                ->contains(fn (FieldInterface $field) => $field instanceof Field || $field instanceof PlainText))
+            ->keyBy(fn (EntryType $entryType) => $entryType->handle);
 
         if ($eligibleEntryTypes->isEmpty()) {
             $this->components->warn("`$matrixField->name` doesn’t have any entry types with CKEditor/Plain Text fields.");
+
             return confirm('Continue anyway?', true) ? null : false;
         }
 
         $choice = select(
             'Which entry type should HTML content be extracted from?',
             [
-                ...$eligibleEntryTypes->map(fn(EntryType $entryType) => "$entryType->name ($entryType->handle)")->all(),
+                ...$eligibleEntryTypes->map(fn (EntryType $entryType) => "$entryType->name ($entryType->handle)")->all(),
                 'none' => 'None',
             ],
             $eligibleEntryTypes->count() === 1 ? $eligibleEntryTypes->keys()->first() : null,
@@ -192,7 +199,7 @@ class ConvertMatrixCommand extends Command
      */
     private function prepareContentPopulation(?EntryType $htmlEntryType): array
     {
-        if (!$htmlEntryType) {
+        if (! $htmlEntryType) {
             return [null, 'none', false];
         }
 
@@ -220,8 +227,8 @@ class ConvertMatrixCommand extends Command
     {
         /** @var Collection<string,Field|PlainText> $eligibleFields */
         $eligibleFields = Collection::make($customFields)
-            ->filter(fn(FieldInterface $field) => $field instanceof Field || $field instanceof PlainText)
-            ->keyBy(fn(Field|PlainText $field) => $field->handle);
+            ->filter(fn (FieldInterface $field) => $field instanceof Field || $field instanceof PlainText)
+            ->keyBy(fn (Field|PlainText $field) => $field->handle);
 
         if ($eligibleFields->count() === 1) {
             return $eligibleFields->first();
@@ -229,7 +236,7 @@ class ConvertMatrixCommand extends Command
 
         $choice = select(
             'Which custom field?',
-            $eligibleFields->map(fn(Field|PlainText $field) => "$field->name ($field->handle)")->all(),
+            $eligibleFields->map(fn (Field|PlainText $field) => "$field->name ($field->handle)")->all(),
         );
 
         return $eligibleFields->get($choice);
