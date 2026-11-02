@@ -263,21 +263,22 @@ const ConfigOptions = Garnish.Base.extend({
     const $containers = this.$jsonContainer.add(this.$jsContainer).add(this.$fileContainer);
     new Craft.Listbox($modePicker, {
       onChange: (t) => {
+        var e;
         switch (this.mode = t.data("mode"), (this.mode !== "file" || hasFiles) && this.$modeInput.val(this.mode), $containers.addClass("hidden"), this.mode) {
           case "json":
             if (this.lastCodeMode === "js") {
-              const e = this.jsEditor.getModel().getValue();
-              if (this.jsContainsFunctions(e) && !confirm(
+              const i = this.jsEditor.getModel().getValue();
+              if (this.jsContainsFunctions(i) && !confirm(
                 Craft.t(
                   "ckeditor",
                   "Your JavaScript config contains functions. If you switch to JSON, they will be lost. Would you like to continue?"
                 )
               )) {
-                $modePicker.data("listbox").$options.filter('[data-mode="js"]').trigger("click");
+                (e = $modePicker.children('[data-mode="js"]')[0]) == null || e.click();
                 break;
               }
-              const i = this.js2json(e);
-              this.jsonEditor.getModel().setValue(i || `{
+              const o = this.js2json(i);
+              this.jsonEditor.getModel().setValue(o || `{
   
 }`), this.jsEditor.getModel().setValue("");
             }
@@ -285,8 +286,8 @@ const ConfigOptions = Garnish.Base.extend({
             break;
           case "js":
             if (this.lastCodeMode === "json") {
-              const e = this.jsonEditor.getModel().getValue(), i = this.json2js(e);
-              this.jsEditor.getModel().setValue(i || `return {
+              const i = this.jsonEditor.getModel().getValue(), o = this.json2js(i);
+              this.jsEditor.getModel().setValue(o || `return {
   
 }`), this.jsonEditor.getModel().setValue("");
             }

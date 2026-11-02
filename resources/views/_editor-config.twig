@@ -54,29 +54,11 @@
       {% import '_includes/forms.twig' as forms %}
 
       <div id="{{ 'config-options'|namespaceInputId }}">
-        <section class="btngroup btngroup--exclusive small" aria-label="{{ 'CKEditor config option mode'|t('ckeditor') }}">
-          {{ tag('button', {
-            type: 'button',
-            class: ['btn', 'small', configMode == 'json' ? 'active']|filter,
-            aria: {pressed: configMode == 'json' ? 'true'}|filter,
-            data: {mode: 'json'},
-            text: 'JSON',
-          }) }}
-          {{ tag('button', {
-            type: 'button',
-            class: ['btn', 'small', configMode == 'js' ? 'active' : null]|filter,
-            aria: {pressed: configMode == 'js' ? 'true'}|filter,
-            data: {mode: 'js'},
-            text: 'JavaScript',
-          }) }}
-          {{ tag('button', {
-            type: 'button',
-            class: ['btn', 'small', configMode == 'file' ? 'active' : null]|filter,
-            aria: {pressed: configMode == 'file' ? 'true'}|filter,
-            data: {mode: 'file'},
-            text: 'File',
-          }) }}
-        </section>
+        <craft-button-group class="btngroup btngroup--exclusive" aria-label="{{ 'CKEditor config option mode'|t('ckeditor') }}">
+          <craft-button type="button" variant="outline" size="small" data-mode="json" aria-pressed="{{ configMode == 'json' ? 'true' : 'false' }}"{{ configMode == 'json' ? ' active' }}>JSON</craft-button>
+          <craft-button type="button" variant="outline" size="small" data-mode="js" aria-pressed="{{ configMode == 'js' ? 'true' : 'false' }}"{{ configMode == 'js' ? ' active' }}>JavaScript</craft-button>
+          <craft-button type="button" variant="outline" size="small" data-mode="file" aria-pressed="{{ configMode == 'file' ? 'true' : 'false' }}"{{ configMode == 'file' ? ' active' }}>File</craft-button>
+        </craft-button-group>
         <input type="hidden" id="{{ 'config-options-mode'|namespaceInputId }}" name="configMode" value="{{ configMode }}">
       </div>
 
@@ -163,22 +145,10 @@
       {% import '_includes/forms.twig' as forms %}
 
       <div id="{{ 'css-options'|namespaceInputId }}">
-        <section class="btngroup btngroup--exclusive small" aria-label="{{ 'CSS mode'|t('ckeditor') }}">
-          {{ tag('button', {
-            type: 'button',
-            class: ['btn', 'small', cssMode == 'css' ? 'active']|filter,
-            aria: {pressed: cssMode == 'css' ? 'true'}|filter,
-            data: {mode: 'css'},
-            text: 'CSS',
-          }) }}
-          {{ tag('button', {
-            type: 'button',
-            class: ['btn', 'small', cssMode == 'file' ? 'active' : null]|filter,
-            aria: {pressed: cssMode == 'file' ? 'true'}|filter,
-            data: {mode: 'file'},
-            text: 'File',
-          }) }}
-        </section>
+        <craft-button-group class="btngroup btngroup--exclusive" aria-label="{{ 'CSS mode'|t('ckeditor') }}">
+          <craft-button type="button" variant="outline" size="small" data-mode="css" aria-pressed="{{ cssMode == 'css' ? 'true' : 'false' }}"{{ cssMode == 'css' ? ' active' }}>CSS</craft-button>
+          <craft-button type="button" variant="outline" size="small" data-mode="file" aria-pressed="{{ cssMode == 'file' ? 'true' : 'false' }}"{{ cssMode == 'file' ? ' active' }}>File</craft-button>
+        </craft-button-group>
         <input type="hidden" id="{{ 'css-options-mode'|namespaceInputId }}" name="cssMode" value="{{ cssMode }}">
       </div>
 

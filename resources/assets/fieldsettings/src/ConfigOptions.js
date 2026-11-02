@@ -66,8 +66,7 @@ export default Garnish.Base.extend({
                   )
                 ) {
                   // if user cancels - go back to JS
-                  const listbox = $modePicker.data('listbox');
-                  listbox.$options.filter('[data-mode="js"]').trigger('click');
+                  $modePicker.children('[data-mode="js"]')[0]?.click();
                   break;
                 }
               }
