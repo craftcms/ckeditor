@@ -18,6 +18,7 @@ use CraftCms\Ckeditor\Events\LinkOptionsResolving;
 use CraftCms\Ckeditor\Gql\Generator;
 use CraftCms\Ckeditor\Support\CkeditorAssets;
 use CraftCms\Ckeditor\Ui\Controls\CkeditorControl;
+use CraftCms\Ckeditor\Ui\Controls\EditorConfigControl;
 use CraftCms\Ckeditor\Support\CkeditorConfig;
 use CraftCms\Ckeditor\Support\CkeditorConfigSchema;
 use CraftCms\Ckeditor\Data\EntryType as CkeEntryType;
@@ -77,12 +78,20 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\EntryTypeSelect;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
 use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\HtmlField\HtmlField;
 use CraftCms\HtmlField\HtmlFieldData;
-use CraftCms\Yii2Adapter\Ui\Contracts\LegacySettingsComponent;
-use CraftCms\Yii2Adapter\Ui\Concerns\LegacySettingsUi;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Arr;
@@ -97,6 +106,7 @@ use RuntimeException;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
+use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -111,12 +121,8 @@ use function CraftCms\Cms\template;
 class Field extends HtmlField implements
     ElementContainerFieldInterface,
     MergeableFieldInterface,
-    CrossSiteCopyableFieldInterface,
-    LegacySettingsComponent
+    CrossSiteCopyableFieldInterface
 {
-    // The settings UI still renders legacy HTML through the Yii 2 adapter until native UI controls replace it.
-    use LegacySettingsUi;
-
     /** @since 5.0.0 */
     public const IMAGE_MODE_IMG = 'img';
     /** @since 5.0.0 */
@@ -685,6 +691,43 @@ class Field extends HtmlField implements
 
     public function __construct($config = [])
     {
+        // The `editorConfig` settings control posts the toolbar, config options and custom styles together
+        if (isset($config['editorConfig']) && is_array($config['editorConfig'])) {
+            $editorConfig = Arr::pull($config, 'editorConfig');
+            if (isset($editorConfig['toolbar']) && is_string($editorConfig['toolbar'])) {
+                $editorConfig['toolbar'] = Json::decodeIfJson($editorConfig['toolbar']);
+            }
+            $config = [
+                ...$config,
+                ...Arr::only($editorConfig, ['toolbar', 'configMode', 'json', 'js', 'jsFile', 'cssMode', 'css', 'cssFile']),
+            ];
+        } else {
+            unset($config['editorConfig']);
+        }
+
+        if (isset($config['toolbar']) && is_string($config['toolbar'])) {
+            $config['toolbar'] = Json::decodeIfJson($config['toolbar']);
+        }
+
+        // Entry types that should get their own toolbar button
+        if (array_key_exists('expandedEntryTypes', $config)) {
+            $expanded = array_flip(array_filter((array)Arr::pull($config, 'expandedEntryTypes')));
+            if (isset($config['entryTypes']) && is_array($config['entryTypes'])) {
+                $config['entryTypes'] = array_map(function($entryType) use ($expanded) {
+                    if (is_string($entryType)) {
+                        $entryType = Json::decodeIfJson($entryType);
+                    }
+                    if (is_string($entryType)) {
+                        $entryType = ['uid' => $entryType];
+                    }
+                    if (is_array($entryType) && isset($entryType['uid'])) {
+                        $entryType['expanded'] = isset($expanded[$entryType['uid']]);
+                    }
+                    return $entryType;
+                }, $config['entryTypes']);
+            }
+        }
+
         unset(
             $config['initJs'],
             $config['removeInlineStyles'],
@@ -748,6 +791,8 @@ class Field extends HtmlField implements
 
         if (isset($config['headingLevels']) && $config['headingLevels'] === '') {
             $config['headingLevels'] = [];
+        } elseif (isset($config['headingLevels']) && is_array($config['headingLevels'])) {
+            $config['headingLevels'] = array_values(array_map('intval', $config['headingLevels']));
         }
 
         if (isset($config['imageFieldPath'])) {
@@ -1088,117 +1133,328 @@ class Field extends HtmlField implements
     }
 
     #[Override]
-    public function getSettingsHtml(): ?string
+    public function settingsUi(UiContext $context = new UiContext()): ?Ui
     {
-        return $this->settingsHtml(false);
-    }
+        $userGroupOptions = [
+            ['label' => t('Admins'), 'value' => '__ADMINS__'],
+        ];
+        foreach (UserGroups::getAllGroups() as $group) {
+            if ($group->can('accessCp')) {
+                $userGroupOptions[] = ['label' => $group->name, 'value' => $group->uid];
+            }
+        }
 
-    #[Override]
-    public function getReadOnlySettingsHtml(): ?string
-    {
-        return $this->settingsHtml(true);
+        $volumeOptions = Collection::make(Volumes::getAllVolumes())
+            ->filter(fn(Volume $volume) => $volume->hasUrls)
+            ->map(fn(Volume $volume) => ['label' => $volume->name, 'value' => $volume->uid])
+            ->values()
+            ->all();
+
+        $transformOptions = Collection::make(ImageTransforms::getAllTransforms())
+            ->map(fn(ImageTransform $transform) => ['label' => $transform->name, 'value' => $transform->uid])
+            ->values()
+            ->all();
+
+        $entryTypes = $this->getEntryTypes();
+
+        $ui = Ui::make([
+            UiField::make(t('Toolbar', category: 'ckeditor'))
+                ->labelSrOnly()
+                ->control($this->editorConfigControl($context)),
+            UiField::make(t('Entry Types'))
+                ->instructions(t('Choose the types of entries that can be created in this field.'))
+                ->control(EntryTypeSelect::make('entryTypes')
+                    ->allowOverrides()
+                    ->value(array_map(fn(CkeEntryType $entryType) => $entryType->getUsageConfig(), $entryTypes))
+                    ->reactive()),
+        ]);
+
+        if (!empty($entryTypes)) {
+            $ui->add(UiField::make(t('Show as separate buttons', category: 'ckeditor'))
+                ->instructions(t('Entry types that should get their own toolbar button, rather than being listed in the “Add nested content” menu.', category: 'ckeditor'))
+                ->control(Choice::make('expandedEntryTypes')
+                    ->multiple()
+                    ->options(array_map(fn(CkeEntryType $entryType) => [
+                        'label' => t($entryType->name, category: 'site'),
+                        'value' => $entryType->uid,
+                    ], $entryTypes))
+                    ->value(array_values(array_map(
+                        fn(CkeEntryType $entryType) => $entryType->uid,
+                        array_filter($entryTypes, fn(CkeEntryType $entryType) => $entryType->expanded),
+                    )))));
+        }
+
+        $ui->add(
+            UiField::make(t('Heading Levels', category: 'ckeditor'))
+                ->control(Choice::make('headingLevels')
+                    ->multiple()
+                    ->options(array_map(fn(int $level) => [
+                        'label' => t('Heading {level}', ['level' => $level], 'ckeditor'),
+                        'value' => (string)$level,
+                    ], range(1, 6)))
+                    ->value(array_map('strval', $this->headingLevels ?: []))),
+            UiField::make(t('Advanced Link Fields', category: 'ckeditor'))
+                ->control(Choice::make('advancedLinkFields')
+                    ->multiple()
+                    ->sortable()
+                    ->options(array_map(fn(array $option) => [
+                        'label' => $option['label'],
+                        'value' => $option['value'],
+                    ], CkeditorConfig::advanceLinkOptions()))
+                    ->value($this->advancedLinkFields ?? [])),
+            UiField::make(t('Field Limit'))
+                ->instructions(t('The maximum number of words or characters the field is allowed to have.', category: 'ckeditor'))
+                ->control(Number::make('fieldLimit')
+                    ->size(3)
+                    ->value($this->wordLimit ?? $this->characterLimit)),
+            UiField::make(t('Field Limit Unit', category: 'ckeditor'))
+                ->labelSrOnly()
+                ->control(Choice::make('limitUnit')
+                    ->options([
+                        ['label' => t('Words', category: 'ckeditor'), 'value' => 'words'],
+                        ['label' => t('Characters'), 'value' => 'chars'],
+                    ])
+                    ->value($this->characterLimit ? 'chars' : 'words')),
+            UiField::make(t('Show word count', category: 'ckeditor'))
+                ->control(Lightswitch::make('showWordCount')->value($this->showWordCount)),
+        );
+
+        $assetNodes = [
+            UiField::make(t('Available Volumes', category: 'ckeditor'))
+                ->instructions(t('The volumes that should be available when selecting assets.', category: 'ckeditor'))
+                ->control(Choice::make('availableVolumes')
+                    ->multiple()
+                    ->options($volumeOptions)
+                    ->allOption()
+                    ->value($this->availableVolumes)),
+            UiField::make(t('Show unpermitted volumes', category: 'ckeditor'))
+                ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.', category: 'ckeditor'))
+                ->control(Lightswitch::make('showUnpermittedVolumes')->value($this->showUnpermittedVolumes)),
+            UiField::make(t('Show unpermitted files', category: 'ckeditor'))
+                ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.', category: 'ckeditor'))
+                ->control(Lightswitch::make('showUnpermittedFiles')->value($this->showUnpermittedFiles)),
+            UiField::make(t('Image Mode', category: 'ckeditor'))
+                ->instructions(t('How should new images be added to the field contents?', category: 'ckeditor'))
+                ->control(Choice::make('imageMode')
+                    ->presentation(ChoicePresentation::Radios)
+                    ->options([
+                        ['label' => t('Image tags', category: 'ckeditor'), 'value' => self::IMAGE_MODE_IMG],
+                        ['label' => t('Nested entries', category: 'ckeditor'), 'value' => self::IMAGE_MODE_ENTRIES],
+                    ])
+                    ->value($this->imageMode)
+                    ->reactive()),
+        ];
+
+        if ($this->imageMode === self::IMAGE_MODE_IMG) {
+            array_push($assetNodes,
+                UiField::make(t('Default Upload Location'))
+                    ->instructions(t('Where images should be stored when they are uploaded directly to the field via drag & drop.', category: 'ckeditor'))
+                    ->control(Choice::make('defaultUploadLocationVolume')
+                        ->options([['label' => t('None'), 'value' => ''], ...$volumeOptions])
+                        ->value($this->defaultUploadLocationVolume ?? '')
+                        ->reactive()),
+            );
+
+            if ($this->defaultUploadLocationVolume) {
+                $assetNodes[] = UiField::make(t('Default Upload Location Subpath', category: 'ckeditor'))
+                    ->labelSrOnly()
+                    ->control(Text::make('defaultUploadLocationSubpath')
+                        ->placeholder(t('path/to/subfolder'))
+                        ->value($this->defaultUploadLocationSubpath));
+            }
+
+            array_push($assetNodes,
+                UiField::make(t('Available Transforms', category: 'ckeditor'))
+                    ->instructions(t('The transforms that should be available when inserting images.', category: 'ckeditor'))
+                    ->control(Choice::make('availableTransforms')
+                        ->multiple()
+                        ->options($transformOptions)
+                        ->allOption()
+                        ->value($this->availableTransforms)),
+                UiField::make(t('Default Transform', category: 'ckeditor'))
+                    ->instructions(t('The default transform that should be applied when inserting an image.', category: 'ckeditor'))
+                    ->control(Choice::make('defaultTransform')
+                        ->options([['label' => t('No transform', category: 'ckeditor'), 'value' => ''], ...$transformOptions])
+                        ->value($this->defaultTransform ?? '')),
+            );
+        } else {
+            $imageFieldOptions = [];
+            foreach ($entryTypes as $entryType) {
+                foreach ($entryType->getFieldLayout()->getCustomFields() as $field) {
+                    if ($field instanceof Assets) {
+                        $imageFieldOptions[] = [
+                            'label' => sprintf('%s → %s', $entryType->getUiLabel(), $field->getUiLabel()),
+                            'value' => sprintf('%s.%s', $entryType->uid, $field->layoutElement->uid),
+                        ];
+                    }
+                }
+            }
+
+            $assetNodes[] = UiField::make(t('Image Field', category: 'ckeditor'))
+                ->instructions(t('Choose which Assets field should be used to store images, from the selected entry types.', category: 'ckeditor'))
+                ->control(Choice::make('imageFieldPath')
+                    ->options($imageFieldOptions)
+                    ->value($this->imageFieldUid ? sprintf('%s.%s', $this->imageEntryTypeUid, $this->imageFieldUid) : null))
+                ->warning(empty($imageFieldOptions) ? t('No entry types with an Assets field have been selected yet.', category: 'ckeditor') : null);
+        }
+
+        $ui->add(Group::make('ckeditor-assets', $assetNodes)->label(t('Assets'))->collapsible());
+
+        $advancedNodes = [
+            UiField::make(t('Sanitize HTML', category: 'ckeditor'))
+                ->instructions(t('Removes any potentially-malicious code on save, by running the submitted data through an HTML sanitizer.', category: 'ckeditor'))
+                ->warning(t('Disable this at your own risk!', category: 'ckeditor'))
+                ->control(Lightswitch::make('sanitizeHtml')->value($this->sanitizeHtml)->reactive()),
+        ];
+
+        if ($this->sanitizeHtml) {
+            $advancedNodes[] = UiField::make(t('HTML Sanitizer', category: 'ckeditor'))
+                ->instructions(t('The HTML sanitizer that should be used. The default sanitizer is extended with the markup this field’s toolbar needs.', category: 'ckeditor'))
+                ->control(Choice::make('htmlSanitizer')
+                    ->options($this->htmlSanitizerOptions())
+                    ->value($this->htmlSanitizer ?? 'default'));
+        }
+
+        array_push($advancedNodes,
+            UiField::make(t('Parse embeds', category: 'ckeditor'))
+                ->instructions(t('Whether `<oembed>` tags should be parsed and replaced with the provider’s embed code.', category: 'ckeditor'))
+                ->warning(t('This should only be enabled if the field output is cached.', category: 'ckeditor'))
+                ->control(Lightswitch::make('parseEmbeds')->value($this->parseEmbeds)),
+            UiField::make(t('Who should see the “Source” button?', category: 'ckeditor'))
+                ->control(Choice::make('sourceEditingGroups')
+                    ->multiple()
+                    ->options($userGroupOptions)
+                    ->allOption()
+                    ->value($this->sourceEditingGroups)),
+        );
+
+        if (Cms::config()->enableGql) {
+            $advancedNodes[] = UiField::make(t('GraphQL Mode'))
+                ->control(Choice::make('graphqlMode')
+                    ->options([
+                        ['label' => t('Full data'), 'value' => 'full'],
+                        ['label' => t('Raw content only', category: 'ckeditor'), 'value' => 'raw'],
+                    ])
+                    ->value($this->fullGraphqlData ? 'full' : 'raw'));
+        }
+
+        $ui->add(Group::make('ckeditor-advanced', $advancedNodes)->label(t('Advanced', category: 'ckeditor'))->collapsible());
+
+        return $ui;
     }
 
     /**
-     * Renders the legacy settings template (through the Yii 2 adapter).
+     * Returns the control for the toolbar builder, config options and custom styles.
      */
-    private function settingsHtml(bool $readOnly): string
+    private function editorConfigControl(UiContext $context): EditorConfigControl
     {
         $assets = app(CkeditorAssets::class);
-        $assets->registerFieldSettingsAssets();
+        $prefix = sprintf('cke-config-%s', Str::random(8));
 
         // The toolbar builder needs every package
         [$importStatements, $pluginRefs] = CkeditorConfig::getImports();
-        $assets->registerPackageAssets();
-
-        $userGroupOptions = [
-            [
-                'label' => t('Admins'),
-                'value' => '__ADMINS__',
-            ],
-        ];
-
-        foreach (UserGroups::getAllGroups() as $group) {
-            if ($group->can('accessCp')) {
-                $userGroupOptions[] = [
-                    'label' => $group->name,
-                    'value' => $group->uid,
-                ];
-            }
-        }
-
-        $volumeOptions = [];
-        foreach (Volumes::getAllVolumes() as $volume) {
-            if ($volume->hasUrls) {
-                $volumeOptions[] = [
-                    'label' => $volume->name,
-                    'value' => $volume->uid,
-                ];
-            }
-        }
-
-        $transformOptions = [];
-        foreach (ImageTransforms::getAllTransforms() as $transform) {
-            $transformOptions[] = [
-                'label' => $transform->name,
-                'value' => $transform->uid,
-            ];
-        }
-
-        $jsonSchemaUri = sprintf('https://craft-code-editor.com/%s', InputNamespace::namespaceId('config-options-json'));
 
         $configMode = match (true) {
             !empty($this->js) => 'js',
             !empty($this->jsFile) => 'file',
             default => 'json',
         };
+        $cssMode = !empty($this->cssFile) ? 'file' : 'css';
 
-        $cssMode = match (true) {
-            !empty($this->cssFile) => 'file',
-            default => 'css',
-        };
+        $jsFileOptions = $this->configOptions(
+            dir: 'ckeditor',
+            only: ['*.json', '*.js'],
+            includeDefault: false,
+            includeExtensions: true,
+        );
+        $cssFileOptions = $this->configOptions(
+            dir: 'ckeditor',
+            only: ['*.css'],
+            includeDefault: false,
+            includeExtensions: true,
+        );
 
-        return template('ckeditor/_field-settings.twig', [
+        $html = InputNamespace::with($prefix, fn() => template('ckeditor/_editor-config.twig', [
             'field' => $this,
-            'importStatements' => $importStatements,
-            'toolbarBuilderId' => InputNamespace::namespaceId('toolbar-builder'),
-            'configOptionsId' => InputNamespace::namespaceId('config-options'),
-            'cssOptionsId' => InputNamespace::namespaceId('css-options'),
             'toolbarItems' => CkeditorConfig::normalizeToolbarItems(CkeditorConfig::getToolbarItems()),
-            'plugins' => $pluginRefs,
-            'jsonSchema' => CkeditorConfigSchema::create(),
-            'jsonSchemaUri' => $jsonSchemaUri,
-            'advanceLinkOptions' => CkeditorConfig::advanceLinkOptions(),
-            'entryTypes' => $this->getEntryTypes(),
-            'userGroupOptions' => $userGroupOptions,
-            'jsFileOptions' => $this->configOptions(
-                dir: 'ckeditor',
-                only: ['*.json', '*.js'],
-                includeDefault: false,
-                includeExtensions: true,
-            ),
-            'cssFileOptions' => $this->configOptions(
-                dir: 'ckeditor',
-                only: ['*.css'],
-                includeDefault: false,
-                includeExtensions: true,
-            ),
-            'htmlSanitizerOptions' => $this->htmlSanitizerOptions(),
-            'baseIconsUrl' => $assets->url('fieldsettings/images', false),
-            'volumeOptions' => $volumeOptions,
-            'transformOptions' => $transformOptions,
-            'defaultTransformOptions' => array_merge([
-                [
-                    'label' => t('No transform', category: 'ckeditor'),
-                    'value' => null,
-                ],
-            ], $transformOptions),
+            'jsFileOptions' => $jsFileOptions,
+            'cssFileOptions' => $cssFileOptions,
             'configMode' => $configMode,
             'cssMode' => $cssMode,
-            'readOnly' => $readOnly,
-            'enableGql' => Cms::config()->enableGql,
-            'inputNamespace' => InputNamespace::get(),
+            'readOnly' => $context->mode !== ControlMode::Editable,
+        ]));
+
+        $ids = Json::encode([
+            'configOptions' => "$prefix-config-options",
+            'toolbarBuilder' => "$prefix-toolbar-builder",
+            'cssOptions' => "$prefix-css-options",
         ]);
+        $jsonSchemaUri = sprintf('https://craft-code-editor.com/%s-config-options-json', $prefix);
+        $settingsJs = Json::encode([
+            'jsonSchemaUri' => $jsonSchemaUri,
+            'configMode' => $configMode,
+            'hasJsFiles' => !empty($jsFileOptions),
+            'cssMode' => $cssMode,
+            'hasCssFiles' => !empty($cssFileOptions),
+        ]);
+        $plugins = '[' . implode(',', $pluginRefs) . ']';
+
+        $module = <<<JS
+import {ConfigOptions, CssOptions, ToolbarBuilder} from '@craftcms/ckeditor-config';
+$importStatements
+
+export default function () {
+  const ids = $ids;
+  const settings = $settingsJs;
+  const configOptions = new ConfigOptions(ids.configOptions, settings.jsonSchemaUri, settings.configMode, settings.hasJsFiles);
+  new ToolbarBuilder(ids.toolbarBuilder, configOptions, $plugins);
+  new CssOptions(ids.cssOptions, settings.cssMode, settings.hasCssFiles);
+}
+JS;
+
+        $editorAssets = $assets->editorAssetUrls();
+        $packageAssets = $assets->packageAssetUrls();
+        $codeEditorBaseUrl = asset('vendor/codeeditor');
+
+        return EditorConfigControl::make('editorConfig')
+            ->mode($context->mode)
+            ->value([
+                'toolbar' => array_values($this->toolbar),
+                'configMode' => $configMode,
+                'json' => $this->getJson() ?? "{\n  \n}",
+                'js' => $this->js ?? "return {\n  \n}",
+                'jsFile' => $this->jsFile,
+                'cssMode' => $cssMode,
+                'css' => $this->css,
+                'cssFile' => $this->cssFile,
+            ])
+            ->html($html)
+            ->module($module)
+            ->assets([
+                'styles' => [
+                    ...$editorAssets['styles'],
+                    ...$packageAssets['styles'],
+                    $assets->url('fieldsettings/ckeditor.css'),
+                    "$codeEditorBaseUrl/css/vendors.css",
+                    "$codeEditorBaseUrl/css/styles.css",
+                ],
+                'scripts' => [
+                    ...$editorAssets['scripts'],
+                    ...$packageAssets['scripts'],
+                    "$codeEditorBaseUrl/js/runtime.js",
+                    "$codeEditorBaseUrl/js/vendors.js",
+                    "$codeEditorBaseUrl/js/code-editor.js",
+                ],
+                'modules' => $packageAssets['modules'],
+            ])
+            ->globals($assets->editorGlobals())
+            ->codeEditor([
+                'baseUrl' => "$codeEditorBaseUrl/",
+                'autocompleteUrl' => action_url('codeeditor/autocomplete/index'),
+                'jsonSchemaUri' => $jsonSchemaUri,
+                'jsonSchema' => CkeditorConfigSchema::create(),
+                'readOnly' => $context->mode !== ControlMode::Editable,
+            ]);
     }
 
     #[Override]

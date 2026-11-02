@@ -11,6 +11,7 @@ use CraftCms\Ckeditor\Console\Commands\ConvertMatrixCommand;
 use CraftCms\Ckeditor\Console\Commands\ConvertRedactorCommand;
 use CraftCms\Ckeditor\Support\CkeditorAssets;
 use CraftCms\Ckeditor\Ui\Controls\CkeditorControl;
+use CraftCms\Ckeditor\Ui\Controls\EditorConfigControl;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Field\NestedEntryFieldTypes;
 use CraftCms\Cms\Plugin\Plugin as BasePlugin;
@@ -44,7 +45,7 @@ class Plugin extends BasePlugin
     protected array $publishables = [
         __DIR__ . '/../resources/assets/ckeditor/dist' => 'ckeditor',
         __DIR__ . '/../resources/assets/fieldsettings/dist' => 'fieldsettings',
-        __DIR__ . '/../resources/assets/control/ckeditor-control.js' => 'control/ckeditor-control.js',
+        __DIR__ . '/../resources/assets/control' => 'control',
     ];
     protected array $scripts = [
         __DIR__ . '/../resources/assets/control/register.js' => 'control/register.js',
@@ -56,7 +57,7 @@ class Plugin extends BasePlugin
     public function boot(NestedEntryFieldTypes $nestedEntryFieldTypes, UiControlTypes $controlTypes): void
     {
         $nestedEntryFieldTypes->register(Field::class);
-        $controlTypes->register(CkeditorControl::class);
+        $controlTypes->register(CkeditorControl::class, EditorConfigControl::class);
         $this->app->bind(Settings::class, fn() => $this->getSettings());
 
         if (request()->isCpRequest() && !app()->runningInConsole()) {

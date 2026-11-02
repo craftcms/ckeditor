@@ -1,8 +1,6 @@
 <?php
 
 use CraftCms\Ckeditor\Http\Controllers\CkeditorController;
-use CraftCms\Ckeditor\Http\Controllers\FieldSettingsController;
-use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use Illuminate\Support\Facades\Route;
 
@@ -19,7 +17,3 @@ Route::middleware(['auth', 'can:accessCp', RequireCpRequest::class])->group(func
     Route::post('ckeditor/create-image-entry', [CkeditorController::class, 'createImageEntry']);
 });
 
-Route::middleware(['auth', 'can:accessCp', RequireAdmin::class])->group(function() {
-    Route::post('field-settings/apply-entry-type-indicators', [FieldSettingsController::class, 'applyEntryTypeIndicators']);
-    Route::post('field-settings/render-image-field', [FieldSettingsController::class, 'renderImageField']);
-});
