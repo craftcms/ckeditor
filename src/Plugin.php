@@ -39,8 +39,8 @@ class Plugin extends BasePlugin
     /**
      * Registers an asset bundle for a CKEditor package.
      *
-     * Packages aren’t loaded until they’re needed, so this can be called from a plugin or module’s `init()`
-     * method or a `Craft::$app->onInit()` callback, regardless of load order.
+     * Packages aren’t loaded until they’re needed, so this can be called from a plugin’s or module’s `boot()`
+     * method, regardless of load order.
      *
      * @param string $name The asset bundle class name. The asset bundle should extend
      * [[\craft\ckeditor\web\assets\BaseCkeditorPackageAsset]].
@@ -147,6 +147,7 @@ class Plugin extends BasePlugin
     public function boot(NestedEntryFieldTypes $nestedEntryFieldTypes): void
     {
         $nestedEntryFieldTypes->register(Field::class);
+        $this->app->bind(Settings::class, fn() => $this->getSettings());
 
         if (request()->isCpRequest() && !app()->runningInConsole()) {
             $this->registerJsImports();

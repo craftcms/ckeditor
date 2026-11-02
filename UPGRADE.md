@@ -66,6 +66,61 @@ The `ckeditor/ckeditor/*` and `ckeditor/field-settings/*` action URLs are unchan
 
 The plugin’s templates moved from `src/templates/` to `resources/views/`. Template paths (`ckeditor/_field-settings.twig`, etc.) are unchanged.
 
+### Events
+
+CKEditor’s Yii-style events were replaced by Laravel event classes. There is no `sender`; each event carries the field (and the element, where there is one).
+
+| Before | After |
+| --- | --- |
+| `craft\ckeditor\Field::EVENT_MODIFY_CONFIG` (`craft\ckeditor\events\ModifyConfigEvent`) | `CraftCms\Ckeditor\Events\EditorConfigResolving` |
+| `craft\ckeditor\Field::EVENT_DEFINE_LINK_OPTIONS` (`craft\ckeditor\events\DefineLinkOptionsEvent`) | `CraftCms\Ckeditor\Events\LinkOptionsResolving` |
+| `craft\ckeditor\Field::EVENT_MODIFY_PURIFIER_CONFIG` (`craft\htmlfield\events\ModifyPurifierConfigEvent`) | `CraftCms\Ckeditor\Events\HtmlSanitizerConfigResolving` (see [HTML sanitizing](#html-sanitizing)) |
+
+Before:
+
+```php
+use craft\ckeditor\events\DefineLinkOptionsEvent;
+use craft\ckeditor\events\ModifyConfigEvent;
+use craft\ckeditor\Field;
+use yii\base\Event;
+
+Event::on(Field::class, Field::EVENT_MODIFY_CONFIG, function(ModifyConfigEvent $event) {
+    $event->toolbar[] = 'underline';
+});
+
+Event::on(Field::class, Field::EVENT_DEFINE_LINK_OPTIONS, function(DefineLinkOptionsEvent $event) {
+    $event->linkOptions[] = [
+        'label' => 'Products',
+        'elementType' => Product::class,
+    ];
+});
+```
+
+After:
+
+```php
+use CraftCms\Ckeditor\Events\EditorConfigResolving;
+use CraftCms\Ckeditor\Events\LinkOptionsResolving;
+use Illuminate\Support\Facades\Event;
+
+Event::listen(function(EditorConfigResolving $event): void {
+    // $event->field, $event->element, $event->baseConfig and $event->toolbar
+    $event->toolbar[] = 'underline';
+});
+
+Event::listen(function(LinkOptionsResolving $event): void {
+    // $event->field, $event->element and $event->linkOptions
+    $event->linkOptions[] = [
+        'label' => 'Products',
+        'elementType' => Product::class,
+    ];
+});
+```
+
+### GraphQL
+
+The GraphQL classes moved from `craft\ckeditor\gql` to `CraftCms\Ckeditor\Gql` (`Generator`, `CkeditorData` and `CkeditorMarkup`). The schema is unchanged.
+
 ### HTML sanitizing
 
 CKEditor field values are now sanitized with Craft’s HTML sanitizers (`CraftCms\Cms\Support\Facades\HtmlSanitizers`, built on `symfony/html-sanitizer`) instead of HTML Purifier, via `craftcms/html-field` 4.
@@ -75,7 +130,7 @@ CKEditor field values are now sanitized with Craft’s HTML sanitizers (`CraftCm
 
 | Before | After |
 | --- | --- |
-| `craft\ckeditor\Field::EVENT_MODIFY_PURIFIER_CONFIG` | Removed. Register a custom sanitizer with `HtmlSanitizers::extend()` and select it in the field settings, or adjust the default config with `HtmlSanitizers::defaults()`. |
+| `craft\ckeditor\Field::EVENT_MODIFY_PURIFIER_CONFIG` | `CraftCms\Ckeditor\Events\HtmlSanitizerConfigResolving`, dispatched when a field uses the default sanitizer. To change every HTML field, use `HtmlSanitizers::defaults()`; to use a different sanitizer, register one with `HtmlSanitizers::extend()` and select it in the field settings. |
 | `craft\htmlfield\events\ModifyPurifierConfigEvent` | Removed (by `craftcms/html-field` 4). |
 
 Before:
@@ -93,10 +148,13 @@ Event::on(Field::class, Field::EVENT_MODIFY_PURIFIER_CONFIG, function(ModifyPuri
 After:
 
 ```php
-use CraftCms\Cms\Support\Facades\HtmlSanitizers;
-use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
+use CraftCms\Ckeditor\Events\HtmlSanitizerConfigResolving;
+use Illuminate\Support\Facades\Event;
 
-HtmlSanitizers::defaults(fn(HtmlSanitizerConfig $config) => $config->allowElement('mark'));
+Event::listen(function(HtmlSanitizerConfigResolving $event): void {
+    // HtmlSanitizerConfig is immutable, so assign the modified config back
+    $event->config = $event->config->allowElement('mark');
+});
 ```
 
 ### Config files

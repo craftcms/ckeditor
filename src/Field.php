@@ -13,9 +13,10 @@ use CraftCms\Ckeditor\Data\BaseChunk;
 use CraftCms\Ckeditor\Data\Entry as EntryChunk;
 use CraftCms\Ckeditor\Data\FieldData;
 use CraftCms\Ckeditor\Data\Markup;
-use craft\ckeditor\events\DefineLinkOptionsEvent;
-use craft\ckeditor\events\ModifyConfigEvent;
-use craft\ckeditor\gql\Generator;
+use CraftCms\Ckeditor\Events\EditorConfigResolving;
+use CraftCms\Ckeditor\Events\HtmlSanitizerConfigResolving;
+use CraftCms\Ckeditor\Events\LinkOptionsResolving;
+use CraftCms\Ckeditor\Gql\Generator;
 use CraftCms\Ckeditor\Support\CkeditorConfig;
 use CraftCms\Ckeditor\Support\CkeditorConfigSchema;
 use CraftCms\Ckeditor\Data\EntryType as CkeEntryType;
@@ -44,7 +45,6 @@ use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
-use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -95,7 +95,6 @@ use Override;
 use RuntimeException;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
-use yii\base\Event as YiiEvent;
 
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
@@ -109,7 +108,6 @@ use function CraftCms\Cms\t;
  */
 class Field extends HtmlField implements
     ElementContainerFieldInterface,
-    EagerLoadingFieldInterface,
     MergeableFieldInterface,
     CrossSiteCopyableFieldInterface,
     LegacyField
@@ -119,18 +117,6 @@ class Field extends HtmlField implements
     use LegacyFieldControl;
     use LegacyFieldHtml;
     use LegacySettingsUi;
-
-    /**
-     * @event DefineLinkOptionsEvent The event that is triggered when registering the link options for the field.
-     * @since 3.0.0
-     */
-    public const EVENT_DEFINE_LINK_OPTIONS = 'defineLinkOptions';
-
-    /**
-     * @event ModifyConfigEvent The event that is triggered when registering the link options for the field.
-     * @since 3.1.0
-     */
-    public const EVENT_MODIFY_CONFIG = 'modifyConfig';
 
     /** @since 5.0.0 */
     public const IMAGE_MODE_IMG = 'img';
@@ -692,6 +678,11 @@ class Field extends HtmlField implements
      * @see setEntryTypes()
      */
     private array $_entryTypes = [];
+
+    /**
+     * @see htmlSanitizer()
+     */
+    private HtmlSanitizerInterface $_htmlSanitizer;
 
     public function __construct($config = [])
     {
@@ -1452,7 +1443,12 @@ class Field extends HtmlField implements
         ]);
     }
 
-    #[Override]
+    /**
+     * Returns an eager-loading map for the nested entries.
+     *
+     * @param ElementInterface[] $sourceElements
+     * @return array|null|false
+     */
     public function getEagerLoadingMap(array $sourceElements): array|null|false
     {
         $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
@@ -1581,7 +1577,7 @@ class Field extends HtmlField implements
         $namespacedInputId = $view->namespaceInputId($inputId);
 
         $baseConfig = array_filter([
-            'licenseKey' => Plugin::getInstance()->getSettings()->getLicenseKey(),
+            'licenseKey' => app(Settings::class)->getLicenseKey(),
             'defaultTransform' => $defaultTransform?->handle,
             'elementSiteId' => $element?->siteId,
             'accessibleFieldName' => $this->_accessibleFieldName($element),
@@ -1646,11 +1642,7 @@ class Field extends HtmlField implements
         ]);
 
         // Give plugins/modules a chance to modify the config
-        $event = new ModifyConfigEvent([
-            'baseConfig' => $baseConfig,
-            'toolbar' => $toolbar,
-        ]);
-        YiiEvent::trigger(self::class, self::EVENT_MODIFY_CONFIG, $event);
+        event($event = new EditorConfigResolving($this, $element, $baseConfig, $toolbar));
 
         $removePlugins = Collection::empty();
 
@@ -1937,6 +1929,11 @@ JS;
     #[Override]
     protected function htmlSanitizer(): HtmlSanitizerInterface
     {
+        return $this->_htmlSanitizer ??= $this->createHtmlSanitizer();
+    }
+
+    private function createHtmlSanitizer(): HtmlSanitizerInterface
+    {
         if ($this->htmlSanitizer !== null && $this->htmlSanitizer !== 'default' && HtmlSanitizers::has($this->htmlSanitizer)) {
             return HtmlSanitizers::sanitizer($this->htmlSanitizer);
         }
@@ -1982,7 +1979,10 @@ JS;
             $config = $config->allowElement('craft-entry', ['data-entry-id', 'data-site-id']);
         }
 
-        return new HtmlSanitizer($config);
+        // Give plugins a chance to modify the config
+        event($event = new HtmlSanitizerConfigResolving($this, $config));
+
+        return new HtmlSanitizer($event->config);
     }
 
     /**
@@ -2282,10 +2282,7 @@ JS;
         }
 
         // Give plugins a chance to add their own
-        $event = new DefineLinkOptionsEvent([
-            'linkOptions' => $linkOptions,
-        ]);
-        YiiEvent::trigger(self::class, self::EVENT_DEFINE_LINK_OPTIONS, $event);
+        event($event = new LinkOptionsResolving($this, $element, $linkOptions));
         $linkOptions = $event->linkOptions;
 
         // Fill in any missing ref handles

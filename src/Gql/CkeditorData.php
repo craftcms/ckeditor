@@ -5,11 +5,11 @@
  * @license GPL-3.0-or-later
  */
 
-namespace craft\ckeditor\gql;
+namespace CraftCms\Ckeditor\Gql;
 
 use CraftCms\Ckeditor\Data\FieldData;
-use craft\gql\base\ObjectType;
-use craft\gql\resolvers\elements\Entry as EntryResolver;
+use CraftCms\Cms\Gql\Resolvers\Elements\Entry as EntryResolver;
+use CraftCms\Cms\Gql\Types\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**

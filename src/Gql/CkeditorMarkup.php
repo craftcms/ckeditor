@@ -5,10 +5,10 @@
  * @license GPL-3.0-or-later
  */
 
-namespace craft\ckeditor\gql;
+namespace CraftCms\Ckeditor\Gql;
 
 use CraftCms\Ckeditor\Data\Markup;
-use craft\gql\base\ObjectType;
+use CraftCms\Cms\Gql\Types\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**

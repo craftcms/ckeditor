@@ -5,22 +5,22 @@
  * @license GPL-3.0-or-later
  */
 
-namespace craft\ckeditor\gql;
+namespace CraftCms\Ckeditor\Gql;
 
-use Craft;
 use CraftCms\Ckeditor\Data\BaseChunk;
 use CraftCms\Ckeditor\Data\Entry;
 use CraftCms\Ckeditor\Data\FieldData;
 use CraftCms\Ckeditor\Data\Markup;
 use CraftCms\Ckeditor\Field;
-use craft\elements\Entry as EntryElement;
-use craft\gql\arguments\elements\Entry as EntryArguments;
-use craft\gql\base\GeneratorInterface;
-use craft\gql\base\ObjectType;
-use craft\gql\base\SingleGeneratorInterface;
-use craft\gql\GqlEntityRegistry;
-use craft\gql\types\generators\EntryType as EntryTypeGenerator;
-use craft\helpers\Gql;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
+use CraftCms\Cms\Gql\Contracts\GeneratorInterface;
+use CraftCms\Cms\Gql\Contracts\SingleGeneratorInterface;
+use CraftCms\Cms\Gql\GqlEntityRegistry;
+use CraftCms\Cms\Gql\GqlHelper;
+use CraftCms\Cms\Gql\Types\Generators\EntryType as EntryTypeGenerator;
+use CraftCms\Cms\Gql\Types\ObjectType;
+use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\HtmlField\HtmlFieldData;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
@@ -48,10 +48,9 @@ class Generator implements GeneratorInterface, SingleGeneratorInterface
             'fields' => function() use ($context, $typeName) {
                 $entryTypes = EntryTypeGenerator::generateTypes($context);
                 $entryArgs = EntryArguments::getArguments();
-                $gqlService = Craft::$app->getGql();
-
+                
                 foreach ($context->getFieldLayoutProviders() as $entryType) {
-                    $entryArgs += $gqlService->getFieldLayoutArguments($entryType->getFieldLayout());
+                    $entryArgs += Gql::getFieldLayoutArguments($entryType->getFieldLayout());
                 }
 
                 $markdownArgs = [
@@ -120,7 +119,7 @@ class Generator implements GeneratorInterface, SingleGeneratorInterface
                         'description' => 'The parsed content as plain text.',
                     ],
                     'chunks' => [
-                        'type' => Type::nonNull(Type::listOf(Gql::getUnionType("{$typeName}_chunks", [
+                        'type' => Type::nonNull(Type::listOf(GqlHelper::getUnionType("{$typeName}_chunks", [
                             ...$entryTypes,
                             'CkeditorMarkup' => GqlEntityRegistry::getOrCreate('CkeditorMarkup', fn() => new CkeditorMarkup([
                                 'name' => 'CkeditorMarkup',
@@ -163,13 +162,13 @@ class Generator implements GeneratorInterface, SingleGeneratorInterface
 
                 if ($entryTypes) {
                     $fields['entries'] = [
-                        'type' => Type::nonNull(Type::listOf(Gql::getUnionType("{$typeName}_entries", $entryTypes))),
+                        'type' => Type::nonNull(Type::listOf(GqlHelper::getUnionType("{$typeName}_entries", $entryTypes))),
                         'description' => 'The nested entries within the content.',
                         'args' => $entryArgs,
                     ];
                 }
 
-                return Craft::$app->getGql()->prepareFieldDefinitions($fields, $typeName);
+                return Gql::prepareFieldDefinitions($fields, $typeName);
             },
         ]));
     }
