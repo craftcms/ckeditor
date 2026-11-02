@@ -2104,7 +2104,7 @@ export default async function (element, options = {}) {
     config.removePlugins.push(...extraRemovePlugins);
   }
 
-  // the Craft 6 control panel’s owner bridge (see resources/assets/control/ckeditor-control.js)
+  // the Craft 6 control panel’s owner bridge (see resources/js/modules/owner-bridge.ts)
   config.craftOwner = options.owner ?? null;
 
   const editor = await create(element, config);

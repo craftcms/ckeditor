@@ -7,3 +7,4 @@
 node_modules
 .env
 /.claude/settings.local.json
+/public/hot

@@ -7,3 +7,4 @@ resources/views/*
 tests/_craft/*
 vendor/*
 resources/assets/**/dist
+public/build

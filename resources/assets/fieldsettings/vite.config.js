@@ -27,6 +27,7 @@ export default defineConfig({
         {
           src: resolve(__dirname, 'src/images/*'),
           dest: resolve(__dirname, 'dist/images/'),
+          rename: {stripBase: true},
         },
       ],
     }),

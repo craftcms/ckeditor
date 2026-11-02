@@ -1,0 +1,34 @@
+{
+  "_assets-CsSDmrrP.js": {
+    "file": "assets/assets-CsSDmrrP.js",
+    "name": "assets"
+  },
+  "resources/js/cp.ts": {
+    "file": "assets/cp-DYivVibK.js",
+    "name": "cp",
+    "src": "resources/js/cp.ts",
+    "isEntry": true,
+    "dynamicImports": [
+      "resources/js/modules/ui/CkeditorControl.vue",
+      "resources/js/modules/ui/EditorConfigControl.vue"
+    ]
+  },
+  "resources/js/modules/ui/CkeditorControl.vue": {
+    "file": "assets/CkeditorControl-Dxm0HHe7.js",
+    "name": "CkeditorControl",
+    "src": "resources/js/modules/ui/CkeditorControl.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_assets-CsSDmrrP.js"
+    ]
+  },
+  "resources/js/modules/ui/EditorConfigControl.vue": {
+    "file": "assets/EditorConfigControl-BgRyFVEH.js",
+    "name": "EditorConfigControl",
+    "src": "resources/js/modules/ui/EditorConfigControl.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_assets-CsSDmrrP.js"
+    ]
+  }
+}

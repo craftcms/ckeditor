@@ -45,10 +45,9 @@ class Plugin extends BasePlugin
     protected array $publishables = [
         __DIR__ . '/../resources/assets/ckeditor/dist' => 'ckeditor',
         __DIR__ . '/../resources/assets/fieldsettings/dist' => 'fieldsettings',
-        __DIR__ . '/../resources/assets/control' => 'control',
     ];
-    protected array $scripts = [
-        __DIR__ . '/../resources/assets/control/register.js' => 'control/register.js',
+    protected array $vite = [
+        'resources/js/cp.ts',
     ];
 
     /**

@@ -1,16 +1,28 @@
 /**
  * Shared asset-loading helpers for the CKEditor UI controls.
  */
-const loadedAssets = new Map();
+export interface ControlAssets {
+  styles?: string[];
+  scripts?: string[];
+  modules?: string[];
+}
 
-function loadOnce(key, factory) {
+export interface EditorGlobals {
+  localizedRefHandles?: string[];
+  showInspector?: boolean;
+  revAssetUrls?: boolean;
+}
+
+const loadedAssets = new Map<string, Promise<void>>();
+
+function loadOnce(key: string, factory: () => Promise<void>): Promise<void> {
   if (!loadedAssets.has(key)) {
     loadedAssets.set(key, factory());
   }
-  return loadedAssets.get(key);
+  return loadedAssets.get(key)!;
 }
 
-export function loadStyle(url) {
+export function loadStyle(url: string): Promise<void> {
   return loadOnce(`css:${url}`, () => {
     if (
       document.querySelector(
@@ -29,7 +41,10 @@ export function loadStyle(url) {
   });
 }
 
-export function loadScript(url, type = null) {
+export function loadScript(
+  url: string,
+  type: string | null = null,
+): Promise<void> {
   return loadOnce(`js:${url}`, () => {
     if (document.querySelector(`script[src="${CSS.escape(url)}"]`)) {
       return Promise.resolve();
@@ -47,14 +62,20 @@ export function loadScript(url, type = null) {
   });
 }
 
-export function applyGlobals(globals) {
+export function applyGlobals(globals: EditorGlobals): void {
   window.CKE_LOCALIZED_REF_HANDLES = globals.localizedRefHandles ?? [];
   window.Craft = window.Craft || {};
   window.Craft.showCkeditorInspector = !!globals.showInspector;
   window.Craft.revAssetUrls = !!globals.revAssetUrls;
 }
 
-export async function importModule(source) {
+/**
+ * Imports a JavaScript module from its source.
+ *
+ * The field generates these modules, as they import the CKEditor packages registered at runtime,
+ * and may include the field’s custom config JavaScript.
+ */
+export async function importModule(source: string): Promise<any> {
   const url = URL.createObjectURL(
     new Blob([source], {type: 'text/javascript'}),
   );
