@@ -8,7 +8,7 @@
 
 namespace craft\ckeditor\data;
 
-use craft\elements\Entry as EntryElement;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 
 /**
  * Represents an entry within a CKEditor field’s content.
@@ -19,7 +19,7 @@ use craft\elements\Entry as EntryElement;
  */
 class Entry extends BaseChunk
 {
-    private ?EntryElement $entry;
+    private ?EntryElement $entry = null;
 
     public function __construct(
         public readonly int $entryId,

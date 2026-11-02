@@ -8,8 +8,8 @@
 
 namespace craft\ckeditor\data;
 
-use craft\web\twig\SafeHtml;
-use yii\base\BaseObject;
+use CraftCms\Cms\Twig\Contracts\SafeHtml;
+use LogicException;
 
 /**
  * Represents a chunk of CKEditor content.
@@ -19,10 +19,35 @@ use yii\base\BaseObject;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.1.0
  */
-abstract class BaseChunk extends BaseObject implements SafeHtml
+abstract class BaseChunk implements SafeHtml
 {
+    /**
+     * Returns the chunk type.
+     *
+     * @return string
+     */
     abstract public function getType(): string;
+
+    /**
+     * Returns the chunk’s HTML.
+     *
+     * @return string
+     */
     abstract public function getHtml(): string;
+
+    public function __get(string $name)
+    {
+        return match ($name) {
+            'type' => $this->getType(),
+            'html' => $this->getHtml(),
+            default => throw new LogicException(sprintf('Getting unknown property: %s::%s', static::class, $name)),
+        };
+    }
+
+    public function __isset(string $name): bool
+    {
+        return in_array($name, ['type', 'html'], true);
+    }
 
     public function __toString(): string
     {

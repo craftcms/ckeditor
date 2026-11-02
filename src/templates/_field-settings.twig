@@ -532,31 +532,24 @@
   </script>
 
   {{ forms.lightswitchField({
-    label: "Purify HTML"|t('ckeditor'),
-    instructions: 'Removes any potentially-malicious code on save, by running the submitted data through {link}.'|t('ckeditor', {
-      link: '<a href="http://htmlpurifier.org/" rel="noopener" target="_blank">HTML Purifier</a>',
-    }),
+    label: "Sanitize HTML"|t('ckeditor'),
+    instructions: 'Removes any potentially-malicious code on save, by running the submitted data through an HTML sanitizer.'|t('ckeditor'),
     warning: 'Disable this at your own risk!'|t('ckeditor'),
-    id: 'purify-html',
-    name: 'purifyHtml',
-    on: field.purifyHtml,
-    toggle: 'purifier-config-container',
+    id: 'sanitize-html',
+    name: 'sanitizeHtml',
+    on: field.sanitizeHtml,
+    toggle: 'html-sanitizer-container',
     disabled: readOnly,
   }) }}
 
-  <div id="purifier-config-container"{% if not field.purifyHtml %} class="hidden"{% endif %}>
+  <div id="html-sanitizer-container"{% if not field.sanitizeHtml %} class="hidden"{% endif %}>
     {{ forms.selectField({
-      label: "HTML Purifier Config"|t('ckeditor'),
-      instructions: "You can save custom {name} configs as {ext} files in {path}."|t('ckeditor', {
-        name: 'HTML Purifier Config',
-        ext: '`.json`',
-        path: '`config/htmlpurifier/`'
-      }) ~
-      ' <a href="http://htmlpurifier.org/live/configdoc/plain.html" rel="noopener" target="_blank">'~"View available settings"|t('ckeditor')~'</a>',
-      id: 'purifier-config',
-      name: 'purifierConfig',
-      options: purifierConfigOptions,
-      value: field.purifierConfig,
+      label: "HTML Sanitizer"|t('ckeditor'),
+      instructions: "The HTML sanitizer that should be used. The default sanitizer is extended with the markup this field’s toolbar needs."|t('ckeditor'),
+      id: 'html-sanitizer',
+      name: 'htmlSanitizer',
+      options: htmlSanitizerOptions,
+      value: field.htmlSanitizer ?? 'default',
       disabled: readOnly,
     }) }}
   </div>

@@ -10,7 +10,6 @@ namespace craft\ckeditor\web\assets\fieldsettings;
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
 use craft\web\AssetBundle;
 use craft\web\View;
-use nystudio107\codeeditor\assetbundles\codeeditor\CodeEditorAsset;
 
 /**
  * CKEditor custom build asset bundle
@@ -28,7 +27,6 @@ class FieldSettingsAsset extends AssetBundle
      * @inheritdoc
      */
     public $depends = [
-        CodeEditorAsset::class,
         CkeditorAsset::class,
     ];
 

@@ -16,13 +16,11 @@ use craft\ckeditor\models\Settings;
 use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
 use craft\ckeditor\web\assets\fieldsettings\FieldSettingsAsset;
-use craft\elements\NestedElementManager;
 use craft\events\DefineElementDeletionBlockersEvent;
-use craft\events\ModelEvent;
-use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\UrlHelper;
-use craft\services\Fields;
 use craft\web\View;
+use CraftCms\Cms\Field\FieldTypes;
+use CraftCms\Cms\Field\NestedEntryFieldTypes;
 use yii\base\Event;
 
 /**
@@ -166,41 +164,11 @@ class Plugin extends \craft\base\Plugin
             });
         }
 
-        Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, function(RegisterComponentTypesEvent $event) {
-            $event->types[] = Field::class;
-        });
-
-        Event::on(Fields::class, Fields::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES, function(RegisterComponentTypesEvent $event) {
-            $event->types[] = Field::class;
-        });
-
-        Event::on(Element::class, Element::EVENT_AFTER_PROPAGATE, function(ModelEvent $event) {
-            /** @var Element $element */
-            $element = $event->sender;
-            foreach ($this->entryManagers($element) as $entryManager) {
-                $entryManager->maintainNestedElements($element, $event->isNew);
-            }
-        });
+        app(FieldTypes::class)->register(Field::class);
+        app(NestedEntryFieldTypes::class)->register(Field::class);
 
         Event::on(Element::class, Element::EVENT_DEFINE_DELETION_BLOCKERS, function(DefineElementDeletionBlockersEvent $event) {
             $event->blockers[] = new ReferenceDeletionBlocker($event->elements, $event->hardDelete);
-        });
-
-        Event::on(Element::class, Element::EVENT_BEFORE_DELETE, function(ModelEvent $event) {
-            /** @var Element $element */
-            $element = $event->sender;
-            foreach ($this->entryManagers($element) as $entryManager) {
-                // Delete any entries that primarily belong to this element
-                $entryManager->deleteNestedElements($element, $element->hardDelete);
-            }
-        });
-
-        Event::on(Element::class, Element::EVENT_AFTER_RESTORE, function(Event $event) {
-            /** @var Element $element */
-            $element = $event->sender;
-            foreach ($this->entryManagers($element) as $entryManager) {
-                $entryManager->restoreNestedElements($element);
-            }
         });
     }
 
@@ -220,21 +188,5 @@ class Plugin extends \craft\base\Plugin
         return Craft::$app->getView()->renderTemplate('ckeditor/_settings.twig', [
             'settings' => $this->getSettings(),
         ]);
-    }
-
-    /**
-     * @param Element $element
-     * @return NestedElementManager[]
-     */
-    private function entryManagers(Element $element): array
-    {
-        $entryManagers = [];
-        $customFields = $element->getFieldLayout()?->getCustomFields() ?? [];
-        foreach ($customFields as $field) {
-            if ($field instanceof Field && !isset($entryManagers[$field->id])) {
-                $entryManagers[$field->id] = Field::entryManager($field);
-            }
-        }
-        return array_values($entryManagers);
     }
 }

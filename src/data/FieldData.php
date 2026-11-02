@@ -10,16 +10,16 @@ namespace craft\ckeditor\data;
 
 use ArrayIterator;
 use Countable;
-use Craft;
 use craft\ckeditor\Field;
-use craft\controllers\GraphqlController;
-use craft\elements\db\EntryQuery;
-use craft\elements\Entry as EntryElement;
-use craft\helpers\Html;
-use craft\htmlfield\HtmlFieldData;
+use CraftCms\Cms\Element\Queries\EntryQuery;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Http\Controllers\Gql\ApiController as GqlApiController;
+use CraftCms\Cms\Support\Html;
+use CraftCms\HtmlField\HtmlFieldData;
 use Embed\Embed;
 use Embed\Extractor;
 use Embed\Http\Crawler;
+use GuzzleHttp\Client as GuzzleClient;
 use Illuminate\Support\Collection;
 use IteratorAggregate;
 use Throwable;
@@ -51,7 +51,7 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
         $this->siteId = $siteId;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         $this->render();
         return parent::__toString();
@@ -86,7 +86,7 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
         return $this->getChunks()->count();
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         $this->render();
         return parent::jsonSerialize();
@@ -123,7 +123,7 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
 
         if (
             $this->field?->parseEmbeds &&
-            (!Craft::$app->getRequest()->getIsCpRequest() || Craft::$app->controller instanceof GraphqlController)
+            (!request()->isCpRequest() || $this->isGqlRequest())
         ) {
             $content = $this->parseEmbeds($content);
         }
@@ -140,8 +140,9 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
             $this->addContentChunk(substr($content, $offset, $pos - $offset));
 
             $attributes = Html::parseTagAttributes($content, $pos);
-            if (!empty($attributes['data']['entry-id'])) {
-                $this->chunks->push(new Entry($attributes['data']['entry-id'], $this));
+            $entryId = $attributes['data-entry-id'] ?? null;
+            if (!empty($entryId)) {
+                $this->chunks->push(new Entry((int)$entryId, $this));
             }
 
             $offset = $gtPos + 1;
@@ -153,6 +154,15 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
         }
 
         $this->addContentChunk($offset ? substr($content, $offset) : $content);
+    }
+
+    private function isGqlRequest(): bool
+    {
+        try {
+            return request()->route()?->getController() instanceof GqlApiController;
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     private function parseEmbeds(string $content): string
@@ -187,7 +197,7 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
             return $content;
         }
 
-        $crawler = new Crawler(Craft::createGuzzleClient());
+        $crawler = new Crawler(new GuzzleClient());
         $embed = new Embed($crawler);
 
         try {
@@ -195,7 +205,7 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
             $html = array_map(fn(Extractor $info) => $info->code->html, $infos);
             return str_replace(array_keys($urls), $html, $content);
         } catch (Throwable $e) {
-            Craft::$app->getErrorHandler()->logException($e);
+            report($e);
             return $content;
         }
     }
@@ -237,7 +247,7 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
                 ->revisions(null)
                 ->trashed(null);
 
-            if (Craft::$app->getRequest()->getIsPreview()) {
+            if (request()->isPreview()) {
                 $query->withProvisionalDrafts();
             }
         } else {
@@ -271,7 +281,7 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
         }
 
         $content = $this->getChunks()->map(fn(BaseChunk $chunk) => $chunk->getHtml())->join('');
-        TwigMarkup::__construct($content, Craft::$app->charset);
+        TwigMarkup::__construct($content, 'UTF-8');
 
         $this->rendered = true;
     }

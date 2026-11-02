@@ -7,14 +7,16 @@
 
 namespace craft\ckeditor\models;
 
-use Craft;
-use craft\behaviors\FieldLayoutBehavior;
-use craft\models\EntryType as CraftEntryType;
+use CraftCms\Cms\Entry\Data\EntryType as CraftEntryType;
+use Error;
+use Override;
+use ReflectionClass;
+
+use function CraftCms\Cms\t;
 
 /**
  * EntryType model class.
  *
- * @mixin FieldLayoutBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
  */
@@ -22,17 +24,51 @@ class EntryType extends CraftEntryType
 {
     public bool $expanded = false;
 
-
     /**
-     * @inheritdoc
+     * Creates a CKEditor entry type from a Craft entry type, copying its state.
+     *
+     * @param CraftEntryType $entryType
+     * @param bool $expanded
+     * @return self
+     * @since 6.0.0
      */
+    public static function fromEntryType(CraftEntryType $entryType, bool $expanded = false): self
+    {
+        $new = new ReflectionClass(self::class)->newInstanceWithoutConstructor();
+
+        $class = new ReflectionClass($entryType);
+        do {
+            foreach ($class->getProperties() as $property) {
+                if (
+                    $property->isStatic() ||
+                    $property->isVirtual() ||
+                    $property->getDeclaringClass()->getName() !== $class->getName() ||
+                    !$property->isInitialized($entryType)
+                ) {
+                    continue;
+                }
+
+                try {
+                    $property->setRawValue($new, $property->getRawValue($entryType));
+                } catch (Error) {
+                    // readonly properties that can't be set from here
+                }
+            }
+        } while ($class = $class->getParentClass());
+
+        $new->expanded = $expanded;
+
+        return $new;
+    }
+
+    #[Override]
     public function getIndicators(): array
     {
         $indicators = parent::getIndicators();
 
         if ($this->expanded) {
             $indicators[] = [
-                'label' => Craft::t('ckeditor', 'Show as a separate button'),
+                'label' => t('Show as a separate button', category: 'ckeditor'),
                 'icon' => 'eye',
                 'iconColor' => 'teal',
             ];
@@ -41,16 +77,12 @@ class EntryType extends CraftEntryType
         return $indicators;
     }
 
-    /**
-     * @inheritdoc
-     */
+    #[Override]
     public function getUsageConfig(): array
     {
         $config = parent::getUsageConfig();
 
-        if (isset($this->expanded)) {
-            $config['expanded'] = $this->expanded;
-        }
+        $config['expanded'] = $this->expanded;
 
         return $config;
     }

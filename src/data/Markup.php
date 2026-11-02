@@ -8,9 +8,8 @@
 
 namespace craft\ckeditor\data;
 
-use Craft;
-use craft\htmlfield\HtmlFieldData;
-use yii\base\UnknownPropertyException;
+use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\HtmlField\HtmlFieldData;
 
 /**
  * Represents HTML markup within a CKEditor field’s content.
@@ -28,15 +27,6 @@ class Markup extends BaseChunk
     ) {
     }
 
-    public function __get($name)
-    {
-        return match ($name) {
-            'type' => $this->getType(),
-            'html' => $this->getHtml(),
-            default => throw new UnknownPropertyException(sprintf('Getting unknown property: %s::%s', static::class, $name)),
-        };
-    }
-
     public function getType(): string
     {
         return 'markup';
@@ -45,7 +35,7 @@ class Markup extends BaseChunk
     public function getHtml(): string
     {
         if (!isset($this->html)) {
-            $this->html = Craft::$app->getElements()->parseRefs($this->rawHtml, $this->siteId);
+            $this->html = Elements::parseRefs($this->rawHtml, $this->siteId);
         }
         return $this->html;
     }
