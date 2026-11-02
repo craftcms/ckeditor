@@ -86,7 +86,7 @@ class CkeditorController extends Controller
     {
         $entryId = $this->request->getRequiredBodyParam('entryId');
         $siteId = $this->request->getBodyParam('siteId');
-        $layoutElementUid = $this->request->getBodyParam('layoutElementUid');
+        $layoutElementUid = $this->request->getRequiredBodyParam('layoutElementUid');
 
         // it's okay to limit to provided siteId, as we're "just" after the card html;
         // all the hard work has already been done
@@ -100,6 +100,11 @@ class CkeditorController extends Controller
         }
 
         $owner = $entry->getOwner();
+
+        if (!$owner) {
+            throw new BadRequestHttpException("Invalid entry owner");
+        }
+
         /** @var CustomField $layoutElement */
         $layoutElement = $owner->getFieldLayout()->getElementByUid($layoutElementUid);
         /** @var Field $field */
