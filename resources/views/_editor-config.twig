@@ -1,20 +1,16 @@
 {#
- # The toolbar builder, config options and custom styles settings for a CKEditor field.
+ # The toolbar builder (`part` = `toolbar`), config options (`options`) or custom styles (`styles`) input
+ # for a CKEditor field’s settings. The field labels and instructions come from the settings UI.
  #
- # Rendered for the `ckeditor:editor-config` UI control, which initializes the JavaScript.
+ # Rendered for the `ckeditor:editor-config` UI controls, which initialize the JavaScript.
  # Element IDs are namespaced with the control’s container ID, so several instances can coexist.
  #}
 {% import '_includes/forms.twig' as forms %}
 
 {% set readOnly = readOnly ?? false %}
 
-{% embed '_includes/forms/field.twig' with {
-  label: 'Toolbar'|t('ckeditor'),
-  instructions: 'Drag toolbar items into the editor.'|t('ckeditor'),
-  id: 'toolbar-field'|namespaceInputId,
-} %}
-  {% block input %}
-  <div style="min-width: 0; width: 100%;">
+{% if part == 'toolbar' %}
+
     <div id="{{ 'toolbar-builder'|namespaceInputId }}" class="ckeditor-tb pane{{ readOnly ? ' disabled' : '' }}" data-available-items="{{ toolbarItems|json_encode }}">
       <div class="ck ck-reset_all">
         <div class="ckeditor-tb--items ckeditor-tb--source ck ck-reset ck-editor ck-rounded-corners">
@@ -37,21 +33,8 @@
 
       {{ hiddenInput('toolbar', field.toolbar|json_encode) }}
     </div>
-  
-  </div>
-  {% endblock %}
-{% endembed %}
 
-{% embed '_includes/forms/field.twig' with {
-  label: 'Config Options'|t('ckeditor'),
-  instructions: 'Define custom [config options]({link}) which should be merged with the default config.'|t('ckeditor', {
-    link: 'https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html',
-  }),
-  id: 'config-options-field'|namespaceInputId,
-} %}
-  {% block input %}
-  <div style="min-width: 0; width: 100%;">
-      {% import '_includes/forms.twig' as forms %}
+{% elseif part == 'options' %}
 
       <div id="{{ 'config-options'|namespaceInputId }}">
         <craft-button-group class="btngroup btngroup--exclusive" aria-label="{{ 'CKEditor config option mode'|t('ckeditor') }}">
@@ -128,21 +111,8 @@
           </p>
         {% endif %}
       {% endtag %}
-    
-  </div>
-  {% endblock %}
-{% endembed %}
 
-{% embed '_includes/forms/field.twig' with {
-  label: 'Custom Styles'|t('ckeditor'),
-  instructions: 'Define CSS styles that should be registered for editors, such as [style classes]({url}).'|t('ckeditor', {
-    url: 'https://ckeditor.com/docs/ckeditor5/latest/features/style.html',
-  }),
-  id: 'css-field'|namespaceInputId,
-} %}
-  {% block input %}
-  <div style="min-width: 0; width: 100%;">
-      {% import '_includes/forms.twig' as forms %}
+{% elseif part == 'styles' %}
 
       <div id="{{ 'css-options'|namespaceInputId }}">
         <craft-button-group class="btngroup btngroup--exclusive" aria-label="{{ 'CSS mode'|t('ckeditor') }}">
@@ -197,7 +167,5 @@
           </p>
         {% endif %}
       {% endtag %}
-    
-  </div>
-  {% endblock %}
-{% endembed %}
+
+{% endif %}

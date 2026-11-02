@@ -695,18 +695,21 @@ class Field extends HtmlField implements
 
     public function __construct($config = [])
     {
-        // The `editorConfig` settings control posts the toolbar, config options and custom styles together
-        if (isset($config['editorConfig']) && is_array($config['editorConfig'])) {
-            $editorConfig = Arr::pull($config, 'editorConfig');
-            if (isset($editorConfig['toolbar']) && is_string($editorConfig['toolbar'])) {
-                $editorConfig['toolbar'] = Json::decodeIfJson($editorConfig['toolbar']);
+        // The `editorConfig` (toolbar), `editorConfigOptions` (config options) and `editorConfigStyles` (custom styles)
+        // settings controls
+        foreach (['editorConfig', 'editorConfigOptions', 'editorConfigStyles'] as $key) {
+            if (isset($config[$key]) && is_array($config[$key])) {
+                $editorConfig = Arr::pull($config, $key);
+                if (isset($editorConfig['toolbar']) && is_string($editorConfig['toolbar'])) {
+                    $editorConfig['toolbar'] = Json::decodeIfJson($editorConfig['toolbar']);
+                }
+                $config = [
+                    ...$config,
+                    ...Arr::only($editorConfig, ['toolbar', 'configMode', 'json', 'js', 'jsFile', 'cssMode', 'css', 'cssFile']),
+                ];
+            } else {
+                unset($config[$key]);
             }
-            $config = [
-                ...$config,
-                ...Arr::only($editorConfig, ['toolbar', 'configMode', 'json', 'js', 'jsFile', 'cssMode', 'css', 'cssFile']),
-            ];
-        } else {
-            unset($config['editorConfig']);
         }
 
         if (isset($config['toolbar']) && is_string($config['toolbar'])) {
@@ -1142,10 +1145,13 @@ class Field extends HtmlField implements
 
         $entryTypes = $this->getEntryTypes();
 
+        // The toolbar builder, config options and custom styles are separate controls, which share this prefix
+        $editorConfigPrefix = sprintf('cke-config-%s', Str::random(8));
+
         $ui = Ui::make([
             UiField::make(t('Toolbar', category: 'ckeditor'))
-                ->labelSrOnly()
-                ->control($this->editorConfigControl($context)),
+                ->instructions(t('Drag toolbar items into the editor.', category: 'ckeditor'))
+                ->control($this->editorConfigControl($context, 'toolbar', $editorConfigPrefix)),
             UiField::make(t('Entry Types'))
                 ->instructions(t('Choose the types of entries that can be created in this field.'))
                 ->control(EntryTypeSelect::make('entryTypes')
@@ -1272,6 +1278,16 @@ class Field extends HtmlField implements
         $ui->add(Group::make('ckeditor-assets', $assetNodes)->label(t('Assets'))->collapsible());
 
         $advancedNodes = [
+            UiField::make(t('Config Options', category: 'ckeditor'))
+                ->instructions(t('Define custom [config options]({link}) which should be merged with the default config.', [
+                    'link' => 'https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html',
+                ], 'ckeditor'))
+                ->control($this->editorConfigControl($context, 'options', $editorConfigPrefix)),
+            UiField::make(t('Custom Styles', category: 'ckeditor'))
+                ->instructions(t('Define CSS styles that should be registered for editors, such as [style classes]({url}).', [
+                    'url' => 'https://ckeditor.com/docs/ckeditor5/latest/features/style.html',
+                ], 'ckeditor'))
+                ->control($this->editorConfigControl($context, 'styles', $editorConfigPrefix)),
             UiField::make(t('Sanitize HTML', category: 'ckeditor'))
                 ->instructions(t('Removes any potentially-malicious code on save, by running the submitted data through an HTML sanitizer.', category: 'ckeditor'))
                 ->warning(t('Disable this at your own risk!', category: 'ckeditor'))
@@ -1315,12 +1331,11 @@ class Field extends HtmlField implements
     }
 
     /**
-     * Returns the control for the toolbar builder, config options and custom styles.
+     * Returns the control for the toolbar builder (`toolbar`), config options (`options`) or custom styles (`styles`).
      */
-    private function editorConfigControl(UiContext $context): EditorConfigControl
+    private function editorConfigControl(UiContext $context, string $part, string $prefix): EditorConfigControl
     {
         $assets = app(CkeditorAssets::class);
-        $prefix = sprintf('cke-config-%s', Str::random(8));
 
         // The toolbar builder needs every package
         [$importStatements, $pluginRefs] = CkeditorConfig::getImports();
@@ -1353,6 +1368,7 @@ class Field extends HtmlField implements
             'configMode' => $configMode,
             'cssMode' => $cssMode,
             'readOnly' => $context->mode !== ControlMode::Editable,
+            'part' => $part,
         ]));
 
         $ids = Json::encode([
@@ -1370,8 +1386,17 @@ class Field extends HtmlField implements
         ]);
         $plugins = '[' . implode(',', $pluginRefs) . ']';
 
-        $module = <<<JS
-import {ConfigOptions, CssOptions, ToolbarBuilder} from '@craftcms/ckeditor-config';
+        // The toolbar builder updates the config options, so the toolbar and config options parts share a module
+        $module = $part === 'styles' ? <<<JS
+import {CssOptions} from '@craftcms/ckeditor-config';
+
+export default function () {
+  const ids = $ids;
+  const settings = $settingsJs;
+  new CssOptions(ids.cssOptions, settings.cssMode, settings.hasCssFiles);
+}
+JS : <<<JS
+import {ConfigOptions, ToolbarBuilder} from '@craftcms/ckeditor-config';
 $importStatements
 
 export default function () {
@@ -1379,7 +1404,6 @@ export default function () {
   const settings = $settingsJs;
   const configOptions = new ConfigOptions(ids.configOptions, settings.jsonSchemaUri, settings.configMode, settings.hasJsFiles);
   new ToolbarBuilder(ids.toolbarBuilder, configOptions, $plugins);
-  new CssOptions(ids.cssOptions, settings.cssMode, settings.hasCssFiles);
 }
 JS;
 
@@ -1387,18 +1411,31 @@ JS;
         $packageAssets = $assets->packageAssetUrls();
         $codeEditorBaseUrl = asset('vendor/codeeditor');
 
-        return EditorConfigControl::make('editorConfig')
-            ->mode($context->mode)
-            ->value([
+        $value = match ($part) {
+            'toolbar' => [
                 'toolbar' => array_values($this->toolbar),
+            ],
+            'options' => [
                 'configMode' => $configMode,
                 'json' => $this->getJson() ?? "{\n  \n}",
                 'js' => $this->js ?? "return {\n  \n}",
                 'jsFile' => $this->jsFile,
+            ],
+            default => [
                 'cssMode' => $cssMode,
                 'css' => $this->css,
                 'cssFile' => $this->cssFile,
-            ])
+            ],
+        };
+
+        return EditorConfigControl::make(match ($part) {
+            'toolbar' => 'editorConfig',
+            'options' => 'editorConfigOptions',
+            default => 'editorConfigStyles',
+        })
+            ->mode($context->mode)
+            ->part($part, $part === 'styles' ? null : $prefix)
+            ->value($value)
             ->html($html)
             ->module($module)
             ->assets([

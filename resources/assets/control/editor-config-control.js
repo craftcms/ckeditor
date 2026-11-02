@@ -1,10 +1,10 @@
 /**
- * The toolbar builder, config options and custom styles settings for a CKEditor field, as a control panel
+ * The toolbar builder, config options or custom styles setting for a CKEditor field, as a control panel
  * UI control (`ckeditor:editor-config`).
  *
- * Mounts the server-rendered settings markup, starts craft-code-editor’s Monaco editors and the toolbar builder,
- * and emits the inputs’ values (`toolbar`, `configMode`, `json`, `js`, `jsFile`, `cssMode`, `css`, `cssFile`)
- * whenever they change.
+ * Mounts the server-rendered settings markup, starts craft-code-editor’s Monaco editors, and emits the inputs’ values
+ * (`toolbar`, `configMode`, `json`, `js`, `jsFile`, `cssMode`, `css`, `cssFile`) whenever they change. The toolbar
+ * builder works with the config options, so its module runs once both parts of the same group are mounted.
  */
 import {defineComponent, h, onBeforeUnmount, onMounted, ref} from 'vue';
 import {applyGlobals, importModule, loadScript, loadStyle} from './assets.js';
@@ -19,6 +19,39 @@ const FIELDS = [
   'css',
   'cssFile',
 ];
+
+// Mounted parts, by group
+const groups = new Map();
+
+// Records a mounted part, and returns whether the group is now complete and its module should run
+function partMounted(group, part) {
+  if (!group) {
+    return true;
+  }
+  const entry = groups.get(group) ?? {parts: new Set(), started: false};
+  groups.set(group, entry);
+  entry.parts.add(part);
+  if (
+    !entry.started &&
+    entry.parts.has('toolbar') &&
+    entry.parts.has('options')
+  ) {
+    entry.started = true;
+    return true;
+  }
+  return false;
+}
+
+function partUnmounted(group, part) {
+  const entry = group && groups.get(group);
+  if (!entry) {
+    return;
+  }
+  entry.parts.delete(part);
+  if (!entry.parts.size) {
+    groups.delete(group);
+  }
+}
 
 function readValue(root) {
   const value = {};
@@ -146,8 +179,10 @@ export default defineComponent({
         setTimeout(relayout, 100);
         new ResizeObserver(relayout).observe(root.value);
 
-        const module = await importModule(p.module);
-        module.default();
+        if (partMounted(p.group, p.part)) {
+          const module = await importModule(p.module);
+          module.default();
+        }
 
         // Record the initial state, so only real changes are emitted
         lastValue = JSON.stringify(readValue(root.value));
@@ -167,6 +202,7 @@ export default defineComponent({
     });
 
     onBeforeUnmount(() => {
+      partUnmounted(props.control.props.group, props.control.props.part);
       if (pollInterval) {
         clearInterval(pollInterval);
       }
@@ -175,7 +211,10 @@ export default defineComponent({
     return () =>
       h(
         'div',
-        {class: 'ckeditor-editor-config', style: {minWidth: 0, width: '100%'}},
+        {
+          class: 'ckeditor-editor-config',
+          style: {minWidth: 0, width: '100%'},
+        },
         [
           h('div', {ref: root, style: {minWidth: 0, width: '100%'}}),
           error.value ? h('p', {class: 'error'}, error.value) : null,

@@ -15,11 +15,12 @@ use CraftCms\Cms\Ui\UiHtmlRenderer;
 use Override;
 
 /**
- * The toolbar builder, config options and custom styles settings for a CKEditor field.
+ * The toolbar builder, config options or custom styles setting for a CKEditor field.
  *
- * The control’s value is an array with `toolbar`, `configMode`, `json`, `js`, `jsFile`, `cssMode`, `css` and `cssFile`
- * keys. The Vue component (`ckeditor:editor-config`) mounts the server-rendered markup, starts the code editors and
- * the toolbar builder, and emits the inputs’ values whenever they change.
+ * The control’s value is an array with the `toolbar` key, the `configMode`, `json`, `js` and `jsFile` keys, or the
+ * `cssMode`, `css` and `cssFile` keys. The Vue component (`ckeditor:editor-config`) mounts the server-rendered markup,
+ * starts the code editors, runs the module once every part of its group is mounted, and emits the inputs’ values
+ * whenever they change.
  *
  * @since 6.0.0
  */
@@ -27,6 +28,8 @@ class EditorConfigControl extends Control
 {
     private string $html = '';
     private string $module = '';
+    private ?string $part = null;
+    private ?string $group = null;
 
     /** @var array{styles:string[],scripts:string[],modules:string[]} */
     private array $assets = ['styles' => [], 'scripts' => [], 'modules' => []];
@@ -70,6 +73,20 @@ class EditorConfigControl extends Control
     public function module(string $module): static
     {
         $this->module = $module;
+        return $this;
+    }
+
+    /**
+     * Sets which part of the settings this control holds, and the group it shares with the other part, if any.
+     *
+     * @param string $part
+     * @param string|null $group
+     * @return static
+     */
+    public function part(string $part, ?string $group): static
+    {
+        $this->part = $part;
+        $this->group = $group;
         return $this;
     }
 
@@ -121,6 +138,8 @@ class EditorConfigControl extends Control
         return [
             'html' => $this->html,
             'module' => $this->module,
+            'part' => $this->part,
+            'group' => $this->group,
             'assets' => $this->assets,
             'codeEditor' => $this->codeEditor,
             'globals' => $this->globals,
