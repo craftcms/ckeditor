@@ -77,6 +77,11 @@ class EntryType extends CraftEntryType
         return $indicators;
     }
 
+    /**
+     * Returns the entry type’s usage config, including whether it should get its own toolbar button.
+     *
+     * @return array<string, bool|int|string|null>
+     */
     #[Override]
     public function getUsageConfig(): array
     {

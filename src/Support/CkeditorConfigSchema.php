@@ -627,7 +627,7 @@ final class CkeditorConfigSchema
         ]);
     }
 
-    private static function interface2ref(array $item): array|false
+    private static function interface2ref(array $item): array
     {
         $interface = Arr::pull($item, 'interface');
         if ($interface) {

@@ -91,7 +91,7 @@ class CkeditorController
             ->revisions(null)
             ->one();
 
-        abort_unless($entry, 400, "Invalid entry ID: $entryId");
+        abort_unless($entry !== null, 400, "Invalid entry ID: $entryId");
 
         $field = $this->layoutElementField($entry->getOwner(), $request->input('layoutElementUid'));
         abort_unless($field instanceof Field, 400, 'Invalid layout element UID.');
@@ -283,7 +283,7 @@ class CkeditorController
         $siteId = (int)$request->input('siteId');
 
         $owner = Elements::getElementById($ownerId, siteId: $siteId);
-        abort_unless($owner, 400, "Invalid owner ID: $ownerId");
+        abort_unless($owner !== null, 400, "Invalid owner ID: $ownerId");
         abort_unless($this->currentUser()->can('save', $owner), 403, 'User not authorized to create this element.');
 
         $field = Fields::getFieldById($fieldId);
@@ -330,7 +330,7 @@ class CkeditorController
 
         /** @var Asset|null $asset */
         $asset = $query->one();
-        abort_unless($asset, 404, 'Image not found');
+        abort_unless($asset !== null, 404, 'Image not found');
 
         return $asset;
     }
@@ -350,7 +350,7 @@ class CkeditorController
     private function currentUser(): User
     {
         $user = currentUserElement();
-        abort_unless($user, 403);
+        abort_unless($user !== null, 403);
 
         return $user;
     }

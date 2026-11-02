@@ -508,20 +508,24 @@ class Field extends HtmlField implements
             $entryType = Json::decodeIfJson($entryType);
         }
 
-        try {
-            $craftEntryType = EntryTypes::getEntryType($entryType);
-        } catch (InvalidArgumentException) {
-            return null;
+        $expanded = false;
+
+        if (is_array($entryType)) {
+            // getEntryType() throws for configs that don’t identify an entry type
+            if (!isset($entryType['id']) && !isset($entryType['uid'])) {
+                return null;
+            }
+
+            $expanded = (bool)($entryType['expanded'] ?? false);
         }
+
+        $craftEntryType = EntryTypes::getEntryType($entryType);
 
         if (!$craftEntryType) {
             return null;
         }
 
-        return CkeEntryType::fromEntryType(
-            $craftEntryType,
-            is_array($entryType) ? (bool)($entryType['expanded'] ?? false) : false,
-        );
+        return CkeEntryType::fromEntryType($craftEntryType, $expanded);
     }
 
     /**
@@ -2273,6 +2277,7 @@ JS;
                     }
 
                     /** @var EntryChunk $chunk */
+                    /** @var Entry $entry */
                     $entry = $entries[$chunk->entryId];
 
                     try {
@@ -2387,7 +2392,6 @@ JS;
         // Ensure <figure> tags have `image` or `media` classes
         $offset = 0;
         while (preg_match('/<figure\b[^>]*>\s*<(img|iframe)\b.*?<\/figure>/is', $value, $match, PREG_OFFSET_CAPTURE, $offset)) {
-            /** @var int $startPos */
             $startPos = $match[0][1];
             $endPos = $startPos + strlen($match[0][0]);
 
@@ -2439,7 +2443,6 @@ JS;
     {
         $offset = 0;
         while (preg_match('/<pre\b[^>]*>\s*(.*?)<\/pre>/is', $value, $match, PREG_OFFSET_CAPTURE, $offset)) {
-            /** @var int $startPos */
             $startPos = $match[1][1];
             $endPos = $startPos + strlen($match[1][0]);
             $preContent = $match[1][0];
@@ -2600,8 +2603,9 @@ JS;
             return [];
         }
 
+        // @phpstan-ignore class.notFound (categories only exist when the Yii 2 adapter is installed)
         $sources = Collection::make(\Craft::$app->getCategories()->getAllGroups())
-            ->filter(fn($group) => $group->getSiteSettings()[$element->siteId]?->hasUrls ?? false)
+            ->filter(fn($group) => $group->getSiteSettings()[$element->siteId]->hasUrls ?? false)
             ->map(fn($group) => "group:$group->uid")
             ->values()
             ->all();

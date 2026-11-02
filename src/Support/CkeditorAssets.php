@@ -144,12 +144,12 @@ class CkeditorAssets
                 $this->url('ckeditor/lib/ckeditor5.css'),
                 $this->url('ckeditor/ckeditor.css'),
             ],
-            'scripts' => array_values(array_filter([
+            'scripts' => array_filter([
                 $this->translationUrl(
                     dirname($this->plugin->getBasePath()) . '/resources/assets/ckeditor/dist/translations',
                     $this->url('ckeditor/translations', false),
                 ),
-            ])),
+            ]),
             'modules' => [],
         ];
     }
