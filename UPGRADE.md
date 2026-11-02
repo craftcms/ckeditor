@@ -20,7 +20,7 @@ This guide lists what changed in 6.0 and what you need to update in your project
 
 ### Classes and namespaces
 
-The plugin’s namespace changed from `craft\ckeditor` to `CraftCms\Ckeditor`, and classes moved into Laravel-style folders. The old names of the classes below still work as aliases, but update your code to the new names.
+The plugin’s namespace changed from `craft\ckeditor` to `CraftCms\Ckeditor`, and classes moved into Laravel-style folders. The old class names are no longer available, so update any code that references them.
 
 | Before | After |
 | --- | --- |
