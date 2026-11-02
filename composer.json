@@ -27,7 +27,6 @@
     "php": "^8.5",
     "craftcms/cms": "^6.0.0",
     "craftcms/html-field": "dev-feature/craft-6",
-    "craftcms/yii2-adapter": "^6.0.0",
     "embed/embed": "^4.4",
     "nystudio107/craft-code-editor": "^1.0.30"
   },

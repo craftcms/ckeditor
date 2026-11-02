@@ -890,12 +890,12 @@ for the changes to take effect.\n", 'green');
     }
 
     /**
-     * Splits a string on spaces, removing empty values.
+     * Splits a string, trimming the values and removing empty ones.
      *
      * @return string[]
      */
-    private static function split(string $str): array
+    private static function split(string $str, string $delimiter = ' '): array
     {
-        return array_values(array_filter(array_map('trim', explode(' ', $str)), fn(string $s) => $s !== ''));
+        return array_values(array_filter(array_map('trim', explode($delimiter, $str)), fn(string $s) => $s !== ''));
     }
 }

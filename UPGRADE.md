@@ -2,13 +2,11 @@
 
 This guide lists what changed in 6.0 and what you need to update in your project, templates and custom code.
 
-> Work in progress: this file is updated as the Craft 6 upgrade proceeds.
-
 ## Requirements
 
 - Craft CMS 6.0 or later
 - PHP 8.5 or later
-- `craftcms/yii2-adapter` (required for now; the control panel input and field settings still render through it)
+- `craftcms/yii2-adapter` is no longer needed. If your project still has it installed (e.g. for other plugins), CKEditor fields also offer category links.
 
 ## Upgrade steps
 
@@ -60,11 +58,24 @@ CKEditor no longer tracks references itself. Craft 6 tracks the elements referen
 
 ### Routes and action URLs
 
-The `ckeditor/ckeditor/*` and `ckeditor/field-settings/*` action URLs are unchanged. They now require a logged-in control panel user, and the field settings actions require an admin.
+The `ckeditor/ckeditor/*` action URLs are unchanged. They now require a logged-in control panel user.
 
-### Templates
+The `ckeditor/field-settings/apply-entry-type-indicators` and `ckeditor/field-settings/render-image-field` actions, and `craft\ckeditor\controllers\FieldSettingsController`, were removed along with the legacy field settings.
 
-The plugin’s templates moved from `src/templates/` to `resources/views/`. Template paths (`ckeditor/_field-settings.twig`, etc.) are unchanged.
+### Control panel input and field settings
+
+CKEditor fields render natively in Craft 6’s control panel.
+
+- The field input is a UI control (`CraftCms\Ckeditor\Ui\Controls\CkeditorControl`, Vue component `ckeditor:editor`), returned from `Field::uiControl()`. `Field::inputHtml()` and `getStaticHtml()` no longer render the editor.
+- The field settings are built with Craft’s UI builder (`Field::settingsUi()`). The toolbar builder, config options and custom styles are a single control (`CraftCms\Ckeditor\Ui\Controls\EditorConfigControl`, Vue component `ckeditor:editor-config`), which posts its values as an `editorConfig` setting.
+- The per-entry-type “Show as a separate button” toggle is now a **Show as separate buttons** setting, listing the field’s entry types. The stored `entryTypes[].expanded` config is unchanged.
+- Nested entries and image entries are created for the owner element’s draft, as in Craft 5.
+- The field type’s icon is Craft’s `paragraph` system icon, since the control panel only supports system icons.
+- Removed the `ckeditor/_settings.twig`, `ckeditor/_field-settings.twig`, `ckeditor/_entry-type-select.twig` and `ckeditor/_image-field-select.twig` templates.
+
+### Category links
+
+Craft 6 only provides categories through `craftcms/yii2-adapter`. CKEditor offers category link options when the adapter’s `Category` element type is installed, and leaves them out otherwise. Existing `{category:…}` reference tags in field values are left intact.
 
 ### Events
 
