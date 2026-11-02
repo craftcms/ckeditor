@@ -32,8 +32,11 @@
   },
   "require-dev": {
     "craftcms/ecs": "dev-main",
-    "craftcms/phpstan": "dev-main",
-    "craftcms/rector": "dev-main",
+    "driftingly/rector-laravel": "^2.6.2",
+    "larastan/larastan": "^3.13",
+    "orchestra/testbench": "^11.0",
+    "phpstan/phpstan": "^2.1",
+    "rector/rector": "^2.3",
     "vlucas/phpdotenv": "^5.5"
   },
   "autoload": {
