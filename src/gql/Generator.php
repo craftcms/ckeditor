@@ -8,11 +8,11 @@
 namespace craft\ckeditor\gql;
 
 use Craft;
-use craft\ckeditor\data\BaseChunk;
-use craft\ckeditor\data\Entry;
-use craft\ckeditor\data\FieldData;
-use craft\ckeditor\data\Markup;
-use craft\ckeditor\Field;
+use CraftCms\Ckeditor\Data\BaseChunk;
+use CraftCms\Ckeditor\Data\Entry;
+use CraftCms\Ckeditor\Data\FieldData;
+use CraftCms\Ckeditor\Data\Markup;
+use CraftCms\Ckeditor\Field;
 use craft\elements\Entry as EntryElement;
 use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\base\GeneratorInterface;

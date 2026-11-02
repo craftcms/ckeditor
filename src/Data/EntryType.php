@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\ckeditor\models;
+namespace CraftCms\Ckeditor\Data;
 
 use CraftCms\Cms\Entry\Data\EntryType as CraftEntryType;
 use Error;

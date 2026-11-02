@@ -5,20 +5,20 @@
  * @license GPL-3.0-or-later
  */
 
-namespace craft\ckeditor;
+namespace CraftCms\Ckeditor;
 
 use Closure;
 use Craft;
-use craft\ckeditor\data\BaseChunk;
-use craft\ckeditor\data\Entry as EntryChunk;
-use craft\ckeditor\data\FieldData;
-use craft\ckeditor\data\Markup;
+use CraftCms\Ckeditor\Data\BaseChunk;
+use CraftCms\Ckeditor\Data\Entry as EntryChunk;
+use CraftCms\Ckeditor\Data\FieldData;
+use CraftCms\Ckeditor\Data\Markup;
 use craft\ckeditor\events\DefineLinkOptionsEvent;
 use craft\ckeditor\events\ModifyConfigEvent;
 use craft\ckeditor\gql\Generator;
-use craft\ckeditor\helpers\CkeditorConfig;
-use craft\ckeditor\helpers\CkeditorConfigSchema;
-use craft\ckeditor\models\EntryType as CkeEntryType;
+use CraftCms\Ckeditor\Support\CkeditorConfig;
+use CraftCms\Ckeditor\Support\CkeditorConfigSchema;
+use CraftCms\Ckeditor\Data\EntryType as CkeEntryType;
 use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
 use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
 use craft\ckeditor\web\assets\fieldsettings\FieldSettingsAsset;
@@ -90,7 +90,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;
 use Override;
 use RuntimeException;
@@ -138,8 +137,6 @@ class Field extends HtmlField implements
     /** @since 5.0.0 */
     public const IMAGE_MODE_ENTRIES = 'entries';
 
-    private const REFERENCES_TABLE = 'ckeditor_references';
-
     private const VOID_ELEMENTS = [
         'area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input',
         'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr',
@@ -161,7 +158,7 @@ class Field extends HtmlField implements
     #[Override]
     public static function icon(): string
     {
-        return '@craft/ckeditor/icon.svg';
+        return dirname(__DIR__) . '/resources/icon.svg';
     }
 
     /**
@@ -504,7 +501,7 @@ class Field extends HtmlField implements
     }
 
     /**
-     * Normalizes an entry type into a `craft\ckeditor\models\EntryType` object.
+     * Normalizes an entry type into a `CraftCms\Ckeditor\Data\EntryType` object.
      *
      * @param EntryType|CkeEntryType|string|array $entryType
      * @return CkeEntryType|null
@@ -1283,10 +1280,6 @@ class Field extends HtmlField implements
     #[Override]
     public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
-        if ($element->duplicateOf || $element->isFieldDirty($this->handle)) {
-            $this->updateReferences($element, $isNew);
-        }
-
         if (
             $this->imageMode === self::IMAGE_MODE_IMG &&
             $this->_hasDynamicUploadSubpath() &&
@@ -1342,65 +1335,6 @@ class Field extends HtmlField implements
     {
         $first = self::fieldInstances($element, $this)[0] ?? null;
         return !$first || $first->layoutElement?->uid === $this->layoutElement?->uid;
-    }
-
-    private function updateReferences(ElementInterface $element, bool $isNew): void
-    {
-        if (!Schema::hasTable(self::REFERENCES_TABLE)) {
-            return;
-        }
-
-        $value = $element->getFieldValue($this->handle);
-        $targetIds = array_flip($this->getRefTargetIds($value));
-
-        // Get the old references
-        if (!$isNew) {
-            $oldRefs = DB::table(self::REFERENCES_TABLE)
-                ->select(['id', 'targetId'])
-                ->where([
-                    'fieldId' => $this->id,
-                    'fieldInstanceUid' => $this->layoutElement->uid,
-                    'sourceId' => $element->id,
-                    'sourceSiteId' => $element->siteId,
-                ])
-                ->get();
-        } else {
-            $oldRefs = [];
-        }
-
-        $deleteIds = [];
-
-        foreach ($oldRefs as $ref) {
-            // Does this reference still exist?
-            if (isset($targetIds[$ref->targetId])) {
-                // Avoid re-inserting it
-                unset($targetIds[$ref->targetId]);
-            } else {
-                $deleteIds[] = $ref->id;
-            }
-        }
-
-        if (empty($deleteIds) && empty($targetIds)) {
-            // Nothing to do here
-            return;
-        }
-
-        DB::transaction(function() use ($element, $deleteIds, $targetIds) {
-            // Add the new ones
-            if (!empty($targetIds)) {
-                DB::table(self::REFERENCES_TABLE)->insert(array_map(fn($targetId) => [
-                    'fieldId' => $this->id,
-                    'fieldInstanceUid' => $this->layoutElement->uid,
-                    'sourceId' => $element->id,
-                    'sourceSiteId' => $element->siteId,
-                    'targetId' => $targetId,
-                ], array_keys($targetIds)));
-            }
-
-            if (!empty($deleteIds)) {
-                DB::table(self::REFERENCES_TABLE)->whereIn('id', $deleteIds)->delete();
-            }
-        });
     }
 
     private function getRefTargetIds(FieldData|string|null $value, ?string $refHandle = null): array

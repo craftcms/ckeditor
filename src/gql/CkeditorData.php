@@ -7,7 +7,7 @@
 
 namespace craft\ckeditor\gql;
 
-use craft\ckeditor\data\FieldData;
+use CraftCms\Ckeditor\Data\FieldData;
 use craft\gql\base\ObjectType;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
 use GraphQL\Type\Definition\ResolveInfo;

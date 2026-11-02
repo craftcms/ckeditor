@@ -10,7 +10,7 @@
     <div class="flex">
       {% set options = field.getEntryTypes()|map(
         et => et.getFieldLayout().getCustomFields()|filter(
-          f => f is instance of('craft\\fields\\Assets')
+          f => f is instance of('CraftCms\\Cms\\Field\\Assets')
         )|map(f => {
           label: "#{et.getUiLabel()} → #{f.getUiLabel()}",
           value: "#{et.uid}.#{f.layoutElement.uid}",

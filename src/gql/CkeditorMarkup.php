@@ -7,7 +7,7 @@
 
 namespace craft\ckeditor\gql;
 
-use craft\ckeditor\data\Markup;
+use CraftCms\Ckeditor\Data\Markup;
 use craft\gql\base\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 

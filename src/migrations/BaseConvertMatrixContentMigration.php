@@ -3,7 +3,7 @@
 namespace craft\ckeditor\migrations;
 
 use Craft;
-use craft\ckeditor\Field;
+use CraftCms\Ckeditor\Field;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;

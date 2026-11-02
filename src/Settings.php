@@ -5,10 +5,10 @@
  * @license GPL-3.0-or-later
  */
 
-namespace craft\ckeditor\models;
+namespace CraftCms\Ckeditor;
 
-use craft\base\Model;
-use craft\helpers\App;
+use CraftCms\Cms\Plugin\PluginSettings;
+use CraftCms\Cms\Support\Env;
 
 /**
  * CKEditor plugin settings.
@@ -16,7 +16,7 @@ use craft\helpers\App;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.10.0
  */
-class Settings extends Model
+class Settings extends PluginSettings
 {
     /**
      * @var string|null A commercial CKEditor license key, which can be set to an environment variable (e.g. `$CKEDITOR_LICENSE_KEY`).
@@ -32,6 +32,6 @@ class Settings extends Model
      */
     public function getLicenseKey(): ?string
     {
-        return App::parseEnv($this->licenseKey) ?: null;
+        return Env::parse($this->licenseKey) ?: null;
     }
 }

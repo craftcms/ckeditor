@@ -39,8 +39,12 @@
   },
   "autoload": {
     "psr-4": {
+      "CraftCms\\Ckeditor\\": "src/",
       "craft\\ckeditor\\": "src/"
-    }
+    },
+    "files": [
+      "src/legacy-aliases.php"
+    ]
   },
   "scripts": {
     "check-cs": "ecs check --ansi",

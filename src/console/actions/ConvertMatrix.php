@@ -10,7 +10,7 @@ namespace craft\ckeditor\console\actions;
 use Craft;
 use craft\base\FieldInterface;
 use craft\ckeditor\console\controllers\ConvertController;
-use craft\ckeditor\Field;
+use CraftCms\Ckeditor\Field;
 use craft\enums\PropagationMethod;
 use craft\errors\OperationAbortedException;
 use craft\fields\Matrix;

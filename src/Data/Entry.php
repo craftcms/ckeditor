@@ -6,7 +6,7 @@
  * @license MIT
  */
 
-namespace craft\ckeditor\data;
+namespace CraftCms\Ckeditor\Data;
 
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 

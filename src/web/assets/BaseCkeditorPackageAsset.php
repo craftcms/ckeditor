@@ -8,7 +8,7 @@
 namespace craft\ckeditor\web\assets;
 
 use Craft;
-use craft\ckeditor\helpers\CkeditorConfig;
+use CraftCms\Ckeditor\Support\CkeditorConfig;
 use craft\web\AssetBundle;
 
 /**

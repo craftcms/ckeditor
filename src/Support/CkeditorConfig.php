@@ -5,12 +5,13 @@
  * @license GPL-3.0-or-later
  */
 
-namespace craft\ckeditor\helpers;
+namespace CraftCms\Ckeditor\Support;
 
-use Craft;
-use craft\ckeditor\Plugin;
-use craft\helpers\Json;
+use CraftCms\Ckeditor\Plugin;
+use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Collection;
+
+use function CraftCms\Cms\t;
 
 /**
  * CKEditor Config Helper.
@@ -278,7 +279,7 @@ final class CkeditorConfig
      * @param string|null $name namespace of the package
      * @return array|array[]|string[] plugins registered from the package
      */
-    public static function getPluginsByPackage(string $name = null): array
+    public static function getPluginsByPackage(?string $name = null): array
     {
         Plugin::getCkeditorPackages();
 
@@ -320,7 +321,7 @@ final class CkeditorConfig
      * @return string
      * @deprecated in 5.8.0.
      */
-    public static function getImportStatements(string $name = null): string
+    public static function getImportStatements(?string $name = null): string
     {
         $plugins = $name ? [$name => self::getPluginsByPackage($name)] : self::getPluginsByPackage();
 
@@ -520,16 +521,16 @@ final class CkeditorConfig
     {
         return [
             [
-                'label' => Craft::t('app', 'URL Suffix'),
+                'label' => t('URL Suffix'),
                 'value' => 'urlSuffix',
-                'tooltip' => Craft::t('app', 'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.', [
+                'tooltip' => t('Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.', [
                     'ex1' => '`?p1=foo&p2=bar`',
                     'ex2' => '`#anchor`',
                 ]),
                 'conversion' => null,
             ],
             [
-                'label' => Craft::t('app', 'Open in new tab?'),
+                'label' => t('Open in new tab?'),
                 'value' => 'target',
                 'conversion' => [
                     'type' => 'bool',
@@ -539,7 +540,7 @@ final class CkeditorConfig
                 ],
             ],
             [
-                'label' => Craft::t('app', 'Title Text'),
+                'label' => t('Title Text'),
                 'value' => 'title',
                 'conversion' => [
                     'type' => 'string',
@@ -548,7 +549,7 @@ final class CkeditorConfig
                 ],
             ],
             [
-                'label' => Craft::t('app', 'Class Name'),
+                'label' => t('Class Name'),
                 'value' => 'class',
                 'tooltip' => 'Separate multiple values with spaces.',
                 'conversion' => [
@@ -558,7 +559,7 @@ final class CkeditorConfig
                 ],
             ],
             [
-                'label' => Craft::t('app', 'ID'),
+                'label' => t('ID'),
                 'value' => 'id',
                 'conversion' => [
                     'type' => 'string',
@@ -567,7 +568,7 @@ final class CkeditorConfig
                 ],
             ],
             [
-                'label' => Craft::t('app', 'Relation (rel)'),
+                'label' => t('Relation (rel)'),
                 'value' => 'rel',
                 'tooltip' => 'Separate multiple values with spaces.',
                 'conversion' => [
@@ -577,7 +578,7 @@ final class CkeditorConfig
                 ],
             ],
             [
-                'label' => Craft::t('app', 'ARIA Label'),
+                'label' => t('ARIA Label'),
                 'value' => 'ariaLabel',
                 'conversion' => [
                     'type' => 'string',
@@ -586,7 +587,7 @@ final class CkeditorConfig
                 ],
             ],
             [
-                'label' => Craft::t('app', 'Download'),
+                'label' => t('Download'),
                 'value' => 'download',
                 'conversion' => [
                     'type' => 'bool',

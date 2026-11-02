@@ -5,10 +5,10 @@
  * @license GPL-3.0-or-later
  */
 
-namespace craft\ckeditor\helpers;
+namespace CraftCms\Ckeditor\Support;
 
-use craft\ckeditor\Field;
-use craft\helpers\ArrayHelper;
+use CraftCms\Ckeditor\Field;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
 /**
@@ -629,7 +629,7 @@ final class CkeditorConfigSchema
 
     private static function interface2ref(array $item): array|false
     {
-        $interface = ArrayHelper::remove($item, 'interface');
+        $interface = Arr::pull($item, 'interface');
         if ($interface) {
             $item = ['$ref' => sprintf('#/$defs/%s', $interface)] + $item;
         }

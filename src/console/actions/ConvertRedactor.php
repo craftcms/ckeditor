@@ -10,7 +10,7 @@ namespace craft\ckeditor\console\actions;
 use Craft;
 use craft\ckeditor\console\controllers\ConvertController;
 use craft\ckeditor\console\ToolbarBuilder;
-use craft\ckeditor\Field;
+use CraftCms\Ckeditor\Field;
 use craft\errors\OperationAbortedException;
 use craft\fields\MissingField;
 use craft\helpers\Console;

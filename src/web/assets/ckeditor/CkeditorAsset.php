@@ -25,7 +25,7 @@ class CkeditorAsset extends BaseCkeditorPackageAsset
      * @event Event The event that is triggered when asset bundle is published.
      * @see registerCkeditorAsset()
      * @since 3.4.0
-     * @deprecated in 3.5.0. [[\craft\ckeditor\Plugin::registerCkeditorPackage()]] should be used instead.
+     * @deprecated in 3.5.0. [[\CraftCms\Ckeditor\Plugin::registerCkeditorPackage()]] should be used instead.
      */
     public const EVENT_PUBLISH = 'publish';
 

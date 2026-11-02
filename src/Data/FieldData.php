@@ -6,11 +6,11 @@
  * @license MIT
  */
 
-namespace craft\ckeditor\data;
+namespace CraftCms\Ckeditor\Data;
 
 use ArrayIterator;
 use Countable;
-use craft\ckeditor\Field;
+use CraftCms\Ckeditor\Field;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Http\Controllers\Gql\ApiController as GqlApiController;
