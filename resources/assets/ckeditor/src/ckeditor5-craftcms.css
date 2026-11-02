@@ -1,32 +1,55 @@
 /* CSS variables */
 :root {
-  --ck-border-radius: var(--small-border-radius) !important;
+  --ck-border-radius: var(
+    --small-border-radius,
+    var(--c-radius-sm, 3px)
+  ) !important;
   --ck-color-base-border: hsl(212deg 25% 50% / 25%) !important;
   --ck-color-button-default-active-background: var(
-    --ui-control-active-bg-color
+    --ui-control-active-bg-color,
+    var(--c-color-neutral-fill-normal, #ced7e2)
   ) !important;
   --ck-color-button-default-hover-background: var(
-    --ui-control-bg-color
+    --ui-control-bg-color,
+    var(--c-color-neutral-fill-quiet, #e9eef3)
   ) !important;
   --ck-color-split-button-hover-border: transparent !important;
   --ck-color-split-button-hover-background: hsl(
-    var(--gray-400-hsl) 0.1
+    var(--gray-400-hsl, 217 16% 58%) 0.1
   ) !important;
   --ck-color-button-on-active-background: var(
-    --ui-control-active-bg-color
+    --ui-control-active-bg-color,
+    var(--c-color-neutral-fill-normal, #ced7e2)
   ) !important;
-  --ck-color-button-on-background: var(--ui-control-active-bg-color) !important;
-  --ck-color-button-on-color: var(--text-color) !important;
+  --ck-color-button-on-background: var(
+    --ui-control-active-bg-color,
+    var(--c-color-neutral-fill-normal, #ced7e2)
+  ) !important;
+  --ck-color-button-on-color: var(
+    --text-color,
+    var(--c-text-default, #2b3549)
+  ) !important;
   --ck-color-button-on-hover-background: var(
-    --ui-control-active-bg-color
+    --ui-control-active-bg-color,
+    var(--c-color-neutral-fill-normal, #ced7e2)
   ) !important;
-  --ck-focus-outer-shadow: var(--focus-ring) !important;
+  --ck-focus-outer-shadow: var(
+    --focus-ring,
+    0 0 0 var(--c-focus-outline-width, 2px)
+      var(--c-color-focus-outline, #3e74f2)
+  ) !important;
   --ck-focus-ring: 1px solid var(--ck-color-base-border) !important;
-  --ck-color-list-button-on-background-focus: var(--dark-sel-color) !important;
-  --ck-color-list-button-on-background: var(--dark-sel-color) !important;
+  --ck-color-list-button-on-background-focus: var(
+    --dark-sel-color,
+    var(--c-color-accent-fill-normal, #c1d9fb)
+  ) !important;
+  --ck-color-list-button-on-background: var(
+    --dark-sel-color,
+    var(--c-color-accent-fill-normal, #c1d9fb)
+  ) !important;
   --ck-color-shadow-drop-active: var(--ck-color-shadow-drop) !important;
   --ck-color-shadow-drop: hsl(210deg 24% 16% / 20%) !important;
-  --ck-color-text: var(--text-color) !important;
+  --ck-color-text: var(--text-color, var(--c-text-default, #2b3549)) !important;
   --ck-color-toolbar-border: var(--ck-color-base-border) !important;
   --ck-drop-shadow-active: var(--ck-drop-shadow) !important;
   --ck-drop-shadow:
@@ -37,15 +60,24 @@
   --ck-powered-by-padding-horizontal: 0px;
   --ck-color-base-background: var(--input-bg) !important;
   /* fullscreen mode bg */
-  --ck-color-base-foreground: var(--body-bg) !important;
-  --ck-color-toolbar-background: var(--white) !important;
-  --ck-content-font-color: var(--text-color);
+  --ck-color-base-foreground: var(
+    --body-bg,
+    var(--c-surface-default, #fff)
+  ) !important;
+  --ck-color-toolbar-background: var(
+    --white,
+    var(--c-surface-white, #fff)
+  ) !important;
+  --ck-content-font-color: var(--text-color, var(--c-text-default, #2b3549));
   --ck-content-font-family:
     system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto',
     'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
     'Helvetica Neue', sans-serif;
 
-  --ck-color-button-action-background: var(--primary-button-bg) !important;
+  --ck-color-button-action-background: var(
+    --primary-button-bg,
+    var(--c-color-accent-fill-loud, #305ce7)
+  ) !important;
   --ck-color-button-action-hover-background: var(
     --primary-button-bg--hover
   ) !important;
@@ -53,13 +85,25 @@
     --primary-button-bg--active
   ) !important;
   --ck-color-button-action-disabled-background: #d38d8f !important;
-  --ck-color-button-action-text: var(--primary-button-text-color) !important;
+  --ck-color-button-action-text: var(
+    --primary-button-text-color,
+    var(--c-color-accent-on-loud, #fff)
+  ) !important;
 
-  --ck-border-radius: var(--input-border-radius) !important;
+  --ck-border-radius: var(
+    --input-border-radius,
+    var(--c-input-radius, 4px)
+  ) !important;
   --ck-color-input-border: var(--input-border-color) !important;
   --ck-color-input-background: var(--input-bg) !important;
-  --ck-color-panel-background: var(--white) !important;
-  --ck-ui-component-min-height: var(--input-height) !important;
+  --ck-color-panel-background: var(
+    --white,
+    var(--c-surface-white, #fff)
+  ) !important;
+  --ck-ui-component-min-height: var(
+    --input-height,
+    var(--c-form-control-height, 2rem)
+  ) !important;
 
   --ck-color-switch-button-on-background: var(--ck-color-base-action);
 }
@@ -69,8 +113,8 @@
 }
 
 .ck.ck-editor__editable_inline {
-  padding-block: calc(var(--m) - 2px) !important;
-  padding-inline: var(--m) !important;
+  padding-block: calc(var(--m, var(--c-spacing-lg, 1rem)) - 2px) !important;
+  padding-inline: var(--m, var(--c-spacing-lg, 1rem)) !important;
 }
 
 /* don't apply the focus ring in fullscreen */
@@ -168,8 +212,8 @@
 }
 
 .ck-word-count {
-  padding-block: var(--s);
-  padding-inline: var(--m);
+  padding-block: var(--s, var(--c-spacing-md, 0.5rem));
+  padding-inline: var(--m, var(--c-spacing-lg, 1rem));
   border: solid var(--ck-color-base-border);
   border-width: 0 1px 1px;
   border-end-start-radius: var(--ck-border-radius);
@@ -181,17 +225,17 @@
 .cke-entry-card {
   margin-block: 0.9em;
   margin-inline: auto; /* same as images */
-  border-radius: var(--large-border-radius);
+  border-radius: var(--large-border-radius, var(--c-radius-lg, 6px));
   font-size: var(--font-size);
 }
 /* end nested entries */
 
 .ck-toolbar .entry-type-button {
   .icon {
-    color: var(--icon-color);
+    color: var(--icon-color, var(--c-text-quiet, currentColor));
 
     &:hover {
-      color: var(--icon-color) !important;
+      color: var(--icon-color, var(--c-text-quiet, currentColor)) !important;
     }
 
     .ck-button__label {
@@ -279,9 +323,13 @@ body.ck-fullscreen .slideout-container {
 }
 
 .link-type-group {
-  --ck-color-button-default-background: var(--button-bg) !important;
+  --ck-color-button-default-background: var(
+    --button-bg,
+    var(--c-color-neutral-fill-quiet, #e9eef3)
+  ) !important;
   --ck-color-button-default-hover-background: var(
-    --button-bg--hover
+    --button-bg--hover,
+    var(--c-color-neutral-fill-normal, #ced7e2)
   ) !important;
 }
 
@@ -316,7 +364,11 @@ body.ck-fullscreen .slideout-container {
 
 .ck.ck-button.btn.dashed {
   background-color: transparent;
-  border: 1px dashed var(--medium-hairline-color);
+  border: 1px dashed
+    var(
+      --medium-hairline-color,
+      var(--c-color-neutral-border-quiet, hsl(212deg 25% 50% / 40%))
+    );
 }
 
 .break {
@@ -375,8 +427,14 @@ body.ck-fullscreen .slideout-container {
 }
 
 .ck.ck-text-alternative-form .btn {
-  background-color: var(--button-bg) !important;
+  background-color: var(
+    --button-bg,
+    var(--c-color-neutral-fill-quiet, #e9eef3)
+  ) !important;
 }
 .ck.ck-text-alternative-form .btn:hover {
-  background: var(--button-bg--hover) !important;
+  background: var(
+    --button-bg--hover,
+    var(--c-color-neutral-fill-normal, #ced7e2)
+  ) !important;
 }
