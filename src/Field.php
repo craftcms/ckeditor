@@ -713,25 +713,6 @@ class Field extends HtmlField implements
             $config['toolbar'] = Json::decodeIfJson($config['toolbar']);
         }
 
-        // Entry types that should get their own toolbar button
-        if (array_key_exists('expandedEntryTypes', $config)) {
-            $expanded = array_flip(array_filter((array)Arr::pull($config, 'expandedEntryTypes')));
-            if (isset($config['entryTypes']) && is_array($config['entryTypes'])) {
-                $config['entryTypes'] = array_map(function($entryType) use ($expanded) {
-                    if (is_string($entryType)) {
-                        $entryType = Json::decodeIfJson($entryType);
-                    }
-                    if (is_string($entryType)) {
-                        $entryType = ['uid' => $entryType];
-                    }
-                    if (is_array($entryType) && isset($entryType['uid'])) {
-                        $entryType['expanded'] = isset($expanded[$entryType['uid']]);
-                    }
-                    return $entryType;
-                }, $config['entryTypes']);
-            }
-        }
-
         unset(
             $config['initJs'],
             $config['removeInlineStyles'],
@@ -1169,24 +1150,10 @@ class Field extends HtmlField implements
                 ->instructions(t('Choose the types of entries that can be created in this field.'))
                 ->control(EntryTypeSelect::make('entryTypes')
                     ->allowOverrides()
+                    ->extraValueKeys(['expanded'])
                     ->value(array_map(fn(CkeEntryType $entryType) => $entryType->getUsageConfig(), $entryTypes))
                     ->reactive()),
         ]);
-
-        if (!empty($entryTypes)) {
-            $ui->add(UiField::make(t('Show as separate buttons', category: 'ckeditor'))
-                ->instructions(t('Entry types that should get their own toolbar button, rather than being listed in the “Add nested content” menu.', category: 'ckeditor'))
-                ->control(Choice::make('expandedEntryTypes')
-                    ->multiple()
-                    ->options(array_map(fn(CkeEntryType $entryType) => [
-                        'label' => t($entryType->name, category: 'site'),
-                        'value' => $entryType->uid,
-                    ], $entryTypes))
-                    ->value(array_values(array_map(
-                        fn(CkeEntryType $entryType) => $entryType->uid,
-                        array_filter($entryTypes, fn(CkeEntryType $entryType) => $entryType->expanded),
-                    )))));
-        }
 
         $ui->add(
             UiField::make(t('Heading Levels', category: 'ckeditor'))
