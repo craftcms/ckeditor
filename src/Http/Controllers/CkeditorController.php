@@ -93,7 +93,7 @@ class CkeditorController
         abort_unless($this->currentUser()->can('view', $owner), 403, 'User not authorized to view this element.');
 
         $field = $this->layoutElementField($owner, $request->input('layoutElementUid'));
-        abort_unless($field instanceof Field, 400, 'Invalid layout element UID.');
+        abort_unless($field !== null, 400, 'Invalid layout element UID.');
 
         [$value, $cards] = $field->editorValue($owner);
 
@@ -129,7 +129,7 @@ class CkeditorController
         abort_unless($this->currentUser()->can('view', $entry), 403, 'User not authorized to view this element.');
 
         $field = $this->layoutElementField($entry->getOwner(), $request->input('layoutElementUid'));
-        abort_unless($field instanceof Field, 400, 'Invalid layout element UID.');
+        abort_unless($field !== null, 400, 'Invalid layout element UID.');
 
         return new JsonResponse([
             'cardHtml' => $field->getCardHtml($entry),
@@ -152,7 +152,6 @@ class CkeditorController
         $targetEntryTypeIds = $request->input('targetEntryTypeIds');
         $targetOwnerId = $request->input('targetOwnerId');
         $targetLayoutElementUid = $request->input('targetLayoutElementUid');
-        $targetFieldId = null;
 
         $entry = Entry::find()
             ->id($entryId)
@@ -181,10 +180,9 @@ class CkeditorController
             ], 'ckeditor'));
         }
 
-        // get ID of the field we're duplicating (e.g. pasting) into
-        if ($targetLayoutElementUid !== null) {
-            $targetFieldId = $this->layoutElementField($owner, $targetLayoutElementUid)?->id;
-        }
+        // get the field we're duplicating (e.g. pasting) into
+        $targetField = $this->layoutElementField($owner, $targetLayoutElementUid);
+        $targetFieldId = $targetField?->id;
 
         $newAttrs = [];
         if ($targetSiteId !== null && $entry->siteId !== (int) $targetSiteId) {
@@ -205,13 +203,11 @@ class CkeditorController
             ]), ['additionalMessage' => $e->getMessage()]);
         }
 
-        // include the duplicate’s card HTML, so it doesn’t have to be requested separately
-        $field = $this->layoutElementField($owner, $targetLayoutElementUid);
-
         return new JsonResponse([
             'newEntryId' => $newEntry->id,
             'newSiteId' => $newEntry->siteId,
-            'cardHtml' => $field instanceof Field ? $field->getCardHtml($newEntry) : null,
+            // include the duplicate’s card HTML, so it doesn’t have to be requested separately
+            'cardHtml' => $targetField?->getCardHtml($newEntry),
         ]);
     }
 

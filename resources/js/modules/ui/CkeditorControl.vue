@@ -68,6 +68,8 @@
   let syncing = false;
   // The nested entries’ card HTML, which the server sends alongside the value rather than in it
   const cards = new Map<string, string>();
+  const cardHtml = (entryId: string | number) =>
+    cards.get(String(entryId)) ?? null;
   const rememberCards = (list?: CardHtml[] | null) => {
     for (const {entryId, cardHtml} of list ?? []) {
       cards.set(String(entryId), cardHtml);
@@ -104,8 +106,7 @@
         wordCountElement: wordCount.value,
         readOnly: props.control.mode !== 'editable',
         owner,
-        cardHtml: (entryId: string | number) =>
-          cards.get(String(entryId)) ?? null,
+        cardHtml,
       });
 
       if (destroyed) {
@@ -177,9 +178,7 @@
         return;
       }
       const entriesUi = editor.plugins.get('CraftEntriesUI');
-      const lookup = cardsUpdated
-        ? (entryId: string | number) => cards.get(String(entryId)) ?? null
-        : null;
+      const lookup = cardsUpdated ? cardHtml : null;
       cardsUpdated = false;
       if (
         wasDerivative &&
