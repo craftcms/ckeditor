@@ -413,18 +413,7 @@ class Field extends HtmlField implements CrossSiteCopyableFieldInterface, Elemen
                 continue;
             }
 
-            $newValue = $chunks
-                ->map(function (BaseChunk $chunk) use ($newEntryIds) {
-                    if ($chunk instanceof Markup) {
-                        return $chunk->rawHtml;
-                    }
-
-                    /** @var EntryChunk $chunk */
-                    $id = $newEntryIds[$chunk->entryId] ?? $chunk->entryId;
-
-                    return sprintf('<craft-entry data-entry-id="%s">&nbsp;</craft-entry>', $id);
-                })
-                ->join('');
+            $newValue = self::chunksToHtml($chunks, fn (EntryChunk $chunk) => $newEntryIds[$chunk->entryId] ?? $chunk->entryId);
 
             $owner->setFieldValue($fieldInstance->handle, $newValue);
             $resave = true;
@@ -434,6 +423,18 @@ class Field extends HtmlField implements CrossSiteCopyableFieldInterface, Elemen
             $owner->propagateRequired = false;
             Elements::saveElement($owner, false, $propagate, false);
         }
+    }
+
+    /**
+     * Rebuilds the field’s HTML from its chunks, with the entry ID returned by the callback for each nested entry.
+     */
+    private static function chunksToHtml(Collection $chunks, callable $entryId): string
+    {
+        return $chunks
+            ->map(fn (BaseChunk $chunk) => $chunk instanceof Markup
+                ? $chunk->rawHtml
+                : sprintf('<craft-entry data-entry-id="%s">&nbsp;</craft-entry>', $entryId($chunk)))
+            ->join('');
     }
 
     /** @var array<string|false> */
@@ -732,9 +733,6 @@ class Field extends HtmlField implements CrossSiteCopyableFieldInterface, Elemen
         foreach (['editorConfig', 'editorConfigOptions', 'editorConfigStyles'] as $key) {
             if (isset($config[$key]) && is_array($config[$key])) {
                 $editorConfig = Arr::pull($config, $key);
-                if (isset($editorConfig['toolbar']) && is_string($editorConfig['toolbar'])) {
-                    $editorConfig['toolbar'] = Json::decodeIfJson($editorConfig['toolbar']);
-                }
                 $config = [
                     ...$config,
                     ...Arr::only($editorConfig, ['toolbar', 'configMode', 'json', 'js', 'jsFile', 'cssMode', 'css', 'cssFile']),
@@ -1042,21 +1040,30 @@ class Field extends HtmlField implements CrossSiteCopyableFieldInterface, Elemen
         return $rules;
     }
 
+    /**
+     * Returns the value’s chunks, leaving out nested entries that no longer exist, along with the nested entries indexed by ID.
+     */
+    private static function loadedEntryChunks(FieldData $value): array
+    {
+        $chunks = $value->getChunks(false)
+            ->filter(fn (BaseChunk $chunk) => ! $chunk instanceof EntryChunk || $chunk->getEntry() !== null);
+
+        $entries = $chunks
+            ->filter(fn (BaseChunk $chunk) => $chunk instanceof EntryChunk)
+            ->keyBy(fn (EntryChunk $chunk) => $chunk->entryId)
+            ->map(fn (EntryChunk $chunk) => $chunk->getEntry())
+            ->all();
+
+        return [$chunks, $entries];
+    }
+
     private function validateEntries(ElementInterface $element, mixed $value, Closure $fail): void
     {
         if (! $value instanceof FieldData) {
             return;
         }
 
-        $chunks = $value->getChunks(false)
-            ->filter(fn (BaseChunk $chunk) => ! $chunk instanceof EntryChunk || $chunk->getEntry() !== null);
-
-        /** @var Entry[] $entries */
-        $entries = $chunks
-            ->filter(fn (BaseChunk $chunk) => $chunk instanceof EntryChunk)
-            ->keyBy(fn (EntryChunk $chunk) => $chunk->entryId)
-            ->map(fn (EntryChunk $chunk) => $chunk->getEntry())
-            ->all();
+        [, $entries] = self::loadedEntryChunks($value);
 
         $scenario = $element->ruleset->getScenario();
         $invalidEntryIds = [];
@@ -1687,20 +1694,9 @@ JS;
 
         $chunks = $fromValue->getChunks(false);
         if ($chunks->contains(fn (BaseChunk $chunk) => $chunk instanceof EntryChunk)) {
-            $toValue = $chunks
-                ->map(function (BaseChunk $chunk) use ($to) {
-                    if ($chunk instanceof Markup) {
-                        return $chunk->rawHtml;
-                    }
-
-                    /** @var EntryChunk $chunk */
-                    $entry = Elements::duplicateElement($chunk->getEntry(), [
-                        'siteId' => $to->siteId,
-                    ]);
-
-                    return sprintf('<craft-entry data-entry-id="%s">&nbsp;</craft-entry>', $entry->id);
-                })
-                ->join('');
+            $toValue = self::chunksToHtml($chunks, fn (EntryChunk $chunk) => Elements::duplicateElement($chunk->getEntry(), [
+                'siteId' => $to->siteId,
+            ])->id);
         } else {
             $toValue = $fromValue->getRawContent();
         }
@@ -2356,15 +2352,7 @@ JS;
         $cards = [];
 
         if ($value instanceof FieldData) {
-            $chunks = $value->getChunks(false)
-                ->filter(fn (BaseChunk $chunk) => ! $chunk instanceof EntryChunk || $chunk->getEntry() !== null);
-
-            /** @var Entry[] $entries */
-            $entries = $chunks
-                ->filter(fn (BaseChunk $chunk) => $chunk instanceof EntryChunk)
-                ->keyBy(fn (EntryChunk $chunk) => $chunk->entryId)
-                ->map(fn (EntryChunk $chunk) => $chunk->getEntry())
-                ->all();
+            [$chunks, $entries] = self::loadedEntryChunks($value);
 
             if (! $static) {
                 $entries = Drafts::withProvisionalDrafts($entries);
