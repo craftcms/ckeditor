@@ -157,14 +157,14 @@ var j = Object.create, M = Object.defineProperty, te = Object.getOwnPropertyDesc
 		n.execute("insertImage", { source: i });
 	}
 	async _createImageEntry(e) {
-		let t = this.editor, n = this._elementEditor, r = $(t.sourceElement).attr("name");
-		n && r && await n.setFormValue(r, "*");
-		let i = t.config.get("nestedElementAttributes"), a = { ...i }, o = t.config.get("craftOwner");
-		n ? (await n.markDeltaNameAsModified(t.sourceElement.name), a.ownerId = n.getDraftElementId(i.ownerId)) : o && (a.ownerId = await o.prepare());
+		let t = this.editor, n = this._elementEditor, r = $(t.sourceElement).attr("name"), i = t.config.get("craftOwner");
+		!i?.ownerId() && n && r && await n.setFormValue(r, "*");
+		let a = t.config.get("nestedElementAttributes"), o = { ...a };
+		i?.ownerId() ? o.ownerId = await i.prepare() : n && (await n.markDeltaNameAsModified(t.sourceElement.name), o.ownerId = n.getDraftElementId(a.ownerId));
 		let s;
 		try {
 			s = await Craft.sendActionRequest("POST", "ckeditor/ckeditor/create-image-entry", { data: {
-				...a,
+				...o,
 				assetIds: [e]
 			} });
 		} catch (e) {
@@ -774,7 +774,7 @@ var he = class extends v {
 	}
 	_showEditEntrySlideout(e, t, n) {
 		let r = this.editor, i = r.model, a = this.getElementEditor(), o = r.config.get("craftOwner");
-		if (!a && o && Craft.openSlideout) {
+		if (o?.ownerId()) {
 			this._openNativeEditEntrySlideout(e, t, n, o);
 			return;
 		}
@@ -814,7 +814,7 @@ var he = class extends v {
 		let i = this.editor, a = i.model, o = this._getCardElement(e), s = {
 			elementId: e,
 			siteId: t
-		}, c = o.attr("data-owner-id"), l = o.attr("data-field-id");
+		}, c = r.ownerId() ?? o.attr("data-owner-id"), l = o.attr("data-field-id");
 		c && (s.ownerId = c), l && (s.fieldId = l);
 		let u = o.parents(".field");
 		u.length && $(u[0]).hasClass("has-errors") && (s.prevalidate = 1);
@@ -835,16 +835,9 @@ var he = class extends v {
 			}
 		});
 	}
-	useCanonicalEntryIds() {
-		let e = this.editor, t = [...e.model.createRangeIn(e.model.document.getRoot()).getItems()].filter((e) => e.is("element", "craftEntryModel")).map((e) => ({
-			modelElement: e,
-			canonicalId: this._getCardElement(e.getAttribute("entryId")).attr("data-canonical-id")
-		})).filter(({ canonicalId: e }) => e);
-		t.length && (e.model.enqueueChange({ isUndoable: !1 }, (e) => {
-			t.forEach(({ modelElement: t, canonicalId: n }) => {
-				e.setAttribute("entryId", n, t);
-			});
-		}), t.forEach(({ modelElement: e }) => this._refreshCard(e)));
+	refreshCards() {
+		let e = this.editor;
+		[...e.model.createRangeIn(e.model.document.getRoot()).getItems()].filter((e) => e.is("element", "craftEntryModel")).forEach((e) => this._refreshCard(e));
 	}
 	async _refreshCard(e) {
 		let t = this.editor, n = (e) => t.model.enqueueChange({ isUndoable: !1 }, e);
@@ -857,7 +850,7 @@ var he = class extends v {
 	}
 	async _showCreateEntrySlideout(e) {
 		let t = this.editor, n = t.model, r = n.document.selection.getFirstRange(), i = t.config.get("nestedElementAttributes"), a = Object.assign({}, i, { typeId: e }), o = this.getElementEditor(), s = t.config.get("craftOwner");
-		o ? (await o.markDeltaNameAsModified(t.sourceElement.name), a.ownerId = o.getDraftElementId(i.ownerId)) : s && (a.ownerId = await s.prepare());
+		s?.ownerId() ? a.ownerId = await s.prepare() : o && (await o.markDeltaNameAsModified(t.sourceElement.name), a.ownerId = o.getDraftElementId(i.ownerId));
 		let c;
 		try {
 			c = (await Craft.sendActionRequest("POST", "elements/create", { data: a })).data;
@@ -12890,7 +12883,7 @@ var Oe = class extends v {
 			let s = o, c = !1, l = Craft.siteId, u = null, d = null, f = e.getData(), p = [...o.matchAll(/data-entry-id="([0-9]+)[^>]*data-site-id="([0-9]+)/g)];
 			r.stop();
 			let m = $(e.ui.view.element), h = m.parents("form").data("elementEditor"), g = e.config.get("craftOwner");
-			h ? await h.ensureIsDraftOrRevision() : g && (u = await g.prepare());
+			g?.ownerId() ? u = await g.prepare() : h && await h.ensureIsDraftOrRevision();
 			let _ = m.parents(".input");
 			if (_.length > 0) {
 				let e = $(_[0]).find("div.ckeditor-container");

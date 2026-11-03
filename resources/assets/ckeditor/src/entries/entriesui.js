@@ -269,8 +269,9 @@ export default class CraftEntriesUI extends Plugin {
     const elementEditor = this.getElementEditor();
     const owner = editor.config.get('craftOwner');
 
-    // Craft 6 control panel: open the entry in a native slideout, which saves changes into the owner’s draft
-    if (!elementEditor && owner && Craft.openSlideout) {
+    // Open the entry in a native slideout, which saves changes into the owner’s draft. Craft 6’s element slideouts
+    // still attach a legacy element editor to their form, so this doesn’t depend on there not being one.
+    if (owner?.ownerId()) {
       this._openNativeEditEntrySlideout(entryId, siteId, modelElement, owner);
       return;
     }
@@ -376,7 +377,9 @@ export default class CraftEntriesUI extends Plugin {
       elementId: entryId,
       siteId: siteId,
     };
-    const ownerId = $element.attr('data-owner-id');
+    // The card’s owner ID is only right as of when the card was rendered, and the owner changes when its draft is
+    // created, applied or discarded, so prefer the control’s current owner
+    const ownerId = owner.ownerId() ?? $element.attr('data-owner-id');
     const fieldId = $element.attr('data-field-id');
     if (ownerId) {
       params.ownerId = ownerId;
@@ -439,33 +442,13 @@ export default class CraftEntriesUI extends Plugin {
   }
 
   /**
-   * Points the nested entries that were copied for the owner’s draft back at their canonical entries,
-   * after the draft was applied and the copies were merged into them.
+   * Re-renders every entry card, so their attributes (e.g. their owner info) reflect the owner’s current state.
    */
-  useCanonicalEntryIds() {
+  refreshCards() {
     const editor = this.editor;
-    const changes = [
-      ...editor.model.createRangeIn(editor.model.document.getRoot()).getItems(),
-    ]
+    [...editor.model.createRangeIn(editor.model.document.getRoot()).getItems()]
       .filter((item) => item.is('element', 'craftEntryModel'))
-      .map((modelElement) => ({
-        modelElement,
-        canonicalId: this._getCardElement(
-          modelElement.getAttribute('entryId'),
-        ).attr('data-canonical-id'),
-      }))
-      .filter(({canonicalId}) => canonicalId);
-
-    if (!changes.length) {
-      return;
-    }
-
-    editor.model.enqueueChange({isUndoable: false}, (writer) => {
-      changes.forEach(({modelElement, canonicalId}) => {
-        writer.setAttribute('entryId', canonicalId, modelElement);
-      });
-    });
-    changes.forEach(({modelElement}) => this._refreshCard(modelElement));
+      .forEach((modelElement) => this._refreshCard(modelElement));
   }
 
   /**
@@ -533,15 +516,16 @@ export default class CraftEntriesUI extends Plugin {
     const elementEditor = this.getElementEditor();
     const owner = editor.config.get('craftOwner');
 
-    if (elementEditor) {
+    // Craft 6’s element slideouts still attach a legacy element editor to their form, so check for an owner first
+    if (owner?.ownerId()) {
+      // make sure the owner is a draft, and create the entry for it
+      params.ownerId = await owner.prepare();
+    } else if (elementEditor) {
       await elementEditor.markDeltaNameAsModified(editor.sourceElement.name);
       // replace the owner ID with the new one, maybe?
       params.ownerId = elementEditor.getDraftElementId(
         nestedElementAttributes.ownerId,
       );
-    } else if (owner) {
-      // make sure the owner is a draft, and create the entry for it
-      params.ownerId = await owner.prepare();
     }
 
     let data;

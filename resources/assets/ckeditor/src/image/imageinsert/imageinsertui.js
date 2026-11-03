@@ -162,9 +162,10 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     const editor = this.editor;
     const elementEditor = this._elementEditor;
     const baseInputName = $(editor.sourceElement).attr('name');
+    const owner = editor.config.get('craftOwner');
 
-    // mark as dirty
-    if (elementEditor && baseInputName) {
+    // mark as dirty (the owner bridge takes care of that when there's an owner)
+    if (!owner?.ownerId() && elementEditor && baseInputName) {
       await elementEditor.setFormValue(baseInputName, '*');
     }
 
@@ -175,17 +176,16 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       ...nestedElementAttributes,
     };
 
-    const owner = editor.config.get('craftOwner');
-
-    if (elementEditor) {
+    // Craft 6’s element slideouts still attach a legacy element editor to their form, so check for an owner first
+    if (owner?.ownerId()) {
+      // make sure the owner is a draft, and create the entry for it
+      params.ownerId = await owner.prepare();
+    } else if (elementEditor) {
       await elementEditor.markDeltaNameAsModified(editor.sourceElement.name);
       // replace the owner ID with the new one, maybe?
       params.ownerId = elementEditor.getDraftElementId(
         nestedElementAttributes.ownerId,
       );
-    } else if (owner) {
-      // make sure the owner is a draft, and create the entry for it
-      params.ownerId = await owner.prepare();
     }
 
     let response;

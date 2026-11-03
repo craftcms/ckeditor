@@ -5,6 +5,7 @@ const NESTED_OWNER_EDITOR_REQUEST = 'craft:nested-owner-editor-request';
 
 export interface OwnerContext {
   ownerId: number | null;
+  ownerSiteId?: number | null;
   ownerIsDerivative?: boolean;
   ownerIsInDerivativeTree?: boolean;
   ownerIsUnpublishedDraft?: boolean;
@@ -17,6 +18,7 @@ export interface OwnerControl {
 }
 
 export interface OwnerBridge {
+  ownerId(): number | null;
   prepare(): Promise<number | null>;
   resolveElementId(id: number): number;
   refresh(): void;
@@ -46,6 +48,13 @@ export function createOwnerBridge(
   const context = () => getControl().props.owner;
 
   return {
+    /**
+     * Returns the current owner’s ID.
+     */
+    ownerId() {
+      return context()?.ownerId ?? null;
+    },
+
     /**
      * Makes sure the owner is a draft (autosaving it if needed), and resolves to the owner ID
      * nested entries should be created for.

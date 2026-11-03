@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth', 'can:accessCp', RequireCpRequest::class])->group(function () {
     Route::post('ckeditor/image-url', [CkeditorController::class, 'imageUrl']);
     Route::post('ckeditor/entry-card-html', [CkeditorController::class, 'entryCardHtml']);
+    Route::post('ckeditor/field-value', [CkeditorController::class, 'fieldValue']);
     Route::post('ckeditor/duplicate-nested-entry', [CkeditorController::class, 'duplicateNestedEntry']);
     Route::post('ckeditor/image-permissions', [CkeditorController::class, 'imagePermissions']);
     Route::post('ckeditor/image-alt', [CkeditorController::class, 'imageAlt']);

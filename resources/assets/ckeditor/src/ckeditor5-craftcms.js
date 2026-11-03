@@ -165,10 +165,11 @@ const handleClipboard = function (editor, plugins) {
         const owner = editor.config.get('craftOwner');
 
         // ensure we're working with a draft
-        if (elementEditor) {
-          await elementEditor.ensureIsDraftOrRevision();
-        } else if (owner) {
+        // (Craft 6’s element slideouts still attach a legacy element editor to their form, so check for an owner first)
+        if (owner?.ownerId()) {
           ownerId = await owner.prepare();
+        } else if (elementEditor) {
+          await elementEditor.ensureIsDraftOrRevision();
         }
 
         // get the target owner id, in case we're pasting to a different element all together

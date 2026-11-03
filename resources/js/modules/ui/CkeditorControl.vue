@@ -106,19 +106,67 @@
     }
   });
 
-  // Once the owner’s draft is applied, the nested entries copied for it are merged back into their canonical
-  // entries, so point the editor at those. The control keeps its value, which doesn’t need saving again.
+  /**
+   * Replaces the editor’s content with the field’s saved value for the owner, without reporting it as a change.
+   */
+  const reloadValue = async (ownerId: number) => {
+    const {data} = await Craft.sendActionRequest(
+      'POST',
+      'ckeditor/ckeditor/field-value',
+      {
+        data: {
+          ownerId,
+          siteId: props.control.props.owner?.ownerSiteId ?? null,
+          layoutElementUid: editor.config.get('layoutElementUid'),
+        },
+      },
+    );
+    if (!editor) {
+      return;
+    }
+    syncing = true;
+    try {
+      editor.setData(data.value ?? '');
+      emittedValue = editor.getData();
+    } finally {
+      syncing = false;
+    }
+  };
+
+  // When the owner changes (its draft is created, applied or discarded), the entry cards’ owner info is out of date,
+  // so re-render them. Once the owner’s draft is applied, the nested entries created or copied for it get new IDs,
+  // which the server adjusts the saved value for, so reload the content from there instead. The control keeps its
+  // value, which doesn’t need saving again.
   watch(
-    () => props.control.props.owner?.ownerIsDerivative,
-    (isDerivative, wasDerivative) => {
-      if (!editor || !wasDerivative || isDerivative) {
+    () =>
+      [
+        props.control.props.owner?.ownerId,
+        props.control.props.owner?.ownerIsDerivative,
+      ] as const,
+    ([ownerId, isDerivative], [oldOwnerId, wasDerivative]) => {
+      if (
+        !editor ||
+        !editor.plugins.has('CraftEntriesUI') ||
+        (ownerId === oldOwnerId && isDerivative === wasDerivative)
+      ) {
+        return;
+      }
+      const entriesUi = editor.plugins.get('CraftEntriesUI');
+      if (
+        wasDerivative &&
+        !isDerivative &&
+        ownerId &&
+        editor.config.get('layoutElementUid')
+      ) {
+        reloadValue(ownerId).catch((e) => {
+          console.error(e);
+          entriesUi.refreshCards();
+        });
         return;
       }
       syncing = true;
       try {
-        if (editor.plugins.has('CraftEntriesUI')) {
-          editor.plugins.get('CraftEntriesUI').useCanonicalEntryIds();
-        }
+        entriesUi.refreshCards();
       } finally {
         syncing = false;
       }

@@ -73,6 +73,33 @@ class CkeditorController
     }
 
     /**
+     * Returns a field’s current value for an owner, based on the `ownerId`, `siteId` and `layoutElementUid` params.
+     *
+     * The editor reloads its content with it once the owner’s draft is applied, since the nested entries created for
+     * the draft get new IDs then.
+     */
+    public function fieldValue(Request $request): JsonResponse
+    {
+        $request->validate([
+            'ownerId' => ['required', 'integer'],
+            'siteId' => ['nullable', 'integer'],
+            'layoutElementUid' => ['required', 'string'],
+        ]);
+        $ownerId = $request->integer('ownerId');
+
+        $owner = Elements::getElementById($ownerId, siteId: $request->integer('siteId') ?: null);
+        abort_unless($owner !== null, 400, "Invalid owner ID: $ownerId");
+        abort_unless($this->currentUser()->can('view', $owner), 403, 'User not authorized to view this element.');
+
+        $field = $this->layoutElementField($owner, $request->input('layoutElementUid'));
+        abort_unless($field instanceof Field, 400, 'Invalid layout element UID.');
+
+        return new JsonResponse([
+            'value' => $field->editorValue($owner),
+        ]);
+    }
+
+    /**
      * Returns card HTML for an entry, based on the `entryId` and `siteId` params.
      */
     public function entryCardHtml(Request $request): JsonResponse

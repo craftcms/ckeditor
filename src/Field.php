@@ -1755,11 +1755,6 @@ JS;
 
         // Fill the card component’s slots the same way Matrix’s cards do (see `SelectableCardList.vue`)
         $attributes = $card['cardAttributes'];
-        // Let the editor point the entry back at its canonical entry once the owner’s draft is applied
-        $base = $entry->isProvisionalDraft ? $entry->getCanonical() : $entry;
-        if ($base->getIsDerivative()) {
-            $attributes['data']['canonical-id'] = $base->getCanonicalId();
-        }
         $thumbHtml = $isRevision ? '' : $card['cardThumbHtml'];
         if ($thumbHtml !== '') {
             $attributes['thumb-alignment'] = $card['thumbAlignment'];
@@ -2318,6 +2313,14 @@ JS;
         event($event = new HtmlSanitizerConfigResolving($this, $config));
 
         return new HtmlSanitizer($event->config);
+    }
+
+    /**
+     * Returns the field’s current value for an element, as the editor takes it.
+     */
+    public function editorValue(ElementInterface $element): string
+    {
+        return $this->prepValueForInput($element->getFieldValue($this->handle), $element);
     }
 
     /**
