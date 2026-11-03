@@ -1728,17 +1728,34 @@ JS;
             }
         }
 
-        return app(ElementHtml::class)->elementCardHtml($entry, [
+        $card = app(ElementHtml::class)->elementCardData($entry, [
             'autoReload' => ! $isRevision,
             'showDraftName' => ! $isRevision,
             'showStatus' => ! $isRevision,
-            'showThumb' => ! $isRevision,
             'attributes' => [
                 'class' => array_values(array_filter($classes)),
             ],
             'hyperlink' => false,
             'showEditButton' => false,
         ]);
+
+        // Fill the card component’s slots the same way Matrix’s cards do (see `SelectableCardList.vue`)
+        $attributes = $card['cardAttributes'];
+        $thumbHtml = $isRevision ? '' : $card['cardThumbHtml'];
+        if ($thumbHtml !== '') {
+            $attributes['thumb-alignment'] = $card['thumbAlignment'];
+        }
+
+        return Html::beginTag('craft-card', $attributes).
+            ($thumbHtml !== '' ? Html::tag('div', $thumbHtml, ['slot' => 'thumbnail', 'class' => 'card-thumb']) : '').
+            Html::tag('div',
+                Html::tag('div', $card['cardHeaderHtml'], ['class' => ['flex', 'gap-2', 'items-center']]).
+                Html::tag('div', $card['cardActionsHtml'], ['class' => ['flex', 'gap-1', 'items-center'], 'data-card-actions' => true]),
+                ['slot' => 'header', 'class' => ['flex', 'gap-2', 'items-center', 'justify-between', 'w-full']],
+            ).
+            $card['cardContentHtml'].
+            ($card['cardFooterHtml'] !== '' ? Html::tag('div', $card['cardFooterHtml'], ['slot' => 'footer']) : '').
+            Html::endTag('craft-card');
     }
 
     /**

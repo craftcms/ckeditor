@@ -197,7 +197,8 @@ export default class CraftEntriesEditing extends Plugin {
       console.error(e?.response?.data);
 
       const cardHtml =
-        '<div class="element card">' +
+        '<craft-card class="element card">' +
+        '<div class="card-main">' +
         '<div class="card-content">' +
         '<div class="card-heading">' +
         '<div class="label error">' +
@@ -207,7 +208,8 @@ export default class CraftEntriesEditing extends Plugin {
         '</div>' +
         '</div>' +
         '</div>' +
-        '</div>';
+        '</div>' +
+        '</craft-card>';
 
       return {cardHtml};
     }
