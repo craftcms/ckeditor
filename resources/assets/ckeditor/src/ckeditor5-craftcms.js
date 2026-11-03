@@ -160,40 +160,14 @@ const handleClipboard = function (editor, plugins) {
         event.stop();
 
         const $editorElement = $(editor.ui.view.element);
-        const $parentForm = $editorElement.parents('form');
-        let elementEditor = $parentForm.data('elementEditor');
         const owner = editor.config.get('craftOwner');
 
-        // ensure we're working with a draft
-        // (Craft 6’s element slideouts still attach a legacy element editor to their form, so check for an owner first)
+        // get the target owner ID, in case we're pasting to a different element all together,
+        // making sure the owner is a draft first
         if (owner?.ownerId()) {
           ownerId = await owner.prepare();
-        } else if (elementEditor) {
-          await elementEditor.ensureIsDraftOrRevision();
         }
-
-        // get the target owner id, in case we're pasting to a different element all together
-        // (the owner bridge has already given us the owner’s draft ID, so only look it up when there isn’t one)
-        if (ownerId == null) {
-          // first try to get that ID by wrapper div
-          // this way if the CKE field we're pasting into is nested in a matrixblock (or similar), we'll get the correct owner ID
-          let inputContainer = $editorElement.parents('.input');
-          if (inputContainer.length > 0) {
-            let divWrapper = $(inputContainer[0]).find(
-              'div.ckeditor-container',
-            );
-            if (divWrapper.length > 0) {
-              ownerId = $(divWrapper[0]).data('element-id');
-            }
-          }
-
-          // if we still didn't get the ownerId this way, get it form the element editor
-          if (ownerId == null) {
-            ownerId = elementEditor
-              ? elementEditor.settings.elementId
-              : editor.config.get('nestedElementAttributes')?.ownerId;
-          }
-        }
+        ownerId ??= editor.config.get('nestedElementAttributes')?.ownerId;
 
         // get the target field id, in case we're pasting to a different field all together (not different instance, different field)
         layoutElementUid =
@@ -342,39 +316,7 @@ export const create = async function (element, config) {
     }
   });
 
-  const $editorElement = $(editor.ui.view.element);
-  const $parentForm = $editorElement.parents('form');
-  let elementEditor = $parentForm.data('elementEditor');
-
-  // Update the source element before the initial form value has been recorded,
-  // in case the value needs to be normalized
-  if (!elementEditor) {
-    editor.updateSourceElement();
-  } else {
-    const fieldName = editor.sourceElement.name;
-    const preVal = $(editor.sourceElement).val();
-    elementEditor.pause();
-    editor.updateSourceElement();
-    const postVal = $(editor.sourceElement).val();
-    if (preVal !== postVal) {
-      // Only patch the specific field's encoded value in initialSerializedValue.
-      // If preVal isn't found there, this is a re-init (e.g. "copy value from site")
-      // and the change should remain visible as a real edit — so we leave it alone.
-      const initialValue = elementEditor.$container.data(
-        'initialSerializedValue',
-      );
-      if (typeof initialValue === 'string') {
-        elementEditor.$container.data(
-          'initialSerializedValue',
-          initialValue.replace(
-            $.param({[fieldName]: preVal}),
-            $.param({[fieldName]: postVal}),
-          ),
-        );
-      }
-    }
-    elementEditor.resume();
-  }
+  editor.updateSourceElement();
 
   // Keep the source element updated with changes
   editor.model.document.on('change:data', () => {

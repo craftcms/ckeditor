@@ -122,6 +122,8 @@ class CkeditorController
             ->siteId($request->input('siteId'))
             ->status(null)
             ->revisions(null)
+            // a removed entry may be soft-deleted until the owner is saved again, which restores it
+            ->trashed(null)
             ->withProvisionalDrafts()
             ->one();
 

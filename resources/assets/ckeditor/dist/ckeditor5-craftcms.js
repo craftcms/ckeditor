@@ -100,9 +100,6 @@ var j = Object.create, M = Object.defineProperty, te = Object.getOwnPropertyDesc
 	get _imageFieldHandle() {
 		return this.editor.config.get("imageFieldHandle");
 	}
-	get _elementEditor() {
-		return $(this.editor.ui.view.element).closest("form,.lp-editor-container").data("elementEditor");
-	}
 	_createToolbarImageButton(t) {
 		let n = this.editor, r = n.t, i = new e(t);
 		i.isEnabled = !0, i.label = r("Insert image"), i.icon = l, i.tooltip = !0;
@@ -157,22 +154,20 @@ var j = Object.create, M = Object.defineProperty, te = Object.getOwnPropertyDesc
 		n.execute("insertImage", { source: i });
 	}
 	async _createImageEntry(e) {
-		let t = this.editor, n = this._elementEditor, r = $(t.sourceElement).attr("name"), i = t.config.get("craftOwner");
-		!i?.ownerId() && n && r && await n.setFormValue(r, "*");
-		let a = t.config.get("nestedElementAttributes"), o = { ...a };
-		i?.ownerId() ? o.ownerId = await i.prepare() : n && (await n.markDeltaNameAsModified(t.sourceElement.name), o.ownerId = n.getDraftElementId(a.ownerId));
-		let s;
+		let t = this.editor, n = { ...t.config.get("nestedElementAttributes") }, r = t.config.get("craftOwner");
+		r?.ownerId() && (n.ownerId = await r.prepare());
+		let i;
 		try {
-			s = await Craft.sendActionRequest("POST", "ckeditor/ckeditor/create-image-entry", { data: {
-				...o,
+			i = await Craft.sendActionRequest("POST", "ckeditor/ckeditor/create-image-entry", { data: {
+				...n,
 				assetIds: [e]
 			} });
 		} catch (e) {
 			throw Craft.cp.displayError(), e;
 		}
 		t.commands.execute("insertEntry", {
-			entryId: s.data.entryId,
-			siteId: s.data.siteId
+			entryId: i.data.entryId,
+			siteId: i.data.siteId
 		});
 	}
 	_buildAssetUrl(e, t, n) {
@@ -596,14 +591,12 @@ var he = class extends v {
 		if (t) return { cardHtml: t };
 		let n = $(this.editor.sourceElement).parents(".field"), r = this.editor.config.get("layoutElementUid") ?? $(n[0]).data("layout-element"), i = e.getAttribute("entryId") ?? null, a = e.getAttribute("siteId") ?? null;
 		try {
-			let e = this.editor, t = $(e.ui.view.element).closest("form,.lp-editor-container").data("elementEditor");
-			t && await t.checkForm();
-			let { data: n } = await Craft.sendActionRequest("POST", "ckeditor/ckeditor/entry-card-html", { data: {
+			let { data: e } = await Craft.sendActionRequest("POST", "ckeditor/ckeditor/entry-card-html", { data: {
 				entryId: i,
 				siteId: a,
 				layoutElementUid: r
 			} });
-			return n;
+			return e;
 		} catch (e) {
 			return console.error(e?.response?.data), { cardHtml: "<craft-card><craft-callout variant=\"danger\" role=\"alert\">" + Craft.escapeHtml(e?.response?.data?.message || Craft.t("ckeditor", "An unknown error occurred.")) + "</craft-callout></craft-card>" };
 		}
@@ -766,49 +759,11 @@ var he = class extends v {
 			this._initEditEntrySlideout();
 		}), n;
 	}
-	getElementEditor() {
-		return $(this.editor.ui.view.element).closest("form,.lp-editor-container").data("elementEditor");
-	}
 	_getCardElement(e) {
 		return $(this.editor.ui.element).find(".element.card[data-id=\"" + e + "\"]");
 	}
 	_showEditEntrySlideout(e, t, n) {
-		let r = this.editor, i = r.model, a = this.getElementEditor(), o = r.config.get("craftOwner");
-		if (o?.ownerId()) {
-			this._openNativeEditEntrySlideout(e, t, n, o);
-			return;
-		}
-		let s = this._getCardElement(e), c = s.data("owner-id"), l = { siteId: t }, u = s.parents(".field");
-		u.length && $(u[0]).hasClass("has-errors") && (l.prevalidate = !0);
-		let d = Craft.createElementEditor(this.elementType, null, {
-			elementId: e,
-			params: l,
-			onLoad: () => {
-				d.elementEditor.on("update", () => {
-					Craft.Preview.refresh();
-				});
-			},
-			onBeforeSubmit: async () => {
-				if (s !== null && Garnish.hasAttr(s, "data-owner-is-canonical") && (!a || !a.settings.isUnpublishedDraft)) {
-					await d.elementEditor.checkForm(!0, !0);
-					let e = $(r.sourceElement).attr("name");
-					a && e && await a.setFormValue(e, "*"), a && a.settings.draftId && d.elementEditor.settings.draftId && (d.elementEditor.settings.saveParams || (d.elementEditor.settings.saveParams = {}), d.elementEditor.settings.saveParams.action = "elements/save-nested-element-for-derivative", d.elementEditor.settings.saveParams.newOwnerId = a.getDraftElementId(c));
-				}
-			},
-			onSubmit: (t) => {
-				let i = this._getCardElement(e);
-				i !== null && t.data.id != i.data("id") && (i.attr("data-id", t.data.id).data("id", t.data.id).data("owner-id", t.data.ownerId), r.editing.model.change((e) => {
-					e.setAttribute("entryId", t.data.id, n), r.ui.update();
-				}), Craft.refreshElementInstances(t.data.id));
-			}
-		});
-		d.on("beforeClose", () => {
-			i.change((e) => {
-				e.setSelection(e.createPositionAfter(n)), r.editing.view.focus();
-			});
-		}), d.on("close", () => {
-			r.editing.view.focus();
-		});
+		this._openNativeEditEntrySlideout(e, t, n, this.editor.config.get("craftOwner"));
 	}
 	_openNativeEditEntrySlideout(e, t, n, r) {
 		let i = this.editor, a = i.model, o = this._getCardElement(e), s = {
@@ -850,20 +805,20 @@ var he = class extends v {
 		o ? (o.innerHTML = t.cardHtml, Craft.appendHeadHtml(t.headHtml), Craft.appendBodyHtml(t.bodyHtml), Craft.cp.elementThumbLoader.load($(o))) : n.editing.reconvertItem(e);
 	}
 	async _showCreateEntrySlideout(e) {
-		let t = this.editor, n = t.model, r = n.document.selection.getFirstRange(), i = t.config.get("nestedElementAttributes"), a = Object.assign({}, i, { typeId: e }), o = this.getElementEditor(), s = t.config.get("craftOwner");
-		s?.ownerId() ? a.ownerId = await s.prepare() : o && (await o.markDeltaNameAsModified(t.sourceElement.name), a.ownerId = o.getDraftElementId(i.ownerId));
-		let c;
+		let t = this.editor, n = t.model, r = n.document.selection.getFirstRange(), i = t.config.get("nestedElementAttributes"), a = Object.assign({}, i, { typeId: e }), o = t.config.get("craftOwner");
+		o?.ownerId() && (a.ownerId = await o.prepare());
+		let s;
 		try {
-			c = (await Craft.sendActionRequest("POST", "elements/create", { data: a })).data;
+			s = (await Craft.sendActionRequest("POST", "elements/create", { data: a })).data;
 		} catch (e) {
 			throw Craft.cp.displayError(e?.response?.data?.error), e;
 		}
-		let l = Craft.createElementEditor(this.elementType, {
-			elementId: c.element.id,
-			draftId: c.element.draftId,
+		let c = Craft.createElementEditor(this.elementType, {
+			elementId: s.element.id,
+			draftId: s.element.draftId,
 			params: {
 				fresh: 1,
-				siteId: c.element.siteId
+				siteId: s.element.siteId
 			},
 			onSubmit: (e) => {
 				t.commands.execute("insertEntry", {
@@ -872,8 +827,8 @@ var he = class extends v {
 				});
 			}
 		});
-		l.on("beforeClose", () => {
-			l.$triggerElement = null, n.change((e) => {
+		c.on("beforeClose", () => {
+			c.$triggerElement = null, n.change((e) => {
 				e.setSelection(e.createPositionAt(t.model.document.getRoot(), r.end.path[0]));
 			}), t.editing.view.focus();
 		});
@@ -12883,16 +12838,8 @@ var Oe = class extends v {
 		if (o && o.includes("<craft-entry") && (a.method != "drop" || n !== e.id) && (a.method == "paste" || a.method == "drop" && n !== e.id)) {
 			let s = o, c = !1, l = Craft.siteId, u = null, d = null, f = e.getData(), p = [...o.matchAll(/data-entry-id="([0-9]+)[^>]*data-site-id="([0-9]+)/g)];
 			r.stop();
-			let m = $(e.ui.view.element), h = m.parents("form").data("elementEditor"), g = e.config.get("craftOwner");
-			if (g?.ownerId() ? u = await g.prepare() : h && await h.ensureIsDraftOrRevision(), u == null) {
-				let t = m.parents(".input");
-				if (t.length > 0) {
-					let e = $(t[0]).find("div.ckeditor-container");
-					e.length > 0 && (u = $(e[0]).data("element-id"));
-				}
-				u ??= h ? h.settings.elementId : e.config.get("nestedElementAttributes")?.ownerId;
-			}
-			d = e.config.get("layoutElementUid") ?? m.parents(".field").data("layoutElement");
+			let m = $(e.ui.view.element), h = e.config.get("craftOwner");
+			h?.ownerId() && (u = await h.prepare()), u ??= e.config.get("nestedElementAttributes")?.ownerId, d = e.config.get("layoutElementUid") ?? m.parents(".field").data("layoutElement");
 			for (let r = 0; r < p.length; r++) {
 				let i = null;
 				p[r][1] && (i = p[r][1]);
@@ -12926,27 +12873,14 @@ var Oe = class extends v {
 }, Re = async function(e, n) {
 	typeof e == "string" && (e = document.querySelector(`#${e}`)), n.licenseKey = n.licenseKey || "GPL", n.attachTo = e;
 	let r = await t.create(n);
-	Craft.showCkeditorInspector && Craft.userIsAdmin && Pe.default.attach(r), r.editing.view.change((e) => {
+	return Craft.showCkeditorInspector && Craft.userIsAdmin && Pe.default.attach(r), r.editing.view.change((e) => {
 		let t = r.editing.view.document.getRoot();
 		if (n.accessibleFieldName !== void 0 && n.accessibleFieldName.length) {
 			let r = t.getAttribute("aria-label");
 			e.setAttribute("aria-label", n.accessibleFieldName + ", " + r, t);
 		}
 		n.describedBy !== void 0 && n.describedBy.length && e.setAttribute("aria-describedby", n.describedBy, t);
-	});
-	let i = $(r.ui.view.element).parents("form").data("elementEditor");
-	if (!i) r.updateSourceElement();
-	else {
-		let e = r.sourceElement.name, t = $(r.sourceElement).val();
-		i.pause(), r.updateSourceElement();
-		let n = $(r.sourceElement).val();
-		if (t !== n) {
-			let r = i.$container.data("initialSerializedValue");
-			typeof r == "string" && i.$container.data("initialSerializedValue", r.replace($.param({ [e]: t }), $.param({ [e]: n })));
-		}
-		i.resume();
-	}
-	return r.model.document.on("change:data", () => {
+	}), r.updateSourceElement(), r.model.document.on("change:data", () => {
 		r.updateSourceElement();
 	}), n.plugins.includes(y) && Fe(r, y), n.plugins.includes(c) && Ie(r, n), Le(r, n.plugins), r;
 };

@@ -64,18 +64,6 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     return this.editor.config.get('imageFieldHandle');
   }
 
-  /**
-   * Returns Craft.ElementEditor instance that the CKEditor field belongs to.
-   *
-   * @returns {*}
-   */
-  get _elementEditor() {
-    const $editorContainer = $(this.editor.ui.view.element).closest(
-      'form,.lp-editor-container',
-    );
-    return $editorContainer.data('elementEditor');
-  }
-
   _createToolbarImageButton(locale) {
     const editor = this.editor;
     const t = editor.t;
@@ -160,32 +148,17 @@ export default class CraftImageInsertUI extends ImageInsertUI {
 
   async _createImageEntry(assetId) {
     const editor = this.editor;
-    const elementEditor = this._elementEditor;
-    const baseInputName = $(editor.sourceElement).attr('name');
-    const owner = editor.config.get('craftOwner');
-
-    // mark as dirty (the owner bridge takes care of that when there's an owner)
-    if (!owner?.ownerId() && elementEditor && baseInputName) {
-      await elementEditor.setFormValue(baseInputName, '*');
-    }
-
     const nestedElementAttributes = editor.config.get(
       'nestedElementAttributes',
     );
     const params = {
       ...nestedElementAttributes,
     };
+    const owner = editor.config.get('craftOwner');
 
-    // Craft 6’s element slideouts still attach a legacy element editor to their form, so check for an owner first
     if (owner?.ownerId()) {
       // make sure the owner is a draft, and create the entry for it
       params.ownerId = await owner.prepare();
-    } else if (elementEditor) {
-      await elementEditor.markDeltaNameAsModified(editor.sourceElement.name);
-      // replace the owner ID with the new one, maybe?
-      params.ownerId = elementEditor.getDraftElementId(
-        nestedElementAttributes.ownerId,
-      );
     }
 
     let response;

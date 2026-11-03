@@ -232,20 +232,6 @@ export default class CraftEntriesUI extends Plugin {
   }
 
   /**
-   * Returns Craft.ElementEditor instance that the CKEditor field belongs to.
-   *
-   * @returns {*}
-   */
-  getElementEditor() {
-    const $editorContainer = $(this.editor.ui.view.element).closest(
-      'form,.lp-editor-container',
-    );
-    const elementEditor = $editorContainer.data('elementEditor');
-
-    return elementEditor;
-  }
-
-  /**
    * Returns HTML of the card by the entry ID.
    *
    * @param entryId
@@ -264,100 +250,12 @@ export default class CraftEntriesUI extends Plugin {
    * @private
    */
   _showEditEntrySlideout(entryId, siteId, modelElement) {
-    const editor = this.editor;
-    const model = editor.model;
-    const elementEditor = this.getElementEditor();
-    const owner = editor.config.get('craftOwner');
-
-    // Open the entry in a native slideout, which saves changes into the owner’s draft. Craft 6’s element slideouts
-    // still attach a legacy element editor to their form, so this doesn’t depend on there not being one.
-    if (owner?.ownerId()) {
-      this._openNativeEditEntrySlideout(entryId, siteId, modelElement, owner);
-      return;
-    }
-
-    let $element = this._getCardElement(entryId);
-    const ownerId = $element.data('owner-id');
-
-    let params = {
-      siteId: siteId,
-    };
-
-    let parents = $element.parents('.field');
-    if (parents.length && $(parents[0]).hasClass('has-errors')) {
-      params['prevalidate'] = true;
-    }
-
-    const slideout = Craft.createElementEditor(this.elementType, null, {
-      elementId: entryId,
-      params: params,
-      onLoad: () => {
-        slideout.elementEditor.on('update', () => {
-          Craft.Preview.refresh();
-        });
-      },
-      onBeforeSubmit: async () => {
-        // If the nested element is primarily owned by the canonical entry being edited,
-        // then ensure we're working with a draft and save the nested entry changes to the draft
-        if (
-          $element !== null &&
-          Garnish.hasAttr($element, 'data-owner-is-canonical') &&
-          (!elementEditor || !elementEditor.settings.isUnpublishedDraft)
-        ) {
-          await slideout.elementEditor.checkForm(true, true);
-          let baseInputName = $(editor.sourceElement).attr('name');
-          // mark as dirty
-          if (elementEditor && baseInputName) {
-            await elementEditor.setFormValue(baseInputName, '*');
-          }
-          if (
-            elementEditor &&
-            elementEditor.settings.draftId &&
-            slideout.elementEditor.settings.draftId
-          ) {
-            if (!slideout.elementEditor.settings.saveParams) {
-              slideout.elementEditor.settings.saveParams = {};
-            }
-            slideout.elementEditor.settings.saveParams.action =
-              'elements/save-nested-element-for-derivative';
-            slideout.elementEditor.settings.saveParams.newOwnerId =
-              elementEditor.getDraftElementId(ownerId);
-          }
-        }
-      },
-      onSubmit: (ev) => {
-        let $element = this._getCardElement(entryId);
-        if ($element !== null && ev.data.id != $element.data('id')) {
-          // swap the element with the new one
-          $element
-            .attr('data-id', ev.data.id)
-            .data('id', ev.data.id)
-            .data('owner-id', ev.data.ownerId);
-
-          // and tell CKE about it
-          editor.editing.model.change((writer) => {
-            writer.setAttribute('entryId', ev.data.id, modelElement);
-            editor.ui.update();
-          });
-
-          // and refresh the card
-          Craft.refreshElementInstances(ev.data.id);
-        }
-      },
-    });
-
-    // set position on the card we just edited and set focus
-    slideout.on('beforeClose', () => {
-      model.change((writer) => {
-        writer.setSelection(writer.createPositionAfter(modelElement));
-        editor.editing.view.focus();
-      });
-    });
-
-    // return focus to the editor
-    slideout.on('close', () => {
-      editor.editing.view.focus();
-    });
+    this._openNativeEditEntrySlideout(
+      entryId,
+      siteId,
+      modelElement,
+      this.editor.config.get('craftOwner'),
+    );
   }
 
   /**
@@ -519,19 +417,11 @@ export default class CraftEntriesUI extends Plugin {
       typeId: entryTypeId,
     });
 
-    const elementEditor = this.getElementEditor();
     const owner = editor.config.get('craftOwner');
 
-    // Craft 6’s element slideouts still attach a legacy element editor to their form, so check for an owner first
     if (owner?.ownerId()) {
       // make sure the owner is a draft, and create the entry for it
       params.ownerId = await owner.prepare();
-    } else if (elementEditor) {
-      await elementEditor.markDeltaNameAsModified(editor.sourceElement.name);
-      // replace the owner ID with the new one, maybe?
-      params.ownerId = elementEditor.getDraftElementId(
-        nestedElementAttributes.ownerId,
-      );
     }
 
     let data;
