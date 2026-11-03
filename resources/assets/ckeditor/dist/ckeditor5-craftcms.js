@@ -610,7 +610,7 @@ var he = class extends v {
 			} });
 			return n;
 		} catch (e) {
-			return console.error(e?.response?.data), { cardHtml: "<div class=\"element card\"><div class=\"card-content\"><div class=\"card-heading\"><div class=\"label error\"><span>" + (e?.response?.data?.message || "An unknown error occurred.") + "</span></div></div></div></div>" };
+			return console.error(e?.response?.data), { cardHtml: "<craft-card class=\"element card\"><div class=\"card-main\"><div class=\"card-content\"><div class=\"card-heading\"><div class=\"label error\"><span>" + (e?.response?.data?.message || "An unknown error occurred.") + "</span></div></div></div></div></craft-card>" };
 		}
 	}
 }, xe = class extends a {
@@ -819,16 +819,17 @@ var he = class extends v {
 		let i = this.editor, a = i.model, o = this._getCardElement(e), s = {
 			elementId: e,
 			siteId: t
-		}, c = o.parents(".field");
-		c.length && $(c[0]).hasClass("has-errors") && (s.prevalidate = 1), Craft.openSlideout(Craft.getActionUrl("elements/edit", s), {
+		}, c = o.attr("data-owner-id"), l = o.attr("data-field-id");
+		c && (s.ownerId = c), l && (s.fieldId = l);
+		let u = o.parents(".field");
+		u.length && $(u[0]).hasClass("has-errors") && (s.prevalidate = 1), Craft.openSlideout(Craft.getActionUrl("elements/edit", s), {
 			opener: o[0] ?? null,
-			prepareNestedOwner: () => r.prepare(),
+			prepareNestedOwner: async () => o.is("[data-owner-is-canonical]") && !o.is("[data-is-unpublished-draft]") ? r.prepare() : null,
 			onSaved: (t) => {
-				if (t?.draft) return;
-				let a = parseInt(t?.data?.element?.id ?? t?.data?.id ?? e, 10);
+				let a = t?.draft ? null : parseInt(t?.data?.element?.id ?? t?.data?.id ?? e, 10);
 				a && a != e && i.editing.model.change((e) => {
 					e.setAttribute("entryId", a, n);
-				}), Craft.refreshElementInstances(a || e), r.refresh();
+				}), this._refreshCard(n), t?.draft || r.refresh();
 			},
 			onClosed: () => {
 				a.change((e) => {
@@ -836,6 +837,26 @@ var he = class extends v {
 				}), i.editing.view.focus();
 			}
 		});
+	}
+	useCanonicalEntryIds() {
+		let e = this.editor, t = [...e.model.createRangeIn(e.model.document.getRoot()).getItems()].filter((e) => e.is("element", "craftEntryModel")).map((e) => ({
+			modelElement: e,
+			canonicalId: this._getCardElement(e.getAttribute("entryId")).attr("data-canonical-id")
+		})).filter(({ canonicalId: e }) => e);
+		t.length && (e.model.enqueueChange({ isUndoable: !1 }, (e) => {
+			t.forEach(({ modelElement: t, canonicalId: n }) => {
+				e.setAttribute("entryId", n, t);
+			});
+		}), t.forEach(({ modelElement: e }) => this._refreshCard(e)));
+	}
+	async _refreshCard(e) {
+		let t = this.editor, n = (e) => t.model.enqueueChange({ isUndoable: !1 }, e);
+		n((t) => t.removeAttribute("cardHtml", e));
+		let r = await t.plugins.get("CraftEntriesEditing")._getCardHtml(e);
+		if (e.root.rootName === "$graveyard") return;
+		n((t) => t.setAttribute("cardHtml", r.cardHtml, e));
+		let i = t.editing.mapper.toViewElement(e), a = i ? [...i.getChildren()].find((e) => e.is("rawElement")) : null, o = a ? t.editing.view.domConverter.mapViewToDom(a) : null;
+		o ? (o.innerHTML = r.cardHtml, Craft.appendHeadHtml(r.headHtml), Craft.appendBodyHtml(r.bodyHtml), Craft.cp.elementThumbLoader.load($(o))) : t.editing.reconvertItem(e);
 	}
 	async _showCreateEntrySlideout(e) {
 		let t = this.editor, n = t.model, r = n.document.selection.getFirstRange(), i = t.config.get("nestedElementAttributes"), a = Object.assign({}, i, { typeId: e }), o = this.getElementEditor(), s = t.config.get("craftOwner");

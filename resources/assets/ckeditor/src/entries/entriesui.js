@@ -431,6 +431,36 @@ export default class CraftEntriesUI extends Plugin {
   }
 
   /**
+   * Points the nested entries that were copied for the owner’s draft back at their canonical entries,
+   * after the draft was applied and the copies were merged into them.
+   */
+  useCanonicalEntryIds() {
+    const editor = this.editor;
+    const changes = [
+      ...editor.model.createRangeIn(editor.model.document.getRoot()).getItems(),
+    ]
+      .filter((item) => item.is('element', 'craftEntryModel'))
+      .map((modelElement) => ({
+        modelElement,
+        canonicalId: this._getCardElement(
+          modelElement.getAttribute('entryId'),
+        ).attr('data-canonical-id'),
+      }))
+      .filter(({canonicalId}) => canonicalId);
+
+    if (!changes.length) {
+      return;
+    }
+
+    editor.model.enqueueChange({isUndoable: false}, (writer) => {
+      changes.forEach(({modelElement, canonicalId}) => {
+        writer.setAttribute('entryId', canonicalId, modelElement);
+      });
+    });
+    changes.forEach(({modelElement}) => this._refreshCard(modelElement));
+  }
+
+  /**
    * Replaces an entry card’s HTML with a freshly rendered one, in place, so the editor’s height doesn’t jump.
    *
    * @private

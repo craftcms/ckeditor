@@ -6,7 +6,7 @@
    * This component loads the editor’s assets, imports that module, and emits the editor’s data as the
    * control’s value whenever it changes.
    */
-  import {h, onBeforeUnmount, onMounted, ref} from 'vue';
+  import {h, onBeforeUnmount, onMounted, ref, watch} from 'vue';
   import {
     applyGlobals,
     importModule,
@@ -60,6 +60,9 @@
   );
   let editor: any = null;
   let destroyed = false;
+  // The value last emitted, so changes that don’t affect it (e.g. a refreshed entry card) aren’t emitted
+  let emittedValue: string | null = null;
+  let syncing = false;
 
   onMounted(async () => {
     const p = props.control.props;
@@ -90,13 +93,37 @@
 
       editor = instance;
       editor.model.document.on('change:data', () => {
-        emit('update:value', editor.getData(), 'typing');
+        const data = editor.getData();
+        const changed = data !== emittedValue;
+        emittedValue = data;
+        if (changed && !syncing) {
+          emit('update:value', data, 'typing');
+        }
       });
     } catch (e: any) {
       console.error(e);
       error.value = e?.message ?? String(e);
     }
   });
+
+  // Once the owner’s draft is applied, the nested entries copied for it are merged back into their canonical
+  // entries, so point the editor at those. The control keeps its value, which doesn’t need saving again.
+  watch(
+    () => props.control.props.owner?.ownerIsDerivative,
+    (isDerivative, wasDerivative) => {
+      if (!editor || !wasDerivative || isDerivative) {
+        return;
+      }
+      syncing = true;
+      try {
+        if (editor.plugins.has('CraftEntriesUI')) {
+          editor.plugins.get('CraftEntriesUI').useCanonicalEntryIds();
+        }
+      } finally {
+        syncing = false;
+      }
+    },
+  );
 
   onBeforeUnmount(() => {
     destroyed = true;

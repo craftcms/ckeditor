@@ -1741,6 +1741,11 @@ JS;
 
         // Fill the card component’s slots the same way Matrix’s cards do (see `SelectableCardList.vue`)
         $attributes = $card['cardAttributes'];
+        // Let the editor point the entry back at its canonical entry once the owner’s draft is applied
+        $base = $entry->isProvisionalDraft ? $entry->getCanonical() : $entry;
+        if ($base->getIsDerivative()) {
+            $attributes['data']['canonical-id'] = $base->getCanonicalId();
+        }
         $thumbHtml = $isRevision ? '' : $card['cardThumbHtml'];
         if ($thumbHtml !== '') {
             $attributes['thumb-alignment'] = $card['thumbAlignment'];
