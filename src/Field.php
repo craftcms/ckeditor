@@ -7,6 +7,8 @@
  * @license GPL-3.0-or-later
  */
 
+declare(strict_types=1);
+
 namespace CraftCms\Ckeditor;
 
 use Closure;
@@ -757,7 +759,7 @@ class Field extends HtmlField implements CrossSiteCopyableFieldInterface, Elemen
         if (isset($config['configMode'])) {
             switch ($config['configMode']) {
                 case 'js':
-                    $config['js'] = trim($config['js']);
+                    $config['js'] = trim((string) ($config['js'] ?? ''));
                     if ($config['js'] === '' || preg_match('/^return\s*\{\s*\}$/', $config['js'])) {
                         unset($config['js']);
                     }
@@ -770,7 +772,7 @@ class Field extends HtmlField implements CrossSiteCopyableFieldInterface, Elemen
                     unset($config['json'], $config['js']);
                     break;
                 default:
-                    $config['json'] = trim($config['json']);
+                    $config['json'] = trim((string) ($config['json'] ?? ''));
                     if ($config['json'] === '' || preg_match('/^\{\s*\}$/', $config['json'])) {
                         unset($config['json']);
                     }
@@ -790,7 +792,7 @@ class Field extends HtmlField implements CrossSiteCopyableFieldInterface, Elemen
                     unset($config['css']);
                     break;
                 default:
-                    $config['css'] = trim($config['css']);
+                    $config['css'] = trim((string) ($config['css'] ?? ''));
                     if ($config['css'] === '') {
                         unset($config['css']);
                     }
@@ -867,7 +869,7 @@ class Field extends HtmlField implements CrossSiteCopyableFieldInterface, Elemen
         if (! isset($this->_json)) {
             if (isset($this->options)) {
                 $json = Json::encode($this->options, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-                $this->_json = str_replace('    ', '  ', $json);
+                $this->_json = str_replace('    ', '  ', (string) $json);
             }
         }
 
@@ -2188,7 +2190,7 @@ JS;
                 $this->options['placeholder'] = t($this->options['placeholder'], category: 'site');
             }
 
-            return Json::encode($this->options);
+            return (string) Json::encode($this->options);
         }
 
         if (isset($this->jsFile)) {

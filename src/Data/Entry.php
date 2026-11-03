@@ -7,6 +7,8 @@
  * @license MIT
  */
 
+declare(strict_types=1);
+
 namespace CraftCms\Ckeditor\Data;
 
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
@@ -36,7 +38,7 @@ class Entry extends BaseChunk
 
     public function getHtml(): string
     {
-        return $this->getEntry()?->render() ?? '';
+        return (string) ($this->getEntry()?->render() ?? '');
     }
 
     public function getEntry(): ?EntryElement

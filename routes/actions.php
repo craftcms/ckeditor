@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Ckeditor\Http\Controllers\CkeditorController;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use Illuminate\Support\Facades\Route;

@@ -7,6 +7,8 @@
  * @license https://craftcms.github.io/license/
  */
 
+declare(strict_types=1);
+
 namespace CraftCms\Ckeditor\Data;
 
 use CraftCms\Cms\Entry\Data\EntryType as CraftEntryType;
