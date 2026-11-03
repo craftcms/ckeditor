@@ -370,10 +370,20 @@ export default class CraftEntriesUI extends Plugin {
     const editor = this.editor;
     const model = editor.model;
     const $element = this._getCardElement(entryId);
+    // Identify the entry by its owner and field too, like Matrix does (see `NestedElementManager::elementEditUrl()`),
+    // since an entry saved for the owner’s draft has a different owner than its canonical entry
     const params = {
       elementId: entryId,
       siteId: siteId,
     };
+    const ownerId = $element.attr('data-owner-id');
+    const fieldId = $element.attr('data-field-id');
+    if (ownerId) {
+      params.ownerId = ownerId;
+    }
+    if (fieldId) {
+      params.fieldId = fieldId;
+    }
 
     const parents = $element.parents('.field');
     if (parents.length && $(parents[0]).hasClass('has-errors')) {
@@ -382,7 +392,13 @@ export default class CraftEntriesUI extends Plugin {
 
     Craft.openSlideout(Craft.getActionUrl('elements/edit', params), {
       opener: $element[0] ?? null,
-      prepareNestedOwner: () => owner.prepare(),
+      // Only move the entry into the owner’s draft if it isn’t already there, like Matrix does
+      // (see `useNestedElementOperations.ts` `prepareEdit()`)
+      prepareNestedOwner: async () =>
+        $element.is('[data-owner-is-canonical]') &&
+        !$element.is('[data-is-unpublished-draft]')
+          ? owner.prepare()
+          : null,
       onSaved: (result) => {
         if (result?.draft) {
           return;
