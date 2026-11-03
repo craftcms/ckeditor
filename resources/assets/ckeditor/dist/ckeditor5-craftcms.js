@@ -248,7 +248,7 @@ var j = Object.create, M = Object.defineProperty, te = Object.getOwnPropertyDesc
 			return;
 		}
 		let t = this.editor.config.get("defaultTransform"), n = this._isTransformUrl(e.url), r;
-		r = !e.url || !n && t ? await this._getTransformUrl(e.assetId, t) : this._buildAssetUrl(e.assetId, e.url, n ? transform : t), this.editor.execute("insertImage", {
+		r = !e.url || !n && t ? await this._getTransformUrl(e.assetId, t) : this._buildAssetUrl(e.assetId, e.url), this.editor.execute("insertImage", {
 			source: r,
 			breakBlock: !0
 		});

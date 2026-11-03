@@ -355,11 +355,8 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     if (!asset.url || (!hasTransform && defaultTransform)) {
       url = await this._getTransformUrl(asset.assetId, defaultTransform);
     } else {
-      url = this._buildAssetUrl(
-        asset.assetId,
-        asset.url,
-        hasTransform ? transform : defaultTransform,
-      );
+      // either the URL is already transformed (with an unknown handle) or there's no default transform
+      url = this._buildAssetUrl(asset.assetId, asset.url);
     }
 
     this.editor.execute('insertImage', {source: url, breakBlock: true});
