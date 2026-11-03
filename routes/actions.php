@@ -6,8 +6,8 @@ use CraftCms\Ckeditor\Http\Controllers\CkeditorController;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use Illuminate\Support\Facades\Route;
 
-// Registered under both `actions/ckeditor/` and `admin/actions/ckeditor/`, so the Craft 5 action URLs keep working.
-// The site action prefix is reachable by guests, so every route requires a logged-in control panel user.
+// Craft registers these under both the CP and site action prefixes. The site prefix is reachable by guests,
+// so every route requires a logged-in control panel user on a control panel request.
 
 Route::middleware(['auth', 'can:accessCp', RequireCpRequest::class])->group(function () {
     Route::post('ckeditor/image-url', [CkeditorController::class, 'imageUrl']);

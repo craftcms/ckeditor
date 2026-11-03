@@ -16,7 +16,6 @@ use CraftCms\Ckeditor\Ui\Controls\CkeditorControl;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -162,7 +161,8 @@ class CkeditorController
             ->revisions(null)
             ->one();
 
-        abort_unless($entry instanceof NestedElementInterface, 400, "Invalid entry ID: $entryId");
+        abort_unless($entry !== null, 400, "Invalid entry ID: $entryId");
+        abort_unless($entry->getPrimaryOwnerId() !== null, 400, "Entry $entryId isn’t a nested entry.");
 
         $user = $this->currentUser();
         abort_unless($user->can('view', $entry), 403, 'User not authorized to view this element.');
@@ -173,7 +173,8 @@ class CkeditorController
             $owner = $entry->getOwner();
         }
 
-        abort_unless($owner && $user->can('save', $owner), 403, 'User not authorized to edit this element.');
+        abort_unless($owner !== null, 400, 'Invalid owner.');
+        abort_unless($user->can('save', $owner), 403, 'User not authorized to edit this element.');
 
         // check if the target field accepts the entry type we're trying to duplicate
         if ($targetEntryTypeIds !== null && ! in_array($entry->typeId, $targetEntryTypeIds)) {

@@ -27,7 +27,7 @@ class Markup extends BaseChunk
 
     public function __construct(
         public string $rawHtml,
-        private readonly int $siteId,
+        private readonly ?int $siteId,
     ) {}
 
     public function getType(): string

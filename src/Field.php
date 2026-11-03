@@ -229,8 +229,9 @@ class Field extends HtmlField implements CrossSiteCopyableFieldInterface, Elemen
 
         self::$registeredListeners = true;
 
-        // NestedElementRevisionsCreated extends NestedElementsDuplicated, so this catches both
-        Event::listen(NestedElementsDuplicated::class, function (NestedElementsDuplicated $event) {
+        // NestedElementRevisionsCreated extends NestedElementsDuplicated, but Laravel only matches listeners by
+        // class and interface, so listen for both
+        Event::listen([NestedElementsDuplicated::class, NestedElementRevisionsCreated::class], function (NestedElementsDuplicated $event) {
             $field = $event->manager->field;
             if (! $field instanceof self) {
                 return;
