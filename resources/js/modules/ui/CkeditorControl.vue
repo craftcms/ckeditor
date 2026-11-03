@@ -125,6 +125,23 @@
     },
   );
 
+  // Apply values set from outside, e.g. when the owner’s draft is discarded and its values are reset
+  watch(
+    () => props.value,
+    (value) => {
+      if (!editor || (value ?? '') === emittedValue) {
+        return;
+      }
+      emittedValue = value ?? '';
+      syncing = true;
+      try {
+        editor.setData(emittedValue);
+      } finally {
+        syncing = false;
+      }
+    },
+  );
+
   onBeforeUnmount(() => {
     destroyed = true;
     if (editor) {

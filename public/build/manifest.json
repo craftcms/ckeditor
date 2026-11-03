@@ -4,7 +4,7 @@
     "name": "assets"
   },
   "resources/js/cp.ts": {
-    "file": "assets/cp-ZJHio46D.js",
+    "file": "assets/cp-CJEICdnK.js",
     "name": "cp",
     "src": "resources/js/cp.ts",
     "isEntry": true,
@@ -14,7 +14,7 @@
     ]
   },
   "resources/js/modules/ui/CkeditorControl.vue": {
-    "file": "assets/CkeditorControl-nGkgKbae.js",
+    "file": "assets/CkeditorControl-CtDM226J.js",
     "name": "CkeditorControl",
     "src": "resources/js/modules/ui/CkeditorControl.vue",
     "isDynamicEntry": true,
@@ -22,7 +22,7 @@
       "_assets-CsSDmrrP.js"
     ],
     "css": [
-      "assets/CkeditorControl-Bch1SwIE.css"
+      "assets/CkeditorControl-DI0NNiel.css"
     ]
   },
   "resources/js/modules/ui/EditorConfigControl.vue": {
