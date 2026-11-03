@@ -5,8 +5,6 @@
  # Rendered for the `ckeditor:editor-config` UI controls, which initialize the JavaScript.
  # Element IDs are namespaced with the control’s container ID, so several instances can coexist.
  #}
-{% import '_includes/forms.twig' as forms %}
-
 {% set readOnly = readOnly ?? false %}
 
 {% if part == 'toolbar' %}
@@ -99,7 +97,7 @@
           <p class="light mb-xs">
             {{ 'Choose a JS/JSON file within `config/craft/ckeditor/`.'|t('ckeditor')|md(inlineOnly=true) }}
           </p>
-          {{ forms.select({
+          {{ ui('select', {
             id: 'config-options-file'|namespaceInputId,
             name: 'jsFile',
             options: jsFileOptions,
@@ -155,7 +153,7 @@
           <p class="light mb-xs">
             {{ 'Choose a CSS file within `config/craft/ckeditor/`.'|t('ckeditor')|md(inlineOnly=true) }}
           </p>
-          {{ forms.select({
+          {{ ui('select', {
             id: 'css-options-file'|namespaceInputId,
             name: 'cssFile',
             options: cssFileOptions,

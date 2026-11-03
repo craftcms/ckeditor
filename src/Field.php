@@ -1397,8 +1397,8 @@ class Field extends HtmlField implements CrossSiteCopyableFieldInterface, Elemen
         $html = InputNamespace::with($prefix, fn () => template('ckeditor/_editor-config.twig', [
             'field' => $this,
             'toolbarItems' => CkeditorConfig::normalizeToolbarItems(CkeditorConfig::getToolbarItems()),
-            'jsFileOptions' => $jsFileOptions,
-            'cssFileOptions' => $cssFileOptions,
+            'jsFileOptions' => $this->selectOptions($jsFileOptions),
+            'cssFileOptions' => $this->selectOptions($cssFileOptions),
             'configMode' => $configMode,
             'cssMode' => $cssMode,
             'readOnly' => $context->mode !== ControlMode::Editable,
@@ -2632,6 +2632,17 @@ JS;
 
         // include custom sources
         return array_merge($sources, $this->_getCustomSources(Entry::class));
+    }
+
+    /**
+     * Converts a `value => label` options map into the option list `ui('select')` expects.
+     */
+    private function selectOptions(array $options): array
+    {
+        return Collection::make($options)
+            ->map(fn (string $label, string|int $value) => ['label' => $label, 'value' => (string) $value])
+            ->values()
+            ->all();
     }
 
     /**
