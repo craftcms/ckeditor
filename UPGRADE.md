@@ -35,7 +35,6 @@ The plugin’s namespace changed from `craft\ckeditor` to `CraftCms\Ckeditor`, a
 | `craft\ckeditor\helpers\CkeditorConfig` | `CraftCms\Ckeditor\Support\CkeditorConfig` |
 | `craft\ckeditor\helpers\CkeditorConfigSchema` | `CraftCms\Ckeditor\Support\CkeditorConfigSchema` |
 | `craft\ckeditor\controllers\CkeditorController` | `CraftCms\Ckeditor\Http\Controllers\CkeditorController` |
-| `craft\ckeditor\controllers\FieldSettingsController` | `CraftCms\Ckeditor\Http\Controllers\FieldSettingsController` |
 
 `CraftCms\Ckeditor\Data\BaseChunk` no longer extends `yii\base\BaseObject`. Getting an unknown property throws a `LogicException`.
 
@@ -54,7 +53,7 @@ CKEditor no longer tracks references itself. Craft 6 tracks the elements referen
 - `CraftCms\Ckeditor\Plugin` extends `CraftCms\Cms\Plugin\Plugin`. Initialization moved from `init()` to `boot()`.
 - `CraftCms\Ckeditor\Settings` extends `CraftCms\Cms\Plugin\PluginSettings`.
 - The plugin settings page is built with Craft’s UI builder (`settingsUi()`), and the `ckeditor/_settings.twig` template was removed.
-- Packages can still be registered with `Plugin::registerCkeditorPackage()`, from a plugin’s or module’s `boot()` method.
+- Packages are registered with `CkeditorAssets::registerPackage()`, from a plugin’s or module’s `boot()` method (see [CKEditor packages and assets](#ckeditor-packages-and-assets)).
 
 ### Routes and action URLs
 
