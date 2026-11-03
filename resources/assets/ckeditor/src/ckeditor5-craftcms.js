@@ -173,22 +173,26 @@ const handleClipboard = function (editor, plugins) {
         }
 
         // get the target owner id, in case we're pasting to a different element all together
-
-        // first try to get that ID by wrapper div
-        // this way if the CKE field we're pasting into is nested in a matrixblock (or similar), we'll get the correct owner ID
-        let inputContainer = $editorElement.parents('.input');
-        if (inputContainer.length > 0) {
-          let divWrapper = $(inputContainer[0]).find('div.ckeditor-container');
-          if (divWrapper.length > 0) {
-            ownerId = $(divWrapper[0]).data('element-id');
-          }
-        }
-
-        // if we still didn't get the ownerId this way, get it form the element editor
+        // (the owner bridge has already given us the owner’s draft ID, so only look it up when there isn’t one)
         if (ownerId == null) {
-          ownerId = elementEditor
-            ? elementEditor.settings.elementId
-            : editor.config.get('nestedElementAttributes')?.ownerId;
+          // first try to get that ID by wrapper div
+          // this way if the CKE field we're pasting into is nested in a matrixblock (or similar), we'll get the correct owner ID
+          let inputContainer = $editorElement.parents('.input');
+          if (inputContainer.length > 0) {
+            let divWrapper = $(inputContainer[0]).find(
+              'div.ckeditor-container',
+            );
+            if (divWrapper.length > 0) {
+              ownerId = $(divWrapper[0]).data('element-id');
+            }
+          }
+
+          // if we still didn't get the ownerId this way, get it form the element editor
+          if (ownerId == null) {
+            ownerId = elementEditor
+              ? elementEditor.settings.elementId
+              : editor.config.get('nestedElementAttributes')?.ownerId;
+          }
         }
 
         // get the target field id, in case we're pasting to a different field all together (not different instance, different field)
@@ -251,9 +255,22 @@ const handleClipboard = function (editor, plugins) {
               )
                 .then((response) => {
                   if (response.data.newEntryId) {
+                    // pass the duplicate’s card HTML along, so it doesn’t have to be requested separately
+                    // (`Craft.escapeHtml()` leaves quotes alone, so escape them too, for the attribute value)
+                    const cardHtmlAttr = response.data.cardHtml
+                      ? ' data-card-html="' +
+                        Craft.escapeHtml(response.data.cardHtml).replace(
+                          /"/g,
+                          '&quot;',
+                        ) +
+                        '"'
+                      : '';
                     duplicatedContent = duplicatedContent.replace(
                       'data-entry-id="' + entryId + '"',
-                      'data-entry-id="' + response.data.newEntryId + '"',
+                      'data-entry-id="' +
+                        response.data.newEntryId +
+                        '"' +
+                        cardHtmlAttr,
                     );
                   }
                   if (response.data.newSiteId) {

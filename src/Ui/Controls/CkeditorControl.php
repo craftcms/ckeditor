@@ -44,6 +44,9 @@ class CkeditorControl extends Control
     /** @var array<string,mixed>|null */
     private ?array $owner = null;
 
+    /** @var array<int,string> */
+    private array $cards = [];
+
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, UiHtmlRenderer $renderer): string
     {
         return Html::textarea($attributes['name'], (string) ($value ?? ''), [
@@ -143,6 +146,34 @@ class CkeditorControl extends Control
         return $this;
     }
 
+    /**
+     * Sets the card HTML for the nested entries in the value, indexed by entry ID.
+     *
+     * @param  array<int,string>  $cards
+     */
+    public function cards(array $cards): static
+    {
+        $this->cards = $cards;
+
+        return $this;
+    }
+
+    /**
+     * Returns card HTML indexed by entry ID as a list of entry ID and card HTML pairs.
+     *
+     * @param  array<int,string>  $cards
+     * @return list<array{entryId:int,cardHtml:string}>
+     */
+    public static function cardList(array $cards): array
+    {
+        $list = [];
+        foreach ($cards as $entryId => $cardHtml) {
+            $list[] = ['entryId' => $entryId, 'cardHtml' => $cardHtml];
+        }
+
+        return $list;
+    }
+
     #[Override]
     public function emptyValue(): mixed
     {
@@ -160,6 +191,8 @@ class CkeditorControl extends Control
             'assets' => $this->assets,
             'globals' => $this->globals,
             'owner' => $this->owner,
+            // A list, since entry IDs as keys could serialize as either a JSON object or array
+            'cards' => self::cardList($this->cards),
         ];
     }
 }

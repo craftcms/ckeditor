@@ -444,11 +444,15 @@ export default class CraftEntriesUI extends Plugin {
   /**
    * Re-renders every entry card, so their attributes (e.g. their owner info) reflect the owner’s current state.
    */
-  refreshCards() {
+  refreshCards(cardHtml = null) {
     const editor = this.editor;
     [...editor.model.createRangeIn(editor.model.document.getRoot()).getItems()]
       .filter((item) => item.is('element', 'craftEntryModel'))
-      .forEach((modelElement) => this._refreshCard(modelElement));
+      .forEach((modelElement) => {
+        // use the already rendered card HTML when there is one, rather than requesting it
+        const html = cardHtml?.(modelElement.getAttribute('entryId')) ?? null;
+        this._refreshCard(modelElement, html ? {cardHtml: html} : null);
+      });
   }
 
   /**
@@ -456,16 +460,18 @@ export default class CraftEntriesUI extends Plugin {
    *
    * @private
    */
-  async _refreshCard(modelElement) {
+  async _refreshCard(modelElement, data = null) {
     const editor = this.editor;
     const enqueue = (callback) =>
       editor.model.enqueueChange({isUndoable: false}, callback);
 
-    // without the cached card HTML, `_getCardHtml()` fetches it from the server
-    enqueue((writer) => writer.removeAttribute('cardHtml', modelElement));
-    const data = await editor.plugins
-      .get('CraftEntriesEditing')
-      ._getCardHtml(modelElement);
+    if (!data) {
+      // without the cached card HTML, `_getCardHtml()` fetches it from the server
+      enqueue((writer) => writer.removeAttribute('cardHtml', modelElement));
+      data = await editor.plugins
+        .get('CraftEntriesEditing')
+        ._getCardHtml(modelElement);
+    }
 
     if (modelElement.root.rootName === '$graveyard') {
       return;

@@ -17,6 +17,8 @@
   } from '../assets';
   import {createOwnerBridge, type OwnerContext} from '../owner-bridge';
 
+  type CardHtml = {entryId: number; cardHtml: string};
+
   type CkeditorProps = {
     containerId: string;
     module: string;
@@ -25,6 +27,7 @@
     assets?: ControlAssets;
     globals?: EditorGlobals;
     owner?: OwnerContext | null;
+    cards?: CardHtml[];
   };
 
   const props = withDefaults(
@@ -63,6 +66,23 @@
   // The value last emitted, so changes that don’t affect it (e.g. a refreshed entry card) aren’t emitted
   let emittedValue: string | null = null;
   let syncing = false;
+  // The nested entries’ card HTML, which the server sends alongside the value rather than in it
+  const cards = new Map<string, string>();
+  const rememberCards = (list?: CardHtml[] | null) => {
+    for (const {entryId, cardHtml} of list ?? []) {
+      cards.set(String(entryId), cardHtml);
+    }
+  };
+  // Whether the cards were re-sent since the last owner change, so their HTML reflects the current owner
+  let cardsUpdated = false;
+  rememberCards(props.control.props.cards);
+  watch(
+    () => props.control.props.cards,
+    (html) => {
+      rememberCards(html);
+      cardsUpdated = true;
+    },
+  );
 
   onMounted(async () => {
     const p = props.control.props;
@@ -84,6 +104,8 @@
         wordCountElement: wordCount.value,
         readOnly: props.control.mode !== 'editable',
         owner,
+        cardHtml: (entryId: string | number) =>
+          cards.get(String(entryId)) ?? null,
       });
 
       if (destroyed) {
@@ -92,6 +114,8 @@
       }
 
       editor = instance;
+      // Start from the editor’s own output, so only real changes are emitted
+      emittedValue = editor.getData();
       editor.model.document.on('change:data', () => {
         const data = editor.getData();
         const changed = data !== emittedValue;
@@ -124,6 +148,7 @@
     if (!editor) {
       return;
     }
+    rememberCards(data.cards);
     syncing = true;
     try {
       editor.setData(data.value ?? '');
@@ -152,6 +177,10 @@
         return;
       }
       const entriesUi = editor.plugins.get('CraftEntriesUI');
+      const lookup = cardsUpdated
+        ? (entryId: string | number) => cards.get(String(entryId)) ?? null
+        : null;
+      cardsUpdated = false;
       if (
         wasDerivative &&
         !isDerivative &&
@@ -166,7 +195,7 @@
       }
       syncing = true;
       try {
-        entriesUi.refreshCards();
+        entriesUi.refreshCards(lookup);
       } finally {
         syncing = false;
       }

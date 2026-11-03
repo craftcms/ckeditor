@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace CraftCms\Ckeditor\Http\Controllers;
 
 use CraftCms\Ckeditor\Field;
+use CraftCms\Ckeditor\Ui\Controls\CkeditorControl;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -94,8 +95,11 @@ class CkeditorController
         $field = $this->layoutElementField($owner, $request->input('layoutElementUid'));
         abort_unless($field instanceof Field, 400, 'Invalid layout element UID.');
 
+        [$value, $cards] = $field->editorValue($owner);
+
         return new JsonResponse([
-            'value' => $field->editorValue($owner),
+            'value' => $value,
+            'cards' => CkeditorControl::cardList($cards),
         ]);
     }
 
@@ -201,9 +205,13 @@ class CkeditorController
             ]), ['additionalMessage' => $e->getMessage()]);
         }
 
+        // include the duplicate’s card HTML, so it doesn’t have to be requested separately
+        $field = $this->layoutElementField($owner, $targetLayoutElementUid);
+
         return new JsonResponse([
             'newEntryId' => $newEntry->id,
             'newSiteId' => $newEntry->siteId,
+            'cardHtml' => $field instanceof Field ? $field->getCardHtml($newEntry) : null,
         ]);
     }
 

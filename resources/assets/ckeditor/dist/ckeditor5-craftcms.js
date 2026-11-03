@@ -549,10 +549,10 @@ var he = class extends v {
 		e.for("upcast").elementToElement({
 			view: { name: "craft-entry" },
 			model: (e, { writer: t }) => {
-				let n = e.getAttribute("data-card-html"), r = e.getAttribute("data-entry-id"), i = e.getAttribute("data-site-id") ?? null;
+				let n = e.getAttribute("data-entry-id"), r = e.getAttribute("data-card-html") ?? this.editor.config.get("craftCardHtml")?.(n) ?? null, i = e.getAttribute("data-site-id") ?? null;
 				return t.createElement("craftEntryModel", {
-					cardHtml: n,
-					entryId: r,
+					cardHtml: r,
+					entryId: n,
 					siteId: i
 				});
 			}
@@ -570,7 +570,7 @@ var he = class extends v {
 			model: "craftEntryModel",
 			view: (e, { writer: t }) => {
 				let n = e.getAttribute("entryId") ?? null, r = e.getAttribute("siteId") ?? null;
-				return t.createContainerElement("craft-entry", {
+				return t.createEmptyElement("craft-entry", {
 					"data-entry-id": n,
 					"data-site-id": r
 				});
@@ -835,18 +835,19 @@ var he = class extends v {
 			}
 		});
 	}
-	refreshCards() {
-		let e = this.editor;
-		[...e.model.createRangeIn(e.model.document.getRoot()).getItems()].filter((e) => e.is("element", "craftEntryModel")).forEach((e) => this._refreshCard(e));
+	refreshCards(e = null) {
+		let t = this.editor;
+		[...t.model.createRangeIn(t.model.document.getRoot()).getItems()].filter((e) => e.is("element", "craftEntryModel")).forEach((t) => {
+			let n = e?.(t.getAttribute("entryId")) ?? null;
+			this._refreshCard(t, n ? { cardHtml: n } : null);
+		});
 	}
-	async _refreshCard(e) {
-		let t = this.editor, n = (e) => t.model.enqueueChange({ isUndoable: !1 }, e);
-		n((t) => t.removeAttribute("cardHtml", e));
-		let r = await t.plugins.get("CraftEntriesEditing")._getCardHtml(e);
-		if (e.root.rootName === "$graveyard") return;
-		n((t) => t.setAttribute("cardHtml", r.cardHtml, e));
-		let i = t.editing.mapper.toViewElement(e), a = i ? [...i.getChildren()].find((e) => e.is("rawElement")) : null, o = a ? t.editing.view.domConverter.mapViewToDom(a) : null;
-		o ? (o.innerHTML = r.cardHtml, Craft.appendHeadHtml(r.headHtml), Craft.appendBodyHtml(r.bodyHtml), Craft.cp.elementThumbLoader.load($(o))) : t.editing.reconvertItem(e);
+	async _refreshCard(e, t = null) {
+		let n = this.editor, r = (e) => n.model.enqueueChange({ isUndoable: !1 }, e);
+		if (t ||= (r((t) => t.removeAttribute("cardHtml", e)), await n.plugins.get("CraftEntriesEditing")._getCardHtml(e)), e.root.rootName === "$graveyard") return;
+		r((n) => n.setAttribute("cardHtml", t.cardHtml, e));
+		let i = n.editing.mapper.toViewElement(e), a = i ? [...i.getChildren()].find((e) => e.is("rawElement")) : null, o = a ? n.editing.view.domConverter.mapViewToDom(a) : null;
+		o ? (o.innerHTML = t.cardHtml, Craft.appendHeadHtml(t.headHtml), Craft.appendBodyHtml(t.bodyHtml), Craft.cp.elementThumbLoader.load($(o))) : n.editing.reconvertItem(e);
 	}
 	async _showCreateEntrySlideout(e) {
 		let t = this.editor, n = t.model, r = n.document.selection.getFirstRange(), i = t.config.get("nestedElementAttributes"), a = Object.assign({}, i, { typeId: e }), o = this.getElementEditor(), s = t.config.get("craftOwner");
@@ -12883,13 +12884,15 @@ var Oe = class extends v {
 			let s = o, c = !1, l = Craft.siteId, u = null, d = null, f = e.getData(), p = [...o.matchAll(/data-entry-id="([0-9]+)[^>]*data-site-id="([0-9]+)/g)];
 			r.stop();
 			let m = $(e.ui.view.element), h = m.parents("form").data("elementEditor"), g = e.config.get("craftOwner");
-			g?.ownerId() ? u = await g.prepare() : h && await h.ensureIsDraftOrRevision();
-			let _ = m.parents(".input");
-			if (_.length > 0) {
-				let e = $(_[0]).find("div.ckeditor-container");
-				e.length > 0 && (u = $(e[0]).data("element-id"));
+			if (g?.ownerId() ? u = await g.prepare() : h && await h.ensureIsDraftOrRevision(), u == null) {
+				let t = m.parents(".input");
+				if (t.length > 0) {
+					let e = $(t[0]).find("div.ckeditor-container");
+					e.length > 0 && (u = $(e[0]).data("element-id"));
+				}
+				u ??= h ? h.settings.elementId : e.config.get("nestedElementAttributes")?.ownerId;
 			}
-			u ??= h ? h.settings.elementId : e.config.get("nestedElementAttributes")?.ownerId, d = e.config.get("layoutElementUid") ?? m.parents(".field").data("layoutElement");
+			d = e.config.get("layoutElementUid") ?? m.parents(".field").data("layoutElement");
 			for (let r = 0; r < p.length; r++) {
 				let i = null;
 				p[r][1] && (i = p[r][1]);
@@ -12906,7 +12909,11 @@ var Oe = class extends v {
 							targetOwnerId: u,
 							targetLayoutElementUid: d
 						} }).then((e) => {
-							e.data.newEntryId && (s = s.replace("data-entry-id=\"" + i + "\"", "data-entry-id=\"" + e.data.newEntryId + "\"")), e.data.newSiteId && (s = s.replace("data-site-id=\"" + a + "\"", "data-site-id=\"" + e.data.newSiteId + "\""));
+							if (e.data.newEntryId) {
+								let t = e.data.cardHtml ? " data-card-html=\"" + Craft.escapeHtml(e.data.cardHtml).replace(/"/g, "&quot;") + "\"" : "";
+								s = s.replace("data-entry-id=\"" + i + "\"", "data-entry-id=\"" + e.data.newEntryId + "\"" + t);
+							}
+							e.data.newSiteId && (s = s.replace("data-site-id=\"" + a + "\"", "data-site-id=\"" + e.data.newSiteId + "\""));
 						}).catch((e) => {
 							c = !0, Craft.cp.displayError(e?.response?.data?.message), console.error(e?.response?.data?.additionalMessage);
 						});

@@ -65,6 +65,11 @@ export function createOwnerBridge(
         return null;
       }
 
+      // the owner is already a draft, so there’s nothing to prepare (like Craft 5’s `ensureIsDraftOrRevision()`)
+      if (owner.ownerIsDerivative) {
+        return owner.ownerId;
+      }
+
       const ownerEditor = requestOwnerEditor(getRoot());
       if (!ownerEditor) {
         return owner.ownerId;

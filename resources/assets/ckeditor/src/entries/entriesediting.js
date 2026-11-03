@@ -71,8 +71,12 @@ export default class CraftEntriesEditing extends Plugin {
         name: 'craft-entry', // has to be lower case
       },
       model: (viewElement, {writer: modelWriter}) => {
-        const cardHtml = viewElement.getAttribute('data-card-html');
         const entryId = viewElement.getAttribute('data-entry-id');
+        // the control passes the card HTML separately, so the value doesn’t change whenever the cards are re-rendered
+        const cardHtml =
+          viewElement.getAttribute('data-card-html') ??
+          this.editor.config.get('craftCardHtml')?.(entryId) ??
+          null;
         const siteId = viewElement.getAttribute('data-site-id') ?? null;
 
         return modelWriter.createElement('craftEntryModel', {
@@ -108,7 +112,8 @@ export default class CraftEntriesEditing extends Plugin {
         const entryId = modelItem.getAttribute('entryId') ?? null;
         const siteId = modelItem.getAttribute('siteId') ?? null;
 
-        return viewWriter.createContainerElement('craft-entry', {
+        // an empty element, so the data processor doesn’t add an `&nbsp;` filler that the saved value won’t have
+        return viewWriter.createEmptyElement('craft-entry', {
           'data-entry-id': entryId,
           'data-site-id': siteId,
         });

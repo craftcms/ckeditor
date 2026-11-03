@@ -1856,6 +1856,7 @@ JS;
         }
 
         $readOnly = $context->mode !== ControlMode::Editable;
+        [$value, $cards] = $this->inputValue($context->value, $element, $readOnly);
         $containerId = sprintf('cke-%s', Str::random(10));
 
         $assets = app(CkeditorAssets::class);
@@ -1864,7 +1865,8 @@ JS;
         $packageAssets = $assets->packageAssetUrls($namespaces);
 
         return CkeditorControl::make($context->path)
-            ->value($this->prepValueForInput($context->value, $element, $readOnly))
+            ->value($value)
+            ->cards($cards)
             ->mode($readOnly ? ($context->mode === ControlMode::Disabled ? ControlMode::Disabled : ControlMode::ReadOnly) : ControlMode::Editable)
             ->module($module)
             ->containerId($containerId)
@@ -2170,6 +2172,8 @@ export default async function (element, options = {}) {
 
   // the Craft 6 control panel’s owner bridge (see resources/js/modules/owner-bridge.ts)
   config.craftOwner = options.owner ?? null;
+  // looks up the card HTML the control was given for a nested entry
+  config.craftCardHtml = options.cardHtml ?? null;
 
   const editor = await create(element, config);
 
@@ -2316,11 +2320,13 @@ JS;
     }
 
     /**
-     * Returns the field’s current value for an element, as the editor takes it.
+     * Returns the field’s current value for an element, as the editor takes it, along with its nested entries’ card HTML.
+     *
+     * @return array{0:string,1:array<int,string>}
      */
-    public function editorValue(ElementInterface $element): string
+    public function editorValue(ElementInterface $element): array
     {
-        return $this->prepValueForInput($element->getFieldValue($this->handle), $element);
+        return $this->inputValue($element->getFieldValue($this->handle), $element);
     }
 
     /**
@@ -2331,6 +2337,21 @@ JS;
     #[Override]
     protected function prepValueForInput($value, ?ElementInterface $element, bool $static = false): string
     {
+        return $this->inputValue($value, $element, $static)[0];
+    }
+
+    /**
+     * Returns the value prepped for the input, and the card HTML for its nested entries, indexed by entry ID.
+     *
+     * The card HTML is kept out of the value, so the value doesn’t change whenever the cards are rendered differently.
+     *
+     * @param  FieldData|string|null  $value
+     * @return array{0:string,1:array<int,string>}
+     */
+    private function inputValue($value, ?ElementInterface $element, bool $static = false): array
+    {
+        $cards = [];
+
         if ($value instanceof FieldData) {
             $chunks = $value->getChunks(false)
                 ->filter(fn (BaseChunk $chunk) => ! $chunk instanceof EntryChunk || $chunk->getEntry() !== null);
@@ -2347,7 +2368,7 @@ JS;
             }
 
             $value = $chunks
-                ->map(function (BaseChunk $chunk) use ($static, $entries, $element) {
+                ->map(function (BaseChunk $chunk) use ($static, $entries, $element, &$cards) {
                     if ($chunk instanceof Markup) {
                         return $chunk->rawHtml;
                     }
@@ -2374,11 +2395,13 @@ JS;
                         return $cardHtml;
                     }
 
+                    $entryId = $entry->isProvisionalDraft ? $entry->getCanonicalId() : $entry->id;
+                    $cards[$entryId] = $cardHtml;
+
                     return Html::tag('craft-entry', '', [
                         'data' => [
-                            'entry-id' => $entry->isProvisionalDraft ? $entry->getCanonicalId() : $entry->id,
+                            'entry-id' => $entryId,
                             'site-id' => $entry->siteId,
-                            'card-html' => $cardHtml,
                         ],
                     ]);
                 })
@@ -2405,7 +2428,7 @@ JS;
             $value = $this->_normalizePreTags($value);
         }
 
-        return parent::prepValueForInput($value, $element);
+        return [parent::prepValueForInput($value, $element), $cards];
     }
 
     /**
