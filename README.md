@@ -14,12 +14,17 @@ This plugin adds a “CKEditor” field type to Craft CMS, which provides a deep
   - [Registering Custom Styles](#registering-custom-styles)
   - [HTML Sanitizing](#html-sanitizing)
   - [Embedding Media](#embedding-media)
+  - [License Key](#license-key)
 - [Longform Content with Nested Entries](#longform-content-with-nested-entries)
   - [Setup](#setup)
   - [Rendering Nested Entries on the Front End](#rendering-nested-entries-on-the-front-end)
+  - [Rendering Chunks](#rendering-chunks)
 - [Converting Redactor Fields](#converting-redactor-fields)
 - [Converting Matrix Fields](#converting-matrix-fields)
 - [Adding CKEditor Plugins](#adding-ckeditor-plugins)
+  - [First Party plugins](#first-party-plugins)
+  - [Custom plugins](#custom-plugins)
+- [Front-end use](#front-end-use)
 
 ## Requirements
 
@@ -55,7 +60,7 @@ Each CKEditor field allows you to choose the available toolbar buttons, as well 
 Once you have selected which toolbar buttons should be available, additional settings may be applied via **Config options**. Options can be defined as static JSON, or a dynamically-evaluated JavaScript snippet; the latter is used as the body of an [immediately-invoked function expression](https://developer.mozilla.org/en-US/docs/Glossary/IIFE), and does not receive any arguments.
 
 > [!NOTE]  
-> Available options can be found in the [CKEditor's documentation](https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html). Craft will auto-complete config properties for most bundled CKEditor extensions.
+> Available options can be found in the [CKEditor's documentation](https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html).
 
 ### Examples
 
@@ -198,7 +203,7 @@ return {
     ],
     disallow: [
       // ...
-    ].
+    ],
   },
 };
 ```
@@ -331,7 +336,7 @@ The example above treats both chunk types as strings. For entry chunks, this is 
 
 ## Converting Redactor Fields
 
-You can use the `ckeditor/convert/redactor` command to convert any existing Redactor fields over to CKEditor.
+You can use the `ckeditor:convert:redactor` command to convert any existing Redactor fields over to CKEditor.
 
 The command will make changes to your project config. You should commit them, and run `php artisan craft:migrate:all` on other environments for the changes to take effect.
 
@@ -341,7 +346,7 @@ php artisan ckeditor:convert:redactor
 
 ## Converting Matrix Fields
 
-You can use the `ckeditor/convert/matrix` command to convert a Matrix field over to CKEditor. Each of the Matrix field’s entry types will be assigned to the CKEditor field, and field values will be a mix of HTML content extracted from one of the nested entry types of your choosing (if desired) combined with nested entries.
+You can use the `ckeditor:convert:matrix` command to convert a Matrix field over to CKEditor. Each of the Matrix field’s entry types will be assigned to the CKEditor field, and field values will be a mix of HTML content extracted from one of the nested entry types of your choosing (if desired) combined with nested entries.
 
 ```sh
 php artisan ckeditor:convert:matrix <myMatrixFieldHandle>
@@ -433,7 +438,7 @@ If you wish to use CKEditor on the front end, the safest option is to [bring you
 <script src="https://cdn.ckeditor.com/ckeditor5/44.3.0/ckeditor5.umd.js"></script>
 
 {# Load the field definition via the field and CKEditor APIs: #}
-{% set field = Fields.getFieldByHandle('primer') %}
+{% set field = craft.fields.getFieldByHandle('primer') %}
 
 <div id="editor">
     {{ entry.myCkEditorField }}
@@ -462,4 +467,4 @@ If you wish to use CKEditor on the front end, the safest option is to [bring you
 </script>
 ```
 
-You may need to build up the top-level config object from `field.options`, `field.headingLevels`, and so on to get a complete, functional editor—be mindful that configurations may rely on plugins that are only available in the control panel! Refer to [`CraftCms\Ckeditor\Field::inputHtml()`](src/Field.php) for additional steps the CKEditor plugin when normalizing configuration, for control panel editor instances.
+You may need to build up the top-level config object from `field.options`, `field.headingLevels`, and so on to get a complete, functional editor—be mindful that configurations may rely on plugins that are only available in the control panel! Refer to [`CraftCms\Ckeditor\Field::uiControl()`](src/Field.php) for additional steps the CKEditor plugin when normalizing configuration, for control panel editor instances.
