@@ -269,7 +269,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       return;
     }
 
-    this.$container = $(editor.sourceElement).closest('.input');
+    this.$container = $(editor.sourceElement).closest('.ckeditor-container');
     this.progressBar = $(
       '<craft-progress-bar class="hidden mt-sm" smooth></craft-progress-bar>',
     ).appendTo(this.$container)[0];
@@ -280,16 +280,16 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       multiple: true,
     }).insertAfter(editor.sourceElement);
 
-    this.uploader = Craft.createUploader(null, this.$container, {
-      dropZone: this.$container,
-      fileInput: this.$fileInput,
+    this.uploader = new Craft.Uploaders.Uploader(this.$container[0], {
+      dropZone: this.$container[0],
+      fileInput: this.$fileInput[0],
       allowedKinds: ['image'],
-      canAddMoreFiles: true,
-      events: {
-        fileuploadstart: this._onUploadStart.bind(this),
-        fileuploadprogressall: this._onUploadProgress.bind(this),
-        fileuploaddone: this._onUploadComplete.bind(this),
-        fileuploadfail: this._onUploadFailure.bind(this),
+      on: {
+        start: this._onUploadStart.bind(this),
+        progress: this._onUploadProgress.bind(this),
+        done: this._onUploadComplete.bind(this),
+        fail: this._onUploadFailure.bind(this),
+        stop: this._onUploadStop.bind(this),
       },
     });
 
@@ -333,20 +333,15 @@ export default class CraftImageInsertUI extends ImageInsertUI {
   /**
    * On upload progress.
    */
-  _onUploadProgress(event, data = null) {
-    data = event instanceof CustomEvent ? event.detail : data;
-
-    var progress = parseInt(Math.min(data.loaded / data.total, 1) * 100, 10);
+  _onUploadProgress({loaded, total}) {
+    const progress = parseInt(Math.min(loaded / total, 1) * 100, 10);
     this.progressBar.progress = progress;
   }
 
   /**
    * On a file being uploaded.
    */
-  async _onUploadComplete(event, data = null) {
-    const asset = event instanceof CustomEvent ? event.detail : data.result;
-    this.progressBar.classList.add('hidden');
-
+  async _onUploadComplete({result: asset}) {
     if (this._imageMode === 'entries') {
       await this._createImageEntry(asset.assetId);
       return;
@@ -373,13 +368,15 @@ export default class CraftImageInsertUI extends ImageInsertUI {
   /**
    * On Upload Failure.
    */
-  _onUploadFailure(event, data = null) {
-    const response =
-      event instanceof CustomEvent ? event.detail : data?.jqXHR?.responseJSON;
+  _onUploadFailure({error, canceled, file}) {
+    if (canceled) {
+      return;
+    }
 
-    let {message, filename, errors} = response || {};
-
-    filename = filename || data?.files?.[0].name;
+    const response = error?.data || {};
+    let message = error instanceof Error ? error.message : undefined;
+    const filename = response.filename || file?.name;
+    const {errors} = response;
 
     let errorMessages = errors ? Object.values(errors).flat() : [];
 
@@ -394,6 +391,12 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     }
 
     Craft.cp.displayError(message);
+  }
+
+  /**
+   * Once all uploads have finished.
+   */
+  _onUploadStop() {
     this.progressBar.classList.add('hidden');
   }
 }

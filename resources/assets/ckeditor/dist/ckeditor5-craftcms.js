@@ -206,20 +206,20 @@ var j = Object.create, M = Object.defineProperty, te = Object.getOwnPropertyDesc
 	}
 	_attachUploader() {
 		let e = this.editor, t = e.config.get("defaultUploadFolderId");
-		t && (this.$container = $(e.sourceElement).closest(".input"), this.progressBar = $("<craft-progress-bar class=\"hidden mt-sm\" smooth></craft-progress-bar>").appendTo(this.$container)[0], this.$fileInput = $("<input/>", {
+		t && (this.$container = $(e.sourceElement).closest(".ckeditor-container"), this.progressBar = $("<craft-progress-bar class=\"hidden mt-sm\" smooth></craft-progress-bar>").appendTo(this.$container)[0], this.$fileInput = $("<input/>", {
 			type: "file",
 			class: "hidden",
 			multiple: !0
-		}).insertAfter(e.sourceElement), this.uploader = Craft.createUploader(null, this.$container, {
-			dropZone: this.$container,
-			fileInput: this.$fileInput,
+		}).insertAfter(e.sourceElement), this.uploader = new Craft.Uploaders.Uploader(this.$container[0], {
+			dropZone: this.$container[0],
+			fileInput: this.$fileInput[0],
 			allowedKinds: ["image"],
-			canAddMoreFiles: !0,
-			events: {
-				fileuploadstart: this._onUploadStart.bind(this),
-				fileuploadprogressall: this._onUploadProgress.bind(this),
-				fileuploaddone: this._onUploadComplete.bind(this),
-				fileuploadfail: this._onUploadFailure.bind(this)
+			on: {
+				start: this._onUploadStart.bind(this),
+				progress: this._onUploadProgress.bind(this),
+				done: this._onUploadComplete.bind(this),
+				fail: this._onUploadFailure.bind(this),
+				stop: this._onUploadStop.bind(this)
 			}
 		}), this.uploader.setParams({
 			folderId: t,
@@ -238,28 +238,28 @@ var j = Object.create, M = Object.defineProperty, te = Object.getOwnPropertyDesc
 	_onUploadStart() {
 		this.progressBar.progress = 0, this.progressBar.classList.remove("hidden");
 	}
-	_onUploadProgress(e, t = null) {
-		t = e instanceof CustomEvent ? e.detail : t;
-		var n = parseInt(Math.min(t.loaded / t.total, 1) * 100, 10);
+	_onUploadProgress({ loaded: e, total: t }) {
+		let n = parseInt(Math.min(e / t, 1) * 100, 10);
 		this.progressBar.progress = n;
 	}
-	async _onUploadComplete(e, t = null) {
-		let n = e instanceof CustomEvent ? e.detail : t.result;
-		if (this.progressBar.classList.add("hidden"), this._imageMode === "entries") {
-			await this._createImageEntry(n.assetId);
+	async _onUploadComplete({ result: e }) {
+		if (this._imageMode === "entries") {
+			await this._createImageEntry(e.assetId);
 			return;
 		}
-		let r = this.editor.config.get("defaultTransform"), i = this._isTransformUrl(n.url), a;
-		a = !n.url || !i && r ? await this._getTransformUrl(n.assetId, r) : this._buildAssetUrl(n.assetId, n.url, i ? transform : r), this.editor.execute("insertImage", {
-			source: a,
+		let t = this.editor.config.get("defaultTransform"), n = this._isTransformUrl(e.url), r;
+		r = !e.url || !n && t ? await this._getTransformUrl(e.assetId, t) : this._buildAssetUrl(e.assetId, e.url, n ? transform : t), this.editor.execute("insertImage", {
+			source: r,
 			breakBlock: !0
 		});
 	}
-	_onUploadFailure(e, t = null) {
-		let { message: n, filename: r, errors: i } = (e instanceof CustomEvent ? e.detail : t?.jqXHR?.responseJSON) || {};
-		r ||= t?.files?.[0].name;
-		let a = i ? Object.values(i).flat() : [];
-		n ||= a.length ? a.join("\n") : r ? Craft.t("app", "Upload failed for “{filename}”.", { filename: r }) : Craft.t("app", "Upload failed."), Craft.cp.displayError(n), this.progressBar.classList.add("hidden");
+	_onUploadFailure({ error: e, canceled: t, file: n }) {
+		if (t) return;
+		let r = e?.data || {}, i = e instanceof Error ? e.message : void 0, a = r.filename || n?.name, { errors: o } = r, s = o ? Object.values(o).flat() : [];
+		i ||= s.length ? s.join("\n") : a ? Craft.t("app", "Upload failed for “{filename}”.", { filename: a }) : Craft.t("app", "Upload failed."), Craft.cp.displayError(i);
+	}
+	_onUploadStop() {
+		this.progressBar.classList.add("hidden");
 	}
 }, ue = class extends r {
 	refresh() {
