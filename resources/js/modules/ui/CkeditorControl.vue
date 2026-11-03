@@ -66,6 +66,15 @@
   // The value last emitted, so changes that don’t affect it (e.g. a refreshed entry card) aren’t emitted
   let emittedValue: string | null = null;
   let syncing = false;
+  // Runs a change to the editor without emitting it as a value change
+  const withoutEmitting = (fn: () => void) => {
+    syncing = true;
+    try {
+      fn();
+    } finally {
+      syncing = false;
+    }
+  };
   // The nested entries’ card HTML, which the server sends alongside the value rather than in it
   const cards = new Map<string, string>();
   const cardHtml = (entryId: string | number) =>
@@ -150,13 +159,10 @@
       return;
     }
     rememberCards(data.cards);
-    syncing = true;
-    try {
+    withoutEmitting(() => {
       editor.setData(data.value ?? '');
       emittedValue = editor.getData();
-    } finally {
-      syncing = false;
-    }
+    });
   };
 
   // When the owner changes (its draft is created, applied or discarded), the entry cards’ owner info is out of date,
@@ -192,12 +198,7 @@
         });
         return;
       }
-      syncing = true;
-      try {
-        entriesUi.refreshCards(lookup);
-      } finally {
-        syncing = false;
-      }
+      withoutEmitting(() => entriesUi.refreshCards(lookup));
     },
   );
 
@@ -209,12 +210,7 @@
         return;
       }
       emittedValue = value ?? '';
-      syncing = true;
-      try {
-        editor.setData(emittedValue);
-      } finally {
-        syncing = false;
-      }
+      withoutEmitting(() => editor.setData(emittedValue));
     },
   );
 
