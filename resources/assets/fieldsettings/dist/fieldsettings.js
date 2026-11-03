@@ -190,6 +190,7 @@ var ToolbarBuilder_default = Garnish.Base.extend({
 	}
 }), ConfigOptions_default = Garnish.Base.extend({
 	jsonSchemaUri: null,
+	jsonSchema: null,
 	mode: null,
 	lastCodeMode: null,
 	$container: null,
@@ -200,8 +201,8 @@ var ToolbarBuilder_default = Garnish.Base.extend({
 	jsonEditor: null,
 	jsEditor: null,
 	defaults: null,
-	init: function(id, jsonSchemaUri, mode, hasFiles) {
-		this.jsonSchemaUri = jsonSchemaUri, this.mode = mode, this.mode !== "file" && (this.lastCodeMode = mode), this.$container = $(`#${id}`), this.$modeInput = $(`#${id}-mode`), this.$jsonContainer = $(`#${id}-json-container`), this.$jsContainer = $(`#${id}-js-container`), this.$fileContainer = $(`#${id}-file-container`), this.jsonEditor = window.monacoEditorInstances[`${id}-json`], this.jsEditor = window.monacoEditorInstances[`${id}-js`];
+	init: function(id, jsonSchemaUri, mode, hasFiles, jsonSchema = null) {
+		this.jsonSchemaUri = jsonSchemaUri, this.jsonSchema = jsonSchema, this.mode = mode, this.mode !== "file" && (this.lastCodeMode = mode), this.$container = $(`#${id}`), this.$modeInput = $(`#${id}-mode`), this.$jsonContainer = $(`#${id}-json-container`), this.$jsContainer = $(`#${id}-js-container`), this.$fileContainer = $(`#${id}-file-container`), this.jsonEditor = document.getElementById(`${id}-json`), this.jsEditor = document.getElementById(`${id}-js`);
 		const $modePicker = this.$container.children(".btngroup");
 		this.defaults = {};
 		const $containers = this.$jsonContainer.add(this.$jsContainer).add(this.$fileContainer);
@@ -209,28 +210,28 @@ var ToolbarBuilder_default = Garnish.Base.extend({
 			switch (this.mode = e.data("mode"), (this.mode !== "file" || hasFiles) && this.$modeInput.val(this.mode), $containers.addClass("hidden"), this.mode) {
 				case "json":
 					if (this.lastCodeMode === "js") {
-						let e = this.jsEditor.getModel().getValue();
+						let e = this.getValue(this.jsEditor);
 						if (this.jsContainsFunctions(e) && !confirm(Craft.t("ckeditor", "Your JavaScript config contains functions. If you switch to JSON, they will be lost. Would you like to continue?"))) {
 							$modePicker.children("[data-mode=\"js\"]")[0]?.click();
 							break;
 						}
 						let t = this.js2json(e);
-						this.jsonEditor.getModel().setValue(t || "{\n  \n}"), this.jsEditor.getModel().setValue("");
+						this.setValue(this.jsonEditor, t || "{\n  \n}"), this.setValue(this.jsEditor, "");
 					}
 					this.$jsonContainer.removeClass("hidden");
 					break;
 				case "js":
 					if (this.lastCodeMode === "json") {
-						let e = this.jsonEditor.getModel().getValue(), t = this.json2js(e);
-						this.jsEditor.getModel().setValue(t || "return {\n  \n}"), this.jsonEditor.getModel().setValue("");
+						let e = this.getValue(this.jsonEditor), t = this.json2js(e);
+						this.setValue(this.jsEditor, t || "return {\n  \n}"), this.setValue(this.jsonEditor, "");
 					}
 					this.$jsContainer.removeClass("hidden");
 					break;
 				case "file": this.$fileContainer.removeClass("hidden");
 			}
 			this.mode !== "file" && (this.lastCodeMode = this.mode);
-		} }), this.jsonEditor.onDidPaste((ev) => {
-			const pastedContent = this.jsonEditor.getModel().getValueInRange(ev.range);
+		} }), this.jsonEditor.addEventListener("paste", (ev) => {
+			const pastedContent = ev.clipboardData?.getData("text") ?? "";
 			let config;
 			try {
 				eval(`config = {${pastedContent}}`);
@@ -238,17 +239,23 @@ var ToolbarBuilder_default = Garnish.Base.extend({
 				return;
 			}
 			const json = JSON.stringify(config, null, 2), trimmed = Craft.trim(json.substring(1, json.length - 1));
-			trimmed && this.jsonEditor.executeEdits("", [{
-				range: ev.range,
-				text: trimmed
-			}]);
+			if (!trimmed) return;
+			ev.preventDefault();
+			const { selectionStart, selectionEnd, value } = this.jsonEditor;
+			this.setValue(this.jsonEditor, value.slice(0, selectionStart) + trimmed + value.slice(selectionEnd)), this.jsonEditor.selectionStart = this.jsonEditor.selectionEnd = selectionStart + trimmed.length;
 		});
+	},
+	getValue: function(e) {
+		return e.value;
+	},
+	setValue: function(e, t) {
+		e.value = t, e.dispatchEvent(new Event("input", { bubbles: !0 }));
 	},
 	getConfig: function() {
 		let e;
-		if (this.mode === "json") e = Craft.trim(this.jsonEditor.getModel().getValue()) || "{}";
+		if (this.mode === "json") e = Craft.trim(this.getValue(this.jsonEditor)) || "{}";
 		else {
-			let t = Craft.trim(this.jsEditor.getModel().getValue());
+			let t = Craft.trim(this.getValue(this.jsEditor));
 			if (e = t ? this.js2json(t) : "{}", e === !1) return !1;
 		}
 		try {
@@ -260,10 +267,10 @@ var ToolbarBuilder_default = Garnish.Base.extend({
 	},
 	setConfig: function(e) {
 		let t = this.config2json(e);
-		if (this.mode === "json") this.jsonEditor.getModel().setValue(t);
+		if (this.mode === "json") this.setValue(this.jsonEditor, t);
 		else {
 			let e = this.json2js(t);
-			this.jsEditor.getModel().setValue(e || "return {\n  \n}");
+			this.setValue(this.jsEditor, e || "return {\n  \n}");
 		}
 	},
 	addSetting: function(e) {
@@ -276,10 +283,8 @@ var ToolbarBuilder_default = Garnish.Base.extend({
 	},
 	populateDefault: function(e) {
 		let t;
-		try {
-			t = window.monaco.languages.json.jsonDefaults.diagnosticsOptions.schemas.find((e) => e.uri === this.jsonSchemaUri).schema;
-		} catch (e) {
-			console.warn("Couldn’t get config options JSON schema.", e);
+		if (t = this.jsonSchema, !t) {
+			console.warn("Couldn’t get config options JSON schema.");
 			return;
 		}
 		if (!t.$defs || !t.$defs.EditorConfig || !t.$defs.EditorConfig.properties) {

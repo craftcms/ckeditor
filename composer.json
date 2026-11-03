@@ -26,8 +26,7 @@
     "php": "^8.5",
     "craftcms/cms": "^6.0.0",
     "craftcms/html-field": "dev-feature/craft-6",
-    "embed/embed": "^4.4",
-    "nystudio107/craft-code-editor": "^1.0.30"
+    "embed/embed": "^4.4"
   },
   "require-dev": {
     "driftingly/rector-laravel": "^2.6.2",
@@ -60,10 +59,6 @@
     }
   },
   "repositories": [
-    {
-      "type": "path",
-      "url": "../craft-code-editor"
-    },
     {
       "type": "composer",
       "url": "https://composer.craftcms.com",

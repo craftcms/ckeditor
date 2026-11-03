@@ -68,6 +68,7 @@ CKEditor fields render natively in Craft 6’s control panel.
 - The field input is a UI control (`CraftCms\Ckeditor\Ui\Controls\CkeditorControl`, Vue component `ckeditor:editor`), returned from `Field::uiControl()`. `Field::inputHtml()` and `getStaticHtml()` no longer render the editor.
 - The field settings are built with Craft’s UI builder (`Field::settingsUi()`). The toolbar builder, config options and custom styles are a single control (`CraftCms\Ckeditor\Ui\Controls\EditorConfigControl`, Vue component `ckeditor:editor-config`), which posts its values as an `editorConfig` setting.
 - The **Expand to a separate button** / **Collapse to a dropdown** chip action and the “Show as a separate button” indicator are unchanged, as is the stored `entryTypes[].expanded` config. It needs a Craft version that supports `EntryTypeSelect::extraValueKeys()`.
+- The config options (JSON/JavaScript) and custom styles (CSS) settings are plain text areas for now, without syntax highlighting, validation or autocomplete, since `nystudio107/craft-code-editor` isn’t required until it supports Craft 6.
 - Nested entries and image entries are created for the owner element’s draft, as in Craft 5.
 - The field type’s icon is Craft’s `paragraph` system icon, since the control panel only supports system icons.
 - Removed the `ckeditor/_settings.twig`, `ckeditor/_field-settings.twig`, `ckeditor/_entry-type-select.twig` and `ckeditor/_image-field-select.twig` templates.

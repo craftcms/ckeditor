@@ -150,6 +150,8 @@ body:not(.dragging) .ckeditor-tb--item:hover {
   padding: 0 !important;
 }
 
+/* TODO(code-editor): restore once craft-code-editor supports Craft 6
 .monaco-editor.has-errors {
   border: 1px solid var(--fg-error, var(--c-color-danger-fill-loud, #c72c22)) !important;
 }
+*/

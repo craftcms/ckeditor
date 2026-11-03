@@ -9,6 +9,7 @@ import './fieldsettings.css';
 
 export default Garnish.Base.extend({
   jsonSchemaUri: null,
+  jsonSchema: null,
   mode: null,
   lastCodeMode: null,
   $container: null,
@@ -20,8 +21,9 @@ export default Garnish.Base.extend({
   jsEditor: null,
   defaults: null,
 
-  init: function (id, jsonSchemaUri, mode, hasFiles) {
+  init: function (id, jsonSchemaUri, mode, hasFiles, jsonSchema = null) {
     this.jsonSchemaUri = jsonSchemaUri;
+    this.jsonSchema = jsonSchema;
     this.mode = mode;
     if (this.mode !== 'file') {
       this.lastCodeMode = mode;
@@ -31,8 +33,11 @@ export default Garnish.Base.extend({
     this.$jsonContainer = $(`#${id}-json-container`);
     this.$jsContainer = $(`#${id}-js-container`);
     this.$fileContainer = $(`#${id}-file-container`);
-    this.jsonEditor = window.monacoEditorInstances[`${id}-json`];
-    this.jsEditor = window.monacoEditorInstances[`${id}-js`];
+    // TODO(code-editor): restore once craft-code-editor supports Craft 6
+    // this.jsonEditor = window.monacoEditorInstances[`${id}-json`];
+    // this.jsEditor = window.monacoEditorInstances[`${id}-js`];
+    this.jsonEditor = document.getElementById(`${id}-json`);
+    this.jsEditor = document.getElementById(`${id}-js`);
     const $modePicker = this.$container.children('.btngroup');
 
     this.defaults = {};
@@ -53,7 +58,7 @@ export default Garnish.Base.extend({
             // was JS the previously-selected non-file mode?
             if (this.lastCodeMode === 'js') {
               // get the js value
-              const js = this.jsEditor.getModel().getValue();
+              const js = this.getValue(this.jsEditor);
               // check if the js value has any functions in it
               if (this.jsContainsFunctions(js)) {
                 // if it does - show the confirmation dialogue
@@ -72,18 +77,18 @@ export default Garnish.Base.extend({
               }
 
               const json = this.js2json(js);
-              this.jsonEditor.getModel().setValue(json || '{\n  \n}');
-              this.jsEditor.getModel().setValue('');
+              this.setValue(this.jsonEditor, json || '{\n  \n}');
+              this.setValue(this.jsEditor, '');
             }
 
             this.$jsonContainer.removeClass('hidden');
             break;
           case 'js':
             if (this.lastCodeMode === 'json') {
-              const json = this.jsonEditor.getModel().getValue();
+              const json = this.getValue(this.jsonEditor);
               const js = this.json2js(json);
-              this.jsEditor.getModel().setValue(js || 'return {\n  \n}');
-              this.jsonEditor.getModel().setValue('');
+              this.setValue(this.jsEditor, js || 'return {\n  \n}');
+              this.setValue(this.jsonEditor, '');
             }
             this.$jsContainer.removeClass('hidden');
             break;
@@ -99,10 +104,32 @@ export default Garnish.Base.extend({
     });
 
     // Handle Paste
-    this.jsonEditor.onDidPaste((ev) => {
-      const pastedContent = this.jsonEditor
-        .getModel()
-        .getValueInRange(ev.range);
+    // TODO(code-editor): restore once craft-code-editor supports Craft 6
+    // this.jsonEditor.onDidPaste((ev) => {
+    //   const pastedContent = this.jsonEditor
+    //     .getModel()
+    //     .getValueInRange(ev.range);
+    //   let config;
+    //   try {
+    //     eval(`config = {${pastedContent}}`);
+    //   } catch (e) {
+    //     // oh well
+    //     return;
+    //   }
+    //   const json = JSON.stringify(config, null, 2);
+    //   const trimmed = Craft.trim(json.substring(1, json.length - 1));
+    //   if (!trimmed) {
+    //     return;
+    //   }
+    //   this.jsonEditor.executeEdits('', [
+    //     {
+    //       range: ev.range,
+    //       text: trimmed,
+    //     },
+    //   ]);
+    // });
+    this.jsonEditor.addEventListener('paste', (ev) => {
+      const pastedContent = ev.clipboardData?.getData('text') ?? '';
       let config;
       try {
         eval(`config = {${pastedContent}}`);
@@ -115,21 +142,33 @@ export default Garnish.Base.extend({
       if (!trimmed) {
         return;
       }
-      this.jsonEditor.executeEdits('', [
-        {
-          range: ev.range,
-          text: trimmed,
-        },
-      ]);
+      ev.preventDefault();
+      const {selectionStart, selectionEnd, value} = this.jsonEditor;
+      this.setValue(
+        this.jsonEditor,
+        value.slice(0, selectionStart) + trimmed + value.slice(selectionEnd),
+      );
+      this.jsonEditor.selectionStart = this.jsonEditor.selectionEnd =
+        selectionStart + trimmed.length;
     });
+  },
+
+  // TODO(code-editor): these stand in for Monaco’s getModel().getValue()/setValue() while craft-code-editor is disabled
+  getValue: function (textarea) {
+    return textarea.value;
+  },
+
+  setValue: function (textarea, value) {
+    textarea.value = value;
+    textarea.dispatchEvent(new Event('input', {bubbles: true}));
   },
 
   getConfig: function () {
     let json;
     if (this.mode === 'json') {
-      json = Craft.trim(this.jsonEditor.getModel().getValue()) || '{}';
+      json = Craft.trim(this.getValue(this.jsonEditor)) || '{}';
     } else {
-      const value = Craft.trim(this.jsEditor.getModel().getValue());
+      const value = Craft.trim(this.getValue(this.jsEditor));
       json = value ? this.js2json(value) : '{}';
       if (json === false) {
         return false;
@@ -148,10 +187,10 @@ export default Garnish.Base.extend({
     const json = this.config2json(config);
 
     if (this.mode === 'json') {
-      this.jsonEditor.getModel().setValue(json);
+      this.setValue(this.jsonEditor, json);
     } else {
       const js = this.json2js(json);
-      this.jsEditor.getModel().setValue(js || 'return {\n  \n}');
+      this.setValue(this.jsEditor, js || 'return {\n  \n}');
     }
   },
 
@@ -197,13 +236,19 @@ export default Garnish.Base.extend({
 
   populateDefault: function (setting) {
     let schema;
-    try {
-      schema =
-        window.monaco.languages.json.jsonDefaults.diagnosticsOptions.schemas.find(
-          (s) => s.uri === this.jsonSchemaUri,
-        ).schema;
-    } catch (e) {
-      console.warn('Couldn’t get config options JSON schema.', e);
+    // TODO(code-editor): restore once craft-code-editor supports Craft 6
+    // try {
+    //   schema =
+    //     window.monaco.languages.json.jsonDefaults.diagnosticsOptions.schemas.find(
+    //       (s) => s.uri === this.jsonSchemaUri,
+    //     ).schema;
+    // } catch (e) {
+    //   console.warn('Couldn’t get config options JSON schema.', e);
+    //   return;
+    // }
+    schema = this.jsonSchema;
+    if (!schema) {
+      console.warn('Couldn’t get config options JSON schema.');
       return;
     }
 

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b457f2b107a9b00920b1de7d47f8433f",
+    "content-hash": "e5a08c456f6036c5c392ffb2cd3123b3",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -5090,79 +5090,6 @@
                 }
             ],
             "time": "2026-02-16T23:10:27+00:00"
-        },
-        {
-            "name": "nystudio107/craft-code-editor",
-            "version": "1.0.30",
-            "dist": {
-                "type": "path",
-                "url": "../craft-code-editor",
-                "reference": "f472d91576bdcb4d98baf63469f27088e72d54b7"
-            },
-            "require": {
-                "craftcms/cms": "^6.0.0",
-                "php": "^8.5",
-                "phpdocumentor/reflection-docblock": "^5.0.0"
-            },
-            "require-dev": {
-                "craftcms/ecs": "dev-main",
-                "craftcms/phpstan": "dev-main",
-                "craftcms/rector": "dev-main"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "NyStudio107\\CodeEditor\\CodeEditorServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "NyStudio107\\CodeEditor\\": "src/"
-                }
-            },
-            "scripts": {
-                "phpstan": [
-                    "phpstan --ansi --memory-limit=1G"
-                ],
-                "check-cs": [
-                    "ecs check --ansi"
-                ],
-                "fix-cs": [
-                    "ecs check --fix --ansi"
-                ]
-            },
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "nystudio107",
-                    "homepage": "https://nystudio107.com"
-                }
-            ],
-            "description": "Provides a code editor field with Twig & Craft API autocomplete",
-            "keywords": [
-                "cms",
-                "code",
-                "craft",
-                "craftcms",
-                "css",
-                "editor",
-                "javascript",
-                "markdown",
-                "monaco",
-                "twig"
-            ],
-            "support": {
-                "docs": "https://github.com/nystudio107/craft-code-editor/blob/v1/README.md",
-                "issues": "https://github.com/nystudio107/craft-code-editor/issues",
-                "source": "https://github.com/nystudio107/craft-code-editor"
-            },
-            "transport-options": {
-                "relative": true
-            }
         },
         {
             "name": "opis/json-schema",

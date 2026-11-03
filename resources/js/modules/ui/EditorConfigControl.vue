@@ -3,7 +3,7 @@
    * The toolbar builder, config options or custom styles setting for a CKEditor field, as a control panel
    * UI control (`ckeditor:editor-config`).
    *
-   * Mounts the server-rendered settings markup, starts craft-code-editor’s Monaco editors, and emits the inputs’
+   * Mounts the server-rendered settings markup and emits the inputs’
    * values (`toolbar`, `configMode`, `json`, `js`, `jsFile`, `cssMode`, `css`, `cssFile`) whenever they change.
    * The toolbar builder works with the config options, so its module runs once both parts of the same group
    * are mounted.
@@ -21,7 +21,8 @@
     partMounted,
     partUnmounted,
     readValue,
-    startCodeEditors,
+    // TODO(code-editor): restore once craft-code-editor supports Craft 6
+    // startCodeEditors,
     type CodeEditorSettings,
   } from '../editor-config';
 
@@ -84,8 +85,9 @@
     const el = root.value!;
 
     try {
+      // TODO(code-editor): restore once craft-code-editor supports Craft 6
       // craft-code-editor resolves its web workers relative to this, so set it before loading its scripts
-      window.codeEditorBaseAssetsUrl = p.codeEditor?.baseUrl;
+      // window.codeEditorBaseAssetsUrl = p.codeEditor?.baseUrl;
       applyGlobals(p.globals ?? {});
       await Promise.all((assets.styles ?? []).map((url) => loadStyle(url)));
       // craft-code-editor’s scripts depend on each other, so load them in order
@@ -113,17 +115,18 @@
         requestAnimationFrame(() => resolve()),
       );
 
-      startCodeEditors(el, p.codeEditor ?? {});
-
-      // Monaco measures its container when it’s created; lay the editors out again once the field has rendered
-      const relayout = () =>
-        root.value
-          ?.querySelectorAll<HTMLTextAreaElement>('textarea[data-code-editor]')
-          .forEach((textarea) =>
-            window.monacoEditorInstances?.[textarea.id]?.layout(),
-          );
-      setTimeout(relayout, 100);
-      new ResizeObserver(relayout).observe(el);
+      // TODO(code-editor): restore once craft-code-editor supports Craft 6
+      // startCodeEditors(el, p.codeEditor ?? {});
+      //
+      // // Monaco measures its container when it’s created; lay the editors out again once the field has rendered
+      // const relayout = () =>
+      //   root.value
+      //     ?.querySelectorAll<HTMLTextAreaElement>('textarea[data-code-editor]')
+      //     .forEach((textarea) =>
+      //       window.monacoEditorInstances?.[textarea.id]?.layout(),
+      //     );
+      // setTimeout(relayout, 100);
+      // new ResizeObserver(relayout).observe(el);
 
       if (partMounted(p.group, p.part)) {
         const module = await importModule(p.module);

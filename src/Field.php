@@ -110,7 +110,8 @@ use RuntimeException;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
-use function CraftCms\Cms\action_url;
+// TODO(code-editor): restore with the ->codeEditor() call
+// use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -1417,6 +1418,8 @@ class Field extends HtmlField implements CrossSiteCopyableFieldInterface, Elemen
             'hasJsFiles' => ! empty($jsFileOptions),
             'cssMode' => $cssMode,
             'hasCssFiles' => ! empty($cssFileOptions),
+            // TODO(code-editor): Monaco holds the JSON schema while craft-code-editor is disabled, so pass it directly. Remove once restored.
+            'jsonSchema' => CkeditorConfigSchema::create(),
         ]);
         $plugins = '['.implode(',', $pluginRefs).']';
 
@@ -1436,14 +1439,15 @@ $importStatements
 export default function () {
   const ids = $ids;
   const settings = $settingsJs;
-  const configOptions = new ConfigOptions(ids.configOptions, settings.jsonSchemaUri, settings.configMode, settings.hasJsFiles);
+  const configOptions = new ConfigOptions(ids.configOptions, settings.jsonSchemaUri, settings.configMode, settings.hasJsFiles, settings.jsonSchema);
   new ToolbarBuilder(ids.toolbarBuilder, configOptions, $plugins);
 }
 JS;
 
         $editorAssets = $assets->editorAssetUrls();
         $packageAssets = $assets->packageAssetUrls();
-        $codeEditorBaseUrl = asset('vendor/codeeditor');
+        // TODO(code-editor): restore once craft-code-editor supports Craft 6
+        // $codeEditorBaseUrl = asset('vendor/codeeditor');
 
         $value = match ($part) {
             'toolbar' => [
@@ -1477,26 +1481,29 @@ JS;
                     ...$editorAssets['styles'],
                     ...$packageAssets['styles'],
                     $assets->url('fieldsettings/ckeditor.css'),
-                    "$codeEditorBaseUrl/css/vendors.css",
-                    "$codeEditorBaseUrl/css/styles.css",
+                    // TODO(code-editor): restore once craft-code-editor supports Craft 6
+                    // "$codeEditorBaseUrl/css/vendors.css",
+                    // "$codeEditorBaseUrl/css/styles.css",
                 ],
                 'scripts' => [
                     ...$editorAssets['scripts'],
                     ...$packageAssets['scripts'],
-                    "$codeEditorBaseUrl/js/runtime.js",
-                    "$codeEditorBaseUrl/js/vendors.js",
-                    "$codeEditorBaseUrl/js/code-editor.js",
+                    // TODO(code-editor): restore once craft-code-editor supports Craft 6
+                    // "$codeEditorBaseUrl/js/runtime.js",
+                    // "$codeEditorBaseUrl/js/vendors.js",
+                    // "$codeEditorBaseUrl/js/code-editor.js",
                 ],
                 'modules' => $packageAssets['modules'],
             ])
-            ->globals($assets->editorGlobals())
-            ->codeEditor([
-                'baseUrl' => "$codeEditorBaseUrl/",
-                'autocompleteUrl' => action_url('codeeditor/autocomplete/index'),
-                'jsonSchemaUri' => $jsonSchemaUri,
-                'jsonSchema' => CkeditorConfigSchema::create(),
-                'readOnly' => $context->mode !== ControlMode::Editable,
-            ]);
+            ->globals($assets->editorGlobals());
+        // TODO(code-editor): restore once craft-code-editor supports Craft 6
+        // ->codeEditor([
+        //     'baseUrl' => "$codeEditorBaseUrl/",
+        //     'autocompleteUrl' => action_url('codeeditor/autocomplete/index'),
+        //     'jsonSchemaUri' => $jsonSchemaUri,
+        //     'jsonSchema' => CkeditorConfigSchema::create(),
+        //     'readOnly' => $context->mode !== ControlMode::Editable,
+        // ]);
     }
 
     #[Override]

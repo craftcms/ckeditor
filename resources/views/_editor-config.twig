@@ -51,16 +51,21 @@
             disabled: readOnly,
         }|filter|keys,
     } %}
-        {{ tag('textarea', {
-            id: 'config-options-json'|namespaceInputId,
-            name: 'json',
-            class: ['text', 'fullwidth'],
-            rows: 10,
-            text: field.json ?? "{\n  \n}",
+        {# TODO(code-editor): restore once craft-code-editor supports Craft 6 (and drop the `code` class and `readonly`)
+        tag('textarea', {
+            ...
             data: {
                 'code-editor': 'ckeditor:EditorConfigJson',
                 'code-editor-language': 'json',
             },
+        }) #}
+        {{ tag('textarea', {
+            id: 'config-options-json'|namespaceInputId,
+            name: 'json',
+            class: ['text', 'fullwidth', 'code'],
+            rows: 10,
+            text: field.json ?? "{\n  \n}",
+            readonly: readOnly,
         }) }}
     {% endtag %}
 
@@ -72,16 +77,21 @@
             disabled: readOnly,
         }|filter|keys,
     } %}
-        {{ tag('textarea', {
-            id: 'config-options-js'|namespaceInputId,
-            name: 'js',
-            class: ['text', 'fullwidth'],
-            rows: 10,
-            text: field.js ?? "return {\n  \n}",
+        {# TODO(code-editor): restore once craft-code-editor supports Craft 6 (and drop the `code` class and `readonly`)
+        tag('textarea', {
+            ...
             data: {
                 'code-editor': 'ckeditor:EditorConfigJs',
                 'code-editor-language': 'javascript',
             },
+        }) #}
+        {{ tag('textarea', {
+            id: 'config-options-js'|namespaceInputId,
+            name: 'js',
+            class: ['text', 'fullwidth', 'code'],
+            rows: 10,
+            text: field.js ?? "return {\n  \n}",
+            readonly: readOnly,
         }) }}
     {% endtag %}
 
@@ -128,16 +138,21 @@
             disabled: readOnly,
         }|filter|keys,
     } %}
-        {{ tag('textarea', {
-            id: 'css-options-css'|namespaceInputId,
-            name: 'css',
-            class: ['text', 'fullwidth'],
-            rows: 10,
-            text: cssMode == 'css' ? field.css,
+        {# TODO(code-editor): restore once craft-code-editor supports Craft 6 (and drop the `code` class and `readonly`)
+        tag('textarea', {
+            ...
             data: {
                 'code-editor': 'CodeEditor',
                 'code-editor-language': 'css',
             },
+        }) #}
+        {{ tag('textarea', {
+            id: 'css-options-css'|namespaceInputId,
+            name: 'css',
+            class: ['text', 'fullwidth', 'code'],
+            rows: 10,
+            text: cssMode == 'css' ? field.css,
+            readonly: readOnly,
         }) }}
     {% endtag %}
 
