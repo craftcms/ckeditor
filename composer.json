@@ -6,8 +6,7 @@
     "html",
     "cms",
     "craftcms",
-    "ckeditor",
-    "yii2"
+    "ckeditor"
   ],
   "license": "GPL-3.0-or-later",
   "authors": [
@@ -20,8 +19,8 @@
     "email": "support@craftcms.com",
     "issues": "https://github.com/craftcms/ckeditor/issues?state=open",
     "source": "https://github.com/craftcms/ckeditor",
-    "docs": "https://github.com/craftcms/ckeditor/blob/5.x/README.md",
-    "rss": "https://github.com/craftcms/ckeditor/commits/5.x.atom"
+    "docs": "https://github.com/craftcms/ckeditor/blob/6.x/README.md",
+    "rss": "https://github.com/craftcms/ckeditor/commits/6.x.atom"
   },
   "require": {
     "php": "^8.5",
@@ -52,12 +51,11 @@
   "extra": {
     "name": "CKEditor",
     "handle": "ckeditor",
-    "documentationUrl": "https://github.com/craftcms/ckeditor/blob/5.x/README.md"
+    "documentationUrl": "https://github.com/craftcms/ckeditor/blob/6.x/README.md"
   },
   "config": {
     "sort-packages": true,
     "allow-plugins": {
-      "yiisoft/yii2-composer": true,
       "craftcms/plugin-installer": true
     }
   },
