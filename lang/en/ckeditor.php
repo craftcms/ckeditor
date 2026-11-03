@@ -5,6 +5,7 @@ return [
     'Add nested content' => 'Add nested content',
     'Advanced Link Fields' => 'Advanced Link Fields',
     'Advanced' => 'Advanced',
+    'An unknown error occurred.' => 'An unknown error occurred.',
     'Available Transforms' => 'Available Transforms',
     'CKEditor config option mode' => 'CKEditor config option mode',
     'CSS mode' => 'CSS mode',

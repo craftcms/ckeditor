@@ -610,7 +610,7 @@ var he = class extends v {
 			} });
 			return n;
 		} catch (e) {
-			return console.error(e?.response?.data), { cardHtml: "<craft-card class=\"element card\"><div class=\"card-main\"><div class=\"card-content\"><div class=\"card-heading\"><div class=\"label error\"><span>" + (e?.response?.data?.message || "An unknown error occurred.") + "</span></div></div></div></div></craft-card>" };
+			return console.error(e?.response?.data), { cardHtml: "<craft-card class=\"element card\"><div class=\"card-main\"><div class=\"card-content\"><div class=\"card-heading\"><div class=\"label error\"><span>" + Craft.escapeHtml(e?.response?.data?.message || Craft.t("ckeditor", "An unknown error occurred.")) + "</span></div></div></div></div></craft-card>" };
 		}
 	}
 }, xe = class extends a {

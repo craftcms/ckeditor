@@ -203,7 +203,10 @@ export default class CraftEntriesEditing extends Plugin {
         '<div class="card-heading">' +
         '<div class="label error">' +
         '<span>' +
-        (e?.response?.data?.message || 'An unknown error occurred.') +
+        Craft.escapeHtml(
+          e?.response?.data?.message ||
+            Craft.t('ckeditor', 'An unknown error occurred.'),
+        ) +
         '</span>' +
         '</div>' +
         '</div>' +
