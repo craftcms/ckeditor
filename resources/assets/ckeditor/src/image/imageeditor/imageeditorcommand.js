@@ -82,15 +82,12 @@ export default class ImageEditorCommand extends Command {
     const srcInfo = this._srcInfo(element);
 
     if (srcInfo) {
-      let settings = {
-        allowSavingAsNew: false, // todo: we might want to change that, but currently we're doing the same functionality as in Redactor
-        onSave: (data) => {
-          this._reloadImage(srcInfo.assetId, data);
-        },
-        allowDegreeFractions: Craft.isImagick,
-      };
-
-      new Craft.AssetImageEditor(srcInfo.assetId, settings);
+      // the asset ID must be a number, otherwise Craft treats it as the editor settings
+      Craft.openAssetImageEditor(parseInt(srcInfo.assetId, 10), (data) => {
+        this._reloadImage(srcInfo.assetId, data);
+      }).catch((e) => {
+        Craft.cp.displayError(e?.response?.data?.message);
+      });
     }
   }
 

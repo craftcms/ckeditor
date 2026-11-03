@@ -410,16 +410,11 @@ var he = class extends v {
 	execute() {
 		this.editor.model;
 		let e = this._element(), t = this._srcInfo(e);
-		if (t) {
-			let e = {
-				allowSavingAsNew: !1,
-				onSave: (e) => {
-					this._reloadImage(t.assetId, e);
-				},
-				allowDegreeFractions: Craft.isImagick
-			};
-			new Craft.AssetImageEditor(t.assetId, e);
-		}
+		t && Craft.openAssetImageEditor(parseInt(t.assetId, 10), (e) => {
+			this._reloadImage(t.assetId, e);
+		}).catch((e) => {
+			Craft.cp.displayError(e?.response?.data?.message);
+		});
 	}
 	_reloadImage(e, t) {
 		let n = this.editor.model;
