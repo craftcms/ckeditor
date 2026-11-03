@@ -30,10 +30,7 @@ function parseValue(input: HTMLInputElement): Record<string, any> | null {
 }
 
 // Shows or hides the “Show as a separate button” indicator on an entry type chip
-async function toggleIndicator(
-  chip: HTMLElement,
-  show: boolean,
-): Promise<void> {
+function toggleIndicator(chip: HTMLElement, show: boolean): void {
   const label = chip.querySelector('craft-chip [id$="-label"]');
   if (!label) {
     return;
@@ -60,13 +57,10 @@ async function toggleIndicator(
   indicator.className = 'cp-icon puny ckeditor-expanded-indicator';
   indicator.setAttribute('title', title);
   indicator.setAttribute('aria-label', title);
+  const icon = document.createElement('craft-icon');
+  icon.setAttribute('name', 'eye');
+  indicator.append(icon);
   indicators.append(indicator);
-
-  const icon = await Craft.ui.icon('eye');
-  const el = icon?.jquery ? icon[0] : icon;
-  if (el) {
-    indicator.append(el);
-  }
 }
 
 export function registerEntryTypeChipActions(): void {
@@ -85,7 +79,7 @@ export function registerEntryTypeChipActions(): void {
     const chip = input.closest('li');
     const value = parseValue(input);
     if (chip && value) {
-      void toggleIndicator(chip, Boolean(value.expanded));
+      toggleIndicator(chip, Boolean(value.expanded));
     }
   });
 
@@ -107,7 +101,7 @@ export function registerEntryTypeChipActions(): void {
       collapse: Craft.t('ckeditor', 'Collapse to a dropdown'),
     };
     const expanded = Boolean(config.expanded);
-    void toggleIndicator(chip, expanded);
+    toggleIndicator(chip, expanded);
 
     actions.push({
       icon: expanded ? 'eye-slash' : 'eye',
