@@ -1151,17 +1151,13 @@ class Field extends HtmlField implements CrossSiteCopyableFieldInterface, Elemen
     #[Override]
     public function canDuplicateElement(NestedElementInterface $element, User $user): ?bool
     {
-        $owner = $element->getOwner();
-
-        return $owner && $user->can('save', $owner);
+        return $this->canSaveElement($element, $user);
     }
 
     #[Override]
     public function canDeleteElement(NestedElementInterface $element, User $user): ?bool
     {
-        $owner = $element->getOwner();
-
-        return $owner && $user->can('save', $owner);
+        return $this->canSaveElement($element, $user);
     }
 
     #[Override]
@@ -2002,16 +1998,14 @@ JS;
         // Give plugins/modules a chance to modify the config
         event($event = new EditorConfigResolving($this, $element, $baseConfig, $toolbar));
 
-        $removePlugins = Collection::empty();
-
         // remove MediaEmbedToolbar for now
         // see: https://github.com/ckeditor/ckeditor5-react/issues/267
         // and: https://github.com/ckeditor/ckeditor5/issues/9824
         // for more info
-        $removePlugins->push('MediaEmbedToolbar');
+        $removePlugins = ['MediaEmbedToolbar'];
 
         if (count($transforms) === 0) {
-            $removePlugins->push('ImageTransforms');
+            $removePlugins[] = 'ImageTransforms';
         }
 
         $configJs = $this->configJs();
@@ -2020,7 +2014,7 @@ JS;
         // config JS refers to by name (e.g. `extraPlugins: [Tokens]`). JSON config can't refer to plugin classes.
         [$imports, $pluginRefs, $namespaces] = CkeditorConfig::getImports(
             $event->toolbar,
-            $removePlugins->all(),
+            $removePlugins,
             isset($this->options) ? null : $configJs,
         );
 
@@ -2028,7 +2022,7 @@ JS;
 
         // Add the translation import
         $uiLanguage = CkeditorAssets::uiLanguage();
-        $importCompliantUiLanguage = CkeditorAssets::getImportCompliantLanguage(CkeditorAssets::uiLanguage());
+        $importCompliantUiLanguage = CkeditorAssets::getImportCompliantLanguage($uiLanguage);
         $uiTranslationImport = "import coreTranslations from 'ckeditor5/translations/$importCompliantUiLanguage.js';";
 
         $languageJs = Json::encode([
@@ -2120,7 +2114,6 @@ export default async function (element, options = {}) {
     };
   }
 
-  const extraRemovePlugins = [];
   if ($showWordCountJs) {
     if (typeof config.wordCount === 'undefined') {
       config.wordCount = {};
@@ -2141,19 +2134,13 @@ export default async function (element, options = {}) {
       const container = options.wordCountElement;
       if (container) {
         container.textContent = statText.join(', ') || '\u00a0';
-        if ($wordLimitJs) {
-          if (stats.words > $wordLimitJs) {
-            container.classList.add('error');
-          } else if (stats.words >= Math.floor($wordLimitJs * .9)) {
-            container.classList.add('warning');
-          } else {
-            container.classList.remove('error', 'warning');
+        for (const [count, limit] of [[stats.words, $wordLimitJs], [stats.characters, $characterLimitJs]]) {
+          if (!limit) {
+            continue;
           }
-        }
-        if ($characterLimitJs) {
-          if (stats.characters > $characterLimitJs) {
+          if (count > limit) {
             container.classList.add('error');
-          } else if (stats.characters >= Math.floor($characterLimitJs * .9)) {
+          } else if (count >= Math.floor(limit * .9)) {
             container.classList.add('warning');
           } else {
             container.classList.remove('error', 'warning');
@@ -2163,10 +2150,7 @@ export default async function (element, options = {}) {
       onUpdate(stats);
     };
   } else {
-    extraRemovePlugins.push('WordCount');
-  }
-  if (extraRemovePlugins.length) {
-    config.removePlugins.push(...extraRemovePlugins);
+    config.removePlugins.push('WordCount');
   }
 
   // the Craft 6 control panel’s owner bridge (see resources/js/modules/owner-bridge.ts)
