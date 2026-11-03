@@ -3010,26 +3010,6 @@ JS;
         ], $this->getEntryTypes());
     }
 
-    /**
-     * Returns whether non-admins can edit the source.
-     *
-     * @deprecated in 4.5.0
-     */
-    public function getEnableSourceEditingForNonAdmins(): bool
-    {
-        return $this->sourceEditingGroups === '*';
-    }
-
-    /**
-     * Sets whether non-admins can edit the source.
-     *
-     * @deprecated in 4.5.0
-     */
-    public function setEnableSourceEditingForNonAdmins(bool $value): void
-    {
-        $this->sourceEditingGroups = $value ? '*' : ['__ADMINS__'];
-    }
-
     #[Override]
     public function propagateValue(ElementInterface $from, ElementInterface $to): void
     {

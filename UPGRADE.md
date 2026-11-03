@@ -72,6 +72,7 @@ CKEditor fields render natively in Craft 6’s control panel.
 - Nested entries and image entries are created for the owner element’s draft, as in Craft 5.
 - The field type’s icon is Craft’s `paragraph` system icon, since the control panel only supports system icons.
 - Removed the `ckeditor/_settings.twig`, `ckeditor/_field-settings.twig`, `ckeditor/_entry-type-select.twig` and `ckeditor/_image-field-select.twig` templates.
+- Removed `Field::getEnableSourceEditingForNonAdmins()` and `setEnableSourceEditingForNonAdmins()` (deprecated since 4.5.0). Use `Field::$sourceEditingGroups`. Field configs with the old `enableSourceEditingForNonAdmins` setting are still converted to `sourceEditingGroups`.
 
 ### Category links
 
