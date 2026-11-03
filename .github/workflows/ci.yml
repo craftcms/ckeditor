@@ -3,8 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
-      - '5.0'
+      - '6.x'
   pull_request:
 permissions:
   contents: read
@@ -16,11 +15,22 @@ jobs:
     name: ci
     uses: craftcms/.github/.github/workflows/ci.yml@v3
     with:
-      craft_version: '5'
-      node_version: '20'
-      jobs: '["ecs", "phpstan", "prettier"]'
+      craft_version: '6'
+      node_version: '22'
+      jobs: '["phpstan", "prettier"]'
       notify_slack: true
       slack_subteam: <!subteam^SGFL9NKNZ>
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
       slack_webhook_url: ${{ secrets.SLACK_PLUGIN_WEBHOOK_URL }}
+  pint:
+    name: Pint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          tools: composer:v2
+      - run: composer install --no-interaction --no-ansi --no-progress
+      - run: composer check-cs
