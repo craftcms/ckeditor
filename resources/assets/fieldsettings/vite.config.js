@@ -3,6 +3,7 @@ import {resolve} from 'path';
 import {viteStaticCopy} from 'vite-plugin-static-copy';
 
 export default defineConfig({
+  publicDir: false,
   build: {
     outDir: resolve(__dirname, 'dist'),
     emptyOutDir: false,
