@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace CraftCms\Ckeditor\Support;
 
 use CraftCms\Cms\Support\Json;
-use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
 
@@ -304,25 +303,6 @@ final class CkeditorConfig
     public static function getToolbarItems(): array
     {
         return self::$toolbarItems;
-    }
-
-    /**
-     * Get the JavaScript import statements for all plugins
-     *
-     * @param  string|null  $name  namespace of the package
-     *
-     * @deprecated in 5.8.0.
-     */
-    public static function getImportStatements(?string $name = null): string
-    {
-        $plugins = $name ? [$name => self::getPluginsByPackage($name)] : self::getPluginsByPackage();
-
-        return collect($plugins)
-            ->reduce(function (Collection $carry, array $plugins, string $import) {
-                $carry->push('import { '.implode(', ', $plugins).' } from "'.$import.'";');
-
-                return $carry;
-            }, Collection::empty())->join("\n");
     }
 
     /**

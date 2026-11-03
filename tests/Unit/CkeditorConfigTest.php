@@ -71,17 +71,6 @@ it('normalizes toolbar items', function () {
     ]);
 });
 
-it('builds import statements for every package', function () {
-    CkeditorConfig::registerPackage('@acme/tokens', ['plugins' => ['Tokens']]);
-
-    expect(CkeditorConfig::getImportStatements('@acme/tokens'))->toBe('import { Tokens } from "@acme/tokens";')
-        ->and(CkeditorConfig::getImportStatements())->toContain(
-            'from "ckeditor5";',
-            'from "@craftcms/ckeditor";',
-            'import { Tokens } from "@acme/tokens";',
-        );
-});
-
 it('imports every plugin when no toolbar is given', function () {
     [$statements, $references, $namespaces] = CkeditorConfig::getImports();
 

@@ -159,6 +159,7 @@ Yii asset bundles are gone. CKEditor’s own files are published to `public/vend
 | `craft\ckeditor\web\assets\ckeditor\CkeditorAsset` | Removed. Use `CkeditorAssets::registerEditorAssets()`. |
 | `craft\ckeditor\web\assets\fieldsettings\FieldSettingsAsset` | Removed. Use `CkeditorAssets::registerFieldSettingsAssets()`. |
 | `CkeditorAsset::EVENT_PUBLISH` | Removed (deprecated since 3.5.0). |
+| `craft\ckeditor\helpers\CkeditorConfig::getImportStatements()` | Removed (deprecated since 5.8.0). |
 
 Before:
 
