@@ -169,7 +169,7 @@
     <div
       v-if="control.props.showWordCount"
       ref="wordCount"
-      class="ck-word-count light smalltext"
+      class="ck-word-count text-quiet text-sm"
     ></div>
     <p v-if="error" class="error">{{ error }}</p>
   </div>

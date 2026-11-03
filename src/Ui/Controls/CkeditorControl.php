@@ -48,7 +48,7 @@ class CkeditorControl extends Control
     {
         return Html::textarea($attributes['name'], (string) ($value ?? ''), [
             'id' => $attributes['id'],
-            'class' => ['text', 'fullwidth'],
+            'class' => ['text', 'w-full'],
             'rows' => 10,
             'disabled' => $attributes['disabled'] ?? false,
             'readonly' => $attributes['readonly'] ?? false,
