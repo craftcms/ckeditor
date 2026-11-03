@@ -504,7 +504,7 @@ class Field extends HtmlField implements CrossSiteCopyableFieldInterface, Elemen
      *
      * @since 5.0.0
      */
-    public static function entryType(EntryType|CkeEntryType|string|array $entryType): ?CkeEntryType
+    public static function entryType(EntryType|CkeEntryType|int|string|array $entryType): ?CkeEntryType
     {
         if ($entryType instanceof CkeEntryType) {
             return $entryType;
@@ -915,7 +915,7 @@ class Field extends HtmlField implements CrossSiteCopyableFieldInterface, Elemen
     /**
      * Sets the available entry types.
      *
-     * @param  array<EntryType|CkeEntryType|string|array>  $entryTypes  The entry types, or their IDs or UUIDs
+     * @param  array<EntryType|CkeEntryType|int|string|array>  $entryTypes  The entry types, or their IDs or UUIDs
      *
      * @since 4.0.0
      */
