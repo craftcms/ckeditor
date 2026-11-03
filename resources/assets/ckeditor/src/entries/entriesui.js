@@ -390,6 +390,8 @@ export default class CraftEntriesUI extends Plugin {
       params.prevalidate = 1;
     }
 
+    let draftRefreshTimeout = null;
+
     Craft.openSlideout(Craft.getActionUrl('elements/edit', params), {
       opener: $element[0] ?? null,
       // Only move the entry into the owner’s draft if it isn’t already there, like Matrix does
@@ -414,10 +416,16 @@ export default class CraftEntriesUI extends Plugin {
           });
         }
 
-        // Refresh the card so it reflects the changes (e.g. the “Edited” label)
-        this._refreshCard(modelElement);
-
-        if (!result?.draft) {
+        // Refresh the card so it reflects the changes (e.g. the “Edited” label); wait for
+        // autosaves to settle first, like Matrix does (see `useNestedElementOperations.ts` `onChildSaved()`)
+        clearTimeout(draftRefreshTimeout);
+        if (result?.draft) {
+          draftRefreshTimeout = setTimeout(
+            () => this._refreshCard(modelElement),
+            1000,
+          );
+        } else {
+          this._refreshCard(modelElement);
           owner.refresh();
         }
       },

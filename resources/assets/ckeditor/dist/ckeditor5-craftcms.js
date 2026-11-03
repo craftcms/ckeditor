@@ -822,14 +822,16 @@ var he = class extends v {
 		}, c = o.attr("data-owner-id"), l = o.attr("data-field-id");
 		c && (s.ownerId = c), l && (s.fieldId = l);
 		let u = o.parents(".field");
-		u.length && $(u[0]).hasClass("has-errors") && (s.prevalidate = 1), Craft.openSlideout(Craft.getActionUrl("elements/edit", s), {
+		u.length && $(u[0]).hasClass("has-errors") && (s.prevalidate = 1);
+		let d = null;
+		Craft.openSlideout(Craft.getActionUrl("elements/edit", s), {
 			opener: o[0] ?? null,
 			prepareNestedOwner: async () => o.is("[data-owner-is-canonical]") && !o.is("[data-is-unpublished-draft]") ? r.prepare() : null,
 			onSaved: (t) => {
 				let a = t?.draft ? null : parseInt(t?.data?.element?.id ?? t?.data?.id ?? e, 10);
 				a && a != e && i.editing.model.change((e) => {
 					e.setAttribute("entryId", a, n);
-				}), this._refreshCard(n), t?.draft || r.refresh();
+				}), clearTimeout(d), t?.draft ? d = setTimeout(() => this._refreshCard(n), 1e3) : (this._refreshCard(n), r.refresh());
 			},
 			onClosed: () => {
 				a.change((e) => {
