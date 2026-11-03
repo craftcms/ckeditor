@@ -88,6 +88,7 @@ class CkeditorController
             ->siteId($request->input('siteId'))
             ->status(null)
             ->revisions(null)
+            ->withProvisionalDrafts()
             ->one();
 
         abort_unless($entry !== null, 400, "Invalid entry ID: $entryId");

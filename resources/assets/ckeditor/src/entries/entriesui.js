@@ -400,14 +400,12 @@ export default class CraftEntriesUI extends Plugin {
           ? owner.prepare()
           : null,
       onSaved: (result) => {
-        if (result?.draft) {
-          return;
-        }
-
-        const savedId = parseInt(
-          result?.data?.element?.id ?? result?.data?.id ?? entryId,
-          10,
-        );
+        const savedId = result?.draft
+          ? null
+          : parseInt(
+              result?.data?.element?.id ?? result?.data?.id ?? entryId,
+              10,
+            );
 
         if (savedId && savedId != entryId) {
           // the entry was saved for the owner’s draft, so it has a new ID
@@ -416,8 +414,12 @@ export default class CraftEntriesUI extends Plugin {
           });
         }
 
-        Craft.refreshElementInstances(savedId || entryId);
-        owner.refresh();
+        // Refresh the card so it reflects the changes (e.g. the “Edited” label)
+        this._refreshCard(modelElement);
+
+        if (!result?.draft) {
+          owner.refresh();
+        }
       },
       onClosed: () => {
         model.change((writer) => {
@@ -426,6 +428,49 @@ export default class CraftEntriesUI extends Plugin {
         editor.editing.view.focus();
       },
     });
+  }
+
+  /**
+   * Replaces an entry card’s HTML with a freshly rendered one, in place, so the editor’s height doesn’t jump.
+   *
+   * @private
+   */
+  async _refreshCard(modelElement) {
+    const editor = this.editor;
+    const enqueue = (callback) =>
+      editor.model.enqueueChange({isUndoable: false}, callback);
+
+    // without the cached card HTML, `_getCardHtml()` fetches it from the server
+    enqueue((writer) => writer.removeAttribute('cardHtml', modelElement));
+    const data = await editor.plugins
+      .get('CraftEntriesEditing')
+      ._getCardHtml(modelElement);
+
+    if (modelElement.root.rootName === '$graveyard') {
+      return;
+    }
+
+    enqueue((writer) =>
+      writer.setAttribute('cardHtml', data.cardHtml, modelElement),
+    );
+
+    const container = editor.editing.mapper.toViewElement(modelElement);
+    const card = container
+      ? [...container.getChildren()].find((child) => child.is('rawElement'))
+      : null;
+    const domElement = card
+      ? editor.editing.view.domConverter.mapViewToDom(card)
+      : null;
+
+    if (!domElement) {
+      editor.editing.reconvertItem(modelElement);
+      return;
+    }
+
+    domElement.innerHTML = data.cardHtml;
+    Craft.appendHeadHtml(data.headHtml);
+    Craft.appendBodyHtml(data.bodyHtml);
+    Craft.cp.elementThumbLoader.load($(domElement));
   }
 
   /**
