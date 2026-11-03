@@ -34,3 +34,43 @@ jobs:
           tools: composer:v2
       - run: composer install --no-interaction --no-ansi --no-progress
       - run: composer check-cs
+  tests:
+    name: Tests / ${{ matrix.db }}
+    #    needs: [ci, pint]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        db: [sqlite, mysql, pgsql]
+    services:
+      mysql:
+        image: ${{ matrix.db == 'mysql' && 'mysql:8.0' || '' }}
+        env:
+          MYSQL_ROOT_PASSWORD: mysecretpassword
+          MYSQL_DATABASE: craft_test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 5
+      pgsql:
+        image: ${{ matrix.db == 'pgsql' && 'postgres:latest' || '' }}
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: mysecretpassword
+          POSTGRES_DB: craft_test
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: gd, pdo_mysql, pdo_pgsql, pdo_sqlite
+          tools: composer:v2
+      - run: composer install --no-interaction --no-ansi --no-progress
+      - name: Copy tests .env
+        run: |
+          cp tests/.env.example.${{ matrix.db }} tests/.env
+          sed -i 's/DB_PASSWORD=/DB_PASSWORD=mysecretpassword/' tests/.env
+      - run: ./vendor/bin/pest --ci --compact
