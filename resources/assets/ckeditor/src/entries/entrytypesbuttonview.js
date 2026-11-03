@@ -70,7 +70,7 @@ export default class CraftEntryTypesButtonView extends View {
 
       // the dropdown should be enabled if we have the command
       dropdownView.bind('isEnabled').to(insertEntryCommand);
-      dropdownView.id = Craft.uuid();
+      dropdownView.id = crypto.randomUUID();
 
       addListToDropdown(dropdownView, () => textButtons, {
         ariaLabel: Craft.t('ckeditor', 'Entry types list'),

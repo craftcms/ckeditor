@@ -22,7 +22,7 @@ export default class CraftFakeEntryTypeButtonView extends View {
 
     // the dropdown should be enabled if we have the command
     dropdownView.bind('isEnabled').to(insertEntryCommand);
-    dropdownView.id = Craft.uuid();
+    dropdownView.id = crypto.randomUUID();
 
     // Execute command when an item from the dropdown is selected.
     this.listenTo(dropdownView, 'execute', (evt) => {

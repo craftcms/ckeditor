@@ -238,7 +238,7 @@ var ToolbarBuilder_default = Garnish.Base.extend({
 			} catch {
 				return;
 			}
-			const json = JSON.stringify(config, null, 2), trimmed = Craft.trim(json.substring(1, json.length - 1));
+			const json = JSON.stringify(config, null, 2), trimmed = json.substring(1, json.length - 1).trim();
 			if (!trimmed) return;
 			ev.preventDefault();
 			const { selectionStart, selectionEnd, value } = this.jsonEditor;
@@ -253,9 +253,9 @@ var ToolbarBuilder_default = Garnish.Base.extend({
 	},
 	getConfig: function() {
 		let e;
-		if (this.mode === "json") e = Craft.trim(this.getValue(this.jsonEditor)) || "{}";
+		if (this.mode === "json") e = this.getValue(this.jsonEditor).trim() || "{}";
 		else {
-			let t = Craft.trim(this.getValue(this.jsEditor));
+			let t = this.getValue(this.jsEditor).trim();
 			if (e = t ? this.js2json(t) : "{}", e === !1) return !1;
 		}
 		try {

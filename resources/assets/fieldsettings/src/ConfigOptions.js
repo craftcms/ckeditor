@@ -138,7 +138,7 @@ export default Garnish.Base.extend({
         return;
       }
       const json = JSON.stringify(config, null, 2);
-      const trimmed = Craft.trim(json.substring(1, json.length - 1));
+      const trimmed = json.substring(1, json.length - 1).trim();
       if (!trimmed) {
         return;
       }
@@ -166,9 +166,9 @@ export default Garnish.Base.extend({
   getConfig: function () {
     let json;
     if (this.mode === 'json') {
-      json = Craft.trim(this.getValue(this.jsonEditor)) || '{}';
+      json = this.getValue(this.jsonEditor).trim() || '{}';
     } else {
-      const value = Craft.trim(this.getValue(this.jsEditor));
+      const value = this.getValue(this.jsEditor).trim();
       json = value ? this.js2json(value) : '{}';
       if (json === false) {
         return false;

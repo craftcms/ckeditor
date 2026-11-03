@@ -2141,24 +2141,26 @@ export default async function (element, options = {}) {
           num: stats.characters
         }));
       }
-      const container = $(options.wordCountElement);
-      container.html(Craft.escapeHtml(statText.join(', ')) || '&nbsp;');
-      if ($wordLimitJs) {
-        if (stats.words > $wordLimitJs) {
-          container.addClass('error');
-        } else if (stats.words >= Math.floor($wordLimitJs * .9)) {
-          container.addClass('warning');
-        } else {
-          container.removeClass('error warning');
+      const container = options.wordCountElement;
+      if (container) {
+        container.textContent = statText.join(', ') || '\u00a0';
+        if ($wordLimitJs) {
+          if (stats.words > $wordLimitJs) {
+            container.classList.add('error');
+          } else if (stats.words >= Math.floor($wordLimitJs * .9)) {
+            container.classList.add('warning');
+          } else {
+            container.classList.remove('error', 'warning');
+          }
         }
-      }
-      if ($characterLimitJs) {
-        if (stats.characters > $characterLimitJs) {
-          container.addClass('error');
-        } else if (stats.characters >= Math.floor($characterLimitJs * .9)) {
-          container.addClass('warning');
-        } else {
-          container.removeClass('error warning');
+        if ($characterLimitJs) {
+          if (stats.characters > $characterLimitJs) {
+            container.classList.add('error');
+          } else if (stats.characters >= Math.floor($characterLimitJs * .9)) {
+            container.classList.add('warning');
+          } else {
+            container.classList.remove('error', 'warning');
+          }
         }
       }
       onUpdate(stats);

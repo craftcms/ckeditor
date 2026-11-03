@@ -641,7 +641,7 @@ var he = class extends v {
 			icon: d,
 			tooltip: !0,
 			withText: !1
-		}), o.bind("isEnabled").to(i), o.id = Craft.uuid(), T(o, () => a, { ariaLabel: Craft.t("ckeditor", "Entry types list") }), this.listenTo(o, "execute", (e) => {
+		}), o.bind("isEnabled").to(i), o.id = crypto.randomUUID(), T(o, () => a, { ariaLabel: Craft.t("ckeditor", "Entry types list") }), this.listenTo(o, "execute", (e) => {
 			this.entriesUi._showCreateEntrySlideout(e.source.commandValue);
 		}), this.setTemplate({
 			tag: "div",
@@ -661,7 +661,7 @@ var he = class extends v {
 			icon: d,
 			tooltip: !0,
 			withText: !1
-		}), r.bind("isEnabled").to(n), r.id = Craft.uuid(), this.listenTo(r, "execute", (e) => {
+		}), r.bind("isEnabled").to(n), r.id = crypto.randomUUID(), this.listenTo(r, "execute", (e) => {
 			this.entriesUi._showCreateEntrySlideout(e.source.commandValue);
 		}), this.setTemplate({
 			tag: "div",
