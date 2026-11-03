@@ -203,7 +203,7 @@ var ToolbarBuilder_default = Garnish.Base.extend({
 	defaults: null,
 	init: function(id, jsonSchemaUri, mode, hasFiles, jsonSchema = null) {
 		this.jsonSchemaUri = jsonSchemaUri, this.jsonSchema = jsonSchema, this.mode = mode, this.mode !== "file" && (this.lastCodeMode = mode), this.$container = $(`#${id}`), this.$modeInput = $(`#${id}-mode`), this.$jsonContainer = $(`#${id}-json-container`), this.$jsContainer = $(`#${id}-js-container`), this.$fileContainer = $(`#${id}-file-container`), this.jsonEditor = document.getElementById(`${id}-json`), this.jsEditor = document.getElementById(`${id}-js`);
-		const $modePicker = this.$container.children(".btngroup");
+		const $modePicker = this.$container.children("craft-button-group");
 		this.defaults = {};
 		const $containers = this.$jsonContainer.add(this.$jsContainer).add(this.$fileContainer);
 		new Craft.Listbox($modePicker, { onChange: (e) => {
@@ -361,7 +361,7 @@ var ToolbarBuilder_default = Garnish.Base.extend({
 	$fileContainer: null,
 	init: function(e, t, n) {
 		this.mode = t, this.$container = $(`#${e}`), this.$modeInput = $(`#${e}-mode`), this.$cssContainer = $(`#${e}-css-container`), this.$fileContainer = $(`#${e}-file-container`);
-		let r = this.$container.children(".btngroup"), i = this.$cssContainer.add(this.$fileContainer);
+		let r = this.$container.children("craft-button-group"), i = this.$cssContainer.add(this.$fileContainer);
 		new Craft.Listbox(r, { onChange: (e) => {
 			switch (this.mode = e.data("mode"), (this.mode !== "file" || n) && this.$modeInput.val(this.mode), i.addClass("hidden"), this.mode) {
 				case "css":

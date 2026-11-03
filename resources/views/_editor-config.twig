@@ -35,7 +35,7 @@
 {% elseif part == 'options' %}
 
     <div id="{{ 'config-options'|namespaceInputId }}">
-        <craft-button-group class="btngroup btngroup--exclusive" aria-label="{{ 'CKEditor config option mode'|t('ckeditor') }}">
+        <craft-button-group aria-label="{{ 'CKEditor config option mode'|t('ckeditor') }}">
             <craft-button type="button" variant="outline" size="small" data-mode="json" aria-pressed="{{ configMode == 'json' ? 'true' : 'false' }}"{{ configMode == 'json' ? ' active' }}>JSON</craft-button>
             <craft-button type="button" variant="outline" size="small" data-mode="js" aria-pressed="{{ configMode == 'js' ? 'true' : 'false' }}"{{ configMode == 'js' ? ' active' }}>JavaScript</craft-button>
             <craft-button type="button" variant="outline" size="small" data-mode="file" aria-pressed="{{ configMode == 'file' ? 'true' : 'false' }}"{{ configMode == 'file' ? ' active' }}>File</craft-button>
@@ -51,7 +51,7 @@
             disabled: readOnly,
         }|filter|keys,
     } %}
-        {# TODO(code-editor): restore once craft-code-editor supports Craft 6 (and drop the `code` class and `readonly`)
+        {# TODO(code-editor): restore once craft-code-editor supports Craft 6 (as a plain `<textarea>` again)
         tag('textarea', {
             ...
             data: {
@@ -59,13 +59,13 @@
                 'code-editor-language': 'json',
             },
         }) #}
-        {{ tag('textarea', {
+        {{ ui('textarea', {
             id: 'config-options-json'|namespaceInputId,
             name: 'json',
-            class: ['text', 'w-full', 'font-mono'],
+            value: field.json ?? "{\n  \n}",
             rows: 10,
-            text: field.json ?? "{\n  \n}",
-            readonly: readOnly,
+            monospace: true,
+            readOnly: readOnly,
         }) }}
     {% endtag %}
 
@@ -77,7 +77,7 @@
             disabled: readOnly,
         }|filter|keys,
     } %}
-        {# TODO(code-editor): restore once craft-code-editor supports Craft 6 (and drop the `code` class and `readonly`)
+        {# TODO(code-editor): restore once craft-code-editor supports Craft 6 (as a plain `<textarea>` again)
         tag('textarea', {
             ...
             data: {
@@ -85,13 +85,13 @@
                 'code-editor-language': 'javascript',
             },
         }) #}
-        {{ tag('textarea', {
+        {{ ui('textarea', {
             id: 'config-options-js'|namespaceInputId,
             name: 'js',
-            class: ['text', 'w-full', 'font-mono'],
+            value: field.js ?? "return {\n  \n}",
             rows: 10,
-            text: field.js ?? "return {\n  \n}",
-            readonly: readOnly,
+            monospace: true,
+            readOnly: readOnly,
         }) }}
     {% endtag %}
 
@@ -114,16 +114,17 @@
                 value: field.jsFile,
             }) }}
         {% else %}
-            <p class="warning with-icon">
-                {{ 'No JS/JSON files exist within `config/craft/ckeditor/`.'|t('ckeditor')|md(inlineOnly=true) }}
-            </p>
+            {{ ui('callout', {
+                variant: 'warning',
+                content: 'No JS/JSON files exist within `config/craft/ckeditor/`.'|t('ckeditor')|md(inlineOnly=true),
+            }) }}
         {% endif %}
     {% endtag %}
 
 {% elseif part == 'styles' %}
 
     <div id="{{ 'css-options'|namespaceInputId }}">
-        <craft-button-group class="btngroup btngroup--exclusive" aria-label="{{ 'CSS mode'|t('ckeditor') }}">
+        <craft-button-group aria-label="{{ 'CSS mode'|t('ckeditor') }}">
             <craft-button type="button" variant="outline" size="small" data-mode="css" aria-pressed="{{ cssMode == 'css' ? 'true' : 'false' }}"{{ cssMode == 'css' ? ' active' }}>CSS</craft-button>
             <craft-button type="button" variant="outline" size="small" data-mode="file" aria-pressed="{{ cssMode == 'file' ? 'true' : 'false' }}"{{ cssMode == 'file' ? ' active' }}>File</craft-button>
         </craft-button-group>
@@ -138,7 +139,7 @@
             disabled: readOnly,
         }|filter|keys,
     } %}
-        {# TODO(code-editor): restore once craft-code-editor supports Craft 6 (and drop the `code` class and `readonly`)
+        {# TODO(code-editor): restore once craft-code-editor supports Craft 6 (as a plain `<textarea>` again)
         tag('textarea', {
             ...
             data: {
@@ -146,13 +147,13 @@
                 'code-editor-language': 'css',
             },
         }) #}
-        {{ tag('textarea', {
+        {{ ui('textarea', {
             id: 'css-options-css'|namespaceInputId,
             name: 'css',
-            class: ['text', 'w-full', 'font-mono'],
+            value: cssMode == 'css' ? field.css,
             rows: 10,
-            text: cssMode == 'css' ? field.css,
-            readonly: readOnly,
+            monospace: true,
+            readOnly: readOnly,
         }) }}
     {% endtag %}
 
@@ -175,9 +176,10 @@
                 value: field.cssFile,
             }) }}
         {% else %}
-            <p class="warning with-icon">
-                {{ 'No CSS files exist within `config/craft/ckeditor/`.'|t('ckeditor')|md(inlineOnly=true) }}
-            </p>
+            {{ ui('callout', {
+                variant: 'warning',
+                content: 'No CSS files exist within `config/craft/ckeditor/`.'|t('ckeditor')|md(inlineOnly=true),
+            }) }}
         {% endif %}
     {% endtag %}
 

@@ -4,7 +4,7 @@
     "name": "assets"
   },
   "resources/js/cp.ts": {
-    "file": "assets/cp-69Kbnz7L.js",
+    "file": "assets/cp-DOPkiCwA.js",
     "name": "cp",
     "src": "resources/js/cp.ts",
     "isEntry": true,
@@ -26,7 +26,7 @@
     ]
   },
   "resources/js/modules/ui/EditorConfigControl.vue": {
-    "file": "assets/EditorConfigControl-BF_3Qrl4.js",
+    "file": "assets/EditorConfigControl-CEWUBGgy.js",
     "name": "EditorConfigControl",
     "src": "resources/js/modules/ui/EditorConfigControl.vue",
     "isDynamicEntry": true,

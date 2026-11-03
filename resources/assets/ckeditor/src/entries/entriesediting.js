@@ -197,21 +197,13 @@ export default class CraftEntriesEditing extends Plugin {
       console.error(e?.response?.data);
 
       const cardHtml =
-        '<craft-card class="element card">' +
-        '<div class="card-main">' +
-        '<div class="card-content">' +
-        '<div class="card-heading">' +
-        '<div class="label error">' +
-        '<span>' +
+        '<craft-card>' +
+        '<craft-callout variant="danger" role="alert">' +
         Craft.escapeHtml(
           e?.response?.data?.message ||
             Craft.t('ckeditor', 'An unknown error occurred.'),
         ) +
-        '</span>' +
-        '</div>' +
-        '</div>' +
-        '</div>' +
-        '</div>' +
+        '</craft-callout>' +
         '</craft-card>';
 
       return {cardHtml};

@@ -18,7 +18,7 @@ export default Garnish.Base.extend({
     this.$modeInput = $(`#${id}-mode`);
     this.$cssContainer = $(`#${id}-css-container`);
     this.$fileContainer = $(`#${id}-file-container`);
-    const $modePicker = this.$container.children('.btngroup');
+    const $modePicker = this.$container.children('craft-button-group');
 
     const $containers = this.$cssContainer.add(this.$fileContainer);
 

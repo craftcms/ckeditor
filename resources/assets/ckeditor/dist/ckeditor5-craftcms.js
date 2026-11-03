@@ -206,7 +206,7 @@ var j = Object.create, M = Object.defineProperty, te = Object.getOwnPropertyDesc
 	}
 	_attachUploader() {
 		let e = this.editor, t = e.config.get("defaultUploadFolderId");
-		t && (this.$container = $(e.sourceElement).closest(".input"), this.progressBar = new Craft.ProgressBar($("<div class=\"progress-shade\"></div>").appendTo(this.$container)), this.$fileInput = $("<input/>", {
+		t && (this.$container = $(e.sourceElement).closest(".input"), this.progressBar = $("<craft-progress-bar class=\"hidden mt-sm\" smooth></craft-progress-bar>").appendTo(this.$container)[0], this.$fileInput = $("<input/>", {
 			type: "file",
 			class: "hidden",
 			multiple: !0
@@ -236,16 +236,16 @@ var j = Object.create, M = Object.defineProperty, te = Object.getOwnPropertyDesc
 		}, { priority: "high" }));
 	}
 	_onUploadStart() {
-		this.progressBar.$progressBar.css({ top: Math.round(this.$container.outerHeight() / 2) - 6 }), this.$container.addClass("uploading"), this.progressBar.resetProgressBar(), this.progressBar.showProgressBar();
+		this.progressBar.progress = 0, this.progressBar.classList.remove("hidden");
 	}
 	_onUploadProgress(e, t = null) {
 		t = e instanceof CustomEvent ? e.detail : t;
 		var n = parseInt(Math.min(t.loaded / t.total, 1) * 100, 10);
-		this.progressBar.setProgressPercentage(n);
+		this.progressBar.progress = n;
 	}
 	async _onUploadComplete(e, t = null) {
 		let n = e instanceof CustomEvent ? e.detail : t.result;
-		if (this.progressBar.hideProgressBar(), this.$container.removeClass("uploading"), this._imageMode === "entries") {
+		if (this.progressBar.classList.add("hidden"), this._imageMode === "entries") {
 			await this._createImageEntry(n.assetId);
 			return;
 		}
@@ -259,7 +259,7 @@ var j = Object.create, M = Object.defineProperty, te = Object.getOwnPropertyDesc
 		let { message: n, filename: r, errors: i } = (e instanceof CustomEvent ? e.detail : t?.jqXHR?.responseJSON) || {};
 		r ||= t?.files?.[0].name;
 		let a = i ? Object.values(i).flat() : [];
-		n ||= a.length ? a.join("\n") : r ? Craft.t("app", "Upload failed for “{filename}”.", { filename: r }) : Craft.t("app", "Upload failed."), Craft.cp.displayError(n), this.progressBar.hideProgressBar(), this.$container.removeClass("uploading");
+		n ||= a.length ? a.join("\n") : r ? Craft.t("app", "Upload failed for “{filename}”.", { filename: r }) : Craft.t("app", "Upload failed."), Craft.cp.displayError(n), this.progressBar.classList.add("hidden");
 	}
 }, ue = class extends r {
 	refresh() {
@@ -610,7 +610,7 @@ var he = class extends v {
 			} });
 			return n;
 		} catch (e) {
-			return console.error(e?.response?.data), { cardHtml: "<craft-card class=\"element card\"><div class=\"card-main\"><div class=\"card-content\"><div class=\"card-heading\"><div class=\"label error\"><span>" + Craft.escapeHtml(e?.response?.data?.message || Craft.t("ckeditor", "An unknown error occurred.")) + "</span></div></div></div></div></craft-card>" };
+			return console.error(e?.response?.data), { cardHtml: "<craft-card><craft-callout variant=\"danger\" role=\"alert\">" + Craft.escapeHtml(e?.response?.data?.message || Craft.t("ckeditor", "An unknown error occurred.")) + "</craft-callout></craft-card>" };
 		}
 	}
 }, xe = class extends a {
@@ -985,18 +985,14 @@ var Oe = class extends v {
 		}, { priority: "high" });
 	}
 }, ke = class extends x {
-	constructor(t, n = {}) {
-		super(t), this.bindTemplate, this.set("isFocused", !1), this.linkUi = n.linkUi, this.editor = this.linkUi.editor, this.elementId = this.linkUi._getLinkElementId(), this.siteId = this.linkUi._getLinkSiteId(), this.linkOption = n.linkOption;
-		let r = this.linkUi._getLinkElementRefHandle();
-		if (this.button = null, r) {
-			let e = this.linkUi.linkTypeDropdownItemModels[r];
+	constructor(e, t = {}) {
+		super(e), this.bindTemplate, this.set("isFocused", !1), this.linkUi = t.linkUi, this.editor = this.linkUi.editor, this.elementId = this.linkUi._getLinkElementId(), this.siteId = this.linkUi._getLinkSiteId(), this.linkOption = t.linkOption;
+		let n = this.linkUi._getLinkElementRefHandle();
+		if (this.button = null, n) {
+			let e = this.linkUi.linkTypeDropdownItemModels[n];
 			this.linkUi.linkTypeDropdownView.buttonView.label == e.label && (this.button = Craft.t("app", "Loading"));
 		}
-		this.button ?? (this.button = new e(), this.button.set({
-			label: Craft.t("app", "Choose"),
-			withText: !0,
-			class: "btn add icon dashed"
-		})), this.setTemplate({
+		this.button ??= this._createChooseButton(), this.setTemplate({
 			tag: "div",
 			attributes: {
 				class: ["elementselect", "ck-reset_all-excluded"],
@@ -1005,19 +1001,32 @@ var Oe = class extends v {
 			children: [this.button]
 		});
 	}
+	_createChooseButton() {
+		let e = new x(this.locale);
+		return e.setTemplate({
+			tag: "craft-button",
+			attributes: {
+				type: "button",
+				variant: "dashed",
+				icon: "plus",
+				"data-choose": !0
+			},
+			children: [Craft.t("app", "Choose")]
+		}), e;
+	}
 	focus() {
 		this.element.focus();
 	}
 	render() {
 		super.render();
-		let t = this.linkUi, n = t._linkUI, r = this.linkOption;
-		this.element.addEventListener("click", function(e) {
-			if (this.children[0].classList.contains("add") || e.target.classList.contains("ck-button__label")) {
-				let e = n.formView.displayedTextInputView.fieldView.element.value;
-				n._hideUI(!1), t._showElementSelectorModal(r, e);
+		let e = this.linkUi, t = e._linkUI, n = this.linkOption;
+		this.element.addEventListener("click", function(r) {
+			if (this.children[0]?.matches("craft-button[data-choose]")) {
+				let r = t.formView.displayedTextInputView.fieldView.element.value;
+				t._hideUI(!1), e._showElementSelectorModal(n, r);
 			}
 		}), this.element.children.length == 0 && Craft.sendActionRequest("POST", "ckeditor/ckeditor/render-element-with-supported-sites", { data: { elements: [{
-			type: r.elementType,
+			type: n.elementType,
 			id: this.elementId,
 			siteId: this.siteId,
 			instances: [{
@@ -1026,11 +1035,11 @@ var Oe = class extends v {
 				sortable: !1,
 				showActionMenu: !1
 			}]
-		}] } }).then((n) => {
-			if (Object.keys(n.data.elements).length > 0) {
-				if (Craft.isMultiSite && this.linkUi.sitesView != null) for (let [e, t] of Object.entries(this.linkUi.sitesView.siteDropdownItemModels)) n.data.siteIds.includes(parseInt(e)) || e == "current" ? t.set("isEnabled", !0) : t.set("isEnabled", !1);
-				this.element.innerHTML = n.data.elements[this.elementId][0], Craft.appendHeadHtml(n.data.headHtml), Craft.appendBodyHtml(n.data.bodyHtml);
-				let e = this.element.firstChild, r = [{
+		}] } }).then((t) => {
+			if (Object.keys(t.data.elements).length > 0) {
+				if (Craft.isMultiSite && this.linkUi.sitesView != null) for (let [e, n] of Object.entries(this.linkUi.sitesView.siteDropdownItemModels)) t.data.siteIds.includes(parseInt(e)) || e == "current" ? n.set("isEnabled", !0) : n.set("isEnabled", !1);
+				this.element.innerHTML = t.data.elements[this.elementId][0], Craft.appendHeadHtml(t.data.headHtml), Craft.appendBodyHtml(t.data.bodyHtml);
+				let n = this.element.firstChild, r = [{
 					icon: "arrows-rotate",
 					label: Craft.t("app", "Replace"),
 					callback: () => {
@@ -1043,15 +1052,11 @@ var Oe = class extends v {
 						this.editor.commands.get("unlink").execute();
 					}
 				}];
-				Craft.addActionsToChip(e, r), this.linkUi.sitesView?.siteDropdownView?.buttonView && this.linkUi.sitesView?.siteDropdownView.buttonView.set("isVisible", !0), t._alignFocus();
+				Craft.addActionsToChip(n, r), this.linkUi.sitesView?.siteDropdownView?.buttonView && this.linkUi.sitesView?.siteDropdownView.buttonView.set("isVisible", !0), e._alignFocus();
 			} else if (this.linkUi.previousLinkValue?.length > 0) {
 				let { formView: e } = this.linkUi._linkUI;
 				e.urlInputView.fieldView.set("value", this.linkUi.previousLinkValue);
-			} else this.button = new e(), this.button.set({
-				label: Craft.t("app", "Choose"),
-				withText: !0,
-				class: "btn add icon dashed"
-			}), this.button.render(), this.element.innerHTML = this.button.element.outerHTML;
+			} else this.button = this._createChooseButton(), this.button.render(), this.element.innerHTML = this.button.element.outerHTML;
 		}).catch((e) => {
 			throw Craft.cp.displayError(e?.response?.data?.message), e?.response?.data?.message ?? e;
 		});

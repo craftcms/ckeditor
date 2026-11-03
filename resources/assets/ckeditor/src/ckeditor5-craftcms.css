@@ -375,15 +375,6 @@ body.ck-fullscreen .slideout-container {
   min-width: 24em;
 }
 
-.ck.ck-button.btn.dashed {
-  background-color: transparent;
-  border: 1px dashed
-    var(
-      --medium-hairline-color,
-      var(--c-color-neutral-border-quiet, hsl(212deg 25% 50% / 40%))
-    );
-}
-
 .break {
   flex-basis: 100%;
   height: 0;

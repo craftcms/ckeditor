@@ -1,4 +1,4 @@
-import {ButtonView, View} from 'ckeditor5';
+import {View} from 'ckeditor5';
 
 export default class CraftLinkElementView extends View {
   constructor(locale, options = {}) {
@@ -27,13 +27,7 @@ export default class CraftLinkElementView extends View {
     }
 
     if (this.button == null) {
-      this.button = new ButtonView();
-
-      this.button.set({
-        label: Craft.t('app', 'Choose'),
-        withText: true,
-        class: 'btn add icon dashed',
-      });
+      this.button = this._createChooseButton();
     }
 
     this.setTemplate({
@@ -45,6 +39,24 @@ export default class CraftLinkElementView extends View {
       },
       children: [this.button],
     });
+  }
+
+  /**
+   * Creates the “Choose” button, which opens the element selector modal.
+   */
+  _createChooseButton() {
+    const button = new View(this.locale);
+    button.setTemplate({
+      tag: 'craft-button',
+      attributes: {
+        type: 'button',
+        variant: 'dashed',
+        icon: 'plus',
+        'data-choose': true,
+      },
+      children: [Craft.t('app', 'Choose')],
+    });
+    return button;
   }
 
   // this is needed so that the '.elementselect' is focusable
@@ -60,12 +72,8 @@ export default class CraftLinkElementView extends View {
     const linkOption = this.linkOption;
 
     this.element.addEventListener('click', function (ev) {
-      // trigger element selector modal but only if the element contains the "Choose" button,
-      // which will always have the ck-button__label class
-      if (
-        this.children[0].classList.contains('add') ||
-        ev.target.classList.contains('ck-button__label')
-      ) {
+      // trigger element selector modal but only if the element contains the "Choose" button
+      if (this.children[0]?.matches('craft-button[data-choose]')) {
         // capture the displayed text before hiding the UI, which resets the form fields
         const displayText =
           _linkUI.formView.displayedTextInputView.fieldView.element.value;
@@ -165,12 +173,7 @@ export default class CraftLinkElementView extends View {
               );
             } else {
               // otherwise set it to the "Choose" button
-              this.button = new ButtonView();
-              this.button.set({
-                label: Craft.t('app', 'Choose'),
-                withText: true,
-                class: 'btn add icon dashed',
-              });
+              this.button = this._createChooseButton();
               this.button.render();
               this.element.innerHTML = this.button.element.outerHTML;
             }

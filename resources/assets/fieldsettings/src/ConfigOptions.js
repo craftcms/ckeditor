@@ -38,7 +38,7 @@ export default Garnish.Base.extend({
     // this.jsEditor = window.monacoEditorInstances[`${id}-js`];
     this.jsonEditor = document.getElementById(`${id}-json`);
     this.jsEditor = document.getElementById(`${id}-js`);
-    const $modePicker = this.$container.children('.btngroup');
+    const $modePicker = this.$container.children('craft-button-group');
 
     this.defaults = {};
 

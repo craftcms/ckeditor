@@ -270,9 +270,9 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     }
 
     this.$container = $(editor.sourceElement).closest('.input');
-    this.progressBar = new Craft.ProgressBar(
-      $('<div class="progress-shade"></div>').appendTo(this.$container),
-    );
+    this.progressBar = $(
+      '<craft-progress-bar class="hidden mt-sm" smooth></craft-progress-bar>',
+    ).appendTo(this.$container)[0];
 
     this.$fileInput = $('<input/>', {
       type: 'file',
@@ -326,13 +326,8 @@ export default class CraftImageInsertUI extends ImageInsertUI {
    * On upload start.
    */
   _onUploadStart() {
-    this.progressBar.$progressBar.css({
-      top: Math.round(this.$container.outerHeight() / 2) - 6,
-    });
-
-    this.$container.addClass('uploading');
-    this.progressBar.resetProgressBar();
-    this.progressBar.showProgressBar();
+    this.progressBar.progress = 0;
+    this.progressBar.classList.remove('hidden');
   }
 
   /**
@@ -342,7 +337,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     data = event instanceof CustomEvent ? event.detail : data;
 
     var progress = parseInt(Math.min(data.loaded / data.total, 1) * 100, 10);
-    this.progressBar.setProgressPercentage(progress);
+    this.progressBar.progress = progress;
   }
 
   /**
@@ -350,8 +345,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
    */
   async _onUploadComplete(event, data = null) {
     const asset = event instanceof CustomEvent ? event.detail : data.result;
-    this.progressBar.hideProgressBar();
-    this.$container.removeClass('uploading');
+    this.progressBar.classList.add('hidden');
 
     if (this._imageMode === 'entries') {
       await this._createImageEntry(asset.assetId);
@@ -400,7 +394,6 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     }
 
     Craft.cp.displayError(message);
-    this.progressBar.hideProgressBar();
-    this.$container.removeClass('uploading');
+    this.progressBar.classList.add('hidden');
   }
 }

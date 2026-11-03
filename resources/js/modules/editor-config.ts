@@ -66,8 +66,9 @@ export function partUnmounted(group: string | null, part: string | null): void {
 export function readValue(root: HTMLElement): Record<string, unknown> {
   const value: Record<string, unknown> = {};
   for (const name of FIELDS) {
+    // <craft-textarea> hosts carry the name too, so skip them for their native textarea
     const input = root.querySelector<HTMLInputElement | HTMLTextAreaElement>(
-      `[name="${name}"]`,
+      `[name="${name}"]:not(craft-textarea)`,
     );
     if (!input) {
       continue;
