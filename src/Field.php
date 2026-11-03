@@ -747,6 +747,13 @@ class Field extends HtmlField implements CrossSiteCopyableFieldInterface, Elemen
             $config['toolbar'] = Json::decodeIfJson($config['toolbar']);
         }
 
+        // The “All” option of the volume and transform choices posts `['*']`
+        foreach (['availableVolumes', 'availableTransforms'] as $key) {
+            if (($config[$key] ?? null) === ['*']) {
+                $config[$key] = '*';
+            }
+        }
+
         unset(
             $config['initJs'],
             $config['removeInlineStyles'],
@@ -1238,7 +1245,7 @@ class Field extends HtmlField implements CrossSiteCopyableFieldInterface, Elemen
                     ->multiple()
                     ->options($volumeOptions)
                     ->allOption()
-                    ->value($this->availableVolumes)),
+                    ->value($this->availableVolumes === '*' ? ['*'] : $this->availableVolumes)),
             UiField::make(t('Show unpermitted volumes', category: 'ckeditor'))
                 ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.', category: 'ckeditor'))
                 ->control(Lightswitch::make('showUnpermittedVolumes')->value($this->showUnpermittedVolumes)),
@@ -1282,7 +1289,7 @@ class Field extends HtmlField implements CrossSiteCopyableFieldInterface, Elemen
                         ->multiple()
                         ->options($transformOptions)
                         ->allOption()
-                        ->value($this->availableTransforms)),
+                        ->value($this->availableTransforms === '*' ? ['*'] : $this->availableTransforms)),
                 UiField::make(t('Default Transform', category: 'ckeditor'))
                     ->instructions(t('The default transform that should be applied when inserting an image.', category: 'ckeditor'))
                     ->control(Choice::make('defaultTransform')
