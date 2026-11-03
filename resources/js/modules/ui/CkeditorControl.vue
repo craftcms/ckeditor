@@ -130,3 +130,11 @@
     <p v-if="error" class="error">{{ error }}</p>
   </div>
 </template>
+
+<style scoped>
+  /* Fill the field’s input row, which `craft-field` lays out with flexbox */
+  .ckeditor-container {
+    flex: 1;
+    min-width: 0;
+  }
+</style>
