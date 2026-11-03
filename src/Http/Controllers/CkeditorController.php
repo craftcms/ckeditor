@@ -77,8 +77,11 @@ class CkeditorController
      */
     public function entryCardHtml(Request $request): JsonResponse
     {
-        $request->validate(['entryId' => ['required']]);
-        $entryId = $request->input('entryId');
+        $request->validate([
+            'entryId' => ['required', 'integer'],
+            'siteId' => ['nullable', 'integer'],
+        ]);
+        $entryId = $request->integer('entryId');
 
         // it's okay to limit to provided siteId, as we're "just" after the card html;
         // all the hard work has already been done
@@ -92,6 +95,7 @@ class CkeditorController
             ->one();
 
         abort_unless($entry !== null, 400, "Invalid entry ID: $entryId");
+        abort_unless($this->currentUser()->can('view', $entry), 403, 'User not authorized to view this element.');
 
         $field = $this->layoutElementField($entry->getOwner(), $request->input('layoutElementUid'));
         abort_unless($field instanceof Field, 400, 'Invalid layout element UID.');
