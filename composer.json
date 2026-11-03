@@ -62,10 +62,6 @@
   "repositories": [
     {
       "type": "path",
-      "url": "../cms"
-    },
-    {
-      "type": "path",
       "url": "../craft-code-editor"
     },
     {
