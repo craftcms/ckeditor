@@ -5,7 +5,7 @@
  */
 
 import {Command} from 'ckeditor5';
-import {actionClient} from '@craftcms/cp';
+import {actionClient, showError} from '@craftcms/cp';
 
 /**
  * The transform image command.
@@ -87,7 +87,7 @@ export default class ImageEditorCommand extends Command {
       Craft.openAssetImageEditor(parseInt(srcInfo.assetId, 10), (data) => {
         this._reloadImage(srcInfo.assetId, data);
       }).catch((e) => {
-        Craft.cp.displayError(e?.response?.data?.message);
+        showError(e?.response?.data?.message);
       });
     }
   }

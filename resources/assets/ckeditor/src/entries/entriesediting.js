@@ -5,7 +5,7 @@ import {
   Widget,
 } from 'ckeditor5';
 import CraftEntriesCommand from './entriescommand';
-import {actionClient, t as craftT} from '@craftcms/cp';
+import {actionClient, t as craftT, loadElementThumbs} from '@craftcms/cp';
 
 export default class CraftEntriesEditing extends Plugin {
   /**
@@ -140,7 +140,7 @@ export default class CraftEntriesEditing extends Plugin {
         editor.editing.view.focus();
 
         setTimeout(() => {
-          Craft.cp.elementThumbLoader.load($(editor.ui.element));
+          loadElementThumbs(editor.ui.element);
         }, 100);
 
         // refresh ui after drag&drop or sourceMode exit

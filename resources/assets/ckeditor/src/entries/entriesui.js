@@ -10,7 +10,12 @@ import {DoubleClickObserver} from '../observers/domevent';
 import CraftEntryTypeButtonView from './entrytypebuttonview.js';
 import CraftEntryTypeDropdownView from './entrytypedropdownview.js';
 import CraftFakeEntryTypeButtonView from './fakeentrytypebuttonview.js';
-import {actionClient, t as craftT} from '@craftcms/cp';
+import {
+  actionClient,
+  t as craftT,
+  loadElementThumbs,
+  showError,
+} from '@craftcms/cp';
 
 export default class CraftEntriesUI extends Plugin {
   /**
@@ -396,7 +401,7 @@ export default class CraftEntriesUI extends Plugin {
     domElement.innerHTML = data.cardHtml;
     Craft.appendHeadHtml(data.headHtml);
     Craft.appendBodyHtml(data.bodyHtml);
-    Craft.cp.elementThumbLoader.load($(domElement));
+    loadElementThumbs(domElement);
   }
 
   /**
@@ -431,7 +436,7 @@ export default class CraftEntriesUI extends Plugin {
       const response = await actionClient.post('elements/create', params);
       data = response.data;
     } catch (e) {
-      Craft.cp.displayError(e?.response?.data?.error);
+      showError(e?.response?.data?.error);
       throw e;
     }
 

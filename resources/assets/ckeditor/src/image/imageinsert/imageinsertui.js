@@ -7,8 +7,9 @@
 import {ButtonView, IconImage, ImageInsertUI} from 'ckeditor5';
 import {
   actionClient,
-  createElementSelectorModal,
   t as craftT,
+  createElementSelectorModal,
+  showError,
 } from '@craftcms/cp';
 
 export default class CraftImageInsertUI extends ImageInsertUI {
@@ -174,7 +175,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
         },
       );
     } catch (e) {
-      Craft.cp.displayError();
+      showError();
       throw e;
     }
 
@@ -354,7 +355,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       }
     }
 
-    Craft.cp.displayError(message);
+    showError(message);
   }
 
   /**

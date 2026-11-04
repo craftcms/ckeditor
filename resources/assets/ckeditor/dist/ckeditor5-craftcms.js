@@ -1,16 +1,16 @@
 import { ButtonView as e, ClassicEditor as t, Collection as n, Command as r, ContextualBalloon as i, DomEventObserver as a, DropdownButtonView as o, FormRowView as s, Heading as c, IconImage as l, IconObjectSizeMedium as u, IconPlus as d, ImageInsertUI as f, ImageTextAlternativeUI as p, ImageUtils as m, LabeledFieldView as h, LinkUI as g, ModelRange as _, Plugin as v, SourceEditing as y, SwitchButtonView as b, View as x, ViewModel as S, Widget as C, WidgetToolbarRepository as w, addListToDropdown as T, createDropdown as E, createLabeledInputText as D, findAttributeRange as O, isWidget as ee, toWidget as k, viewToModelPositionOutsideModelElement as A } from "ckeditor5";
-import { actionClient as j, createElementSelectorModal as M, t as N } from "@craftcms/cp";
+import { actionClient as j, createElementSelectorModal as M, loadElementThumbs as te, showError as N, showSuccess as ne, t as P } from "@craftcms/cp";
 // \0rolldown/runtime.js
-var P = Object.create, te = Object.defineProperty, ne = Object.getOwnPropertyDescriptor, re = Object.getOwnPropertyNames, ie = Object.getPrototypeOf, F = Object.prototype.hasOwnProperty, ae = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), oe = (e, t, n, r) => {
-	if (t && typeof t == "object" || typeof t == "function") for (var i = re(t), a = 0, o = i.length, s; a < o; a++) s = i[a], !F.call(e, s) && s !== n && te(e, s, {
+var re = Object.create, ie = Object.defineProperty, F = Object.getOwnPropertyDescriptor, ae = Object.getOwnPropertyNames, oe = Object.getPrototypeOf, se = Object.prototype.hasOwnProperty, ce = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), le = (e, t, n, r) => {
+	if (t && typeof t == "object" || typeof t == "function") for (var i = ae(t), a = 0, o = i.length, s; a < o; a++) s = i[a], !se.call(e, s) && s !== n && ie(e, s, {
 		get: ((e) => t[e]).bind(null, s),
-		enumerable: !(r = ne(t, s)) || r.enumerable
+		enumerable: !(r = F(t, s)) || r.enumerable
 	});
 	return e;
-}, se = (e, t, n) => (n = e == null ? {} : P(ie(e)), oe(t || !e || !e.__esModule || !F.call(e, "default") ? te(n, "default", {
+}, ue = (e, t, n) => (n = e == null ? {} : re(oe(e)), le(t || !e || !e.__esModule || !se.call(e, "default") ? ie(n, "default", {
 	value: e,
 	enumerable: !0
-}) : n, e)), ce = /#asset:\d+(?:@\d+)?:alt$/, le = /#asset:(\d+)(?:@(\d+))?/, ue = class extends p {
+}) : n, e)), de = /#asset:\d+(?:@\d+)?:alt$/, fe = /#asset:(\d+)(?:@(\d+))?/, pe = class extends p {
 	static get pluginName() {
 		return "CraftImageTextAlternativeUI";
 	}
@@ -20,7 +20,7 @@ var P = Object.create, te = Object.defineProperty, ne = Object.getOwnPropertyDes
 	_createForm() {
 		super._createForm(), this._createSyncButton(), this.listenTo(this._form, "submit", () => {
 			let e = this._form.labeledInput.fieldView, t = this.editor.commands.get("imageTextAlternative").value || "";
-			ce.test(t) && e.element.value === this._visibleAltText(t) && (e.value = e.element.value = t);
+			de.test(t) && e.element.value === this._visibleAltText(t) && (e.value = e.element.value = t);
 		}, { priority: "high" });
 	}
 	_showForm() {
@@ -29,14 +29,14 @@ var P = Object.create, te = Object.defineProperty, ne = Object.getOwnPropertyDes
 		e.value = e.element.value = t, this._syncButton.isEnabled = !!this._srcInfo(this._selectedImage()), e.select();
 	}
 	_visibleAltText(e) {
-		return e.replace(ce, "");
+		return e.replace(de, "");
 	}
 	_selectedImage() {
 		return this.editor.plugins.get("ImageUtils").getClosestSelectedImageElement(this.editor.model.document.selection);
 	}
 	_srcInfo(e) {
 		if (!e || !e.hasAttribute("src")) return null;
-		let t = e.getAttribute("src").match(le);
+		let t = e.getAttribute("src").match(fe);
 		return t ? {
 			assetId: t[1],
 			siteId: t[2] ?? null
@@ -45,7 +45,7 @@ var P = Object.create, te = Object.defineProperty, ne = Object.getOwnPropertyDes
 	_createSyncButton() {
 		let t = this.editor, n = new e(t.locale);
 		n.set({
-			label: N("Sync from asset", {}, "ckeditor"),
+			label: P("Sync from asset", {}, "ckeditor"),
 			withText: !0,
 			class: "btn"
 		}), n.render(), this.listenTo(n, "execute", () => this._syncFromAsset());
@@ -62,15 +62,15 @@ var P = Object.create, te = Object.defineProperty, ne = Object.getOwnPropertyDes
 				siteId: t.siteId ?? this.editor.config.get("elementSiteId")
 			});
 		} catch (e) {
-			throw Craft.cp.displayError(e?.response?.data?.message), e;
+			throw N(e?.response?.data?.message), e;
 		}
 		let r = n.data.siteId ?? t.siteId, i = n.data.alt ?? "", a = `${i}#asset:${t.assetId}${r ? `@${r}` : ""}:alt`, o = this._form.labeledInput.fieldView;
-		o.value == i ? Craft.cp.displaySuccess(N("The alternative text was already in sync.", {}, "ckeditor")) : (o.value = o.element.value = i, this.editor.execute("imageTextAlternative", { newValue: a }), Craft.cp.displaySuccess(N("The alternative text was synced from the asset.", {}, "ckeditor")));
+		o.value == i ? ne(P("The alternative text was already in sync.", {}, "ckeditor")) : (o.value = o.element.value = i, this.editor.execute("imageTextAlternative", { newValue: a }), ne(P("The alternative text was synced from the asset.", {}, "ckeditor")));
 	}
 	destroy() {
 		this._syncButton && this._syncButton.destroy(), super.destroy();
 	}
-}, de = class extends f {
+}, me = class extends f {
 	static get pluginName() {
 		return "CraftImageInsertUI";
 	}
@@ -160,7 +160,7 @@ var P = Object.create, te = Object.defineProperty, ne = Object.getOwnPropertyDes
 				assetIds: [e]
 			});
 		} catch (e) {
-			throw Craft.cp.displayError(), e;
+			throw N(), e;
 		}
 		t.commands.execute("insertEntry", {
 			entryId: i.data.entryId,
@@ -248,12 +248,12 @@ var P = Object.create, te = Object.defineProperty, ne = Object.getOwnPropertyDes
 	_onUploadFailure({ error: e, canceled: t, file: n }) {
 		if (t) return;
 		let r = e?.data || {}, i = e instanceof Error ? e.message : void 0, a = r.filename || n?.name, { errors: o } = r, s = o ? Object.values(o).flat() : [];
-		i ||= s.length ? s.join("\n") : a ? N("Upload failed for “{filename}”.", { filename: a }) : N("Upload failed."), Craft.cp.displayError(i);
+		i ||= s.length ? s.join("\n") : a ? P("Upload failed for “{filename}”.", { filename: a }) : P("Upload failed."), N(i);
 	}
 	_onUploadStop() {
 		this.progressBar.classList.add("hidden");
 	}
-}, fe = class extends r {
+}, he = class extends r {
 	refresh() {
 		let e = this._element(), t = this._srcInfo(e);
 		this.isEnabled = !!t, this.value = t ? { transform: t.transform } : null;
@@ -289,7 +289,7 @@ var P = Object.create, te = Object.defineProperty, ne = Object.getOwnPropertyDes
 			});
 		}
 	}
-}, pe = class extends v {
+}, I = class extends v {
 	static get requires() {
 		return [m];
 	}
@@ -300,12 +300,12 @@ var P = Object.create, te = Object.defineProperty, ne = Object.getOwnPropertyDes
 		super(e), e.config.define("transforms", []);
 	}
 	init() {
-		let e = this.editor, t = new fe(e);
+		let e = this.editor, t = new he(e);
 		e.commands.add("transformImage", t);
 	}
-}, me = u, he = class extends v {
+}, ge = u, _e = class extends v {
 	static get requires() {
-		return [pe];
+		return [I];
 	}
 	static get pluginName() {
 		return "ImageTransformUI";
@@ -328,7 +328,7 @@ var P = Object.create, te = Object.defineProperty, ne = Object.getOwnPropertyDes
 			return l.set({
 				tooltip: n("Resize image"),
 				commandValue: null,
-				icon: me,
+				icon: ge,
 				isToggleable: !0,
 				label: this._getOptionLabelValue(r),
 				withText: !0,
@@ -358,25 +358,25 @@ var P = Object.create, te = Object.defineProperty, ne = Object.getOwnPropertyDes
 					icon: null
 				})
 			};
-			n.model.bind("isOn").to(t, "value", I(e.value)), r.add(n);
+			n.model.bind("isOn").to(t, "value", ve(e.value)), r.add(n);
 		}), r;
 	}
 };
-function I(e) {
+function ve(e) {
 	return (t) => {
 		let n = t;
 		return e === null && n === e || n !== null && n.transform === e;
 	};
 }
 // resources/assets/ckeditor/src/image/imagetransform.js
-var ge = class extends v {
+var ye = class extends v {
 	static get requires() {
-		return [pe, he];
+		return [I, _e];
 	}
 	static get pluginName() {
 		return "ImageTransform";
 	}
-}, _e = class extends r {
+}, be = class extends r {
 	refresh() {
 		let e = this._element(), t = this._srcInfo(e);
 		if (this.isEnabled = !!t, this.isEnabled) {
@@ -405,7 +405,7 @@ var ge = class extends v {
 		t && Craft.openAssetImageEditor(parseInt(t.assetId, 10), (e) => {
 			this._reloadImage(t.assetId, e);
 		}).catch((e) => {
-			Craft.cp.displayError(e?.response?.data?.message);
+			N(e?.response?.data?.message);
 		});
 	}
 	_reloadImage(e, t) {
@@ -450,7 +450,7 @@ var ge = class extends v {
 		}
 		return n;
 	}
-}, ve = class extends v {
+}, xe = class extends v {
 	static get requires() {
 		return [m];
 	}
@@ -458,12 +458,12 @@ var ge = class extends v {
 		return "ImageEditorEditing";
 	}
 	init() {
-		let e = this.editor, t = new _e(e);
+		let e = this.editor, t = new be(e);
 		e.commands.add("imageEditor", t);
 	}
-}, ye = class extends v {
+}, Se = class extends v {
 	static get requires() {
-		return [ve];
+		return [xe];
 	}
 	static get pluginName() {
 		return "ImageEditorUI";
@@ -484,14 +484,14 @@ var ge = class extends v {
 			}), i;
 		});
 	}
-}, be = class extends v {
+}, Ce = class extends v {
 	static get requires() {
-		return [ve, ye];
+		return [xe, Se];
 	}
 	static get pluginName() {
 		return "ImageEditor";
 	}
-}, xe = class extends r {
+}, we = class extends r {
 	execute(e) {
 		let t = this.editor, n = t.model.document.selection;
 		if (!n.isCollapsed && n.getFirstRange()) {
@@ -511,7 +511,7 @@ var ge = class extends v {
 	refresh() {
 		this.isEnabled = !0;
 	}
-}, Se = class extends v {
+}, Te = class extends v {
 	static get requires() {
 		return [C];
 	}
@@ -521,7 +521,7 @@ var ge = class extends v {
 	init() {
 		this._defineSchema(), this._defineConverters();
 		let e = this.editor;
-		e.commands.add("insertEntry", new xe(e)), e.editing.mapper.on("viewToModelPosition", A(e.model, (e) => {
+		e.commands.add("insertEntry", new we(e)), e.editing.mapper.on("viewToModelPosition", A(e.model, (e) => {
 			e.hasClass("cke-entry-card");
 		}));
 	}
@@ -576,7 +576,7 @@ var ge = class extends v {
 				t.insert(t.createPositionAt(n, 0), r);
 				let i = this.editor;
 				i.editing.view.focus(), setTimeout(() => {
-					Craft.cp.elementThumbLoader.load($(i.ui.element));
+					te(i.ui.element);
 				}, 100), i.model.change((e) => {
 					i.ui.update(), $(i.sourceElement).trigger("keyup");
 				});
@@ -595,24 +595,24 @@ var ge = class extends v {
 			});
 			return e;
 		} catch (e) {
-			return console.error(e?.response?.data), { cardHtml: "<craft-card><craft-callout variant=\"danger\" role=\"alert\">" + Craft.escapeHtml(e?.response?.data?.message || N("An unknown error occurred.", {}, "ckeditor")) + "</craft-callout></craft-card>" };
+			return console.error(e?.response?.data), { cardHtml: "<craft-card><craft-callout variant=\"danger\" role=\"alert\">" + Craft.escapeHtml(e?.response?.data?.message || P("An unknown error occurred.", {}, "ckeditor")) + "</craft-callout></craft-card>" };
 		}
 	}
-}, Ce = class extends a {
+}, Ee = class extends a {
 	constructor(e) {
 		super(e), this.domEventType = "dblclick";
 	}
 	onDomEvent(e) {
 		this.fire(e.type, e);
 	}
-}, we = class extends x {
+}, De = class extends x {
 	constructor(t, n = {}) {
 		super(t), this.set("isFocused", !1), this.entriesUi = n.entriesUi, this.editor = this.entriesUi.editor, this.entryType = n.entryType;
 		let r = this.editor.commands.get("insertEntry"), i = new e(), a = {
 			commandValue: this.entryType.model.commandValue,
 			label: this.entryType.model.label,
 			withText: !this.entryType.model.icon,
-			tooltip: N("New {type}", { type: this.entryType.model.label })
+			tooltip: P("New {type}", { type: this.entryType.model.label })
 		}, o = ["btn", "ck-reset_all-excluded"];
 		this.entryType.model.icon && o.push(["icon", "cp-icon"]), a.class = o.join(" "), this.entryType.model.withIcon && (a.icon = this.entryType.model.icon), i.set(a), this.listenTo(i, "execute", (e) => {
 			this.entriesUi._showCreateEntrySlideout(e.source.commandValue);
@@ -625,7 +625,7 @@ var ge = class extends v {
 	focus() {
 		this.element.children[0].focus();
 	}
-}, Te = class extends x {
+}, Oe = class extends x {
 	constructor(e, t = {}) {
 		super(e), this.bindTemplate, this.set("isFocused", !1), this.entriesUi = t.entriesUi, this.editor = this.entriesUi.editor;
 		let r = t.entryTypes, i = this.editor.commands.get("insertEntry"), a = new n();
@@ -634,11 +634,11 @@ var ge = class extends v {
 		});
 		let o = E(e);
 		o.buttonView.set({
-			label: N("Add nested content", {}, "ckeditor"),
+			label: P("Add nested content", {}, "ckeditor"),
 			icon: d,
 			tooltip: !0,
 			withText: !1
-		}), o.bind("isEnabled").to(i), o.id = crypto.randomUUID(), T(o, () => a, { ariaLabel: N("Entry types list", {}, "ckeditor") }), this.listenTo(o, "execute", (e) => {
+		}), o.bind("isEnabled").to(i), o.id = crypto.randomUUID(), T(o, () => a, { ariaLabel: P("Entry types list", {}, "ckeditor") }), this.listenTo(o, "execute", (e) => {
 			this.entriesUi._showCreateEntrySlideout(e.source.commandValue);
 		}), this.setTemplate({
 			tag: "div",
@@ -649,12 +649,12 @@ var ge = class extends v {
 	focus() {
 		this.element.children[0].children[0].focus();
 	}
-}, Ee = class extends x {
+}, ke = class extends x {
 	constructor(e, t = {}) {
 		super(e), this.bindTemplate, this.set("isFocused", !1), this.entriesUi = t.entriesUi, this.editor = this.entriesUi.editor;
 		let n = this.editor.commands.get("insertEntry"), r = E(e);
 		r.buttonView.set({
-			label: N("Add nested content", {}, "ckeditor"),
+			label: P("Add nested content", {}, "ckeditor"),
 			icon: d,
 			tooltip: !0,
 			withText: !1
@@ -672,7 +672,7 @@ var ge = class extends v {
 	focus() {
 		this.element.focus();
 	}
-}, De = class extends v {
+}, Ae = class extends v {
 	static get requires() {
 		return [w];
 	}
@@ -684,7 +684,7 @@ var ge = class extends v {
 	}
 	afterInit() {
 		this.editor.plugins.get(w).register("entriesBalloon", {
-			ariaLabel: N("Entry toolbar", {}, "ckeditor"),
+			ariaLabel: P("Entry toolbar", {}, "ckeditor"),
 			items: ["editEntryBtn"],
 			getRelatedElement: (e) => {
 				let t = e.getSelectedElement();
@@ -694,7 +694,7 @@ var ge = class extends v {
 	}
 	_listenToEvents() {
 		let e = this.editor.editing.view, t = e.document;
-		e.addObserver(Ce), this.editor.listenTo(t, "dblclick", (e, t) => {
+		e.addObserver(Ee), this.editor.listenTo(t, "dblclick", (e, t) => {
 			if (!this.editor.isReadOnly) {
 				let e = this.editor.editing.mapper.toModelElement(t.target.parent);
 				e.name === "craftEntryModel" && this._initEditEntrySlideout(t, e);
@@ -710,15 +710,15 @@ var ge = class extends v {
 	_createToolbarEntriesButtons() {
 		let e = this.editor.config.get("entryTypeOptions");
 		if (e && e.length) {
-			if (e.length == 1 && e[0].value == "fake") this.editor.ui.componentFactory.add("createEntry", (e) => new Ee(this.editor.locale, { entriesUi: this }));
+			if (e.length == 1 && e[0].value == "fake") this.editor.ui.componentFactory.add("createEntry", (e) => new ke(this.editor.locale, { entriesUi: this }));
 			else {
 				let t = this._getEntryTypeButtonsCollection(e ?? []), n = t.filter((e) => e.model.expanded), r = t.filter((e) => !e.model.expanded);
 				n.forEach((e, t) => {
-					this.editor.ui.componentFactory.add(`createEntry-${e.model.uid}`, (t) => new we(this.editor.locale, {
+					this.editor.ui.componentFactory.add(`createEntry-${e.model.uid}`, (t) => new De(this.editor.locale, {
 						entriesUi: this,
 						entryType: e
 					}));
-				}), r.length && this.editor.ui.componentFactory.add("createEntry", (e) => new Te(this.editor.locale, {
+				}), r.length && this.editor.ui.componentFactory.add("createEntry", (e) => new Oe(this.editor.locale, {
 					entriesUi: this,
 					entryTypes: r
 				}));
@@ -749,7 +749,7 @@ var ge = class extends v {
 		let n = new e(t);
 		return n.set({
 			isEnabled: !0,
-			label: N("Edit {type}", { type: (Craft.elementTypeNames["CraftCms\\Cms\\Entry\\Elements\\Entry"] ?? Craft.elementTypeNames["craft\\elements\\Entry"])[2] }),
+			label: P("Edit {type}", { type: (Craft.elementTypeNames["CraftCms\\Cms\\Entry\\Elements\\Entry"] ?? Craft.elementTypeNames["craft\\elements\\Entry"])[2] }),
 			tooltip: !0,
 			withText: !0
 		}), this.listenTo(n, "execute", (e) => {
@@ -799,7 +799,7 @@ var ge = class extends v {
 		if (t ||= (r((t) => t.removeAttribute("cardHtml", e)), await n.plugins.get("CraftEntriesEditing")._getCardHtml(e)), e.root.rootName === "$graveyard") return;
 		r((n) => n.setAttribute("cardHtml", t.cardHtml, e));
 		let i = n.editing.mapper.toViewElement(e), a = i ? [...i.getChildren()].find((e) => e.is("rawElement")) : null, o = a ? n.editing.view.domConverter.mapViewToDom(a) : null;
-		o ? (o.innerHTML = t.cardHtml, Craft.appendHeadHtml(t.headHtml), Craft.appendBodyHtml(t.bodyHtml), Craft.cp.elementThumbLoader.load($(o))) : n.editing.reconvertItem(e);
+		o ? (o.innerHTML = t.cardHtml, Craft.appendHeadHtml(t.headHtml), Craft.appendBodyHtml(t.bodyHtml), te(o)) : n.editing.reconvertItem(e);
 	}
 	async _showCreateEntrySlideout(e) {
 		let t = this.editor, n = t.model, r = n.document.selection.getFirstRange(), i = t.config.get("nestedElementAttributes"), a = Object.assign({}, i, { typeId: e }), o = t.config.get("craftOwner");
@@ -808,7 +808,7 @@ var ge = class extends v {
 		try {
 			s = (await j.post("elements/create", a)).data;
 		} catch (e) {
-			throw Craft.cp.displayError(e?.response?.data?.error), e;
+			throw N(e?.response?.data?.error), e;
 		}
 		let c = Craft.createElementEditor(this.elementType, {
 			elementId: s.element.id,
@@ -830,20 +830,20 @@ var ge = class extends v {
 			}), t.editing.view.focus();
 		});
 	}
-}, Oe = class extends v {
+}, je = class extends v {
 	static get requires() {
-		return [Se, De];
+		return [Te, Ae];
 	}
 	static get pluginName() {
 		return "CraftEntries";
 	}
 };
 // resources/assets/ckeditor/src/link/linkutils.js
-function ke(e, t) {
+function Me(e, t) {
 	if (t) return e.type === "bool" && e.value == 1 ? "" : t;
 }
 // resources/assets/ckeditor/src/link/linkediting.js
-var Ae = class extends v {
+var Ne = class extends v {
 	static get pluginName() {
 		return "CraftLinkEditing";
 	}
@@ -901,7 +901,7 @@ var Ae = class extends v {
 					o = r?.hasAttribute("linkHref") ? O(n, "linkHref", r.getAttribute("linkHref"), e.model) : t.createRangeOn(r);
 				}
 				this.conversionData.forEach((n) => {
-					let r = ke(n, i[n.model]);
+					let r = Me(n, i[n.model]);
 					if (a.isCollapsed) r === void 0 ? t.removeAttribute(n.model, o) : t.setAttribute(n.model, r, o);
 					else {
 						let i = e.model.schema.getValidRanges(a.getRanges(), n.model);
@@ -925,13 +925,13 @@ var Ae = class extends v {
 			}));
 		}, { priority: "high" });
 	}
-}, je = class extends x {
+}, Pe = class extends x {
 	constructor(e, t = {}) {
 		super(e), this.bindTemplate, this.set("isFocused", !1), this.linkUi = t.linkUi, this.editor = this.linkUi.editor, this.elementId = this.linkUi._getLinkElementId(), this.siteId = this.linkUi._getLinkSiteId(), this.linkOption = t.linkOption;
 		let n = this.linkUi._getLinkElementRefHandle();
 		if (this.button = null, n) {
 			let e = this.linkUi.linkTypeDropdownItemModels[n];
-			this.linkUi.linkTypeDropdownView.buttonView.label == e.label && (this.button = N("Loading"));
+			this.linkUi.linkTypeDropdownView.buttonView.label == e.label && (this.button = P("Loading"));
 		}
 		this.button ??= this._createChooseButton(), this.setTemplate({
 			tag: "div",
@@ -952,7 +952,7 @@ var Ae = class extends v {
 				icon: "plus",
 				"data-choose": !0
 			},
-			children: [N("Choose")]
+			children: [P("Choose")]
 		}), e;
 	}
 	focus() {
@@ -982,13 +982,13 @@ var Ae = class extends v {
 				this.element.innerHTML = t.data.elements[this.elementId][0], Craft.appendHeadHtml(t.data.headHtml), Craft.appendBodyHtml(t.data.bodyHtml);
 				let n = this.element.firstChild, r = [{
 					icon: "arrows-rotate",
-					label: N("Replace"),
+					label: P("Replace"),
 					callback: () => {
 						this.linkUi._showElementSelectorModal(this.linkOption);
 					}
 				}, {
 					icon: "remove",
-					label: N("Remove"),
+					label: P("Remove"),
 					callback: () => {
 						this.editor.commands.get("unlink").execute();
 					}
@@ -999,10 +999,10 @@ var Ae = class extends v {
 				e.urlInputView.fieldView.set("value", this.linkUi.previousLinkValue);
 			} else this.button = this._createChooseButton(), this.button.render(), this.element.innerHTML = this.button.element.outerHTML;
 		}).catch((e) => {
-			throw Craft.cp.displayError(e?.response?.data?.message), e?.response?.data?.message ?? e;
+			throw N(e?.response?.data?.message), e?.response?.data?.message ?? e;
 		});
 	}
-}, Me = class extends x {
+}, Fe = class extends x {
 	constructor(e, t = {}) {
 		super(e), this.bindTemplate, this.set("isFocused", !1), this.linkUi = t.linkUi, this.editor = this.linkUi.editor, this.elementId = this.linkUi._getLinkElementId(), this.siteId = this.linkUi._getLinkSiteId(), this.linkOption = t.linkOption, this.linkUi._getLinkElementRefHandle(), this.siteDropdownView = E(this.linkUi._linkUI.formView.locale), this.siteDropdownItemModels = null, this.localizedRefHandleRE = null;
 		let n = CKE_LOCALIZED_REF_HANDLES.join("|");
@@ -1032,7 +1032,7 @@ var Ae = class extends v {
 			siteId: e.id,
 			withText: !0
 		})])), this.siteDropdownItemModels.current = new S({
-			label: N("Link to the current site", {}, "ckeditor"),
+			label: P("Link to the current site", {}, "ckeditor"),
 			siteId: null,
 			withText: !0
 		}), T(this.siteDropdownView, new n([...Craft.sites.map((e) => ({
@@ -1066,16 +1066,16 @@ var Ae = class extends v {
 		} else this.siteDropdownView.buttonView.set("isVisible", !1);
 	}
 	_selectSiteDropdownItem(e) {
-		let t = this.siteDropdownItemModels[e ?? "current"], n = e ? N("Site: {name}", { name: t.label }, "ckeditor") : t.label;
+		let t = this.siteDropdownItemModels[e ?? "current"], n = e ? P("Site: {name}", { name: t.label }, "ckeditor") : t.label;
 		this.siteDropdownView.buttonView.set("label", n), Object.values(this.siteDropdownItemModels).forEach((e) => {
 			e.set("isOn", e.siteId === t.siteId);
 		});
 	}
-}, Ne = class extends x {
+}, Ie = class extends x {
 	constructor(e, t = {}) {
 		super(e);
 		let n = this.bindTemplate;
-		this.set("label", N("Advanced")), this.linkUi = t.linkUi, this.editor = this.linkUi.editor, this.children = this.createCollection(), this.advancedChildren = this.createCollection(), this.setTemplate({
+		this.set("label", P("Advanced")), this.linkUi = t.linkUi, this.editor = this.linkUi.editor, this.children = this.createCollection(), this.advancedChildren = this.createCollection(), this.setTemplate({
 			tag: "details",
 			attributes: { class: [
 				"ck",
@@ -1114,7 +1114,7 @@ var Ae = class extends v {
 			t._focusables.remove(e), t.focusTracker.remove(e.element);
 		});
 	}
-}, Pe = class extends v {
+}, Le = class extends v {
 	static get requires() {
 		return [g];
 	}
@@ -1189,7 +1189,7 @@ var Ae = class extends v {
 		e ? (this.linkTypeDropdownView.buttonView.set("isVisible", !0), this._selectLinkTypeDropdownItem(e)) : this._selectLinkTypeDropdownItem("default");
 	}
 	_selectLinkTypeDropdownItem(e) {
-		let t = this.linkTypeDropdownItemModels[e], n = e ? N("{name}", { name: t.label }) : t.label;
+		let t = this.linkTypeDropdownItemModels[e], n = e ? P("{name}", { name: t.label }) : t.label;
 		this.linkTypeDropdownView.buttonView.set("label", n), Object.values(this.linkTypeDropdownItemModels).forEach((e) => {
 			e.set("isOn", e.handle === t.handle);
 		});
@@ -1203,20 +1203,20 @@ var Ae = class extends v {
 			withText: !0
 		}));
 		return e.push(new S({
-			label: N("URL"),
+			label: P("URL"),
 			handle: "default",
 			withText: !0
 		})), e;
 	}
 	_showLinkTypeForm(e) {
 		let { formView: t } = this._linkUI, { children: n } = t, { urlInputView: r } = t, { displayedTextInputView: i } = t;
-		i.focus(), this.linkTypeWrapperView !== null && n.remove(this.linkTypeWrapperView), e === "default" ? (this.elementInputView = r, this.sitesView !== null && this.sitesView?.siteDropdownView?.buttonView && this.sitesView.siteDropdownView.buttonView.set("isVisible", !1)) : (this.elementInputView = new je(t.locale, {
+		i.focus(), this.linkTypeWrapperView !== null && n.remove(this.linkTypeWrapperView), e === "default" ? (this.elementInputView = r, this.sitesView !== null && this.sitesView?.siteDropdownView?.buttonView && this.sitesView.siteDropdownView.buttonView.set("isVisible", !1)) : (this.elementInputView = new Pe(t.locale, {
 			linkUi: this,
 			linkOption: e,
 			value: this._urlInputValue()
 		}), this.sitesView !== null && this.sitesView?.siteDropdownView?.buttonView && this.sitesView.siteDropdownView.buttonView.set("isVisible", !1));
 		let a = [this.linkTypeDropdownView, this.elementInputView];
-		if (Craft.isMultiSite && this.sitesView == null && (this.sitesView = new Me(t.locale, {
+		if (Craft.isMultiSite && this.sitesView == null && (this.sitesView = new Fe(t.locale, {
 			linkUi: this,
 			linkOption: e
 		})), this.sitesView != null) {
@@ -1261,7 +1261,7 @@ var Ae = class extends v {
 					} else r.change((e) => {
 						let n = this._getAdvancedFieldValues(), r = { linkHref: d };
 						this.conversionData.forEach((e) => {
-							let t = ke(e, n[e.model]);
+							let t = Me(e, n[e.model]);
 							t !== void 0 && (r[e.model] = t);
 						});
 						let a = t || c.label;
@@ -1286,7 +1286,7 @@ var Ae = class extends v {
 	}
 	_addAdvancedLinkFieldInputs() {
 		let e = this.editor.commands.get("link"), { formView: t } = this._linkUI, { children: n } = t;
-		this.advancedView = new Ne(t.locale, { linkUi: this }), n.add(this.advancedView, 3);
+		this.advancedView = new Ie(t.locale, { linkUi: this }), n.add(this.advancedView, 3);
 		for (let n of this.advancedLinkFields) {
 			let r = n.conversion?.model;
 			if (r && t[r] === void 0) {
@@ -1376,14 +1376,14 @@ var Ae = class extends v {
 			n.type === "bool" ? r[n.model] = e[n.model].element.value : r[n.model] = e[n.model].fieldView.element.value, Object.assign(t, r);
 		}), t;
 	}
-}, Fe = class extends v {
+}, Re = class extends v {
 	static get requires() {
-		return [Ae, Pe];
+		return [Ne, Le];
 	}
 	static get pluginName() {
 		return "CraftLink";
 	}
-}, Ie = /* @__PURE__ */ se((/* @__PURE__ */ ae(((e, t, n) => {
+}, ze = /* @__PURE__ */ ue((/* @__PURE__ */ ce(((e, t, n) => {
 	(function() {
 		((e, t = {}) => {
 			if (typeof document > "u") return;
@@ -1538,7 +1538,7 @@ var Ae = class extends v {
 			function M(e) {
 				e.result = null, e.keyPrefix = null, e.func = null, e.context = null, e.count = 0, 10 > A.length && A.push(e);
 			}
-			function N(e, t, n, a) {
+			function te(e, t, n, a) {
 				var o = typeof e;
 				(o === "undefined" || o === "boolean") && (e = null);
 				var s = !1;
@@ -1553,23 +1553,23 @@ var Ae = class extends v {
 						case i: s = !0;
 					}
 				}
-				if (s) return n(a, e, t === "" ? "." + te(e, 0) : t), 1;
+				if (s) return n(a, e, t === "" ? "." + ne(e, 0) : t), 1;
 				if (s = 0, t = t === "" ? "." : t + ":", Array.isArray(e)) for (var c = 0; c < e.length; c++) {
 					o = e[c];
-					var l = t + te(o, c);
-					s += N(o, l, n, a);
+					var l = t + ne(o, c);
+					s += te(o, l, n, a);
 				}
-				else if (typeof e != "object" || !e ? l = null : (l = h && e[h] || e["@@iterator"], l = typeof l == "function" ? l : null), typeof l == "function") for (e = l.call(e), c = 0; !(o = e.next()).done;) o = o.value, l = t + te(o, c++), s += N(o, l, n, a);
+				else if (typeof e != "object" || !e ? l = null : (l = h && e[h] || e["@@iterator"], l = typeof l == "function" ? l : null), typeof l == "function") for (e = l.call(e), c = 0; !(o = e.next()).done;) o = o.value, l = t + ne(o, c++), s += te(o, l, n, a);
 				else if (o === "object") throw n = "" + e, Error(g(31, n === "[object Object]" ? "object with keys {" + Object.keys(e).join(", ") + "}" : n, ""));
 				return s;
 			}
-			function P(e, t, n) {
-				return e == null ? 0 : N(e, "", t, n);
-			}
-			function te(e, t) {
-				return typeof e == "object" && e && e.key != null ? ee(e.key) : t.toString(36);
+			function N(e, t, n) {
+				return e == null ? 0 : te(e, "", t, n);
 			}
 			function ne(e, t) {
+				return typeof e == "object" && e && e.key != null ? ee(e.key) : t.toString(36);
+			}
+			function P(e, t) {
 				e.func.call(e.context, t, e.count++);
 			}
 			function re(e, t, n) {
@@ -1580,7 +1580,7 @@ var Ae = class extends v {
 			}
 			function ie(e, t, n, r, i) {
 				var a = "";
-				n != null && (a = ("" + n).replace(k, "$&/") + "/"), t = j(t, a, r, i), P(e, re, t), M(t);
+				n != null && (a = ("" + n).replace(k, "$&/") + "/"), t = j(t, a, r, i), N(e, re, t), M(t);
 			}
 			var F = { current: null };
 			function ae() {
@@ -1603,10 +1603,10 @@ var Ae = class extends v {
 				},
 				forEach: function(e, t, n) {
 					if (e == null) return e;
-					t = j(null, null, t, n), P(e, ne, t), M(t);
+					t = j(null, null, t, n), N(e, P, t), M(t);
 				},
 				count: function(e) {
-					return P(e, function() {
+					return N(e, function() {
 						return null;
 					}, null);
 				},
@@ -1796,8 +1796,8 @@ var Ae = class extends v {
 				var n = e.sortIndex - t.sortIndex;
 				return n === 0 ? e.id - t.id : n;
 			}
-			var D = [], O = [], ee = 1, k = null, A = 3, j = !1, M = !1, N = !1;
-			function P(e) {
+			var D = [], O = [], ee = 1, k = null, A = 3, j = !1, M = !1, te = !1;
+			function N(e) {
 				for (var t = w(O); t !== null;) {
 					if (t.callback === null) T(O);
 					else if (t.startTime <= e) T(O), t.sortIndex = t.expirationTime, C(D, t);
@@ -1805,32 +1805,32 @@ var Ae = class extends v {
 					t = w(O);
 				}
 			}
-			function te(e) {
-				if (N = !1, P(e), !M) {
-					if (w(D) !== null) M = !0, t(ne);
+			function ne(e) {
+				if (te = !1, N(e), !M) {
+					if (w(D) !== null) M = !0, t(P);
 					else {
 						var r = w(O);
-						r !== null && n(te, r.startTime - e);
+						r !== null && n(ne, r.startTime - e);
 					}
 				}
 			}
-			function ne(t, a) {
-				M = !1, N && (N = !1, r()), j = !0;
+			function P(t, a) {
+				M = !1, te && (te = !1, r()), j = !0;
 				var o = A;
 				try {
-					for (P(a), k = w(D); k !== null && (!(k.expirationTime > a) || t && !i());) {
+					for (N(a), k = w(D); k !== null && (!(k.expirationTime > a) || t && !i());) {
 						var s = k.callback;
 						if (s !== null) {
 							k.callback = null, A = k.priorityLevel;
 							var c = s(k.expirationTime <= a);
-							a = e.unstable_now(), typeof c == "function" ? k.callback = c : k === w(D) && T(D), P(a);
+							a = e.unstable_now(), typeof c == "function" ? k.callback = c : k === w(D) && T(D), N(a);
 						} else T(D);
 						k = w(D);
 					}
 					if (k !== null) var l = !0;
 					else {
 						var u = w(O);
-						u !== null && n(te, u.startTime - a), l = !1;
+						u !== null && n(ne, u.startTime - a), l = !1;
 					}
 					return l;
 				} finally {
@@ -1850,7 +1850,7 @@ var Ae = class extends v {
 			e.unstable_IdlePriority = 5, e.unstable_ImmediatePriority = 1, e.unstable_LowPriority = 4, e.unstable_NormalPriority = 3, e.unstable_Profiling = null, e.unstable_UserBlockingPriority = 2, e.unstable_cancelCallback = function(e) {
 				e.callback = null;
 			}, e.unstable_continueExecution = function() {
-				M || j || (M = !0, t(ne));
+				M || j || (M = !0, t(P));
 			}, e.unstable_getCurrentPriorityLevel = function() {
 				return A;
 			}, e.unstable_getFirstCallbackNode = function() {
@@ -1900,10 +1900,10 @@ var Ae = class extends v {
 					startTime: c,
 					expirationTime: o,
 					sortIndex: -1
-				}, c > s ? (i.sortIndex = c, C(O, i), w(D) === null && i === w(O) && (N ? r() : N = !0, n(te, c - s))) : (i.sortIndex = o, C(D, i), M || j || (M = !0, t(ne))), i;
+				}, c > s ? (i.sortIndex = c, C(O, i), w(D) === null && i === w(O) && (te ? r() : te = !0, n(ne, c - s))) : (i.sortIndex = o, C(D, i), M || j || (M = !0, t(P))), i;
 			}, e.unstable_shouldYield = function() {
 				var t = e.unstable_now();
-				P(t);
+				N(t);
 				var n = w(D);
 				return n !== k && k !== null && n !== null && n.callback !== null && n.startTime <= t && n.expirationTime < k.expirationTime || i();
 			}, e.unstable_wrapCallback = function(e) {
@@ -2000,25 +2000,25 @@ var Ae = class extends v {
 					t && (t = h(t), k(e.stateNode, e.type, t));
 				}
 			}
-			function N(e) {
+			function te(e) {
 				A ? j ? j.push(e) : j = [e] : A = e;
 			}
-			function P() {
+			function N() {
 				if (A) {
 					var e = A, t = j;
 					if (j = A = null, M(e), t) for (e = 0; e < t.length; e++) M(t[e]);
 				}
 			}
-			function te(e, t) {
+			function ne(e, t) {
 				return e(t);
 			}
-			function ne(e, t, n, r, i) {
+			function P(e, t, n, r, i) {
 				return e(t, n, r, i);
 			}
 			function re() {}
-			var ie = te, F = !1, ae = !1;
+			var ie = ne, F = !1, ae = !1;
 			function oe() {
-				(A !== null || j !== null) && (re(), P());
+				(A !== null || j !== null) && (re(), N());
 			}
 			function se(e, t, n) {
 				if (ae) return e(t, n);
@@ -2800,7 +2800,7 @@ var Ae = class extends v {
 				var i = bn, a = F;
 				F = !0;
 				try {
-					ne(i, e, t, n, r);
+					P(i, e, t, n, r);
 				} finally {
 					(F = a) || oe();
 				}
@@ -3333,7 +3333,7 @@ var Ae = class extends v {
 				dependencies: "blur change click focus input keydown keyup selectionchange".split(" ")
 			} };
 			function Br(e, t, n) {
-				return e = _r.getPooled(zr.change, e, t, n), e.type = "change", N(n), ur(e), e;
+				return e = _r.getPooled(zr.change, e, t, n), e.type = "change", te(n), ur(e), e;
 			}
 			var Vr = null, Hr = null;
 			function Ur(e) {
@@ -3356,7 +3356,7 @@ var Ae = class extends v {
 					else {
 						F = !0;
 						try {
-							te(Ur, e);
+							ne(Ur, e);
 						} finally {
 							F = !1, oe();
 						}
@@ -6456,7 +6456,7 @@ var Ae = class extends v {
 						break;
 					case "select": t = n.value, t != null && $e(e, !!n.multiple, t, !1);
 				}
-			}, te = jc, ne = function(e, t, n, r, i) {
+			}, ne = jc, P = function(e, t, n, r, i) {
 				var a = X;
 				X |= 4;
 				try {
@@ -6490,8 +6490,8 @@ var Ae = class extends v {
 				function(e) {
 					Dt(e, lr);
 				},
+				te,
 				N,
-				P,
 				bn,
 				At,
 				Kc,
@@ -6703,11 +6703,11 @@ var Ae = class extends v {
 		}
 		var j = A, M = function(e) {
 			return j = e;
-		}, N = function() {
+		}, te = function() {
 			return j;
 		};
-		function P() {
-			var e = N(), t = null, n = null;
+		function N() {
+			var e = te(), t = null, n = null;
 			return {
 				clear: function() {
 					t = null, n = null;
@@ -6733,14 +6733,14 @@ var Ae = class extends v {
 				}
 			};
 		}
-		var te = {
+		var ne = {
 			notify: function() {},
 			get: function() {
 				return [];
 			}
 		};
-		function ne(e, t) {
-			var n, r = te;
+		function P(e, t) {
+			var n, r = ne;
 			function i(e) {
 				return c(), r.subscribe(e);
 			}
@@ -6754,10 +6754,10 @@ var Ae = class extends v {
 				return !!n;
 			}
 			function c() {
-				n || (n = t ? t.addNestedSub(o) : e.subscribe(o), r = P());
+				n || (n = t ? t.addNestedSub(o) : e.subscribe(o), r = N());
 			}
 			function l() {
-				n && (n(), n = void 0, r.clear(), r = te);
+				n && (n(), n = void 0, r.clear(), r = ne);
 			}
 			var u = {
 				addNestedSub: i,
@@ -6777,7 +6777,7 @@ var Ae = class extends v {
 			var t = e.store, n = e.context, r = e.children, i = (0, y.useMemo)(function() {
 				return {
 					store: t,
-					subscription: ne(t)
+					subscription: P(t)
 				};
 			}, [t]), a = (0, y.useMemo)(function() {
 				return t.getState();
@@ -7048,7 +7048,7 @@ var Ae = class extends v {
 						return l(f);
 					}, [f]), m = (0, y.useMemo)(function() {
 						if (!u) return I;
-						var e = ne(f, c ? null : s.subscription);
+						var e = P(f, c ? null : s.subscription);
 						return [e, e.notifyNestedSubs.bind(e)];
 					}, [
 						f,
@@ -8968,7 +8968,7 @@ var Ae = class extends v {
 					move: "mousemove",
 					stop: "mouseup"
 				}
-			}, M = j.mouse, N = function(e) {
+			}, M = j.mouse, te = function(e) {
 				C(o, e);
 				var n = T(o);
 				function o() {
@@ -9085,7 +9085,7 @@ var Ae = class extends v {
 					}
 				]), o;
 			}(t.Component);
-			e.default = N, A(N, "displayName", "DraggableCore"), A(N, "propTypes", {
+			e.default = te, A(te, "displayName", "DraggableCore"), A(te, "propTypes", {
 				allowAnyClick: n.default.bool,
 				disabled: n.default.bool,
 				enableUserSelectHack: n.default.bool,
@@ -9104,7 +9104,7 @@ var Ae = class extends v {
 				className: o.dontSetMe,
 				style: o.dontSetMe,
 				transform: o.dontSetMe
-			}), A(N, "defaultProps", {
+			}), A(te, "defaultProps", {
 				allowAnyClick: !1,
 				cancel: null,
 				disabled: !1,
@@ -9266,24 +9266,24 @@ var Ae = class extends v {
 				}, j(e, t);
 			}
 			function M(e) {
-				var t = te();
+				var t = ne();
 				return function() {
-					var n = ne(e), r;
+					var n = P(e), r;
 					if (t) {
-						var i = ne(this).constructor;
+						var i = P(this).constructor;
 						r = Reflect.construct(n, arguments, i);
 					} else r = n.apply(this, arguments);
-					return N(this, r);
+					return te(this, r);
 				};
 			}
-			function N(e, t) {
-				return t && (p(t) === "object" || typeof t == "function") ? t : P(e);
+			function te(e, t) {
+				return t && (p(t) === "object" || typeof t == "function") ? t : N(e);
 			}
-			function P(e) {
+			function N(e) {
 				if (e === void 0) throw ReferenceError("this hasn't been initialised - super() hasn't been called");
 				return e;
 			}
-			function te() {
+			function ne() {
 				if (typeof Reflect > "u" || !Reflect.construct || Reflect.construct.sham) return !1;
 				if (typeof Proxy == "function") return !0;
 				try {
@@ -9292,10 +9292,10 @@ var Ae = class extends v {
 					return !1;
 				}
 			}
-			function ne(e) {
-				return ne = Object.setPrototypeOf ? Object.getPrototypeOf : function(e) {
+			function P(e) {
+				return P = Object.setPrototypeOf ? Object.getPrototypeOf : function(e) {
 					return e.__proto__ || Object.getPrototypeOf(e);
-				}, ne(e);
+				}, P(e);
 			}
 			function re(e, t, n) {
 				return t in e ? Object.defineProperty(e, t, {
@@ -9324,29 +9324,29 @@ var Ae = class extends v {
 				}]);
 				function s(e) {
 					var t;
-					return D(this, s), t = n.call(this, e), re(P(t), "onDragStart", function(e, n) {
-						if ((0, l.default)("Draggable: onDragStart: %j", n), t.props.onStart(e, (0, o.createDraggableData)(P(t), n)) === !1) return !1;
+					return D(this, s), t = n.call(this, e), re(N(t), "onDragStart", function(e, n) {
+						if ((0, l.default)("Draggable: onDragStart: %j", n), t.props.onStart(e, (0, o.createDraggableData)(N(t), n)) === !1) return !1;
 						t.setState({
 							dragging: !0,
 							dragged: !0
 						});
-					}), re(P(t), "onDrag", function(e, n) {
+					}), re(N(t), "onDrag", function(e, n) {
 						if (!t.state.dragging) return !1;
 						(0, l.default)("Draggable: onDrag: %j", n);
-						var r = (0, o.createDraggableData)(P(t), n), i = {
+						var r = (0, o.createDraggableData)(N(t), n), i = {
 							x: r.x,
 							y: r.y
 						};
 						if (t.props.bounds) {
 							var a = i.x, s = i.y;
 							i.x += t.state.slackX, i.y += t.state.slackY;
-							var c = y((0, o.getBoundPosition)(P(t), i.x, i.y), 2), u = c[0], d = c[1];
+							var c = y((0, o.getBoundPosition)(N(t), i.x, i.y), 2), u = c[0], d = c[1];
 							i.x = u, i.y = d, i.slackX = t.state.slackX + (a - i.x), i.slackY = t.state.slackY + (s - i.y), r.x = i.x, r.y = i.y, r.deltaX = i.x - t.state.x, r.deltaY = i.y - t.state.y;
 						}
 						if (t.props.onDrag(e, r) === !1) return !1;
 						t.setState(i);
-					}), re(P(t), "onDragStop", function(e, n) {
-						if (!t.state.dragging || t.props.onStop(e, (0, o.createDraggableData)(P(t), n)) === !1) return !1;
+					}), re(N(t), "onDragStop", function(e, n) {
+						if (!t.state.dragging || t.props.onStop(e, (0, o.createDraggableData)(N(t), n)) === !1) return !1;
 						(0, l.default)("Draggable: onDragStop: %j", n);
 						var r = {
 							dragging: !1,
@@ -12800,7 +12800,7 @@ var Ae = class extends v {
 		};
 		return ns._editors = /* @__PURE__ */ new Map(), ns._wrapper = null, ns;
 	});
-})))(), 1), Le = function(e) {
+})))(), 1), Be = function(e) {
 	let t = e.plugins.get(y), n = $(e.ui.view.element), r = $(e.sourceElement), i = `ckeditor${Math.floor(Math.random() * 1e9)}`, a = [
 		"keypress",
 		"keyup",
@@ -12820,12 +12820,12 @@ var Ae = class extends v {
 			});
 		} else e.off(`.${i}`);
 	});
-}, Re = function(e, t) {
+}, Ve = function(e, t) {
 	if (t.heading !== void 0) {
 		var n = t.heading.options;
 		n.find((e) => e.view === "h1") !== void 0 && e.keystrokes.set("Ctrl+Alt+1", () => e.execute("heading", { value: "heading1" })), n.find((e) => e.view === "h2") !== void 0 && e.keystrokes.set("Ctrl+Alt+2", () => e.execute("heading", { value: "heading2" })), n.find((e) => e.view === "h3") !== void 0 && e.keystrokes.set("Ctrl+Alt+3", () => e.execute("heading", { value: "heading3" })), n.find((e) => e.view === "h4") !== void 0 && e.keystrokes.set("Ctrl+Alt+4", () => e.execute("heading", { value: "heading4" })), n.find((e) => e.view === "h5") !== void 0 && e.keystrokes.set("Ctrl+Alt+5", () => e.execute("heading", { value: "heading5" })), n.find((e) => e.view === "h6") !== void 0 && e.keystrokes.set("Ctrl+Alt+6", () => e.execute("heading", { value: "heading6" })), n.find((e) => e.model === "paragraph") !== void 0 && e.keystrokes.set("Ctrl+Alt+p", "paragraph");
 	}
-}, ze = function(e, t) {
+}, He = function(e, t) {
 	let n = null, r = e.editing.view.document, i = e.plugins.get("ClipboardPipeline");
 	r.on("clipboardOutput", (t, r) => {
 		n = e.id;
@@ -12844,7 +12844,7 @@ var Ae = class extends v {
 					let r = RegExp("data-entry-id=\"" + i + "\"");
 					if (n !== e.id || r.test(f)) {
 						let r = null;
-						n !== e.id && (t.includes(Oe) ? r = e.config.get("entryTypeOptions").map((e) => e.value) : (Craft.cp.displayError(N("This field doesn’t allow nested entries.", {}, "ckeditor")), c = !0)), await j.post("ckeditor/ckeditor/duplicate-nested-entry", {
+						n !== e.id && (t.includes(je) ? r = e.config.get("entryTypeOptions").map((e) => e.value) : (N(P("This field doesn’t allow nested entries.", {}, "ckeditor")), c = !0)), await j.post("ckeditor/ckeditor/duplicate-nested-entry", {
 							entryId: i,
 							targetSiteId: l,
 							sourceSiteId: a,
@@ -12858,7 +12858,7 @@ var Ae = class extends v {
 							}
 							e.data.newSiteId && (s = s.replace("data-site-id=\"" + a + "\"", "data-site-id=\"" + e.data.newSiteId + "\""));
 						}).catch((e) => {
-							c = !0, Craft.cp.displayError(e?.response?.data?.message), console.error(e?.response?.data?.additionalMessage);
+							c = !0, N(e?.response?.data?.message), console.error(e?.response?.data?.additionalMessage);
 						});
 					}
 				}
@@ -12866,10 +12866,10 @@ var Ae = class extends v {
 			c || (a.content = e.data.htmlProcessor.toView(s), i.fire("inputTransformation", a));
 		}
 	});
-}, Be = async function(e, n) {
+}, Ue = async function(e, n) {
 	typeof e == "string" && (e = document.querySelector(`#${e}`)), n.licenseKey = n.licenseKey || "GPL", n.attachTo = e;
 	let r = await t.create(n);
-	return window.CKE_SHOW_INSPECTOR && Craft.userIsAdmin && Ie.default.attach(r), r.editing.view.change((e) => {
+	return window.CKE_SHOW_INSPECTOR && Craft.userIsAdmin && ze.default.attach(r), r.editing.view.change((e) => {
 		let t = r.editing.view.document.getRoot();
 		if (n.accessibleFieldName !== void 0 && n.accessibleFieldName.length) {
 			let r = t.getAttribute("aria-label");
@@ -12878,6 +12878,6 @@ var Ae = class extends v {
 		n.describedBy !== void 0 && n.describedBy.length && e.setAttribute("aria-describedby", n.describedBy, t);
 	}), r.updateSourceElement(), r.model.document.on("change:data", () => {
 		r.updateSourceElement();
-	}), n.plugins.includes(y) && Le(r, y), n.plugins.includes(c) && Re(r, n), ze(r, n.plugins), r;
+	}), n.plugins.includes(y) && Be(r, y), n.plugins.includes(c) && Ve(r, n), He(r, n.plugins), r;
 };
-export { Oe as CraftEntries, de as CraftImageInsertUI, ue as CraftImageTextAlternativeUI, Fe as CraftLink, be as ImageEditor, ge as ImageTransform, Be as create };
+export { je as CraftEntries, me as CraftImageInsertUI, pe as CraftImageTextAlternativeUI, Re as CraftLink, Ce as ImageEditor, ye as ImageTransform, Ue as create };

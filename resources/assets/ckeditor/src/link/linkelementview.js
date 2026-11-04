@@ -1,5 +1,10 @@
 import {View} from 'ckeditor5';
-import {actionClient, t as craftT} from '@craftcms/cp';
+import {
+  actionClient,
+  t as craftT,
+  loadElementThumbs,
+  showError,
+} from '@craftcms/cp';
 
 export default class CraftLinkElementView extends View {
   constructor(locale, options = {}) {
@@ -147,7 +152,7 @@ export default class CraftLinkElementView extends View {
             ];
 
             Craft.addActionsToChip($element, actions);
-            //Craft.cp.elementThumbLoader.load($element);
+            //loadElementThumbs(element);
 
             // only show the sites dropdown, if an element has been selected
             if (this.linkUi.sitesView?.siteDropdownView?.buttonView) {
@@ -176,7 +181,7 @@ export default class CraftLinkElementView extends View {
           }
         })
         .catch((e) => {
-          Craft.cp.displayError(e?.response?.data?.message);
+          showError(e?.response?.data?.message);
           throw e?.response?.data?.message ?? e;
         });
     }
