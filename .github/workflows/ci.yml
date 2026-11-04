@@ -3,8 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
-      - '5.0'
+      - '6.x'
   pull_request:
 permissions:
   contents: read
@@ -16,11 +15,83 @@ jobs:
     name: ci
     uses: craftcms/.github/.github/workflows/ci.yml@v3
     with:
-      craft_version: '5'
-      node_version: '20'
-      jobs: '["ecs", "phpstan", "prettier"]'
-      notify_slack: true
-      slack_subteam: <!subteam^SGFL9NKNZ>
+      craft_version: '6'
+      node_version: '22'
+      jobs: '["prettier"]'
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}
+  phpstan:
+    name: PHPStan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: gd, pdo_sqlite
+          tools: composer:v2
+      - run: composer install --no-interaction --no-ansi --no-progress
+      - run: composer phpstan
+  notify-slack:
+    name: Notify Slack
+    needs: [ci, phpstan]
+    if: ${{ always() && github.event_name != 'pull_request' }}
+    uses: craftcms/.github/.github/workflows/notify-slack.yml@v3
+    with:
+      success: ${{ !contains(needs.*.result, 'failure') }}
+      failure: ${{ contains(needs.*.result, 'failure') }}
+      failure_text_prefix: <!subteam^SGFL9NKNZ>
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
       slack_webhook_url: ${{ secrets.SLACK_PLUGIN_WEBHOOK_URL }}
+  pint:
+    name: Pint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          tools: composer:v2
+      - run: composer install --no-interaction --no-ansi --no-progress
+      - run: composer check-cs
+  tests:
+    name: Tests / ${{ matrix.db }}
+    #    needs: [ci, pint]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        db: [sqlite, mysql, pgsql]
+    services:
+      mysql:
+        image: ${{ matrix.db == 'mysql' && 'mysql:8.0' || '' }}
+        env:
+          MYSQL_ROOT_PASSWORD: mysecretpassword
+          MYSQL_DATABASE: craft_test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 5
+      pgsql:
+        image: ${{ matrix.db == 'pgsql' && 'postgres:latest' || '' }}
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: mysecretpassword
+          POSTGRES_DB: craft_test
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: gd, pdo_mysql, pdo_pgsql, pdo_sqlite
+          tools: composer:v2
+      - run: composer install --no-interaction --no-ansi --no-progress
+      - name: Copy tests .env
+        run: |
+          cp tests/.env.example.${{ matrix.db }} tests/.env
+          sed -i 's/DB_PASSWORD=/DB_PASSWORD=mysecretpassword/' tests/.env
+      - run: ./vendor/bin/pest --ci --compact

@@ -1,0 +1,26 @@
+<?php
+
+/**
+ * This view is used by the `ckeditor:convert:matrix` command.
+ *
+ * The following variables are available in this view:
+ */
+/** @var string $ckeFieldUid */
+/** @var string|null $htmlEntryTypeUid */
+/** @var string|null $htmlFieldUid */
+/** @var string $markdownFlavor */
+/** @var bool $preserveHtmlEntries */
+
+echo "<?php\n";
+?>
+
+use CraftCms\Ckeditor\Database\Migrations\BaseConvertMatrixContentMigration;
+
+return new class extends BaseConvertMatrixContentMigration
+{
+    public string $ckeFieldUid = '<?= $ckeFieldUid ?>';
+    public ?string $htmlEntryTypeUid = <?= $htmlEntryTypeUid ? "'$htmlEntryTypeUid'" : 'null' ?>;
+    public ?string $htmlFieldUid = <?= $htmlFieldUid ? "'$htmlFieldUid'" : 'null' ?>;
+    public string $markdownFlavor = '<?= $markdownFlavor ?>';
+    public bool $preserveHtmlEntries = <?= var_export($preserveHtmlEntries) ?>;
+};

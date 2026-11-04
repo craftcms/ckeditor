@@ -8,13 +8,18 @@
   "devDependencies": {
     "@ckeditor/ckeditor5-dev-translations": ">=62.3.0",
     "@ckeditor/ckeditor5-inspector": ">=5.0.0",
+    "@vitejs/plugin-vue": "^6.0.10",
     "ckeditor5": ">=48.5.2",
     "husky": "^9.1.7",
+    "laravel-vite-plugin": "^3.2.0",
     "lint-staged": "^15.2.10",
     "npm-run-all": "^4.1.5",
     "prettier": "^3.4.2",
-    "vite": "^6.4.1",
-    "vite-plugin-static-copy": "^3.2.0"
+    "typescript": "^6.0.3",
+    "vite": "^8.3.5",
+    "vite-plugin-static-copy": "^4.1.1",
+    "vue": "^3.5.44",
+    "vue-tsc": "^3.3.14"
   },
   "peerDependencies": {
     "glob": ">= 11.0",
@@ -22,18 +27,20 @@
   },
   "scripts": {
     "prebuild": "npm run fix-prettier",
-    "build:config": "vite build -c ./src/web/assets/fieldsettings/vite.config.js",
-    "build:field": "vite build -c ./src/web/assets/ckeditor/vite.config.js",
+    "build:config": "vite build -c ./resources/assets/fieldsettings/vite.config.js",
+    "build:cp": "vite build",
+    "build:field": "vite build -c ./resources/assets/ckeditor/vite.config.js",
     "build": "npm-run-all -p build:*",
     "postbuild": "npm run copy",
     "dev": "npm-run-all -p \"build:* -- -w --mode=development --minify=false\"",
     "predev": "npm run copy",
-    "precopy:lib": "rm -r ./src/web/assets/ckeditor/dist/lib || true",
+    "precopy:lib": "rm -r ./resources/assets/ckeditor/dist/lib || true",
     "copy": "run-p copy:*",
-    "copy:browser": "cp -r ./node_modules/ckeditor5/dist/browser/ ./src/web/assets/ckeditor/dist/lib",
-    "copy:translations": "cp -r ./node_modules/ckeditor5/dist/translations/ ./src/web/assets/ckeditor/dist/lib/translations",
+    "copy:browser": "cp -r ./node_modules/ckeditor5/dist/browser/ ./resources/assets/ckeditor/dist/lib",
+    "copy:translations": "cp -r ./node_modules/ckeditor5/dist/translations/ ./resources/assets/ckeditor/dist/lib/translations",
     "check-prettier": "prettier --check .",
     "fix-prettier": "prettier --write .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "typecheck": "vue-tsc --noEmit"
   }
 }

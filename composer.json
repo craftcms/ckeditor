@@ -6,8 +6,7 @@
     "html",
     "cms",
     "craftcms",
-    "ckeditor",
-    "yii2"
+    "ckeditor"
   ],
   "license": "GPL-3.0-or-later",
   "authors": [
@@ -20,45 +19,63 @@
     "email": "support@craftcms.com",
     "issues": "https://github.com/craftcms/ckeditor/issues?state=open",
     "source": "https://github.com/craftcms/ckeditor",
-    "docs": "https://github.com/craftcms/ckeditor/blob/5.x/README.md",
-    "rss": "https://github.com/craftcms/ckeditor/commits/5.x.atom"
+    "docs": "https://github.com/craftcms/ckeditor/blob/6.x/README.md",
+    "rss": "https://github.com/craftcms/ckeditor/commits/6.x.atom"
   },
   "require": {
-    "php": "^8.2",
-    "craftcms/cms": "^5.10.0",
-    "craftcms/html-field": "^3.6.0",
-    "embed/embed": "^4.4",
-    "nystudio107/craft-code-editor": ">=1.0.8 <=1.0.13 || ^1.0.16"
+    "php": "^8.5",
+    "craftcms/cms": "^6.0.0",
+    "craftcms/html-field": "dev-feature/craft-6",
+    "embed/embed": "^4.4"
   },
   "require-dev": {
-    "craftcms/ecs": "dev-main",
-    "craftcms/phpstan": "dev-main",
-    "craftcms/rector": "dev-main",
+    "driftingly/rector-laravel": "^2.6.2",
+    "larastan/larastan": "^3.13",
+    "laravel/pint": "^1.22",
+    "orchestra/testbench": "^11.0",
+    "pestphp/pest": "^5.0",
+    "pestphp/pest-plugin-laravel": "^5.0",
+    "phpstan/phpstan": "^2.1",
+    "rector/rector": "^2.3",
     "vlucas/phpdotenv": "^5.5"
   },
   "autoload": {
     "psr-4": {
-      "craft\\ckeditor\\": "src/"
+      "CraftCms\\Ckeditor\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "CraftCms\\Ckeditor\\Tests\\": "tests/"
     }
   },
   "scripts": {
-    "check-cs": "ecs check --ansi",
-    "fix-cs": "ecs check --ansi --fix",
-    "phpstan": "phpstan --memory-limit=1G"
+    "check-cs": "pint --test",
+    "fix-cs": "pint",
+    "phpstan": "phpstan --memory-limit=1G",
+    "tests": "./vendor/bin/pest --compact"
   },
   "extra": {
     "name": "CKEditor",
     "handle": "ckeditor",
-    "documentationUrl": "https://github.com/craftcms/ckeditor/blob/5.x/README.md"
+    "class": "CraftCms\\Ckeditor\\Plugin",
+    "documentationUrl": "https://github.com/craftcms/ckeditor/blob/6.x/README.md"
   },
   "config": {
-    "platform": {
-      "php": "8.2"
-    },
     "sort-packages": true,
     "allow-plugins": {
-      "yiisoft/yii2-composer": true,
-      "craftcms/plugin-installer": true
+      "craftcms/plugin-installer": true,
+      "pestphp/pest-plugin": true,
+      "php-http/discovery": false
     }
-  }
+  },
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://composer.craftcms.com",
+      "canonical": false
+    }
+  ],
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }

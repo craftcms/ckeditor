@@ -12,18 +12,23 @@ This plugin adds a “CKEditor” field type to Craft CMS, which provides a deep
 - [Installation](#installation)
 - [Configuration](#configuration)
   - [Registering Custom Styles](#registering-custom-styles)
-  - [HTML Purifier Configs](#html-purifier-configs)
+  - [HTML Sanitizing](#html-sanitizing)
   - [Embedding Media](#embedding-media)
+  - [License Key](#license-key)
 - [Longform Content with Nested Entries](#longform-content-with-nested-entries)
   - [Setup](#setup)
   - [Rendering Nested Entries on the Front End](#rendering-nested-entries-on-the-front-end)
+  - [Rendering Chunks](#rendering-chunks)
 - [Converting Redactor Fields](#converting-redactor-fields)
 - [Converting Matrix Fields](#converting-matrix-fields)
 - [Adding CKEditor Plugins](#adding-ckeditor-plugins)
+  - [First Party plugins](#first-party-plugins)
+  - [Custom plugins](#custom-plugins)
+- [Front-end use](#front-end-use)
 
 ## Requirements
 
-This plugin requires Craft CMS 5.9.0 or later.
+This plugin requires Craft CMS 6.0 or later, and PHP 8.5 or later. See [UPGRADE.md](UPGRADE.md) for upgrading from Craft 5.
 
 ## Installation
 
@@ -45,7 +50,7 @@ cd /path/to/my-project
 composer require craftcms/ckeditor
 
 # tell Craft to install the plugin
-php craft plugin/install ckeditor
+php artisan craft:plugin:install ckeditor
 ```
 
 ## Configuration
@@ -55,7 +60,7 @@ Each CKEditor field allows you to choose the available toolbar buttons, as well 
 Once you have selected which toolbar buttons should be available, additional settings may be applied via **Config options**. Options can be defined as static JSON, or a dynamically-evaluated JavaScript snippet; the latter is used as the body of an [immediately-invoked function expression](https://developer.mozilla.org/en-US/docs/Glossary/IIFE), and does not receive any arguments.
 
 > [!NOTE]  
-> Available options can be found in the [CKEditor's documentation](https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html). Craft will auto-complete config properties for most bundled CKEditor extensions.
+> Available options can be found in the [CKEditor's documentation](https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editorconfig-EditorConfig.html).
 
 ### Examples
 
@@ -158,35 +163,45 @@ You can then register custom CSS styles that should be applied within the editor
 }
 ```
 
-### HTML Purifier Configs
+### HTML Sanitizing
 
-CKEditor fields pass input through [HTML Purifier](http://htmlpurifier.org) to avoid saving malicious code to the database. This helps prevent XSS attacks and other vulnerabilities.
+CKEditor fields pass input through Craft’s HTML sanitizer (built on [`symfony/html-sanitizer`](https://symfony.com/doc/current/html_sanitizer.html)) to avoid saving malicious code to the database. This helps prevent XSS attacks and other vulnerabilities.
 
-HTML Purifier is configured primarily via JSON files in your `config/htmlpurifier/` folder. New Craft projects (based on [`craftcms/craft`](https://github.com/craftcms/craft)) come with a single [`Default.json` config](https://github.com/craftcms/craft/blob/5.x/config/htmlpurifier/Default.json), which you can modify or supplement with your own configurations. Each CKEditor field with **Advanced** &rarr; **Purify HTML** enabled uses its selected HTML Purifier config. See the [HTML Purifier documentation](http://htmlpurifier.org/live/configdoc/plain.html) for a complete list of  options!
-
-This behavior is independent of CKEditor’s own HTML sanitization engine—the client-side editor automatically strips out any markup that isn’t supported by an enabled feature or plugin. If you [install additional plugins](#adding-ckeditor-plugins) or add [custom styles](#registering-custom-styles), you may need to relax associated HTML Purifier rules to ensure the markup is not removed by the server when saved.
-
-> [!WARNING]
-> _Disabling HTML Purifier entirely can expose your site to significant security risks, even if you don’t accept input from anonymous users._  
-> HTML Purifier provides a layer of security, while CKEditor is primarily concerned with hygiene.
-
-The `HTMLPurifier_Config` object can be modified directly, using the `craft\ckeditor\Field::EVENT_MODIFY_PURIFIER_CONFIG` [event](https://craftcms.com/docs/5.x/extend/events.html).
+Each CKEditor field with **Advanced** &rarr; **Sanitize HTML** enabled uses its selected **HTML Sanitizer**. Other sanitizers can be defined as array config files in `config/craft/sanitizers/` (the file name becomes the sanitizer name), or registered with `CraftCms\Cms\Support\Facades\HtmlSanitizers::extend()`, and are listed in the field’s **HTML Sanitizer** setting:
 
 ```php
-use craft\htmlfield\events\ModifyPurifierConfigEvent;
-use craft\ckeditor\Field;
-use HTMLPurifier_Config;
-use yii\base\Event;
+<?php
 
-Event::on(
-    Field::class,
-    Field::EVENT_MODIFY_PURIFIER_CONFIG,
-    function(ModifyPurifierConfigEvent $event) {
-        /** @var HTMLPurifier_Config $config */
-        $config = $event->config;
-        // ...
-    }
-);
+// config/craft/sanitizers/no-headings.php
+return [
+    'allow_safe_elements' => true,
+    'block_elements' => ['h1', 'h2'],
+];
+```
+
+The keys mirror [`HtmlSanitizerConfig`](https://symfony.com/doc/current/html_sanitizer.html)’s methods in snake case (`allow_elements`, `block_elements`, `drop_elements`, `allow_attributes`, `force_attributes`, `allowed_link_schemes`, etc.).
+
+CKEditor extends the selected sanitizer’s config with the markup the field’s toolbar and options need (such as list styles, to-do list checkboxes, `<craft-entry>` tags for nested entries, and link `target` and `rel` attributes when the field’s link options or advanced link fields can add them). Sanitizers registered as instances (e.g. `HtmlSanitizers::extend('name', new HtmlSanitizer(...))`) can’t be extended, so they’re used as-is, and must allow that markup themselves.
+
+> [!WARNING]
+> When upgrading from Craft 5, each field’s **Purify HTML** and **HTML Purifier Config** settings are mapped onto **Sanitize HTML** and **HTML Sanitizer** automatically, but `config/craft/htmlpurifier/*.json` files are deprecated, and are only loaded when the Yii 2 adapter is installed. CKEditor doesn’t extend them with the markup the field needs, so any markup they don’t allow—including `<craft-entry>` tags for nested entries—is removed when content is saved. Recreate them as array config files in `config/craft/sanitizers/`, keeping the same file name so fields continue to reference them.
+
+This behavior is independent of CKEditor’s own HTML sanitization engine—the client-side editor automatically strips out any markup that isn’t supported by an enabled feature or plugin. If you [install additional plugins](#adding-ckeditor-plugins) or add [custom styles](#registering-custom-styles), you may need to relax the sanitizer config to ensure the markup is not removed by the server when saved.
+
+> [!WARNING]
+> _Disabling HTML sanitizing entirely can expose your site to significant security risks, even if you don’t accept input from anonymous users._  
+> The sanitizer provides a layer of security, while CKEditor is primarily concerned with hygiene.
+
+The sanitizer config used by CKEditor fields can be modified with the `CraftCms\Ckeditor\Events\HtmlSanitizerConfigResolving` event, which is dispatched after CKEditor has extended it. The event isn’t dispatched for sanitizers registered as instances (including legacy `config/craft/htmlpurifier/*.json` files). `HtmlSanitizerConfig` is immutable, so assign the modified config back to the event:
+
+```php
+use CraftCms\Ckeditor\Events\HtmlSanitizerConfigResolving;
+use Illuminate\Support\Facades\Event;
+
+Event::listen(function(HtmlSanitizerConfigResolving $event): void {
+    // $event->field is the CKEditor field
+    $event->config = $event->config->allowElement('abbr', ['title']);
+});
 ```
 
 CKEditor also makes its [general HTML support](https://ckeditor.com/docs/ckeditor5/latest/features/html/general-html-support.html) rules configurable, for situations where the source editor is used, or when authors expect some formatting from pasted content to be preserved:
@@ -205,7 +220,7 @@ return {
     ],
     disallow: [
       // ...
-    ].
+    ],
   },
 };
 ```
@@ -214,13 +229,7 @@ Adding a rule to the `disallow` array does not guarantee that matching HTML is s
 
 ### Embedding Media
 
-CKEditor 5 stores references to embedded media embeds using `oembed` tags. Craft CMS configures HTML Purifier to support these tags, however you will need to ensure that the `URI.SafeIframeRegexp` [HTML Purifier](#html-purifier-configs) setting is set to allow any domains you wish to embed content from.
-
-```json
-{
-  "URI.SafeIframeRegexp": "%^(https?:)?//(www\\.youtube\\.com/|youtu\\.be|player\\.vimeo\\.com/)%"
-}
-```
+CKEditor 5 stores references to embedded media embeds using `oembed` tags. Craft’s default HTML sanitizer allows these tags (and `<div data-oembed-url>` tags), but removes `<iframe>` tags. If your fields contain `<iframe>` embeds, allow them with the [`HtmlSanitizerConfigResolving` event](#html-sanitizing).
 
 To automatically replace `oembed` tags with the media provider’s embed HTML, enable the field’s **Parse embeds** setting. Alternatively, see CKEditor’s [media embed documentation](https://ckeditor.com/docs/ckeditor5/latest/features/media-embed.html#displaying-embedded-media-on-your-website) for examples of how to show the embedded media on your front end.
 
@@ -231,15 +240,13 @@ To automatically replace `oembed` tags with the media provider’s embed HTML, e
 
 CKEditor is used under the GPL license by default, which displays a “Powered by CKEditor” badge within each editor. If you have a [commercial CKEditor license](https://ckeditor.com/pricing/), you can enter its key in **Settings** → **Plugins** → **CKEditor** → **License Key**. The key can be set to an environment variable (e.g. `$CKEDITOR_LICENSE_KEY`).
 
-You can also set it from `config/ckeditor.php`:
+You can also set it from `config/craft/ckeditor.php`:
 
 ```php
 <?php
 
-use craft\helpers\App;
-
 return [
-    'licenseKey' => App::env('CKEDITOR_LICENSE_KEY'),
+    'licenseKey' => env('CKEDITOR_LICENSE_KEY'),
 ];
 ```
 
@@ -346,44 +353,39 @@ The example above treats both chunk types as strings. For entry chunks, this is 
 
 ## Converting Redactor Fields
 
-You can use the `ckeditor/convert/redactor` command to convert any existing Redactor fields over to CKEditor.
+You can use the `ckeditor:convert:redactor` command to convert any existing Redactor fields over to CKEditor.
 
-The command will make changes to your project config. You should commit them, and run `craft up` on other environments for the changes to take effect.
+The command will make changes to your project config. You should commit them, and run `php artisan craft:migrate:all` on other environments for the changes to take effect.
 
 ```sh
-php craft ckeditor/convert/redactor
+php artisan ckeditor:convert:redactor
 ```
 
 ## Converting Matrix Fields
 
-You can use the `ckeditor/convert/matrix` command to convert a Matrix field over to CKEditor. Each of the Matrix field’s entry types will be assigned to the CKEditor field, and field values will be a mix of HTML content extracted from one of the nested entry types of your choosing (if desired) combined with nested entries.
+You can use the `ckeditor:convert:matrix` command to convert a Matrix field over to CKEditor. Each of the Matrix field’s entry types will be assigned to the CKEditor field, and field values will be a mix of HTML content extracted from one of the nested entry types of your choosing (if desired) combined with nested entries.
 
 ```sh
-php craft ckeditor/convert/matrix <myMatrixFieldHandle>
+php artisan ckeditor:convert:matrix <myMatrixFieldHandle>
 ```
 
-The command will generate a new content migration, which will need to be run on other environments (via `craft up`) in order to update existing elements’ field values.
+The command will generate a new content migration in `database/migrations/`, which will need to be run on other environments (via `php artisan craft:migrate:all`) in order to update existing elements’ field values.
 
 ## Adding CKEditor Plugins
 
 ### First Party plugins
-If you'd like to include any of the [first party packages](https://github.com/ckeditor/ckeditor5/tree/master/packages) from CKEditor not [already included](https://github.com/craftcms/ckeditor/blob/5.2.1/src/helpers/CkeditorConfig.php#L26), you can call `CkeditorConfig::registerFirstPartyPackage()` in the `init` function of a custom module.
+If you'd like to include any of the [first party packages](https://github.com/ckeditor/ckeditor5/tree/master/packages) from CKEditor not [already included](src/Support/CkeditorConfig.php), you can call `CkeditorConfig::registerFirstPartyPackage()` from a service provider’s `boot()` method (e.g. your project’s `AppServiceProvider`).
 
 ```php
-use craft\ckeditor\helpers\CkeditorConfig;
+use CraftCms\Ckeditor\Support\CkeditorConfig;
 
-class Site extends BaseModule
+public function boot(): void
 {
-    public function init(): void
-    {
-        parent::init(); 
-    
-        // Register a package with toolbar items and multiple plugins
-        CkeditorConfig::registerFirstPartyPackage(['SpecialCharacters', 'SpecialCharactersEssentials'], ['specialCharacters']);
-        
-        // Register a package with a single plugin.
-        CkeditorConfig::registerFirstPartyPackage(['ImageResize']);
-    }
+    // Register a package with toolbar items and multiple plugins
+    CkeditorConfig::registerFirstPartyPackage(['SpecialCharacters', 'SpecialCharactersEssentials'], ['specialCharacters']);
+
+    // Register a package with a single plugin.
+    CkeditorConfig::registerFirstPartyPackage(['ImageResize']);
 }
 ```
 
@@ -393,70 +395,55 @@ class Site extends BaseModule
 > [!TIP]  
 > Check out CKEditor’s [Creating a basic plugin](https://ckeditor.com/docs/ckeditor5/latest/framework/tutorials/creating-simple-plugin-timestamp.html) tutorial for an in-depth look at how to create a custom CKEditor plugin.
 
-Once the CKEditor package is in place in your Craft plugin, create an [asset bundle](https://craftcms.com/docs/4.x/extend/asset-bundles.html) which extends [`BaseCkeditorPackageAsset`](src/web/assets/BaseCkeditorPackageAsset.php). The asset bundle defines the package’s build directory, filename, namespace, a list of CKEditor plugin names provided by the package, and any toolbar items that should be made available via the plugin.
+Once the CKEditor package is built, publish its files from your plugin (e.g. with the plugin’s `$publishables` property), and register it with `CraftCms\Ckeditor\Support\CkeditorAssets::registerPackage()` from your plugin’s `boot()` method. A `CkeditorPackage` defines the package’s namespace, the URL of its entry file, the CKEditor plugin names it provides, and any toolbar items that should be made available via the plugin.
 
-For example, here’s an asset bundle which defines a “Tokens” plugin:
+For example, here’s how a plugin would register a “Tokens” package:
 
 ```php
-<?php
+use CraftCms\Ckeditor\Data\CkeditorPackage;
+use CraftCms\Ckeditor\Support\CkeditorAssets;
 
-namespace mynamespace\web\assets\tokens;
+protected array $publishables = [
+    __DIR__ . '/../resources/tokens' => 'tokens',
+];
 
-use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
-
-class TokensAsset extends BaseCkeditorPackageAsset
+public function boot(CkeditorAssets $ckeditorAssets): void
 {
-    public $sourcePath = __DIR__ . '/build';
-    
-    public string $namespace = '@craftcms/ckeditor5-tokens';
-
-    public $js = [
-        ['tokens.js', 'type' => 'module']
-    ];
-
-    public array $pluginNames = [
-        'Tokens',
-    ];
-
-    public array $toolbarItems = [
-        'tokens',
-    ];
+    $ckeditorAssets->registerPackage(new CkeditorPackage(
+        namespace: '@craftcms/ckeditor5-tokens',
+        url: $this->asset('tokens/tokens.js'),
+        pluginNames: ['Tokens'],
+        toolbarItems: ['tokens'],
+        // optional:
+        styles: [$this->asset('tokens/tokens.css')],
+        translationsPath: __DIR__ . '/../resources/tokens/translations',
+        translationsUrl: $this->asset('tokens/translations'),
+    ));
 }
 ```
 
-Finally, register the asset bundle from your plugin’s `init()` method:
+It doesn’t matter which order plugins are loaded in.
 
-```php
-\craft\ckeditor\Plugin::registerCkeditorPackage(TokensAsset::class, 'tokens.js');
-```
+Each CKEditor field only imports your package and registers its files if one of the package’s `toolbarItems` is in the field’s toolbar. Packages without toolbar items aren’t tied to the toolbar:
 
-The second parameter should point to the main entry file for your JavaScript. In most cases, it will be the same as the only item in your `$js` array.
-
-Packages aren’t loaded until they’re needed, so you can also register yours from a `Craft::$app->onInit()` callback, and it doesn’t matter which order plugins are loaded in.
-
-Each CKEditor field only imports your package and registers its asset bundle if one of the package’s `$toolbarItems` is in the field’s toolbar. Packages without toolbar items aren’t tied to the toolbar:
-
-- If `$toolbarItems` is empty, the package’s plugins are loaded for every field.
-- If `$pluginNames` is empty too, the asset bundle is registered for every field, and its JavaScript runs for its side effects.
+- If `toolbarItems` is empty, the package’s plugins are loaded for every field.
+- If `pluginNames` is empty too, the package’s entry file is registered for every field, and its JavaScript runs for its side effects.
 
 If some of your plugins go with a toolbar button and others should always be loaded, register the always-on plugins separately:
 
 ```php
-public function registerPackage(): void
-{
-    // Plugins in $pluginNames only load when one of $toolbarItems is in the toolbar
-    parent::registerPackage();
+// Plugins in pluginNames only load when one of toolbarItems is in the toolbar
+$ckeditorAssets->registerPackage($package);
 
-    // These load for every field
-    \craft\ckeditor\helpers\CkeditorConfig::registerPackage($this->namespace, [
-        'plugins' => ['TokensAutocomplete'],
-    ]);
-}
+// These load for every field
+\CraftCms\Ckeditor\Support\CkeditorConfig::registerPackage($package->namespace, [
+    'plugins' => ['TokensAutocomplete'],
+]);
 ```
 
 Plugins from your package are referenced through a namespace import (`import * as pkg from '@craftcms/ckeditor5-tokens'`), so their names won’t collide with plugins from other packages. A field’s custom config JS can still refer to your plugin class by name, e.g. `extraPlugins: [Tokens]` to enable it without its toolbar button. The package is imported for that field whenever its config mentions the plugin, as long as no other package provides a plugin with the same name.
 
-If you need your package’s asset bundle on a page that creates its own CKEditor instances, call `\craft\ckeditor\Plugin::registerCkeditorPackageBundles($view)`.
+If you need your package’s files on a page that creates its own CKEditor instances, call `CkeditorAssets::registerPackageAssets()`.
 
 ## Front-end use
 
@@ -468,7 +455,7 @@ If you wish to use CKEditor on the front end, the safest option is to [bring you
 <script src="https://cdn.ckeditor.com/ckeditor5/44.3.0/ckeditor5.umd.js"></script>
 
 {# Load the field definition via the field and CKEditor APIs: #}
-{% set field = craft.app.fields.getFieldByHandle('primer') %}
+{% set field = craft.fields.getFieldByHandle('primer') %}
 
 <div id="editor">
     {{ entry.myCkEditorField }}
@@ -497,4 +484,4 @@ If you wish to use CKEditor on the front end, the safest option is to [bring you
 </script>
 ```
 
-You may need to build up the top-level config object from `field.options`, `field.headingLevels`, and so on to get a complete, functional editor—be mindful that configurations may rely on plugins that are only available in the control panel! Refer to [`craft\ckeditor\Field::inputHtml()`](src/Field.php) for additional steps the CKEditor plugin when normalizing configuration, for control panel editor instances.
+You may need to build up the top-level config object from `field.options`, `field.headingLevels`, and so on to get a complete, functional editor—be mindful that configurations may rely on plugins that are only available in the control panel! Refer to [`CraftCms\Ckeditor\Field::uiControl()`](src/Field.php) for additional steps the CKEditor plugin when normalizing configuration, for control panel editor instances.
