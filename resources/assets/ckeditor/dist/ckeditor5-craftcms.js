@@ -1,16 +1,16 @@
 import { ButtonView as e, ClassicEditor as t, Collection as n, Command as r, ContextualBalloon as i, DomEventObserver as a, DropdownButtonView as o, FormRowView as s, Heading as c, IconImage as l, IconObjectSizeMedium as u, IconPlus as d, ImageInsertUI as f, ImageTextAlternativeUI as p, ImageUtils as m, LabeledFieldView as h, LinkUI as g, ModelRange as _, Plugin as v, SourceEditing as y, SwitchButtonView as b, View as x, ViewModel as S, Widget as C, WidgetToolbarRepository as w, addListToDropdown as T, createDropdown as E, createLabeledInputText as D, findAttributeRange as O, isWidget as ee, toWidget as k, viewToModelPositionOutsideModelElement as A } from "ckeditor5";
-import { actionClient as j, t as M } from "@craftcms/cp";
+import { actionClient as j, createElementSelectorModal as M, t as N } from "@craftcms/cp";
 // \0rolldown/runtime.js
-var te = Object.create, N = Object.defineProperty, ne = Object.getOwnPropertyDescriptor, re = Object.getOwnPropertyNames, P = Object.getPrototypeOf, ie = Object.prototype.hasOwnProperty, F = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), ae = (e, t, n, r) => {
-	if (t && typeof t == "object" || typeof t == "function") for (var i = re(t), a = 0, o = i.length, s; a < o; a++) s = i[a], !ie.call(e, s) && s !== n && N(e, s, {
+var P = Object.create, te = Object.defineProperty, ne = Object.getOwnPropertyDescriptor, re = Object.getOwnPropertyNames, ie = Object.getPrototypeOf, F = Object.prototype.hasOwnProperty, ae = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), oe = (e, t, n, r) => {
+	if (t && typeof t == "object" || typeof t == "function") for (var i = re(t), a = 0, o = i.length, s; a < o; a++) s = i[a], !F.call(e, s) && s !== n && te(e, s, {
 		get: ((e) => t[e]).bind(null, s),
 		enumerable: !(r = ne(t, s)) || r.enumerable
 	});
 	return e;
-}, oe = (e, t, n) => (n = e == null ? {} : te(P(e)), ae(t || !e || !e.__esModule || !ie.call(e, "default") ? N(n, "default", {
+}, se = (e, t, n) => (n = e == null ? {} : P(ie(e)), oe(t || !e || !e.__esModule || !F.call(e, "default") ? te(n, "default", {
 	value: e,
 	enumerable: !0
-}) : n, e)), se = /#asset:\d+(?:@\d+)?:alt$/, ce = /#asset:(\d+)(?:@(\d+))?/, le = class extends p {
+}) : n, e)), ce = /#asset:\d+(?:@\d+)?:alt$/, le = /#asset:(\d+)(?:@(\d+))?/, ue = class extends p {
 	static get pluginName() {
 		return "CraftImageTextAlternativeUI";
 	}
@@ -20,7 +20,7 @@ var te = Object.create, N = Object.defineProperty, ne = Object.getOwnPropertyDes
 	_createForm() {
 		super._createForm(), this._createSyncButton(), this.listenTo(this._form, "submit", () => {
 			let e = this._form.labeledInput.fieldView, t = this.editor.commands.get("imageTextAlternative").value || "";
-			se.test(t) && e.element.value === this._visibleAltText(t) && (e.value = e.element.value = t);
+			ce.test(t) && e.element.value === this._visibleAltText(t) && (e.value = e.element.value = t);
 		}, { priority: "high" });
 	}
 	_showForm() {
@@ -29,14 +29,14 @@ var te = Object.create, N = Object.defineProperty, ne = Object.getOwnPropertyDes
 		e.value = e.element.value = t, this._syncButton.isEnabled = !!this._srcInfo(this._selectedImage()), e.select();
 	}
 	_visibleAltText(e) {
-		return e.replace(se, "");
+		return e.replace(ce, "");
 	}
 	_selectedImage() {
 		return this.editor.plugins.get("ImageUtils").getClosestSelectedImageElement(this.editor.model.document.selection);
 	}
 	_srcInfo(e) {
 		if (!e || !e.hasAttribute("src")) return null;
-		let t = e.getAttribute("src").match(ce);
+		let t = e.getAttribute("src").match(le);
 		return t ? {
 			assetId: t[1],
 			siteId: t[2] ?? null
@@ -45,7 +45,7 @@ var te = Object.create, N = Object.defineProperty, ne = Object.getOwnPropertyDes
 	_createSyncButton() {
 		let t = this.editor, n = new e(t.locale);
 		n.set({
-			label: M("Sync from asset", {}, "ckeditor"),
+			label: N("Sync from asset", {}, "ckeditor"),
 			withText: !0,
 			class: "btn"
 		}), n.render(), this.listenTo(n, "execute", () => this._syncFromAsset());
@@ -65,12 +65,12 @@ var te = Object.create, N = Object.defineProperty, ne = Object.getOwnPropertyDes
 			throw Craft.cp.displayError(e?.response?.data?.message), e;
 		}
 		let r = n.data.siteId ?? t.siteId, i = n.data.alt ?? "", a = `${i}#asset:${t.assetId}${r ? `@${r}` : ""}:alt`, o = this._form.labeledInput.fieldView;
-		o.value == i ? Craft.cp.displaySuccess(M("The alternative text was already in sync.", {}, "ckeditor")) : (o.value = o.element.value = i, this.editor.execute("imageTextAlternative", { newValue: a }), Craft.cp.displaySuccess(M("The alternative text was synced from the asset.", {}, "ckeditor")));
+		o.value == i ? Craft.cp.displaySuccess(N("The alternative text was already in sync.", {}, "ckeditor")) : (o.value = o.element.value = i, this.editor.execute("imageTextAlternative", { newValue: a }), Craft.cp.displaySuccess(N("The alternative text was synced from the asset.", {}, "ckeditor")));
 	}
 	destroy() {
 		this._syncButton && this._syncButton.destroy(), super.destroy();
 	}
-}, ue = class extends f {
+}, de = class extends f {
 	static get pluginName() {
 		return "CraftImageInsertUI";
 	}
@@ -109,24 +109,20 @@ var te = Object.create, N = Object.defineProperty, ne = Object.getOwnPropertyDes
 	}
 	_showImageSelectModal() {
 		let e = this._imageSources, t = this.editor, n = t.config, r = Object.assign({}, n.get("assetSelectionCriteria"), { kind: "image" });
-		Craft.createElementSelectorModal("CraftCms\\Cms\\Asset\\Elements\\Asset", {
+		M("CraftCms\\Cms\\Asset\\Elements\\Asset", {
 			...this._imageModalSettings,
 			storageKey: `ckeditor:${this.pluginName}:'CraftCms\\Cms\\Asset\\Elements\\Asset'`,
 			sources: e,
 			criteria: r,
 			defaultSiteId: n.get("elementSiteId"),
 			transforms: n.get("transforms"),
-			autoFocusSearchBox: !1,
 			multiSelect: !0,
-			onSelect: (e, n) => {
-				this._processSelectedAssets(e, n).then(() => {
-					t.editing.view.focus();
-				});
-			},
-			onHide: () => {
+			onSelect: (e, { transform: n }) => this._processSelectedAssets(e, n).then(() => {
 				t.editing.view.focus();
-			},
-			closeOtherModals: !1
+			}),
+			onClose: () => {
+				t.editing.view.focus();
+			}
 		});
 	}
 	async _processSelectedAssets(e, t) {
@@ -137,7 +133,7 @@ var te = Object.create, N = Object.defineProperty, ne = Object.getOwnPropertyDes
 		}
 		let n = this.editor, r = n.config.get("defaultTransform"), i = [];
 		for (let a of e) {
-			let e = a.siteId ?? n.config.get("elementSiteId"), o = `${a.$element.data("alt") ?? ""}#asset:${a.id}${e ? `@${e}` : ""}:alt`, s = this._isTransformUrl(a.url);
+			let e = a.siteId ?? n.config.get("elementSiteId"), o = `${a.alt ?? ""}#asset:${a.id}${e ? `@${e}` : ""}:alt`, s = this._isTransformUrl(a.url);
 			if (!s && r) {
 				let e = await this._getTransformUrl(a.id, r);
 				i.push({
@@ -252,12 +248,12 @@ var te = Object.create, N = Object.defineProperty, ne = Object.getOwnPropertyDes
 	_onUploadFailure({ error: e, canceled: t, file: n }) {
 		if (t) return;
 		let r = e?.data || {}, i = e instanceof Error ? e.message : void 0, a = r.filename || n?.name, { errors: o } = r, s = o ? Object.values(o).flat() : [];
-		i ||= s.length ? s.join("\n") : a ? M("Upload failed for “{filename}”.", { filename: a }) : M("Upload failed."), Craft.cp.displayError(i);
+		i ||= s.length ? s.join("\n") : a ? N("Upload failed for “{filename}”.", { filename: a }) : N("Upload failed."), Craft.cp.displayError(i);
 	}
 	_onUploadStop() {
 		this.progressBar.classList.add("hidden");
 	}
-}, de = class extends r {
+}, fe = class extends r {
 	refresh() {
 		let e = this._element(), t = this._srcInfo(e);
 		this.isEnabled = !!t, this.value = t ? { transform: t.transform } : null;
@@ -293,7 +289,7 @@ var te = Object.create, N = Object.defineProperty, ne = Object.getOwnPropertyDes
 			});
 		}
 	}
-}, fe = class extends v {
+}, pe = class extends v {
 	static get requires() {
 		return [m];
 	}
@@ -304,12 +300,12 @@ var te = Object.create, N = Object.defineProperty, ne = Object.getOwnPropertyDes
 		super(e), e.config.define("transforms", []);
 	}
 	init() {
-		let e = this.editor, t = new de(e);
+		let e = this.editor, t = new fe(e);
 		e.commands.add("transformImage", t);
 	}
-}, pe = u, me = class extends v {
+}, me = u, he = class extends v {
 	static get requires() {
-		return [fe];
+		return [pe];
 	}
 	static get pluginName() {
 		return "ImageTransformUI";
@@ -332,7 +328,7 @@ var te = Object.create, N = Object.defineProperty, ne = Object.getOwnPropertyDes
 			return l.set({
 				tooltip: n("Resize image"),
 				commandValue: null,
-				icon: pe,
+				icon: me,
 				isToggleable: !0,
 				label: this._getOptionLabelValue(r),
 				withText: !0,
@@ -362,25 +358,25 @@ var te = Object.create, N = Object.defineProperty, ne = Object.getOwnPropertyDes
 					icon: null
 				})
 			};
-			n.model.bind("isOn").to(t, "value", he(e.value)), r.add(n);
+			n.model.bind("isOn").to(t, "value", I(e.value)), r.add(n);
 		}), r;
 	}
 };
-function he(e) {
+function I(e) {
 	return (t) => {
 		let n = t;
 		return e === null && n === e || n !== null && n.transform === e;
 	};
 }
 // resources/assets/ckeditor/src/image/imagetransform.js
-var I = class extends v {
+var ge = class extends v {
 	static get requires() {
-		return [fe, me];
+		return [pe, he];
 	}
 	static get pluginName() {
 		return "ImageTransform";
 	}
-}, ge = class extends r {
+}, _e = class extends r {
 	refresh() {
 		let e = this._element(), t = this._srcInfo(e);
 		if (this.isEnabled = !!t, this.isEnabled) {
@@ -454,7 +450,7 @@ var I = class extends v {
 		}
 		return n;
 	}
-}, _e = class extends v {
+}, ve = class extends v {
 	static get requires() {
 		return [m];
 	}
@@ -462,12 +458,12 @@ var I = class extends v {
 		return "ImageEditorEditing";
 	}
 	init() {
-		let e = this.editor, t = new ge(e);
+		let e = this.editor, t = new _e(e);
 		e.commands.add("imageEditor", t);
 	}
-}, ve = class extends v {
+}, ye = class extends v {
 	static get requires() {
-		return [_e];
+		return [ve];
 	}
 	static get pluginName() {
 		return "ImageEditorUI";
@@ -488,14 +484,14 @@ var I = class extends v {
 			}), i;
 		});
 	}
-}, ye = class extends v {
+}, be = class extends v {
 	static get requires() {
-		return [_e, ve];
+		return [ve, ye];
 	}
 	static get pluginName() {
 		return "ImageEditor";
 	}
-}, be = class extends r {
+}, xe = class extends r {
 	execute(e) {
 		let t = this.editor, n = t.model.document.selection;
 		if (!n.isCollapsed && n.getFirstRange()) {
@@ -515,7 +511,7 @@ var I = class extends v {
 	refresh() {
 		this.isEnabled = !0;
 	}
-}, xe = class extends v {
+}, Se = class extends v {
 	static get requires() {
 		return [C];
 	}
@@ -525,7 +521,7 @@ var I = class extends v {
 	init() {
 		this._defineSchema(), this._defineConverters();
 		let e = this.editor;
-		e.commands.add("insertEntry", new be(e)), e.editing.mapper.on("viewToModelPosition", A(e.model, (e) => {
+		e.commands.add("insertEntry", new xe(e)), e.editing.mapper.on("viewToModelPosition", A(e.model, (e) => {
 			e.hasClass("cke-entry-card");
 		}));
 	}
@@ -599,24 +595,24 @@ var I = class extends v {
 			});
 			return e;
 		} catch (e) {
-			return console.error(e?.response?.data), { cardHtml: "<craft-card><craft-callout variant=\"danger\" role=\"alert\">" + Craft.escapeHtml(e?.response?.data?.message || M("An unknown error occurred.", {}, "ckeditor")) + "</craft-callout></craft-card>" };
+			return console.error(e?.response?.data), { cardHtml: "<craft-card><craft-callout variant=\"danger\" role=\"alert\">" + Craft.escapeHtml(e?.response?.data?.message || N("An unknown error occurred.", {}, "ckeditor")) + "</craft-callout></craft-card>" };
 		}
 	}
-}, Se = class extends a {
+}, Ce = class extends a {
 	constructor(e) {
 		super(e), this.domEventType = "dblclick";
 	}
 	onDomEvent(e) {
 		this.fire(e.type, e);
 	}
-}, Ce = class extends x {
+}, we = class extends x {
 	constructor(t, n = {}) {
 		super(t), this.set("isFocused", !1), this.entriesUi = n.entriesUi, this.editor = this.entriesUi.editor, this.entryType = n.entryType;
 		let r = this.editor.commands.get("insertEntry"), i = new e(), a = {
 			commandValue: this.entryType.model.commandValue,
 			label: this.entryType.model.label,
 			withText: !this.entryType.model.icon,
-			tooltip: M("New {type}", { type: this.entryType.model.label })
+			tooltip: N("New {type}", { type: this.entryType.model.label })
 		}, o = ["btn", "ck-reset_all-excluded"];
 		this.entryType.model.icon && o.push(["icon", "cp-icon"]), a.class = o.join(" "), this.entryType.model.withIcon && (a.icon = this.entryType.model.icon), i.set(a), this.listenTo(i, "execute", (e) => {
 			this.entriesUi._showCreateEntrySlideout(e.source.commandValue);
@@ -629,7 +625,7 @@ var I = class extends v {
 	focus() {
 		this.element.children[0].focus();
 	}
-}, we = class extends x {
+}, Te = class extends x {
 	constructor(e, t = {}) {
 		super(e), this.bindTemplate, this.set("isFocused", !1), this.entriesUi = t.entriesUi, this.editor = this.entriesUi.editor;
 		let r = t.entryTypes, i = this.editor.commands.get("insertEntry"), a = new n();
@@ -638,11 +634,11 @@ var I = class extends v {
 		});
 		let o = E(e);
 		o.buttonView.set({
-			label: M("Add nested content", {}, "ckeditor"),
+			label: N("Add nested content", {}, "ckeditor"),
 			icon: d,
 			tooltip: !0,
 			withText: !1
-		}), o.bind("isEnabled").to(i), o.id = crypto.randomUUID(), T(o, () => a, { ariaLabel: M("Entry types list", {}, "ckeditor") }), this.listenTo(o, "execute", (e) => {
+		}), o.bind("isEnabled").to(i), o.id = crypto.randomUUID(), T(o, () => a, { ariaLabel: N("Entry types list", {}, "ckeditor") }), this.listenTo(o, "execute", (e) => {
 			this.entriesUi._showCreateEntrySlideout(e.source.commandValue);
 		}), this.setTemplate({
 			tag: "div",
@@ -653,12 +649,12 @@ var I = class extends v {
 	focus() {
 		this.element.children[0].children[0].focus();
 	}
-}, Te = class extends x {
+}, Ee = class extends x {
 	constructor(e, t = {}) {
 		super(e), this.bindTemplate, this.set("isFocused", !1), this.entriesUi = t.entriesUi, this.editor = this.entriesUi.editor;
 		let n = this.editor.commands.get("insertEntry"), r = E(e);
 		r.buttonView.set({
-			label: M("Add nested content", {}, "ckeditor"),
+			label: N("Add nested content", {}, "ckeditor"),
 			icon: d,
 			tooltip: !0,
 			withText: !1
@@ -676,7 +672,7 @@ var I = class extends v {
 	focus() {
 		this.element.focus();
 	}
-}, Ee = class extends v {
+}, De = class extends v {
 	static get requires() {
 		return [w];
 	}
@@ -688,7 +684,7 @@ var I = class extends v {
 	}
 	afterInit() {
 		this.editor.plugins.get(w).register("entriesBalloon", {
-			ariaLabel: M("Entry toolbar", {}, "ckeditor"),
+			ariaLabel: N("Entry toolbar", {}, "ckeditor"),
 			items: ["editEntryBtn"],
 			getRelatedElement: (e) => {
 				let t = e.getSelectedElement();
@@ -698,7 +694,7 @@ var I = class extends v {
 	}
 	_listenToEvents() {
 		let e = this.editor.editing.view, t = e.document;
-		e.addObserver(Se), this.editor.listenTo(t, "dblclick", (e, t) => {
+		e.addObserver(Ce), this.editor.listenTo(t, "dblclick", (e, t) => {
 			if (!this.editor.isReadOnly) {
 				let e = this.editor.editing.mapper.toModelElement(t.target.parent);
 				e.name === "craftEntryModel" && this._initEditEntrySlideout(t, e);
@@ -714,15 +710,15 @@ var I = class extends v {
 	_createToolbarEntriesButtons() {
 		let e = this.editor.config.get("entryTypeOptions");
 		if (e && e.length) {
-			if (e.length == 1 && e[0].value == "fake") this.editor.ui.componentFactory.add("createEntry", (e) => new Te(this.editor.locale, { entriesUi: this }));
+			if (e.length == 1 && e[0].value == "fake") this.editor.ui.componentFactory.add("createEntry", (e) => new Ee(this.editor.locale, { entriesUi: this }));
 			else {
 				let t = this._getEntryTypeButtonsCollection(e ?? []), n = t.filter((e) => e.model.expanded), r = t.filter((e) => !e.model.expanded);
 				n.forEach((e, t) => {
-					this.editor.ui.componentFactory.add(`createEntry-${e.model.uid}`, (t) => new Ce(this.editor.locale, {
+					this.editor.ui.componentFactory.add(`createEntry-${e.model.uid}`, (t) => new we(this.editor.locale, {
 						entriesUi: this,
 						entryType: e
 					}));
-				}), r.length && this.editor.ui.componentFactory.add("createEntry", (e) => new we(this.editor.locale, {
+				}), r.length && this.editor.ui.componentFactory.add("createEntry", (e) => new Te(this.editor.locale, {
 					entriesUi: this,
 					entryTypes: r
 				}));
@@ -753,7 +749,7 @@ var I = class extends v {
 		let n = new e(t);
 		return n.set({
 			isEnabled: !0,
-			label: M("Edit {type}", { type: (Craft.elementTypeNames["CraftCms\\Cms\\Entry\\Elements\\Entry"] ?? Craft.elementTypeNames["craft\\elements\\Entry"])[2] }),
+			label: N("Edit {type}", { type: (Craft.elementTypeNames["CraftCms\\Cms\\Entry\\Elements\\Entry"] ?? Craft.elementTypeNames["craft\\elements\\Entry"])[2] }),
 			tooltip: !0,
 			withText: !0
 		}), this.listenTo(n, "execute", (e) => {
@@ -834,20 +830,20 @@ var I = class extends v {
 			}), t.editing.view.focus();
 		});
 	}
-}, De = class extends v {
+}, Oe = class extends v {
 	static get requires() {
-		return [xe, Ee];
+		return [Se, De];
 	}
 	static get pluginName() {
 		return "CraftEntries";
 	}
 };
 // resources/assets/ckeditor/src/link/linkutils.js
-function Oe(e, t) {
+function ke(e, t) {
 	if (t) return e.type === "bool" && e.value == 1 ? "" : t;
 }
 // resources/assets/ckeditor/src/link/linkediting.js
-var ke = class extends v {
+var Ae = class extends v {
 	static get pluginName() {
 		return "CraftLinkEditing";
 	}
@@ -905,7 +901,7 @@ var ke = class extends v {
 					o = r?.hasAttribute("linkHref") ? O(n, "linkHref", r.getAttribute("linkHref"), e.model) : t.createRangeOn(r);
 				}
 				this.conversionData.forEach((n) => {
-					let r = Oe(n, i[n.model]);
+					let r = ke(n, i[n.model]);
 					if (a.isCollapsed) r === void 0 ? t.removeAttribute(n.model, o) : t.setAttribute(n.model, r, o);
 					else {
 						let i = e.model.schema.getValidRanges(a.getRanges(), n.model);
@@ -929,13 +925,13 @@ var ke = class extends v {
 			}));
 		}, { priority: "high" });
 	}
-}, Ae = class extends x {
+}, je = class extends x {
 	constructor(e, t = {}) {
 		super(e), this.bindTemplate, this.set("isFocused", !1), this.linkUi = t.linkUi, this.editor = this.linkUi.editor, this.elementId = this.linkUi._getLinkElementId(), this.siteId = this.linkUi._getLinkSiteId(), this.linkOption = t.linkOption;
 		let n = this.linkUi._getLinkElementRefHandle();
 		if (this.button = null, n) {
 			let e = this.linkUi.linkTypeDropdownItemModels[n];
-			this.linkUi.linkTypeDropdownView.buttonView.label == e.label && (this.button = M("Loading"));
+			this.linkUi.linkTypeDropdownView.buttonView.label == e.label && (this.button = N("Loading"));
 		}
 		this.button ??= this._createChooseButton(), this.setTemplate({
 			tag: "div",
@@ -956,7 +952,7 @@ var ke = class extends v {
 				icon: "plus",
 				"data-choose": !0
 			},
-			children: [M("Choose")]
+			children: [N("Choose")]
 		}), e;
 	}
 	focus() {
@@ -986,13 +982,13 @@ var ke = class extends v {
 				this.element.innerHTML = t.data.elements[this.elementId][0], Craft.appendHeadHtml(t.data.headHtml), Craft.appendBodyHtml(t.data.bodyHtml);
 				let n = this.element.firstChild, r = [{
 					icon: "arrows-rotate",
-					label: M("Replace"),
+					label: N("Replace"),
 					callback: () => {
 						this.linkUi._showElementSelectorModal(this.linkOption);
 					}
 				}, {
 					icon: "remove",
-					label: M("Remove"),
+					label: N("Remove"),
 					callback: () => {
 						this.editor.commands.get("unlink").execute();
 					}
@@ -1006,7 +1002,7 @@ var ke = class extends v {
 			throw Craft.cp.displayError(e?.response?.data?.message), e?.response?.data?.message ?? e;
 		});
 	}
-}, je = class extends x {
+}, Me = class extends x {
 	constructor(e, t = {}) {
 		super(e), this.bindTemplate, this.set("isFocused", !1), this.linkUi = t.linkUi, this.editor = this.linkUi.editor, this.elementId = this.linkUi._getLinkElementId(), this.siteId = this.linkUi._getLinkSiteId(), this.linkOption = t.linkOption, this.linkUi._getLinkElementRefHandle(), this.siteDropdownView = E(this.linkUi._linkUI.formView.locale), this.siteDropdownItemModels = null, this.localizedRefHandleRE = null;
 		let n = CKE_LOCALIZED_REF_HANDLES.join("|");
@@ -1036,7 +1032,7 @@ var ke = class extends v {
 			siteId: e.id,
 			withText: !0
 		})])), this.siteDropdownItemModels.current = new S({
-			label: M("Link to the current site", {}, "ckeditor"),
+			label: N("Link to the current site", {}, "ckeditor"),
 			siteId: null,
 			withText: !0
 		}), T(this.siteDropdownView, new n([...Craft.sites.map((e) => ({
@@ -1070,16 +1066,16 @@ var ke = class extends v {
 		} else this.siteDropdownView.buttonView.set("isVisible", !1);
 	}
 	_selectSiteDropdownItem(e) {
-		let t = this.siteDropdownItemModels[e ?? "current"], n = e ? M("Site: {name}", { name: t.label }, "ckeditor") : t.label;
+		let t = this.siteDropdownItemModels[e ?? "current"], n = e ? N("Site: {name}", { name: t.label }, "ckeditor") : t.label;
 		this.siteDropdownView.buttonView.set("label", n), Object.values(this.siteDropdownItemModels).forEach((e) => {
 			e.set("isOn", e.siteId === t.siteId);
 		});
 	}
-}, Me = class extends x {
+}, Ne = class extends x {
 	constructor(e, t = {}) {
 		super(e);
 		let n = this.bindTemplate;
-		this.set("label", M("Advanced")), this.linkUi = t.linkUi, this.editor = this.linkUi.editor, this.children = this.createCollection(), this.advancedChildren = this.createCollection(), this.setTemplate({
+		this.set("label", N("Advanced")), this.linkUi = t.linkUi, this.editor = this.linkUi.editor, this.children = this.createCollection(), this.advancedChildren = this.createCollection(), this.setTemplate({
 			tag: "details",
 			attributes: { class: [
 				"ck",
@@ -1118,7 +1114,7 @@ var ke = class extends v {
 			t._focusables.remove(e), t.focusTracker.remove(e.element);
 		});
 	}
-}, Ne = class extends v {
+}, Pe = class extends v {
 	static get requires() {
 		return [g];
 	}
@@ -1193,7 +1189,7 @@ var ke = class extends v {
 		e ? (this.linkTypeDropdownView.buttonView.set("isVisible", !0), this._selectLinkTypeDropdownItem(e)) : this._selectLinkTypeDropdownItem("default");
 	}
 	_selectLinkTypeDropdownItem(e) {
-		let t = this.linkTypeDropdownItemModels[e], n = e ? M("{name}", { name: t.label }) : t.label;
+		let t = this.linkTypeDropdownItemModels[e], n = e ? N("{name}", { name: t.label }) : t.label;
 		this.linkTypeDropdownView.buttonView.set("label", n), Object.values(this.linkTypeDropdownItemModels).forEach((e) => {
 			e.set("isOn", e.handle === t.handle);
 		});
@@ -1207,20 +1203,20 @@ var ke = class extends v {
 			withText: !0
 		}));
 		return e.push(new S({
-			label: M("URL"),
+			label: N("URL"),
 			handle: "default",
 			withText: !0
 		})), e;
 	}
 	_showLinkTypeForm(e) {
 		let { formView: t } = this._linkUI, { children: n } = t, { urlInputView: r } = t, { displayedTextInputView: i } = t;
-		i.focus(), this.linkTypeWrapperView !== null && n.remove(this.linkTypeWrapperView), e === "default" ? (this.elementInputView = r, this.sitesView !== null && this.sitesView?.siteDropdownView?.buttonView && this.sitesView.siteDropdownView.buttonView.set("isVisible", !1)) : (this.elementInputView = new Ae(t.locale, {
+		i.focus(), this.linkTypeWrapperView !== null && n.remove(this.linkTypeWrapperView), e === "default" ? (this.elementInputView = r, this.sitesView !== null && this.sitesView?.siteDropdownView?.buttonView && this.sitesView.siteDropdownView.buttonView.set("isVisible", !1)) : (this.elementInputView = new je(t.locale, {
 			linkUi: this,
 			linkOption: e,
 			value: this._urlInputValue()
 		}), this.sitesView !== null && this.sitesView?.siteDropdownView?.buttonView && this.sitesView.siteDropdownView.buttonView.set("isVisible", !1));
 		let a = [this.linkTypeDropdownView, this.elementInputView];
-		if (Craft.isMultiSite && this.sitesView == null && (this.sitesView = new je(t.locale, {
+		if (Craft.isMultiSite && this.sitesView == null && (this.sitesView = new Me(t.locale, {
 			linkUi: this,
 			linkOption: e
 		})), this.sitesView != null) {
@@ -1248,12 +1244,11 @@ var ke = class extends v {
 				e.setSelection(o);
 			}), this._linkUI._hideFakeVisualSelection();
 		};
-		s || this._linkUI._showFakeVisualSelection(), Craft.createElementSelectorModal(e.elementType, {
+		s || this._linkUI._showFakeVisualSelection(), M(e.elementType, {
 			storageKey: `ckeditor:${this.pluginName}:${e.elementType}`,
 			sources: e.sources,
 			criteria: e.criteria,
 			defaultSiteId: n.config.get("elementSiteId"),
-			autoFocusSearchBox: !1,
 			onSelect: (l) => {
 				if (l.length) {
 					let c = l[0], u = this.urlSuffixInputView?.fieldView.element.value.trim() ?? "", d = `${c.url}${u}#${e.refHandle}:${c.id}@${c.siteId}`;
@@ -1266,7 +1261,7 @@ var ke = class extends v {
 					} else r.change((e) => {
 						let n = this._getAdvancedFieldValues(), r = { linkHref: d };
 						this.conversionData.forEach((e) => {
-							let t = Oe(e, n[e.model]);
+							let t = ke(e, n[e.model]);
 							t !== void 0 && (r[e.model] = t);
 						});
 						let a = t || c.label;
@@ -1291,7 +1286,7 @@ var ke = class extends v {
 	}
 	_addAdvancedLinkFieldInputs() {
 		let e = this.editor.commands.get("link"), { formView: t } = this._linkUI, { children: n } = t;
-		this.advancedView = new Me(t.locale, { linkUi: this }), n.add(this.advancedView, 3);
+		this.advancedView = new Ne(t.locale, { linkUi: this }), n.add(this.advancedView, 3);
 		for (let n of this.advancedLinkFields) {
 			let r = n.conversion?.model;
 			if (r && t[r] === void 0) {
@@ -1381,14 +1376,14 @@ var ke = class extends v {
 			n.type === "bool" ? r[n.model] = e[n.model].element.value : r[n.model] = e[n.model].fieldView.element.value, Object.assign(t, r);
 		}), t;
 	}
-}, Pe = class extends v {
+}, Fe = class extends v {
 	static get requires() {
-		return [ke, Ne];
+		return [Ae, Pe];
 	}
 	static get pluginName() {
 		return "CraftLink";
 	}
-}, Fe = /* @__PURE__ */ oe((/* @__PURE__ */ F(((e, t, n) => {
+}, Ie = /* @__PURE__ */ se((/* @__PURE__ */ ae(((e, t, n) => {
 	(function() {
 		((e, t = {}) => {
 			if (typeof document > "u") return;
@@ -1543,7 +1538,7 @@ var ke = class extends v {
 			function M(e) {
 				e.result = null, e.keyPrefix = null, e.func = null, e.context = null, e.count = 0, 10 > A.length && A.push(e);
 			}
-			function te(e, t, n, a) {
+			function N(e, t, n, a) {
 				var o = typeof e;
 				(o === "undefined" || o === "boolean") && (e = null);
 				var s = !1;
@@ -1558,26 +1553,26 @@ var ke = class extends v {
 						case i: s = !0;
 					}
 				}
-				if (s) return n(a, e, t === "" ? "." + ne(e, 0) : t), 1;
+				if (s) return n(a, e, t === "" ? "." + te(e, 0) : t), 1;
 				if (s = 0, t = t === "" ? "." : t + ":", Array.isArray(e)) for (var c = 0; c < e.length; c++) {
 					o = e[c];
-					var l = t + ne(o, c);
-					s += te(o, l, n, a);
+					var l = t + te(o, c);
+					s += N(o, l, n, a);
 				}
-				else if (typeof e != "object" || !e ? l = null : (l = h && e[h] || e["@@iterator"], l = typeof l == "function" ? l : null), typeof l == "function") for (e = l.call(e), c = 0; !(o = e.next()).done;) o = o.value, l = t + ne(o, c++), s += te(o, l, n, a);
+				else if (typeof e != "object" || !e ? l = null : (l = h && e[h] || e["@@iterator"], l = typeof l == "function" ? l : null), typeof l == "function") for (e = l.call(e), c = 0; !(o = e.next()).done;) o = o.value, l = t + te(o, c++), s += N(o, l, n, a);
 				else if (o === "object") throw n = "" + e, Error(g(31, n === "[object Object]" ? "object with keys {" + Object.keys(e).join(", ") + "}" : n, ""));
 				return s;
 			}
-			function N(e, t, n) {
-				return e == null ? 0 : te(e, "", t, n);
+			function P(e, t, n) {
+				return e == null ? 0 : N(e, "", t, n);
 			}
-			function ne(e, t) {
+			function te(e, t) {
 				return typeof e == "object" && e && e.key != null ? ee(e.key) : t.toString(36);
 			}
-			function re(e, t) {
+			function ne(e, t) {
 				e.func.call(e.context, t, e.count++);
 			}
-			function P(e, t, n) {
+			function re(e, t, n) {
 				var r = e.result, i = e.keyPrefix;
 				e = e.func.call(e.context, t, e.count++), Array.isArray(e) ? ie(e, r, n, function(e) {
 					return e;
@@ -1585,7 +1580,7 @@ var ke = class extends v {
 			}
 			function ie(e, t, n, r, i) {
 				var a = "";
-				n != null && (a = ("" + n).replace(k, "$&/") + "/"), t = j(t, a, r, i), N(e, P, t), M(t);
+				n != null && (a = ("" + n).replace(k, "$&/") + "/"), t = j(t, a, r, i), P(e, re, t), M(t);
 			}
 			var F = { current: null };
 			function ae() {
@@ -1608,10 +1603,10 @@ var ke = class extends v {
 				},
 				forEach: function(e, t, n) {
 					if (e == null) return e;
-					t = j(null, null, t, n), N(e, re, t), M(t);
+					t = j(null, null, t, n), P(e, ne, t), M(t);
 				},
 				count: function(e) {
-					return N(e, function() {
+					return P(e, function() {
 						return null;
 					}, null);
 				},
@@ -1801,8 +1796,8 @@ var ke = class extends v {
 				var n = e.sortIndex - t.sortIndex;
 				return n === 0 ? e.id - t.id : n;
 			}
-			var D = [], O = [], ee = 1, k = null, A = 3, j = !1, M = !1, te = !1;
-			function N(e) {
+			var D = [], O = [], ee = 1, k = null, A = 3, j = !1, M = !1, N = !1;
+			function P(e) {
 				for (var t = w(O); t !== null;) {
 					if (t.callback === null) T(O);
 					else if (t.startTime <= e) T(O), t.sortIndex = t.expirationTime, C(D, t);
@@ -1810,39 +1805,39 @@ var ke = class extends v {
 					t = w(O);
 				}
 			}
-			function ne(e) {
-				if (te = !1, N(e), !M) {
-					if (w(D) !== null) M = !0, t(re);
+			function te(e) {
+				if (N = !1, P(e), !M) {
+					if (w(D) !== null) M = !0, t(ne);
 					else {
 						var r = w(O);
-						r !== null && n(ne, r.startTime - e);
+						r !== null && n(te, r.startTime - e);
 					}
 				}
 			}
-			function re(t, a) {
-				M = !1, te && (te = !1, r()), j = !0;
+			function ne(t, a) {
+				M = !1, N && (N = !1, r()), j = !0;
 				var o = A;
 				try {
-					for (N(a), k = w(D); k !== null && (!(k.expirationTime > a) || t && !i());) {
+					for (P(a), k = w(D); k !== null && (!(k.expirationTime > a) || t && !i());) {
 						var s = k.callback;
 						if (s !== null) {
 							k.callback = null, A = k.priorityLevel;
 							var c = s(k.expirationTime <= a);
-							a = e.unstable_now(), typeof c == "function" ? k.callback = c : k === w(D) && T(D), N(a);
+							a = e.unstable_now(), typeof c == "function" ? k.callback = c : k === w(D) && T(D), P(a);
 						} else T(D);
 						k = w(D);
 					}
 					if (k !== null) var l = !0;
 					else {
 						var u = w(O);
-						u !== null && n(ne, u.startTime - a), l = !1;
+						u !== null && n(te, u.startTime - a), l = !1;
 					}
 					return l;
 				} finally {
 					k = null, A = o, j = !1;
 				}
 			}
-			function P(e) {
+			function re(e) {
 				switch (e) {
 					case 1: return -1;
 					case 2: return 250;
@@ -1855,7 +1850,7 @@ var ke = class extends v {
 			e.unstable_IdlePriority = 5, e.unstable_ImmediatePriority = 1, e.unstable_LowPriority = 4, e.unstable_NormalPriority = 3, e.unstable_Profiling = null, e.unstable_UserBlockingPriority = 2, e.unstable_cancelCallback = function(e) {
 				e.callback = null;
 			}, e.unstable_continueExecution = function() {
-				M || j || (M = !0, t(re));
+				M || j || (M = !0, t(ne));
 			}, e.unstable_getCurrentPriorityLevel = function() {
 				return A;
 			}, e.unstable_getFirstCallbackNode = function() {
@@ -1896,8 +1891,8 @@ var ke = class extends v {
 				var s = e.unstable_now();
 				if (typeof o == "object" && o) {
 					var c = o.delay;
-					c = typeof c == "number" && 0 < c ? s + c : s, o = typeof o.timeout == "number" ? o.timeout : P(i);
-				} else o = P(i), c = s;
+					c = typeof c == "number" && 0 < c ? s + c : s, o = typeof o.timeout == "number" ? o.timeout : re(i);
+				} else o = re(i), c = s;
 				return o = c + o, i = {
 					id: ee++,
 					callback: a,
@@ -1905,10 +1900,10 @@ var ke = class extends v {
 					startTime: c,
 					expirationTime: o,
 					sortIndex: -1
-				}, c > s ? (i.sortIndex = c, C(O, i), w(D) === null && i === w(O) && (te ? r() : te = !0, n(ne, c - s))) : (i.sortIndex = o, C(D, i), M || j || (M = !0, t(re))), i;
+				}, c > s ? (i.sortIndex = c, C(O, i), w(D) === null && i === w(O) && (N ? r() : N = !0, n(te, c - s))) : (i.sortIndex = o, C(D, i), M || j || (M = !0, t(ne))), i;
 			}, e.unstable_shouldYield = function() {
 				var t = e.unstable_now();
-				N(t);
+				P(t);
 				var n = w(D);
 				return n !== k && k !== null && n !== null && n.callback !== null && n.startTime <= t && n.expirationTime < k.expirationTime || i();
 			}, e.unstable_wrapCallback = function(e) {
@@ -2005,25 +2000,25 @@ var ke = class extends v {
 					t && (t = h(t), k(e.stateNode, e.type, t));
 				}
 			}
-			function te(e) {
+			function N(e) {
 				A ? j ? j.push(e) : j = [e] : A = e;
 			}
-			function N() {
+			function P() {
 				if (A) {
 					var e = A, t = j;
 					if (j = A = null, M(e), t) for (e = 0; e < t.length; e++) M(t[e]);
 				}
 			}
-			function ne(e, t) {
+			function te(e, t) {
 				return e(t);
 			}
-			function re(e, t, n, r, i) {
+			function ne(e, t, n, r, i) {
 				return e(t, n, r, i);
 			}
-			function P() {}
-			var ie = ne, F = !1, ae = !1;
+			function re() {}
+			var ie = te, F = !1, ae = !1;
 			function oe() {
-				(A !== null || j !== null) && (P(), N());
+				(A !== null || j !== null) && (re(), P());
 			}
 			function se(e, t, n) {
 				if (ae) return e(t, n);
@@ -2801,11 +2796,11 @@ var ke = class extends v {
 				n ? e.addEventListener(t, r, !0) : e.addEventListener(t, r, !1);
 			}
 			function vn(e, t, n, r) {
-				F || P();
+				F || re();
 				var i = bn, a = F;
 				F = !0;
 				try {
-					re(i, e, t, n, r);
+					ne(i, e, t, n, r);
 				} finally {
 					(F = a) || oe();
 				}
@@ -3338,7 +3333,7 @@ var ke = class extends v {
 				dependencies: "blur change click focus input keydown keyup selectionchange".split(" ")
 			} };
 			function Br(e, t, n) {
-				return e = _r.getPooled(zr.change, e, t, n), e.type = "change", te(n), ur(e), e;
+				return e = _r.getPooled(zr.change, e, t, n), e.type = "change", N(n), ur(e), e;
 			}
 			var Vr = null, Hr = null;
 			function Ur(e) {
@@ -3361,7 +3356,7 @@ var ke = class extends v {
 					else {
 						F = !0;
 						try {
-							ne(Ur, e);
+							te(Ur, e);
 						} finally {
 							F = !1, oe();
 						}
@@ -3503,25 +3498,25 @@ var ke = class extends v {
 			function di(e, t) {
 				return e === t && (e !== 0 || 1 / e == 1 / t) || e !== e && t !== t;
 			}
-			var fi = typeof Object.is == "function" ? Object.is : di, pi = Object.prototype.hasOwnProperty;
-			function mi(e, t) {
-				if (fi(e, t)) return !0;
+			var U = typeof Object.is == "function" ? Object.is : di, fi = Object.prototype.hasOwnProperty;
+			function pi(e, t) {
+				if (U(e, t)) return !0;
 				if (typeof e != "object" || !e || typeof t != "object" || !t) return !1;
 				var n = Object.keys(e), r = Object.keys(t);
 				if (n.length !== r.length) return !1;
-				for (r = 0; r < n.length; r++) if (!pi.call(t, n[r]) || !fi(e[n[r]], t[n[r]])) return !1;
+				for (r = 0; r < n.length; r++) if (!fi.call(t, n[r]) || !U(e[n[r]], t[n[r]])) return !1;
 				return !0;
 			}
-			var hi = ee && "documentMode" in document && 11 >= document.documentMode, gi = { select: {
+			var mi = ee && "documentMode" in document && 11 >= document.documentMode, hi = { select: {
 				phasedRegistrationNames: {
 					bubbled: "onSelect",
 					captured: "onSelectCapture"
 				},
 				dependencies: "blur contextmenu dragend focus keydown keyup mousedown mouseup selectionchange".split(" ")
-			} }, _i = null, vi = null, yi = null, bi = !1;
-			function xi(e, t) {
+			} }, gi = null, _i = null, vi = null, yi = !1;
+			function bi(e, t) {
 				var n = t.window === t ? t.document : t.nodeType === 9 ? t : t.ownerDocument;
-				return bi || _i == null || _i !== Mn(n) ? null : (n = _i, "selectionStart" in n && Ln(n) ? n = {
+				return yi || gi == null || gi !== Mn(n) ? null : (n = gi, "selectionStart" in n && Ln(n) ? n = {
 					start: n.selectionStart,
 					end: n.selectionEnd
 				} : (n = (n.ownerDocument && n.ownerDocument.defaultView || window).getSelection(), n = {
@@ -3529,10 +3524,10 @@ var ke = class extends v {
 					anchorOffset: n.anchorOffset,
 					focusNode: n.focusNode,
 					focusOffset: n.focusOffset
-				}), yi && mi(yi, n) ? null : (yi = n, e = _r.getPooled(gi.select, vi, e, t), e.type = "select", e.target = _i, ur(e), e));
+				}), vi && pi(vi, n) ? null : (vi = n, e = _r.getPooled(hi.select, _i, e, t), e.type = "select", e.target = gi, ur(e), e));
 			}
-			var Si = {
-				eventTypes: gi,
+			var xi = {
+				eventTypes: hi,
 				extractEvents: function(e, t, n, r, i, a) {
 					if (i = a || (r.window === r ? r.document : r.nodeType === 9 ? r : r.ownerDocument), !(a = !i)) {
 						a: {
@@ -3548,35 +3543,35 @@ var ke = class extends v {
 					if (a) return null;
 					switch (i = t ? nr(t) : window, e) {
 						case "focus":
-							(Rr(i) || i.contentEditable === "true") && (_i = i, vi = t, yi = null);
+							(Rr(i) || i.contentEditable === "true") && (gi = i, _i = t, vi = null);
 							break;
 						case "blur":
-							yi = vi = _i = null;
+							vi = _i = gi = null;
 							break;
 						case "mousedown":
-							bi = !0;
+							yi = !0;
 							break;
 						case "contextmenu":
 						case "mouseup":
-						case "dragend": return bi = !1, xi(n, r);
-						case "selectionchange": if (hi) break;
+						case "dragend": return yi = !1, bi(n, r);
+						case "selectionchange": if (mi) break;
 						case "keydown":
-						case "keyup": return xi(n, r);
+						case "keyup": return bi(n, r);
 					}
 					return null;
 				}
-			}, Ci = _r.extend({
+			}, Si = _r.extend({
 				animationName: null,
 				elapsedTime: null,
 				pseudoElement: null
-			}), wi = _r.extend({ clipboardData: function(e) {
+			}), Ci = _r.extend({ clipboardData: function(e) {
 				return "clipboardData" in e ? e.clipboardData : window.clipboardData;
-			} }), Ti = ei.extend({ relatedTarget: null });
-			function Ei(e) {
+			} }), wi = ei.extend({ relatedTarget: null });
+			function Ti(e) {
 				var t = e.keyCode;
 				return "charCode" in e ? (e = e.charCode, e === 0 && t === 13 && (e = 13)) : e = t, e === 10 && (e = 13), 32 <= e || e === 13 ? e : 0;
 			}
-			var Di = {
+			var Ei = {
 				Esc: "Escape",
 				Spacebar: " ",
 				Left: "ArrowLeft",
@@ -3589,7 +3584,7 @@ var ke = class extends v {
 				Apps: "ContextMenu",
 				Scroll: "ScrollLock",
 				MozPrintableKey: "Unidentified"
-			}, Oi = {
+			}, Di = {
 				8: "Backspace",
 				9: "Tab",
 				12: "Clear",
@@ -3626,13 +3621,13 @@ var ke = class extends v {
 				144: "NumLock",
 				145: "ScrollLock",
 				224: "Meta"
-			}, ki = ei.extend({
+			}, Oi = ei.extend({
 				key: function(e) {
 					if (e.key) {
-						var t = Di[e.key] || e.key;
+						var t = Ei[e.key] || e.key;
 						if (t !== "Unidentified") return t;
 					}
-					return e.type === "keypress" ? (e = Ei(e), e === 13 ? "Enter" : String.fromCharCode(e)) : e.type === "keydown" || e.type === "keyup" ? Oi[e.keyCode] || "Unidentified" : "";
+					return e.type === "keypress" ? (e = Ti(e), e === 13 ? "Enter" : String.fromCharCode(e)) : e.type === "keydown" || e.type === "keyup" ? Di[e.keyCode] || "Unidentified" : "";
 				},
 				location: null,
 				ctrlKey: null,
@@ -3643,15 +3638,15 @@ var ke = class extends v {
 				locale: null,
 				getModifierState: ri,
 				charCode: function(e) {
-					return e.type === "keypress" ? Ei(e) : 0;
+					return e.type === "keypress" ? Ti(e) : 0;
 				},
 				keyCode: function(e) {
 					return e.type === "keydown" || e.type === "keyup" ? e.keyCode : 0;
 				},
 				which: function(e) {
-					return e.type === "keypress" ? Ei(e) : e.type === "keydown" || e.type === "keyup" ? e.keyCode : 0;
+					return e.type === "keypress" ? Ti(e) : e.type === "keydown" || e.type === "keyup" ? e.keyCode : 0;
 				}
-			}), Ai = si.extend({ dataTransfer: null }), ji = ei.extend({
+			}), ki = si.extend({ dataTransfer: null }), Ai = ei.extend({
 				touches: null,
 				targetTouches: null,
 				changedTouches: null,
@@ -3660,11 +3655,11 @@ var ke = class extends v {
 				ctrlKey: null,
 				shiftKey: null,
 				getModifierState: ri
-			}), Mi = _r.extend({
+			}), ji = _r.extend({
 				propertyName: null,
 				elapsedTime: null,
 				pseudoElement: null
-			}), Ni = si.extend({
+			}), Mi = si.extend({
 				deltaX: function(e) {
 					return "deltaX" in e ? e.deltaX : "wheelDeltaX" in e ? -e.wheelDeltaX : 0;
 				},
@@ -3673,20 +3668,20 @@ var ke = class extends v {
 				},
 				deltaZ: null,
 				deltaMode: null
-			}), Pi = {
+			}), Ni = {
 				eventTypes: sn,
 				extractEvents: function(e, t, n, r) {
 					var i = cn.get(e);
 					if (!i) return null;
 					switch (e) {
-						case "keypress": if (Ei(n) === 0) return null;
+						case "keypress": if (Ti(n) === 0) return null;
 						case "keydown":
 						case "keyup":
-							e = ki;
+							e = Oi;
 							break;
 						case "blur":
 						case "focus":
-							e = Ti;
+							e = wi;
 							break;
 						case "click": if (n.button === 2) return null;
 						case "auxclick":
@@ -3707,32 +3702,32 @@ var ke = class extends v {
 						case "dragover":
 						case "dragstart":
 						case "drop":
-							e = Ai;
+							e = ki;
 							break;
 						case "touchcancel":
 						case "touchend":
 						case "touchmove":
 						case "touchstart":
-							e = ji;
+							e = Ai;
 							break;
 						case ht:
 						case gt:
 						case _t:
-							e = Ci;
+							e = Si;
 							break;
 						case vt:
-							e = Mi;
+							e = ji;
 							break;
 						case "scroll":
 							e = ei;
 							break;
 						case "wheel":
-							e = Ni;
+							e = Mi;
 							break;
 						case "copy":
 						case "cut":
 						case "paste":
-							e = wi;
+							e = Ci;
 							break;
 						case "gotpointercapture":
 						case "lostpointercapture":
@@ -3751,131 +3746,131 @@ var ke = class extends v {
 			};
 			if (b) throw Error(i(101));
 			b = Array.prototype.slice.call("ResponderEventPlugin SimpleEventPlugin EnterLeaveEventPlugin ChangeEventPlugin SelectEventPlugin BeforeInputEventPlugin".split(" ")), S();
-			var Fi = tr;
-			h = rr, _ = Fi, v = nr, O({
-				SimpleEventPlugin: Pi,
+			var Pi = tr;
+			h = rr, _ = Pi, v = nr, O({
+				SimpleEventPlugin: Ni,
 				EnterLeaveEventPlugin: ui,
 				ChangeEventPlugin: $r,
-				SelectEventPlugin: Si,
+				SelectEventPlugin: xi,
 				BeforeInputEventPlugin: Ir
 			});
-			var Ii = [], Li = -1;
-			function U(e) {
-				0 > Li || (e.current = Ii[Li], Ii[Li] = null, Li--);
+			var Fi = [], Ii = -1;
+			function W(e) {
+				0 > Ii || (e.current = Fi[Ii], Fi[Ii] = null, Ii--);
 			}
-			function W(e, t) {
-				Li++, Ii[Li] = e.current, e.current = t;
+			function G(e, t) {
+				Ii++, Fi[Ii] = e.current, e.current = t;
 			}
-			var Ri = {}, zi = { current: Ri }, Bi = { current: !1 }, Vi = Ri;
-			function Hi(e, t) {
+			var Li = {}, Ri = { current: Li }, zi = { current: !1 }, Bi = Li;
+			function Vi(e, t) {
 				var n = e.type.contextTypes;
-				if (!n) return Ri;
+				if (!n) return Li;
 				var r = e.stateNode;
 				if (r && r.__reactInternalMemoizedUnmaskedChildContext === t) return r.__reactInternalMemoizedMaskedChildContext;
 				var i = {}, a;
 				for (a in n) i[a] = t[a];
 				return r && (e = e.stateNode, e.__reactInternalMemoizedUnmaskedChildContext = t, e.__reactInternalMemoizedMaskedChildContext = i), i;
 			}
-			function Ui(e) {
+			function Hi(e) {
 				return e = e.childContextTypes, e != null;
 			}
-			function Wi() {
-				U(Bi), U(zi);
+			function Ui() {
+				W(zi), W(Ri);
 			}
-			function Gi(e, t, n) {
-				if (zi.current !== Ri) throw Error(i(168));
-				W(zi, t), W(Bi, n);
+			function Wi(e, t, n) {
+				if (Ri.current !== Li) throw Error(i(168));
+				G(Ri, t), G(zi, n);
 			}
-			function Ki(e, t, r) {
+			function Gi(e, t, r) {
 				var a = e.stateNode;
 				if (e = t.childContextTypes, typeof a.getChildContext != "function") return r;
 				for (var o in a = a.getChildContext(), a) if (!(o in e)) throw Error(i(108, ze(t) || "Unknown", o));
 				return n({}, r, {}, a);
 			}
-			function qi(e) {
-				return e = (e = e.stateNode) && e.__reactInternalMemoizedMergedChildContext || Ri, Vi = zi.current, W(zi, e), W(Bi, Bi.current), !0;
+			function Ki(e) {
+				return e = (e = e.stateNode) && e.__reactInternalMemoizedMergedChildContext || Li, Bi = Ri.current, G(Ri, e), G(zi, zi.current), !0;
 			}
-			function Ji(e, t, n) {
+			function qi(e, t, n) {
 				var r = e.stateNode;
 				if (!r) throw Error(i(169));
-				n ? (e = Ki(e, t, Vi), r.__reactInternalMemoizedMergedChildContext = e, U(Bi), U(zi), W(zi, e)) : U(Bi), W(Bi, n);
+				n ? (e = Gi(e, t, Bi), r.__reactInternalMemoizedMergedChildContext = e, W(zi), W(Ri), G(Ri, e)) : W(zi), G(zi, n);
 			}
-			var Yi = r.unstable_runWithPriority, Xi = r.unstable_scheduleCallback, Zi = r.unstable_cancelCallback, Qi = r.unstable_requestPaint, $i = r.unstable_now, ea = r.unstable_getCurrentPriorityLevel, G = r.unstable_ImmediatePriority, ta = r.unstable_UserBlockingPriority, na = r.unstable_NormalPriority, ra = r.unstable_LowPriority, ia = r.unstable_IdlePriority, aa = {}, oa = r.unstable_shouldYield, sa = Qi === void 0 ? function() {} : Qi, ca = null, la = null, ua = !1, da = $i(), fa = 1e4 > da ? $i : function() {
-				return $i() - da;
+			var Ji = r.unstable_runWithPriority, Yi = r.unstable_scheduleCallback, Xi = r.unstable_cancelCallback, Zi = r.unstable_requestPaint, Qi = r.unstable_now, $i = r.unstable_getCurrentPriorityLevel, K = r.unstable_ImmediatePriority, ea = r.unstable_UserBlockingPriority, ta = r.unstable_NormalPriority, na = r.unstable_LowPriority, ra = r.unstable_IdlePriority, ia = {}, aa = r.unstable_shouldYield, oa = Zi === void 0 ? function() {} : Zi, sa = null, ca = null, la = !1, ua = Qi(), da = 1e4 > ua ? Qi : function() {
+				return Qi() - ua;
 			};
-			function pa() {
-				switch (ea()) {
-					case G: return 99;
-					case ta: return 98;
-					case na: return 97;
-					case ra: return 96;
-					case ia: return 95;
+			function fa() {
+				switch ($i()) {
+					case K: return 99;
+					case ea: return 98;
+					case ta: return 97;
+					case na: return 96;
+					case ra: return 95;
 					default: throw Error(i(332));
 				}
 			}
-			function ma(e) {
+			function pa(e) {
 				switch (e) {
-					case 99: return G;
-					case 98: return ta;
-					case 97: return na;
-					case 96: return ra;
-					case 95: return ia;
+					case 99: return K;
+					case 98: return ea;
+					case 97: return ta;
+					case 96: return na;
+					case 95: return ra;
 					default: throw Error(i(332));
 				}
 			}
-			function ha(e, t) {
-				return e = ma(e), Yi(e, t);
+			function ma(e, t) {
+				return e = pa(e), Ji(e, t);
 			}
-			function ga(e, t, n) {
-				return e = ma(e), Xi(e, t, n);
+			function ha(e, t, n) {
+				return e = pa(e), Yi(e, t, n);
 			}
-			function _a(e) {
-				return ca === null ? (ca = [e], la = Xi(G, ya)) : ca.push(e), aa;
+			function ga(e) {
+				return sa === null ? (sa = [e], ca = Yi(K, va)) : sa.push(e), ia;
+			}
+			function _a() {
+				if (ca !== null) {
+					var e = ca;
+					ca = null, Xi(e);
+				}
+				va();
 			}
 			function va() {
-				if (la !== null) {
-					var e = la;
-					la = null, Zi(e);
-				}
-				ya();
-			}
-			function ya() {
-				if (!ua && ca !== null) {
-					ua = !0;
+				if (!la && sa !== null) {
+					la = !0;
 					var e = 0;
 					try {
-						var t = ca;
-						ha(99, function() {
+						var t = sa;
+						ma(99, function() {
 							for (; e < t.length; e++) {
 								var n = t[e];
 								do
 									n = n(!0);
 								while (n !== null);
 							}
-						}), ca = null;
+						}), sa = null;
 					} catch (t) {
-						throw ca !== null && (ca = ca.slice(e + 1)), Xi(G, va), t;
+						throw sa !== null && (sa = sa.slice(e + 1)), Yi(K, _a), t;
 					} finally {
-						ua = !1;
+						la = !1;
 					}
 				}
 			}
-			function ba(e, t, n) {
+			function ya(e, t, n) {
 				return n /= 10, 1073741821 - (((1073741821 - e + t / 10) / n | 0) + 1) * n;
 			}
-			function xa(e, t) {
+			function ba(e, t) {
 				if (e && e.defaultProps) for (var r in t = n({}, t), e = e.defaultProps, e) t[r] === void 0 && (t[r] = e[r]);
 				return t;
 			}
-			var Sa = { current: null }, Ca = null, K = null, wa = null;
-			function Ta() {
-				wa = K = Ca = null;
+			var xa = { current: null }, Sa = null, q = null, Ca = null;
+			function wa() {
+				Ca = q = Sa = null;
 			}
-			function Ea(e) {
-				var t = Sa.current;
-				U(Sa), e.type._context._currentValue = t;
+			function Ta(e) {
+				var t = xa.current;
+				W(xa), e.type._context._currentValue = t;
 			}
-			function Da(e, t) {
+			function Ea(e, t) {
 				for (; e !== null;) {
 					var n = e.alternate;
 					if (e.childExpirationTime < t) e.childExpirationTime = t, n !== null && n.childExpirationTime < t && (n.childExpirationTime = t);
@@ -3884,23 +3879,23 @@ var ke = class extends v {
 					e = e.return;
 				}
 			}
-			function Oa(e, t) {
-				Ca = e, wa = K = null, e = e.dependencies, e !== null && e.firstContext !== null && (e.expirationTime >= t && ($o = !0), e.firstContext = null);
+			function Da(e, t) {
+				Sa = e, Ca = q = null, e = e.dependencies, e !== null && e.firstContext !== null && (e.expirationTime >= t && ($o = !0), e.firstContext = null);
 			}
-			function q(e, t) {
-				if (wa !== e && !1 !== t && t !== 0) {
-					if ((typeof t != "number" || t === 1073741823) && (wa = e, t = 1073741823), t = {
+			function Oa(e, t) {
+				if (Ca !== e && !1 !== t && t !== 0) {
+					if ((typeof t != "number" || t === 1073741823) && (Ca = e, t = 1073741823), t = {
 						context: e,
 						observedBits: t,
 						next: null
-					}, K === null) {
-						if (Ca === null) throw Error(i(308));
-						K = t, Ca.dependencies = {
+					}, q === null) {
+						if (Sa === null) throw Error(i(308));
+						q = t, Sa.dependencies = {
 							expirationTime: 0,
 							firstContext: t,
 							responders: null
 						};
-					} else K = K.next = t;
+					} else q = q.next = t;
 				}
 				return e._currentValue;
 			}
@@ -4041,11 +4036,11 @@ var ke = class extends v {
 				}
 			};
 			function Va(e, t, n, r, i, a, o) {
-				return e = e.stateNode, typeof e.shouldComponentUpdate == "function" ? e.shouldComponentUpdate(r, a, o) : t.prototype && t.prototype.isPureReactComponent ? !mi(n, r) || !mi(i, a) : !0;
+				return e = e.stateNode, typeof e.shouldComponentUpdate == "function" ? e.shouldComponentUpdate(r, a, o) : t.prototype && t.prototype.isPureReactComponent ? !pi(n, r) || !pi(i, a) : !0;
 			}
 			function Ha(e, t, n) {
-				var r = !1, i = Ri, a = t.contextType;
-				return typeof a == "object" && a ? a = q(a) : (i = Ui(t) ? Vi : zi.current, r = t.contextTypes, a = (r = r != null) ? Hi(e, i) : Ri), t = new t(n, a), e.memoizedState = t.state !== null && t.state !== void 0 ? t.state : null, t.updater = Ba, e.stateNode = t, t._reactInternalFiber = e, r && (e = e.stateNode, e.__reactInternalMemoizedUnmaskedChildContext = i, e.__reactInternalMemoizedMaskedChildContext = a), t;
+				var r = !1, i = Li, a = t.contextType;
+				return typeof a == "object" && a ? a = Oa(a) : (i = Hi(t) ? Bi : Ri.current, r = t.contextTypes, a = (r = r != null) ? Vi(e, i) : Li), t = new t(n, a), e.memoizedState = t.state !== null && t.state !== void 0 ? t.state : null, t.updater = Ba, e.stateNode = t, t._reactInternalFiber = e, r && (e = e.stateNode, e.__reactInternalMemoizedUnmaskedChildContext = i, e.__reactInternalMemoizedMaskedChildContext = a), t;
 			}
 			function Ua(e, t, n, r) {
 				e = t.state, typeof t.componentWillReceiveProps == "function" && t.componentWillReceiveProps(n, r), typeof t.UNSAFE_componentWillReceiveProps == "function" && t.UNSAFE_componentWillReceiveProps(n, r), t.state !== e && Ba.enqueueReplaceState(t, t.state, null);
@@ -4054,7 +4049,7 @@ var ke = class extends v {
 				var i = e.stateNode;
 				i.props = n, i.state = e.memoizedState, i.refs = Ra, Aa(e);
 				var a = t.contextType;
-				typeof a == "object" && a ? i.context = q(a) : (a = Ui(t) ? Vi : zi.current, i.context = Hi(e, a)), Fa(e, n, i, r), i.state = e.memoizedState, a = t.getDerivedStateFromProps, typeof a == "function" && (za(e, t, a, n), i.state = e.memoizedState), typeof t.getDerivedStateFromProps == "function" || typeof i.getSnapshotBeforeUpdate == "function" || typeof i.UNSAFE_componentWillMount != "function" && typeof i.componentWillMount != "function" || (t = i.state, typeof i.componentWillMount == "function" && i.componentWillMount(), typeof i.UNSAFE_componentWillMount == "function" && i.UNSAFE_componentWillMount(), t !== i.state && Ba.enqueueReplaceState(i, i.state, null), Fa(e, n, i, r), i.state = e.memoizedState), typeof i.componentDidMount == "function" && (e.effectTag |= 4);
+				typeof a == "object" && a ? i.context = Oa(a) : (a = Hi(t) ? Bi : Ri.current, i.context = Vi(e, a)), Fa(e, n, i, r), i.state = e.memoizedState, a = t.getDerivedStateFromProps, typeof a == "function" && (za(e, t, a, n), i.state = e.memoizedState), typeof t.getDerivedStateFromProps == "function" || typeof i.getSnapshotBeforeUpdate == "function" || typeof i.UNSAFE_componentWillMount != "function" && typeof i.componentWillMount != "function" || (t = i.state, typeof i.componentWillMount == "function" && i.componentWillMount(), typeof i.UNSAFE_componentWillMount == "function" && i.UNSAFE_componentWillMount(), t !== i.state && Ba.enqueueReplaceState(i, i.state, null), Fa(e, n, i, r), i.state = e.memoizedState), typeof i.componentDidMount == "function" && (e.effectTag |= 4);
 			}
 			var Ga = Array.isArray;
 			function Ka(e, t, n) {
@@ -4258,25 +4253,25 @@ var ke = class extends v {
 				return e;
 			}
 			function no(e, t) {
-				switch (W(eo, t), W($a, e), W(Qa, Za), e = t.nodeType, e) {
+				switch (G(eo, t), G($a, e), G(Qa, Za), e = t.nodeType, e) {
 					case 9:
 					case 11:
 						t = (t = t.documentElement) ? t.namespaceURI : ot(null, "");
 						break;
 					default: e = e === 8 ? t.parentNode : t, t = e.namespaceURI || null, e = e.tagName, t = ot(t, e);
 				}
-				U(Qa), W(Qa, t);
+				W(Qa), G(Qa, t);
 			}
 			function ro() {
-				U(Qa), U($a), U(eo);
+				W(Qa), W($a), W(eo);
 			}
 			function io(e) {
 				to(eo.current);
 				var t = to(Qa.current), n = ot(t, e.type);
-				t !== n && (W($a, e), W(Qa, n));
+				t !== n && (G($a, e), G(Qa, n));
 			}
 			function ao(e) {
-				$a.current === e && (U(Qa), U($a));
+				$a.current === e && (W(Qa), W($a));
 			}
 			var J = { current: 0 };
 			function oo(e) {
@@ -4311,7 +4306,7 @@ var ke = class extends v {
 			}
 			function go(e, t) {
 				if (t === null) return !1;
-				for (var n = 0; n < t.length && n < e.length; n++) if (!fi(e[n], t[n])) return !1;
+				for (var n = 0; n < t.length && n < e.length; n++) if (!U(e[n], t[n])) return !1;
 				return !0;
 			}
 			function _o(e, t, n, r, a, o) {
@@ -4394,7 +4389,7 @@ var ke = class extends v {
 						}), Ic(u, l.suspenseConfig), r = l.eagerReducer === e ? l.eagerState : e(r, l.action);
 						l = l.next;
 					} while (l !== null && l !== a);
-					c === null ? o = r : c.next = s, fi(r, t.memoizedState) || ($o = !0), t.memoizedState = r, t.baseState = o, t.baseQueue = c, n.lastRenderedState = r;
+					c === null ? o = r : c.next = s, U(r, t.memoizedState) || ($o = !0), t.memoizedState = r, t.baseState = o, t.baseQueue = c, n.lastRenderedState = r;
 				}
 				return [t.memoizedState, n.dispatch];
 			}
@@ -4409,7 +4404,7 @@ var ke = class extends v {
 					do
 						o = e(o, s.action), s = s.next;
 					while (s !== a);
-					fi(o, t.memoizedState) || ($o = !0), t.memoizedState = o, t.baseQueue === null && (t.baseState = o), n.lastRenderedState = o;
+					U(o, t.memoizedState) || ($o = !0), t.memoizedState = o, t.baseQueue === null && (t.baseState = o), n.lastRenderedState = o;
 				}
 				return [o, r];
 			}
@@ -4488,10 +4483,10 @@ var ke = class extends v {
 				return r !== null && t !== null && go(t, r[1]) ? r[0] : (e = e(), n.memoizedState = [e, t], e);
 			}
 			function Lo(e, t, n) {
-				var r = pa();
-				ha(98 > r ? 98 : r, function() {
+				var r = fa();
+				ma(98 > r ? 98 : r, function() {
 					e(!0);
-				}), ha(97 < r ? 97 : r, function() {
+				}), ma(97 < r ? 97 : r, function() {
 					var r = lo.suspense;
 					lo.suspense = t === void 0 ? null : t;
 					try {
@@ -4516,13 +4511,13 @@ var ke = class extends v {
 				else {
 					if (e.expirationTime === 0 && (a === null || a.expirationTime === 0) && (a = t.lastRenderedReducer, a !== null)) try {
 						var o = t.lastRenderedState, s = a(o, n);
-						if (i.eagerReducer = a, i.eagerState = s, fi(s, o)) return;
+						if (i.eagerReducer = a, i.eagerState = s, U(s, o)) return;
 					} catch {}
 					wc(e, r);
 				}
 			}
 			var zo = {
-				readContext: q,
+				readContext: Oa,
 				useCallback: ho,
 				useContext: ho,
 				useEffect: ho,
@@ -4537,9 +4532,9 @@ var ke = class extends v {
 				useDeferredValue: ho,
 				useTransition: ho
 			}, Bo = {
-				readContext: q,
+				readContext: Oa,
 				useCallback: Po,
-				useContext: q,
+				useContext: Oa,
 				useEffect: Oo,
 				useImperativeHandle: function(e, t, n) {
 					return n = n == null ? null : n.concat([e]), Eo(4, 2, jo.bind(null, t, e), n);
@@ -4584,9 +4579,9 @@ var ke = class extends v {
 					return t = t[1], [Po(Lo.bind(null, t, e), [t, e]), n];
 				}
 			}, Vo = {
-				readContext: q,
+				readContext: Oa,
 				useCallback: Fo,
-				useContext: q,
+				useContext: Oa,
 				useEffect: ko,
 				useImperativeHandle: Mo,
 				useLayoutEffect: Ao,
@@ -4615,9 +4610,9 @@ var ke = class extends v {
 					return t = t[1], [Fo(Lo.bind(null, t, e), [t, e]), n];
 				}
 			}, Ho = {
-				readContext: q,
+				readContext: Oa,
 				useCallback: Fo,
-				useContext: q,
+				useContext: Oa,
 				useEffect: ko,
 				useImperativeHandle: Mo,
 				useLayoutEffect: Ao,
@@ -4716,55 +4711,55 @@ var ke = class extends v {
 			function ts(e, t, n, r, i) {
 				n = n.render;
 				var a = t.ref;
-				return Oa(t, i), r = _o(e, t, n, r, a, i), e !== null && !$o ? (t.updateQueue = e.updateQueue, t.effectTag &= -517, e.expirationTime <= i && (e.expirationTime = 0), ms(e, t, i)) : (t.effectTag |= 1, es(e, t, r, i), t.child);
+				return Da(t, i), r = _o(e, t, n, r, a, i), e !== null && !$o ? (t.updateQueue = e.updateQueue, t.effectTag &= -517, e.expirationTime <= i && (e.expirationTime = 0), ms(e, t, i)) : (t.effectTag |= 1, es(e, t, r, i), t.child);
 			}
 			function ns(e, t, n, r, i, a) {
 				if (e === null) {
 					var o = n.type;
 					return typeof o == "function" && !il(o) && o.defaultProps === void 0 && n.compare === null && n.defaultProps === void 0 ? (t.tag = 15, t.type = o, rs(e, t, o, r, i, a)) : (e = sl(n.type, null, r, null, t.mode, a), e.ref = t.ref, e.return = t, t.child = e);
 				}
-				return o = e.child, i < a && (i = o.memoizedProps, n = n.compare, n = n === null ? mi : n, n(i, r) && e.ref === t.ref) ? ms(e, t, a) : (t.effectTag |= 1, e = ol(o, r), e.ref = t.ref, e.return = t, t.child = e);
+				return o = e.child, i < a && (i = o.memoizedProps, n = n.compare, n = n === null ? pi : n, n(i, r) && e.ref === t.ref) ? ms(e, t, a) : (t.effectTag |= 1, e = ol(o, r), e.ref = t.ref, e.return = t, t.child = e);
 			}
 			function rs(e, t, n, r, i, a) {
-				return e !== null && mi(e.memoizedProps, r) && e.ref === t.ref && ($o = !1, i < a) ? (t.expirationTime = e.expirationTime, ms(e, t, a)) : as(e, t, n, r, a);
+				return e !== null && pi(e.memoizedProps, r) && e.ref === t.ref && ($o = !1, i < a) ? (t.expirationTime = e.expirationTime, ms(e, t, a)) : as(e, t, n, r, a);
 			}
 			function is(e, t) {
 				var n = t.ref;
 				(e === null && n !== null || e !== null && e.ref !== n) && (t.effectTag |= 128);
 			}
 			function as(e, t, n, r, i) {
-				var a = Ui(n) ? Vi : zi.current;
-				return a = Hi(t, a), Oa(t, i), n = _o(e, t, n, r, a, i), e !== null && !$o ? (t.updateQueue = e.updateQueue, t.effectTag &= -517, e.expirationTime <= i && (e.expirationTime = 0), ms(e, t, i)) : (t.effectTag |= 1, es(e, t, n, i), t.child);
+				var a = Hi(n) ? Bi : Ri.current;
+				return a = Vi(t, a), Da(t, i), n = _o(e, t, n, r, a, i), e !== null && !$o ? (t.updateQueue = e.updateQueue, t.effectTag &= -517, e.expirationTime <= i && (e.expirationTime = 0), ms(e, t, i)) : (t.effectTag |= 1, es(e, t, n, i), t.child);
 			}
 			function os(e, t, n, r, i) {
-				if (Ui(n)) {
+				if (Hi(n)) {
 					var a = !0;
-					qi(t);
+					Ki(t);
 				} else a = !1;
-				if (Oa(t, i), t.stateNode === null) e !== null && (e.alternate = null, t.alternate = null, t.effectTag |= 2), Ha(t, n, r), Wa(t, n, r, i), r = !0;
+				if (Da(t, i), t.stateNode === null) e !== null && (e.alternate = null, t.alternate = null, t.effectTag |= 2), Ha(t, n, r), Wa(t, n, r, i), r = !0;
 				else if (e === null) {
 					var o = t.stateNode, s = t.memoizedProps;
 					o.props = s;
 					var c = o.context, l = n.contextType;
-					typeof l == "object" && l ? l = q(l) : (l = Ui(n) ? Vi : zi.current, l = Hi(t, l));
+					typeof l == "object" && l ? l = Oa(l) : (l = Hi(n) ? Bi : Ri.current, l = Vi(t, l));
 					var u = n.getDerivedStateFromProps, d = typeof u == "function" || typeof o.getSnapshotBeforeUpdate == "function";
 					d || typeof o.UNSAFE_componentWillReceiveProps != "function" && typeof o.componentWillReceiveProps != "function" || (s !== r || c !== l) && Ua(t, o, r, l), ka = !1;
 					var f = t.memoizedState;
-					o.state = f, Fa(t, r, o, i), c = t.memoizedState, s !== r || f !== c || Bi.current || ka ? (typeof u == "function" && (za(t, n, u, r), c = t.memoizedState), (s = ka || Va(t, n, s, r, f, c, l)) ? (d || typeof o.UNSAFE_componentWillMount != "function" && typeof o.componentWillMount != "function" || (typeof o.componentWillMount == "function" && o.componentWillMount(), typeof o.UNSAFE_componentWillMount == "function" && o.UNSAFE_componentWillMount()), typeof o.componentDidMount == "function" && (t.effectTag |= 4)) : (typeof o.componentDidMount == "function" && (t.effectTag |= 4), t.memoizedProps = r, t.memoizedState = c), o.props = r, o.state = c, o.context = l, r = s) : (typeof o.componentDidMount == "function" && (t.effectTag |= 4), r = !1);
-				} else o = t.stateNode, ja(e, t), s = t.memoizedProps, o.props = t.type === t.elementType ? s : xa(t.type, s), c = o.context, l = n.contextType, typeof l == "object" && l ? l = q(l) : (l = Ui(n) ? Vi : zi.current, l = Hi(t, l)), u = n.getDerivedStateFromProps, (d = typeof u == "function" || typeof o.getSnapshotBeforeUpdate == "function") || typeof o.UNSAFE_componentWillReceiveProps != "function" && typeof o.componentWillReceiveProps != "function" || (s !== r || c !== l) && Ua(t, o, r, l), ka = !1, c = t.memoizedState, o.state = c, Fa(t, r, o, i), f = t.memoizedState, s !== r || c !== f || Bi.current || ka ? (typeof u == "function" && (za(t, n, u, r), f = t.memoizedState), (u = ka || Va(t, n, s, r, c, f, l)) ? (d || typeof o.UNSAFE_componentWillUpdate != "function" && typeof o.componentWillUpdate != "function" || (typeof o.componentWillUpdate == "function" && o.componentWillUpdate(r, f, l), typeof o.UNSAFE_componentWillUpdate == "function" && o.UNSAFE_componentWillUpdate(r, f, l)), typeof o.componentDidUpdate == "function" && (t.effectTag |= 4), typeof o.getSnapshotBeforeUpdate == "function" && (t.effectTag |= 256)) : (typeof o.componentDidUpdate != "function" || s === e.memoizedProps && c === e.memoizedState || (t.effectTag |= 4), typeof o.getSnapshotBeforeUpdate != "function" || s === e.memoizedProps && c === e.memoizedState || (t.effectTag |= 256), t.memoizedProps = r, t.memoizedState = f), o.props = r, o.state = f, o.context = l, r = u) : (typeof o.componentDidUpdate != "function" || s === e.memoizedProps && c === e.memoizedState || (t.effectTag |= 4), typeof o.getSnapshotBeforeUpdate != "function" || s === e.memoizedProps && c === e.memoizedState || (t.effectTag |= 256), r = !1);
+					o.state = f, Fa(t, r, o, i), c = t.memoizedState, s !== r || f !== c || zi.current || ka ? (typeof u == "function" && (za(t, n, u, r), c = t.memoizedState), (s = ka || Va(t, n, s, r, f, c, l)) ? (d || typeof o.UNSAFE_componentWillMount != "function" && typeof o.componentWillMount != "function" || (typeof o.componentWillMount == "function" && o.componentWillMount(), typeof o.UNSAFE_componentWillMount == "function" && o.UNSAFE_componentWillMount()), typeof o.componentDidMount == "function" && (t.effectTag |= 4)) : (typeof o.componentDidMount == "function" && (t.effectTag |= 4), t.memoizedProps = r, t.memoizedState = c), o.props = r, o.state = c, o.context = l, r = s) : (typeof o.componentDidMount == "function" && (t.effectTag |= 4), r = !1);
+				} else o = t.stateNode, ja(e, t), s = t.memoizedProps, o.props = t.type === t.elementType ? s : ba(t.type, s), c = o.context, l = n.contextType, typeof l == "object" && l ? l = Oa(l) : (l = Hi(n) ? Bi : Ri.current, l = Vi(t, l)), u = n.getDerivedStateFromProps, (d = typeof u == "function" || typeof o.getSnapshotBeforeUpdate == "function") || typeof o.UNSAFE_componentWillReceiveProps != "function" && typeof o.componentWillReceiveProps != "function" || (s !== r || c !== l) && Ua(t, o, r, l), ka = !1, c = t.memoizedState, o.state = c, Fa(t, r, o, i), f = t.memoizedState, s !== r || c !== f || zi.current || ka ? (typeof u == "function" && (za(t, n, u, r), f = t.memoizedState), (u = ka || Va(t, n, s, r, c, f, l)) ? (d || typeof o.UNSAFE_componentWillUpdate != "function" && typeof o.componentWillUpdate != "function" || (typeof o.componentWillUpdate == "function" && o.componentWillUpdate(r, f, l), typeof o.UNSAFE_componentWillUpdate == "function" && o.UNSAFE_componentWillUpdate(r, f, l)), typeof o.componentDidUpdate == "function" && (t.effectTag |= 4), typeof o.getSnapshotBeforeUpdate == "function" && (t.effectTag |= 256)) : (typeof o.componentDidUpdate != "function" || s === e.memoizedProps && c === e.memoizedState || (t.effectTag |= 4), typeof o.getSnapshotBeforeUpdate != "function" || s === e.memoizedProps && c === e.memoizedState || (t.effectTag |= 256), t.memoizedProps = r, t.memoizedState = f), o.props = r, o.state = f, o.context = l, r = u) : (typeof o.componentDidUpdate != "function" || s === e.memoizedProps && c === e.memoizedState || (t.effectTag |= 4), typeof o.getSnapshotBeforeUpdate != "function" || s === e.memoizedProps && c === e.memoizedState || (t.effectTag |= 256), r = !1);
 				return ss(e, t, n, r, a, i);
 			}
 			function ss(e, t, n, r, i, a) {
 				is(e, t);
 				var o = !!(t.effectTag & 64);
-				if (!r && !o) return i && Ji(t, n, !1), ms(e, t, a);
+				if (!r && !o) return i && qi(t, n, !1), ms(e, t, a);
 				r = t.stateNode, Qo.current = t;
 				var s = o && typeof n.getDerivedStateFromError != "function" ? null : r.render();
-				return t.effectTag |= 1, e !== null && o ? (t.child = Ya(t, e.child, null, a), t.child = Ya(t, null, s, a)) : es(e, t, s, a), t.memoizedState = r.state, i && Ji(t, n, !0), t.child;
+				return t.effectTag |= 1, e !== null && o ? (t.child = Ya(t, e.child, null, a), t.child = Ya(t, null, s, a)) : es(e, t, s, a), t.memoizedState = r.state, i && qi(t, n, !0), t.child;
 			}
 			function cs(e) {
 				var t = e.stateNode;
-				t.pendingContext ? Gi(e, t.pendingContext, t.pendingContext !== t.context) : t.context && Gi(e, t.context, !1), no(e, t.containerInfo);
+				t.pendingContext ? Wi(e, t.pendingContext, t.pendingContext !== t.context) : t.context && Wi(e, t.context, !1), no(e, t.containerInfo);
 			}
 			var ls = {
 				dehydrated: null,
@@ -4772,7 +4767,7 @@ var ke = class extends v {
 			};
 			function us(e, t, n) {
 				var r = t.mode, i = t.pendingProps, a = J.current, o = !1, s;
-				if ((s = !!(t.effectTag & 64)) || (s = !!(a & 2) && (e === null || e.memoizedState !== null)), s ? (o = !0, t.effectTag &= -65) : e !== null && e.memoizedState === null || i.fallback === void 0 || !0 === i.unstable_avoidThisFallback || (a |= 1), W(J, a & 1), e === null) {
+				if ((s = !!(t.effectTag & 64)) || (s = !!(a & 2) && (e === null || e.memoizedState !== null)), s ? (o = !0, t.effectTag &= -65) : e !== null && e.memoizedState === null || i.fallback === void 0 || !0 === i.unstable_avoidThisFallback || (a |= 1), G(J, a & 1), e === null) {
 					if (i.fallback !== void 0 && Jo(t), o) {
 						if (o = i.fallback, i = cl(null, r, 0, null), i.return = t, !(t.mode & 2)) for (e = t.memoizedState === null ? t.child : t.child.child, i.child = e; e !== null;) e.return = i, e = e.sibling;
 						return n = cl(o, r, n, null), n.return = t, i.sibling = n, t.memoizedState = ls, t.child = i, n;
@@ -4795,7 +4790,7 @@ var ke = class extends v {
 			function ds(e, t) {
 				e.expirationTime < t && (e.expirationTime = t);
 				var n = e.alternate;
-				n !== null && n.expirationTime < t && (n.expirationTime = t), Da(e.return, t);
+				n !== null && n.expirationTime < t && (n.expirationTime = t), Ea(e.return, t);
 			}
 			function fs(e, t, n, r, i, a) {
 				var o = e.memoizedState;
@@ -4830,7 +4825,7 @@ var ke = class extends v {
 					}
 					r &= 1;
 				}
-				if (W(J, r), !(t.mode & 2)) t.memoizedState = null;
+				if (G(J, r), !(t.mode & 2)) t.memoizedState = null;
 				else switch (i) {
 					case "forwards":
 						for (n = t.child, i = null; n !== null;) e = n.alternate, e !== null && oo(e) === null && (i = n), n = n.sibling;
@@ -4945,8 +4940,8 @@ var ke = class extends v {
 					case 12:
 					case 9:
 					case 14: return null;
-					case 1: return Ui(t.type) && Wi(), null;
-					case 3: return ro(), U(Bi), U(zi), r = t.stateNode, r.pendingContext && (r.context = r.pendingContext, r.pendingContext = null), e !== null && e.child !== null || !Xo(t) || (t.effectTag |= 4), null;
+					case 1: return Hi(t.type) && Ui(), null;
+					case 3: return ro(), W(zi), W(Ri), r = t.stateNode, r.pendingContext && (r.context = r.pendingContext, r.pendingContext = null), e !== null && e.child !== null || !Xo(t) || (t.effectTag |= 4), null;
 					case 5:
 						ao(t), r = to(eo.current);
 						var o = t.type;
@@ -5080,12 +5075,12 @@ var ke = class extends v {
 							r = to(eo.current), to(Qa.current), Xo(t) ? (r = t.stateNode, a = t.memoizedProps, r[Zn] = t, r.nodeValue !== a && (t.effectTag |= 4)) : (r = (r.nodeType === 9 ? r : r.ownerDocument).createTextNode(a), r[Zn] = t, t.stateNode = r);
 						}
 						return null;
-					case 13: return U(J), a = t.memoizedState, t.effectTag & 64 ? (t.expirationTime = r, t) : (r = a !== null, a = !1, e === null ? t.memoizedProps.fallback !== void 0 && Xo(t) : (o = e.memoizedState, a = o !== null, r || o === null || (o = e.child.sibling, o !== null && (s = t.firstEffect, s === null ? (t.firstEffect = t.lastEffect = o, o.nextEffect = null) : (t.firstEffect = o, o.nextEffect = s), o.effectTag = 8))), r && !a && t.mode & 2 && (e === null && !0 !== t.memoizedProps.unstable_avoidThisFallback || J.current & 1 ? rc === Ys && (rc = Qs) : ((rc === Ys || rc === Qs) && (rc = $s), cc !== 0 && tc !== null && (pl(tc, nc), ml(tc, cc)))), (r || a) && (t.effectTag |= 4), null);
+					case 13: return W(J), a = t.memoizedState, t.effectTag & 64 ? (t.expirationTime = r, t) : (r = a !== null, a = !1, e === null ? t.memoizedProps.fallback !== void 0 && Xo(t) : (o = e.memoizedState, a = o !== null, r || o === null || (o = e.child.sibling, o !== null && (s = t.firstEffect, s === null ? (t.firstEffect = t.lastEffect = o, o.nextEffect = null) : (t.firstEffect = o, o.nextEffect = s), o.effectTag = 8))), r && !a && t.mode & 2 && (e === null && !0 !== t.memoizedProps.unstable_avoidThisFallback || J.current & 1 ? rc === Ys && (rc = Qs) : ((rc === Ys || rc === Qs) && (rc = $s), cc !== 0 && tc !== null && (pl(tc, nc), ml(tc, cc)))), (r || a) && (t.effectTag |= 4), null);
 					case 4: return ro(), null;
-					case 10: return Ea(t), null;
-					case 17: return Ui(t.type) && Wi(), null;
+					case 10: return Ta(t), null;
+					case 17: return Hi(t.type) && Ui(), null;
 					case 19:
-						if (U(J), a = t.memoizedState, a === null) return null;
+						if (W(J), a = t.memoizedState, a === null) return null;
 						if (o = !!(t.effectTag & 64), s = a.rendering, s === null) {
 							if (o) vs(a, !1);
 							else if (rc !== Ys || e !== null && e.effectTag & 64) for (s = t.child; s !== null;) {
@@ -5095,7 +5090,7 @@ var ke = class extends v {
 										firstContext: s.firstContext,
 										responders: s.responders
 									}), a = a.sibling;
-									return W(J, J.current & 1 | 2), t.child;
+									return G(J, J.current & 1 | 2), t.child;
 								}
 								s = s.sibling;
 							}
@@ -5103,28 +5098,28 @@ var ke = class extends v {
 							if (!o) {
 								if (e = oo(s), e !== null) {
 									if (t.effectTag |= 64, o = !0, r = e.updateQueue, r !== null && (t.updateQueue = r, t.effectTag |= 4), vs(a, !0), a.tail === null && a.tailMode === "hidden" && !s.alternate) return t = t.lastEffect = a.lastEffect, t !== null && (t.nextEffect = null), null;
-								} else 2 * fa() - a.renderingStartTime > a.tailExpiration && 1 < r && (t.effectTag |= 64, o = !0, vs(a, !1), t.expirationTime = t.childExpirationTime = r - 1);
+								} else 2 * da() - a.renderingStartTime > a.tailExpiration && 1 < r && (t.effectTag |= 64, o = !0, vs(a, !1), t.expirationTime = t.childExpirationTime = r - 1);
 							}
 							a.isBackwards ? (s.sibling = t.child, t.child = s) : (r = a.last, r === null ? t.child = s : r.sibling = s, a.last = s);
 						}
-						return a.tail === null ? null : (a.tailExpiration === 0 && (a.tailExpiration = fa() + 500), r = a.tail, a.rendering = r, a.tail = r.sibling, a.lastEffect = t.lastEffect, a.renderingStartTime = fa(), r.sibling = null, t = J.current, W(J, o ? t & 1 | 2 : t & 1), r);
+						return a.tail === null ? null : (a.tailExpiration === 0 && (a.tailExpiration = da() + 500), r = a.tail, a.rendering = r, a.tail = r.sibling, a.lastEffect = t.lastEffect, a.renderingStartTime = da(), r.sibling = null, t = J.current, G(J, o ? t & 1 | 2 : t & 1), r);
 				}
 				throw Error(i(156, t.tag));
 			}
 			function bs(e) {
 				switch (e.tag) {
 					case 1:
-						Ui(e.type) && Wi();
+						Hi(e.type) && Ui();
 						var t = e.effectTag;
 						return t & 4096 ? (e.effectTag = t & -4097 | 64, e) : null;
 					case 3:
-						if (ro(), U(Bi), U(zi), t = e.effectTag, t & 64) throw Error(i(285));
+						if (ro(), W(zi), W(Ri), t = e.effectTag, t & 64) throw Error(i(285));
 						return e.effectTag = t & -4097 | 64, e;
 					case 5: return ao(e), null;
-					case 13: return U(J), t = e.effectTag, t & 4096 ? (e.effectTag = t & -4097 | 64, e) : null;
-					case 19: return U(J), null;
+					case 13: return W(J), t = e.effectTag, t & 4096 ? (e.effectTag = t & -4097 | 64, e) : null;
+					case 19: return W(J), null;
 					case 4: return ro(), null;
-					case 10: return Ea(e), null;
+					case 10: return Ta(e), null;
 					default: return null;
 				}
 			}
@@ -5174,7 +5169,7 @@ var ke = class extends v {
 					case 1:
 						if (t.effectTag & 256 && e !== null) {
 							var n = e.memoizedProps, r = e.memoizedState;
-							e = t.stateNode, t = e.getSnapshotBeforeUpdate(t.elementType === t.type ? n : xa(t.type, n), r), e.__reactInternalSnapshotBeforeUpdate = t;
+							e = t.stateNode, t = e.getSnapshotBeforeUpdate(t.elementType === t.type ? n : ba(t.type, n), r), e.__reactInternalSnapshotBeforeUpdate = t;
 						}
 						return;
 					case 3:
@@ -5221,7 +5216,7 @@ var ke = class extends v {
 						if (e = n.stateNode, n.effectTag & 4) {
 							if (t === null) e.componentDidMount();
 							else {
-								var r = n.elementType === n.type ? t.memoizedProps : xa(n.type, t.memoizedProps);
+								var r = n.elementType === n.type ? t.memoizedProps : ba(n.type, t.memoizedProps);
 								e.componentDidUpdate(r, t.memoizedState, e.__reactInternalSnapshotBeforeUpdate);
 							}
 						}
@@ -5263,7 +5258,7 @@ var ke = class extends v {
 					case 22:
 						if (e = t.updateQueue, e !== null && (e = e.lastEffect, e !== null)) {
 							var r = e.next;
-							ha(97 < n ? 97 : n, function() {
+							ma(97 < n ? 97 : n, function() {
 								var e = r;
 								do {
 									var n = e.destroy;
@@ -5440,7 +5435,7 @@ var ke = class extends v {
 						return;
 					case 12: return;
 					case 13:
-						if (n = t, t.memoizedState === null ? r = !1 : (r = !0, n = t.child, uc = fa()), n !== null) a: for (e = n;;) {
+						if (n = t, t.memoizedState === null ? r = !1 : (r = !0, n = t.child, uc = da()), n !== null) a: for (e = n;;) {
 							if (e.tag === 5) o = e.stateNode, r ? (o = o.style, typeof o.setProperty == "function" ? o.setProperty("display", "none", "important") : o.display = "none") : (o = e.stateNode, a = e.memoizedProps.style, a = a != null && a.hasOwnProperty("display") ? a.display : null, o.style.display = wn("display", a));
 							else if (e.tag === 6) e.stateNode.nodeValue = r ? "" : e.memoizedProps;
 							else if (e.tag === 13 && e.memoizedState !== null && e.memoizedState.dehydrated === null) {
@@ -5503,24 +5498,24 @@ var ke = class extends v {
 			}
 			var Hs = Math.ceil, Us = ve.ReactCurrentDispatcher, Ws = ve.ReactCurrentOwner, Gs = 0, Ks = 8, qs = 16, Js = 32, Ys = 0, Xs = 1, Zs = 2, Qs = 3, $s = 4, ec = 5, X = Gs, tc = null, Z = null, nc = 0, rc = Ys, ic = null, ac = 1073741823, oc = 1073741823, sc = null, cc = 0, lc = !1, uc = 0, dc = 500, Q = null, fc = !1, pc = null, mc = null, hc = !1, gc = null, _c = 90, vc = null, yc = 0, bc = null, xc = 0;
 			function Sc() {
-				return (X & (qs | Js)) === Gs ? xc === 0 ? xc = 1073741821 - (fa() / 10 | 0) : xc : 1073741821 - (fa() / 10 | 0);
+				return (X & (qs | Js)) === Gs ? xc === 0 ? xc = 1073741821 - (da() / 10 | 0) : xc : 1073741821 - (da() / 10 | 0);
 			}
 			function Cc(e, t, n) {
 				if (t = t.mode, !(t & 2)) return 1073741823;
-				var r = pa();
+				var r = fa();
 				if (!(t & 4)) return r === 99 ? 1073741823 : 1073741822;
 				if ((X & qs) !== Gs) return nc;
-				if (n !== null) e = ba(e, n.timeoutMs | 0 || 5e3, 250);
+				if (n !== null) e = ya(e, n.timeoutMs | 0 || 5e3, 250);
 				else switch (r) {
 					case 99:
 						e = 1073741823;
 						break;
 					case 98:
-						e = ba(e, 150, 100);
+						e = ya(e, 150, 100);
 						break;
 					case 97:
 					case 96:
-						e = ba(e, 5e3, 250);
+						e = ya(e, 5e3, 250);
 						break;
 					case 95:
 						e = 2;
@@ -5532,8 +5527,8 @@ var ke = class extends v {
 			function wc(e, t) {
 				if (50 < yc) throw yc = 0, bc = null, Error(i(185));
 				if (e = Tc(e, t), e !== null) {
-					var n = pa();
-					t === 1073741823 ? (X & Ks) !== Gs && (X & (qs | Js)) === Gs ? kc(e) : (Dc(e), X === Gs && va()) : Dc(e), (X & 4) === Gs || n !== 98 && n !== 99 || (vc === null ? vc = /* @__PURE__ */ new Map([[e, t]]) : (n = vc.get(e), (n === void 0 || n > t) && vc.set(e, t)));
+					var n = fa();
+					t === 1073741823 ? (X & Ks) !== Gs && (X & (qs | Js)) === Gs ? kc(e) : (Dc(e), X === Gs && _a()) : Dc(e), (X & 4) === Gs || n !== 98 && n !== 99 || (vc === null ? vc = /* @__PURE__ */ new Map([[e, t]]) : (n = vc.get(e), (n === void 0 || n > t) && vc.set(e, t)));
 				}
 			}
 			function Tc(e, t) {
@@ -5558,7 +5553,7 @@ var ke = class extends v {
 				return e = e.nextKnownPendingLevel, e = n > e ? n : e, 2 >= e && t !== e ? 0 : e;
 			}
 			function Dc(e) {
-				if (e.lastExpiredTime !== 0) e.callbackExpirationTime = 1073741823, e.callbackPriority = 99, e.callbackNode = _a(kc.bind(null, e));
+				if (e.lastExpiredTime !== 0) e.callbackExpirationTime = 1073741823, e.callbackPriority = 99, e.callbackNode = ga(kc.bind(null, e));
 				else {
 					var t = Ec(e), n = e.callbackNode;
 					if (t === 0) n !== null && (e.callbackNode = null, e.callbackExpirationTime = 0, e.callbackPriority = 90);
@@ -5567,9 +5562,9 @@ var ke = class extends v {
 						if (t === 1073741823 ? r = 99 : t === 1 || t === 2 ? r = 95 : (r = 10 * (1073741821 - t) - 10 * (1073741821 - r), r = 0 >= r ? 99 : 250 >= r ? 98 : 5250 >= r ? 97 : 95), n !== null) {
 							var i = e.callbackPriority;
 							if (e.callbackExpirationTime === t && i >= r) return;
-							n !== aa && Zi(n);
+							n !== ia && Xi(n);
 						}
-						e.callbackExpirationTime = t, e.callbackPriority = r, t = t === 1073741823 ? _a(kc.bind(null, e)) : ga(r, Oc.bind(null, e), { timeout: 10 * (1073741821 - t) - fa() }), e.callbackNode = t;
+						e.callbackExpirationTime = t, e.callbackPriority = r, t = t === 1073741823 ? ga(kc.bind(null, e)) : ha(r, Oc.bind(null, e), { timeout: 10 * (1073741821 - t) - da() }), e.callbackNode = t;
 					}
 				}
 			}
@@ -5590,7 +5585,7 @@ var ke = class extends v {
 								Pc(e, t);
 							}
 						while (1);
-						if (Ta(), X = r, Us.current = a, rc === Xs) throw t = ic, Nc(e, n), pl(e, n), Dc(e), t;
+						if (wa(), X = r, Us.current = a, rc === Xs) throw t = ic, Nc(e, n), pl(e, n), Dc(e), t;
 						if (Z === null) switch (a = e.finishedWork = e.current.alternate, e.finishedExpirationTime = n, r = rc, tc = null, r) {
 							case Ys:
 							case Xs: throw Error(i(345));
@@ -5598,7 +5593,7 @@ var ke = class extends v {
 								hl(e, 2 < n ? 2 : n);
 								break;
 							case Qs:
-								if (pl(e, n), r = e.lastSuspendedTime, n === r && (e.nextKnownPendingLevel = Hc(a)), ac === 1073741823 && (a = uc + dc - fa(), 10 < a)) {
+								if (pl(e, n), r = e.lastSuspendedTime, n === r && (e.nextKnownPendingLevel = Hc(a)), ac === 1073741823 && (a = uc + dc - da(), 10 < a)) {
 									if (lc) {
 										var o = e.lastPingedTime;
 										if (o === 0 || o >= n) {
@@ -5626,7 +5621,7 @@ var ke = class extends v {
 									e.lastPingedTime = r;
 									break;
 								}
-								if (oc === 1073741823 ? ac === 1073741823 ? r = 0 : (r = 10 * (1073741821 - ac) - 5e3, a = fa(), n = 10 * (1073741821 - n) - a, r = a - r, 0 > r && (r = 0), r = (120 > r ? 120 : 480 > r ? 480 : 1080 > r ? 1080 : 1920 > r ? 1920 : 3e3 > r ? 3e3 : 4320 > r ? 4320 : 1960 * Hs(r / 1960)) - r, n < r && (r = n)) : r = 10 * (1073741821 - oc) - fa(), 10 < r) {
+								if (oc === 1073741823 ? ac === 1073741823 ? r = 0 : (r = 10 * (1073741821 - ac) - 5e3, a = da(), n = 10 * (1073741821 - n) - a, r = a - r, 0 > r && (r = 0), r = (120 > r ? 120 : 480 > r ? 480 : 1080 > r ? 1080 : 1920 > r ? 1920 : 3e3 > r ? 3e3 : 4320 > r ? 4320 : 1960 * Hs(r / 1960)) - r, n < r && (r = n)) : r = 10 * (1073741821 - oc) - da(), 10 < r) {
 									e.timeoutHandle = Kn(Uc.bind(null, e), r);
 									break;
 								}
@@ -5636,7 +5631,7 @@ var ke = class extends v {
 								if (ac !== 1073741823 && sc !== null) {
 									o = ac;
 									var s = sc;
-									if (r = s.busyMinDurationMs | 0, 0 >= r ? r = 0 : (a = s.busyDelayMs | 0, o = fa() - (10 * (1073741821 - o) - (s.timeoutMs | 0 || 5e3)), r = o <= a ? 0 : a + r - o), 10 < r) {
+									if (r = s.busyMinDurationMs | 0, 0 >= r ? r = 0 : (a = s.busyDelayMs | 0, o = da() - (10 * (1073741821 - o) - (s.timeoutMs | 0 || 5e3)), r = o <= a ? 0 : a + r - o), 10 < r) {
 										pl(e, n), e.timeoutHandle = Kn(Uc.bind(null, e), r);
 										break;
 									}
@@ -5665,7 +5660,7 @@ var ke = class extends v {
 							Pc(e, t);
 						}
 					while (1);
-					if (Ta(), X = n, Us.current = r, rc === Xs) throw n = ic, Nc(e, t), pl(e, t), Dc(e), n;
+					if (wa(), X = n, Us.current = r, rc === Xs) throw n = ic, Nc(e, t), pl(e, t), Dc(e), n;
 					if (Z !== null) throw Error(i(261));
 					e.finishedWork = e.current.alternate, e.finishedExpirationTime = t, tc = null, Uc(e), Dc(e);
 				}
@@ -5676,7 +5671,7 @@ var ke = class extends v {
 					var e = vc;
 					vc = null, e.forEach(function(e, t) {
 						hl(t, e), Dc(t);
-					}), va();
+					}), _a();
 				}
 			}
 			function jc(e, t) {
@@ -5685,7 +5680,7 @@ var ke = class extends v {
 				try {
 					return e(t);
 				} finally {
-					X = n, X === Gs && va();
+					X = n, X === Gs && _a();
 				}
 			}
 			function Mc(e, t) {
@@ -5694,7 +5689,7 @@ var ke = class extends v {
 				try {
 					return e(t);
 				} finally {
-					X = n, X === Gs && va();
+					X = n, X === Gs && _a();
 				}
 			}
 			function Nc(e, t) {
@@ -5704,10 +5699,10 @@ var ke = class extends v {
 					var r = n;
 					switch (r.tag) {
 						case 1:
-							r = r.type.childContextTypes, r != null && Wi();
+							r = r.type.childContextTypes, r != null && Ui();
 							break;
 						case 3:
-							ro(), U(Bi), U(zi);
+							ro(), W(zi), W(Ri);
 							break;
 						case 5:
 							ao(r);
@@ -5716,12 +5711,12 @@ var ke = class extends v {
 							ro();
 							break;
 						case 13:
-							U(J);
+							W(J);
 							break;
 						case 19:
-							U(J);
+							W(J);
 							break;
-						case 10: Ea(r);
+						case 10: Ta(r);
 					}
 					n = n.return;
 				}
@@ -5730,7 +5725,7 @@ var ke = class extends v {
 			function Pc(e, t) {
 				do {
 					try {
-						if (Ta(), co.current = zo, mo) for (var n = Y.memoizedState; n !== null;) {
+						if (wa(), co.current = zo, mo) for (var n = Y.memoizedState; n !== null;) {
 							var r = n.queue;
 							r !== null && (r.pending = null), n = n.next;
 						}
@@ -5828,7 +5823,7 @@ var ke = class extends v {
 				for (; Z !== null;) Z = Bc(Z);
 			}
 			function zc() {
-				for (; Z !== null && !oa();) Z = Bc(Z);
+				for (; Z !== null && !aa();) Z = Bc(Z);
 			}
 			function Bc(e) {
 				var t = Qc(e.alternate, e, nc);
@@ -5862,8 +5857,8 @@ var ke = class extends v {
 				return e = e.childExpirationTime, t > e ? t : e;
 			}
 			function Uc(e) {
-				var t = pa();
-				return ha(99, Wc.bind(null, e, t)), null;
+				var t = fa();
+				return ma(99, Wc.bind(null, e, t)), null;
 			}
 			function Wc(e, t) {
 				do
@@ -6002,17 +5997,17 @@ var ke = class extends v {
 							Yc(Q, e), Q = Q.nextEffect;
 						}
 					while (Q !== null);
-					Q = null, sa(), X = o;
+					Q = null, oa(), X = o;
 				} else e.current = n;
 				if (hc) hc = !1, gc = e, _c = t;
 				else for (Q = a; Q !== null;) t = Q.nextEffect, Q.nextEffect = null, Q = t;
 				if (t = e.firstPendingTime, t === 0 && (mc = null), t === 1073741823 ? e === bc ? yc++ : (yc = 0, bc = e) : yc = 0, typeof $c == "function" && $c(n.stateNode, r), Dc(e), fc) throw fc = !1, e = pc, pc = null, e;
-				return (X & Ks) === Gs && va(), null;
+				return (X & Ks) === Gs && _a(), null;
 			}
 			function Gc() {
 				for (; Q !== null;) {
 					var e = Q.effectTag;
-					e & 256 && Es(Q.alternate, Q), !(e & 512) || hc || (hc = !0, ga(97, function() {
+					e & 256 && Es(Q.alternate, Q), !(e & 512) || hc || (hc = !0, ha(97, function() {
 						return Kc(), null;
 					})), Q = Q.nextEffect;
 				}
@@ -6020,7 +6015,7 @@ var ke = class extends v {
 			function Kc() {
 				if (_c !== 90) {
 					var e = 97 < _c ? 97 : _c;
-					return _c = 90, ha(e, qc);
+					return _c = 90, ma(e, qc);
 				}
 			}
 			function qc() {
@@ -6043,7 +6038,7 @@ var ke = class extends v {
 					}
 					n = e.nextEffect, e.nextEffect = null, e = n;
 				}
-				return X = t, va(), !0;
+				return X = t, _a(), !0;
 			}
 			function Jc(e, t, n) {
 				t = xs(n, t), t = Bs(e, t, 1073741823), Na(e, t), e = Tc(e, 1073741823), e !== null && Dc(e);
@@ -6067,7 +6062,7 @@ var ke = class extends v {
 			}
 			function Xc(e, t, n) {
 				var r = e.pingCache;
-				r !== null && r.delete(t), tc === e && nc === n ? rc === $s || rc === Qs && ac === 1073741823 && fa() - uc < dc ? Nc(e, nc) : lc = !0 : fl(e, n) && (t = e.lastPingedTime, t !== 0 && t < n || (e.lastPingedTime = n, Dc(e)));
+				r !== null && r.delete(t), tc === e && nc === n ? rc === $s || rc === Qs && ac === 1073741823 && da() - uc < dc ? Nc(e, nc) : lc = !0 : fl(e, n) && (t = e.lastPingedTime, t !== 0 && t < n || (e.lastPingedTime = n, Dc(e)));
 			}
 			function Zc(e, t) {
 				var n = e.stateNode;
@@ -6077,7 +6072,7 @@ var ke = class extends v {
 				var r = t.expirationTime;
 				if (e !== null) {
 					var a = t.pendingProps;
-					if (e.memoizedProps !== a || Bi.current) $o = !0;
+					if (e.memoizedProps !== a || zi.current) $o = !0;
 					else {
 						if (r < n) {
 							switch ($o = !1, t.tag) {
@@ -6088,24 +6083,24 @@ var ke = class extends v {
 									if (io(t), t.mode & 4 && n !== 1 && a.hidden) return t.expirationTime = t.childExpirationTime = 1, null;
 									break;
 								case 1:
-									Ui(t.type) && qi(t);
+									Hi(t.type) && Ki(t);
 									break;
 								case 4:
 									no(t, t.stateNode.containerInfo);
 									break;
 								case 10:
-									r = t.memoizedProps.value, a = t.type._context, W(Sa, a._currentValue), a._currentValue = r;
+									r = t.memoizedProps.value, a = t.type._context, G(xa, a._currentValue), a._currentValue = r;
 									break;
 								case 13:
-									if (t.memoizedState !== null) return r = t.child.childExpirationTime, r !== 0 && r >= n ? us(e, t, n) : (W(J, J.current & 1), t = ms(e, t, n), t === null ? null : t.sibling);
-									W(J, J.current & 1);
+									if (t.memoizedState !== null) return r = t.child.childExpirationTime, r !== 0 && r >= n ? us(e, t, n) : (G(J, J.current & 1), t = ms(e, t, n), t === null ? null : t.sibling);
+									G(J, J.current & 1);
 									break;
 								case 19:
 									if (r = t.childExpirationTime >= n, e.effectTag & 64) {
 										if (r) return ps(e, t, n);
 										t.effectTag |= 64;
 									}
-									if (a = t.memoizedState, a !== null && (a.rendering = null, a.tail = null), W(J, J.current), !r) return null;
+									if (a = t.memoizedState, a !== null && (a.rendering = null, a.tail = null), G(J, J.current), !r) return null;
 							}
 							return ms(e, t, n);
 						}
@@ -6114,10 +6109,10 @@ var ke = class extends v {
 				} else $o = !1;
 				switch (t.expirationTime = 0, t.tag) {
 					case 2:
-						if (r = t.type, e !== null && (e.alternate = null, t.alternate = null, t.effectTag |= 2), e = t.pendingProps, a = Hi(t, zi.current), Oa(t, n), a = _o(null, t, r, e, a, n), t.effectTag |= 1, typeof a == "object" && a && typeof a.render == "function" && a.$$typeof === void 0) {
-							if (t.tag = 1, t.memoizedState = null, t.updateQueue = null, Ui(r)) {
+						if (r = t.type, e !== null && (e.alternate = null, t.alternate = null, t.effectTag |= 2), e = t.pendingProps, a = Vi(t, Ri.current), Da(t, n), a = _o(null, t, r, e, a, n), t.effectTag |= 1, typeof a == "object" && a && typeof a.render == "function" && a.$$typeof === void 0) {
+							if (t.tag = 1, t.memoizedState = null, t.updateQueue = null, Hi(r)) {
 								var o = !0;
-								qi(t);
+								Ki(t);
 							} else o = !1;
 							t.memoizedState = a.state !== null && a.state !== void 0 ? a.state : null, Aa(t);
 							var s = r.getDerivedStateFromProps;
@@ -6127,7 +6122,7 @@ var ke = class extends v {
 					case 16:
 						a: {
 							if (a = t.elementType, e !== null && (e.alternate = null, t.alternate = null, t.effectTag |= 2), e = t.pendingProps, Re(a), a._status !== 1) throw a._result;
-							switch (a = a._result, t.type = a, o = t.tag = al(a), e = xa(a, e), o) {
+							switch (a = a._result, t.type = a, o = t.tag = al(a), e = ba(a, e), o) {
 								case 0:
 									t = as(null, t, a, e, n);
 									break a;
@@ -6138,14 +6133,14 @@ var ke = class extends v {
 									t = ts(null, t, a, e, n);
 									break a;
 								case 14:
-									t = ns(null, t, a, xa(a.type, e), r, n);
+									t = ns(null, t, a, ba(a.type, e), r, n);
 									break a;
 							}
 							throw Error(i(306, a, ""));
 						}
 						return t;
-					case 0: return r = t.type, a = t.pendingProps, a = t.elementType === r ? a : xa(r, a), as(e, t, r, a, n);
-					case 1: return r = t.type, a = t.pendingProps, a = t.elementType === r ? a : xa(r, a), os(e, t, r, a, n);
+					case 0: return r = t.type, a = t.pendingProps, a = t.elementType === r ? a : ba(r, a), as(e, t, r, a, n);
+					case 1: return r = t.type, a = t.pendingProps, a = t.elementType === r ? a : ba(r, a), os(e, t, r, a, n);
 					case 3:
 						if (cs(t), r = t.updateQueue, e === null || r === null) throw Error(i(282));
 						if (r = t.pendingProps, a = t.memoizedState, a = a === null ? null : a.element, ja(e, t), Fa(t, r, null, n), r = t.memoizedState.element, r === a) Zo(), t = ms(e, t, n);
@@ -6159,7 +6154,7 @@ var ke = class extends v {
 					case 6: return e === null && Jo(t), null;
 					case 13: return us(e, t, n);
 					case 4: return no(t, t.stateNode.containerInfo), r = t.pendingProps, e === null ? t.child = Ya(t, null, r, n) : es(e, t, r, n), t.child;
-					case 11: return r = t.type, a = t.pendingProps, a = t.elementType === r ? a : xa(r, a), ts(e, t, r, a, n);
+					case 11: return r = t.type, a = t.pendingProps, a = t.elementType === r ? a : ba(r, a), ts(e, t, r, a, n);
 					case 7: return es(e, t, t.pendingProps, n), t.child;
 					case 8: return es(e, t, t.pendingProps.children, n), t.child;
 					case 12: return es(e, t, t.pendingProps.children, n), t.child;
@@ -6167,9 +6162,9 @@ var ke = class extends v {
 						a: {
 							r = t.type._context, a = t.pendingProps, s = t.memoizedProps, o = a.value;
 							var c = t.type._context;
-							if (W(Sa, c._currentValue), c._currentValue = o, s !== null) {
-								if (c = s.value, o = fi(c, o) ? 0 : (typeof r._calculateChangedBits == "function" ? r._calculateChangedBits(c, o) : 1073741823) | 0, o === 0) {
-									if (s.children === a.children && !Bi.current) {
+							if (G(xa, c._currentValue), c._currentValue = o, s !== null) {
+								if (c = s.value, o = U(c, o) ? 0 : (typeof r._calculateChangedBits == "function" ? r._calculateChangedBits(c, o) : 1073741823) | 0, o === 0) {
+									if (s.children === a.children && !zi.current) {
 										t = ms(e, t, n);
 										break a;
 									}
@@ -6179,7 +6174,7 @@ var ke = class extends v {
 										s = c.child;
 										for (var u = l.firstContext; u !== null;) {
 											if (u.context === r && (u.observedBits & o) !== 0) {
-												c.tag === 1 && (u = Ma(n, null), u.tag = 2, Na(c, u)), c.expirationTime < n && (c.expirationTime = n), u = c.alternate, u !== null && u.expirationTime < n && (u.expirationTime = n), Da(c.return, n), l.expirationTime < n && (l.expirationTime = n);
+												c.tag === 1 && (u = Ma(n, null), u.tag = 2, Na(c, u)), c.expirationTime < n && (c.expirationTime = n), u = c.alternate, u !== null && u.expirationTime < n && (u.expirationTime = n), Ea(c.return, n), l.expirationTime < n && (l.expirationTime = n);
 												break;
 											}
 											u = u.next;
@@ -6203,10 +6198,10 @@ var ke = class extends v {
 							es(e, t, a.children, n), t = t.child;
 						}
 						return t;
-					case 9: return a = t.type, o = t.pendingProps, r = o.children, Oa(t, n), a = q(a, o.unstable_observedBits), r = r(a), t.effectTag |= 1, es(e, t, r, n), t.child;
-					case 14: return a = t.type, o = xa(a, t.pendingProps), o = xa(a.type, o), ns(e, t, a, o, r, n);
+					case 9: return a = t.type, o = t.pendingProps, r = o.children, Da(t, n), a = Oa(a, o.unstable_observedBits), r = r(a), t.effectTag |= 1, es(e, t, r, n), t.child;
+					case 14: return a = t.type, o = ba(a, t.pendingProps), o = ba(a.type, o), ns(e, t, a, o, r, n);
 					case 15: return rs(e, t, t.type, t.pendingProps, r, n);
-					case 17: return r = t.type, a = t.pendingProps, a = t.elementType === r ? a : xa(r, a), e !== null && (e.alternate = null, t.alternate = null, t.effectTag |= 2), t.tag = 1, Ui(r) ? (e = !0, qi(t)) : e = !1, Oa(t, n), Ha(t, r, a), Wa(t, r, a, n), ss(null, t, r, !0, e, n);
+					case 17: return r = t.type, a = t.pendingProps, a = t.elementType === r ? a : ba(r, a), e !== null && (e.alternate = null, t.alternate = null, t.effectTag |= 2), t.tag = 1, Hi(r) ? (e = !0, Ki(t)) : e = !1, Da(t, n), Ha(t, r, a), Wa(t, r, a, n), ss(null, t, r, !0, e, n);
 					case 19: return ps(e, t, n);
 				}
 				throw Error(i(156, t.tag));
@@ -6340,7 +6335,7 @@ var ke = class extends v {
 								case 3:
 									c = c.stateNode.context;
 									break b;
-								case 1: if (Ui(c.type)) {
+								case 1: if (Hi(c.type)) {
 									c = c.stateNode.__reactInternalMemoizedMergedChildContext;
 									break b;
 								}
@@ -6351,13 +6346,13 @@ var ke = class extends v {
 					}
 					if (n.tag === 1) {
 						var l = n.type;
-						if (Ui(l)) {
-							n = Ki(n, l, c);
+						if (Hi(l)) {
+							n = Gi(n, l, c);
 							break a;
 						}
 					}
 					n = c;
-				} else n = Ri;
+				} else n = Li;
 				return t.context === null ? t.context = n : t.pendingContext = n, t = Ma(o, s), t.payload = { element: e }, r = r === void 0 ? null : r, r !== null && (t.callback = r), Na(a, t), wc(a, o), o;
 			}
 			function _l(e) {
@@ -6431,7 +6426,7 @@ var ke = class extends v {
 			}
 			Lt = function(e) {
 				if (e.tag === 13) {
-					var t = ba(Sc(), 150, 100);
+					var t = ya(Sc(), 150, 100);
 					wc(e, t), yl(e, t);
 				}
 			}, Rt = function(e) {
@@ -6461,15 +6456,15 @@ var ke = class extends v {
 						break;
 					case "select": t = n.value, t != null && $e(e, !!n.multiple, t, !1);
 				}
-			}, ne = jc, re = function(e, t, n, r, i) {
+			}, te = jc, ne = function(e, t, n, r, i) {
 				var a = X;
 				X |= 4;
 				try {
-					return ha(98, e.bind(null, t, n, r, i));
+					return ma(98, e.bind(null, t, n, r, i));
 				} finally {
-					X = a, X === Gs && va();
+					X = a, X === Gs && _a();
 				}
-			}, P = function() {
+			}, re = function() {
 				(X & (1 | qs | Js)) === Gs && (Ac(), Kc());
 			}, ie = function(e, t) {
 				var n = X;
@@ -6477,7 +6472,7 @@ var ke = class extends v {
 				try {
 					return e(t);
 				} finally {
-					X = n, X === Gs && va();
+					X = n, X === Gs && _a();
 				}
 			};
 			function Tl(e, t) {
@@ -6495,8 +6490,8 @@ var ke = class extends v {
 				function(e) {
 					Dt(e, lr);
 				},
-				te,
 				N,
+				P,
 				bn,
 				At,
 				Kc,
@@ -6538,9 +6533,9 @@ var ke = class extends v {
 				var n = X;
 				X |= 1;
 				try {
-					return ha(99, e.bind(null, t));
+					return ma(99, e.bind(null, t));
 				} finally {
-					X = n, va();
+					X = n, _a();
 				}
 			}, e.hydrate = function(e, t, n) {
 				if (!xl(t)) throw Error(i(200));
@@ -6708,11 +6703,11 @@ var ke = class extends v {
 		}
 		var j = A, M = function(e) {
 			return j = e;
-		}, te = function() {
+		}, N = function() {
 			return j;
 		};
-		function N() {
-			var e = te(), t = null, n = null;
+		function P() {
+			var e = N(), t = null, n = null;
 			return {
 				clear: function() {
 					t = null, n = null;
@@ -6738,14 +6733,14 @@ var ke = class extends v {
 				}
 			};
 		}
-		var ne = {
+		var te = {
 			notify: function() {},
 			get: function() {
 				return [];
 			}
 		};
-		function re(e, t) {
-			var n, r = ne;
+		function ne(e, t) {
+			var n, r = te;
 			function i(e) {
 				return c(), r.subscribe(e);
 			}
@@ -6759,10 +6754,10 @@ var ke = class extends v {
 				return !!n;
 			}
 			function c() {
-				n || (n = t ? t.addNestedSub(o) : e.subscribe(o), r = N());
+				n || (n = t ? t.addNestedSub(o) : e.subscribe(o), r = P());
 			}
 			function l() {
-				n && (n(), n = void 0, r.clear(), r = ne);
+				n && (n(), n = void 0, r.clear(), r = te);
 			}
 			var u = {
 				addNestedSub: i,
@@ -6777,17 +6772,17 @@ var ke = class extends v {
 			};
 			return u;
 		}
-		var P = typeof window < "u" && window.document !== void 0 && window.document.createElement !== void 0 ? y.useLayoutEffect : y.useEffect;
+		var re = typeof window < "u" && window.document !== void 0 && window.document.createElement !== void 0 ? y.useLayoutEffect : y.useEffect;
 		function ie(e) {
 			var t = e.store, n = e.context, r = e.children, i = (0, y.useMemo)(function() {
 				return {
 					store: t,
-					subscription: re(t)
+					subscription: ne(t)
 				};
 			}, [t]), a = (0, y.useMemo)(function() {
 				return t.getState();
 			}, [t]);
-			P(function() {
+			re(function() {
 				var e = i.subscription;
 				return e.onStateChange = e.notifyNestedSubs, e.trySubscribe(), a !== t.getState() && e.notifyNestedSubs(), function() {
 					e.tryUnsubscribe(), e.onStateChange = null;
@@ -6982,7 +6977,7 @@ var ke = class extends v {
 			return [t.payload, n + 1];
 		}
 		function _e(e, t, n) {
-			P(function() {
+			re(function() {
 				return e.apply(void 0, t);
 			}, n);
 		}
@@ -7053,7 +7048,7 @@ var ke = class extends v {
 						return l(f);
 					}, [f]), m = (0, y.useMemo)(function() {
 						if (!u) return I;
-						var e = re(f, c ? null : s.subscription);
+						var e = ne(f, c ? null : s.subscription);
 						return [e, e.notifyNestedSubs.bind(e)];
 					}, [
 						f,
@@ -8973,7 +8968,7 @@ var ke = class extends v {
 					move: "mousemove",
 					stop: "mouseup"
 				}
-			}, M = j.mouse, te = function(e) {
+			}, M = j.mouse, N = function(e) {
 				C(o, e);
 				var n = T(o);
 				function o() {
@@ -9090,7 +9085,7 @@ var ke = class extends v {
 					}
 				]), o;
 			}(t.Component);
-			e.default = te, A(te, "displayName", "DraggableCore"), A(te, "propTypes", {
+			e.default = N, A(N, "displayName", "DraggableCore"), A(N, "propTypes", {
 				allowAnyClick: n.default.bool,
 				disabled: n.default.bool,
 				enableUserSelectHack: n.default.bool,
@@ -9109,7 +9104,7 @@ var ke = class extends v {
 				className: o.dontSetMe,
 				style: o.dontSetMe,
 				transform: o.dontSetMe
-			}), A(te, "defaultProps", {
+			}), A(N, "defaultProps", {
 				allowAnyClick: !1,
 				cancel: null,
 				disabled: !1,
@@ -9238,7 +9233,7 @@ var ke = class extends v {
 				for (var t = 1; t < arguments.length; t++) {
 					var n = arguments[t] == null ? {} : arguments[t];
 					t % 2 ? T(Object(n), !0).forEach(function(t) {
-						P(e, t, n[t]);
+						re(e, t, n[t]);
 					}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : T(Object(n)).forEach(function(t) {
 						Object.defineProperty(e, t, Object.getOwnPropertyDescriptor(n, t));
 					});
@@ -9271,24 +9266,24 @@ var ke = class extends v {
 				}, j(e, t);
 			}
 			function M(e) {
-				var t = ne();
+				var t = te();
 				return function() {
-					var n = re(e), r;
+					var n = ne(e), r;
 					if (t) {
-						var i = re(this).constructor;
+						var i = ne(this).constructor;
 						r = Reflect.construct(n, arguments, i);
 					} else r = n.apply(this, arguments);
-					return te(this, r);
+					return N(this, r);
 				};
 			}
-			function te(e, t) {
-				return t && (p(t) === "object" || typeof t == "function") ? t : N(e);
+			function N(e, t) {
+				return t && (p(t) === "object" || typeof t == "function") ? t : P(e);
 			}
-			function N(e) {
+			function P(e) {
 				if (e === void 0) throw ReferenceError("this hasn't been initialised - super() hasn't been called");
 				return e;
 			}
-			function ne() {
+			function te() {
 				if (typeof Reflect > "u" || !Reflect.construct || Reflect.construct.sham) return !1;
 				if (typeof Proxy == "function") return !0;
 				try {
@@ -9297,12 +9292,12 @@ var ke = class extends v {
 					return !1;
 				}
 			}
-			function re(e) {
-				return re = Object.setPrototypeOf ? Object.getPrototypeOf : function(e) {
+			function ne(e) {
+				return ne = Object.setPrototypeOf ? Object.getPrototypeOf : function(e) {
 					return e.__proto__ || Object.getPrototypeOf(e);
-				}, re(e);
+				}, ne(e);
 			}
-			function P(e, t, n) {
+			function re(e, t, n) {
 				return t in e ? Object.defineProperty(e, t, {
 					value: n,
 					enumerable: !0,
@@ -9329,29 +9324,29 @@ var ke = class extends v {
 				}]);
 				function s(e) {
 					var t;
-					return D(this, s), t = n.call(this, e), P(N(t), "onDragStart", function(e, n) {
-						if ((0, l.default)("Draggable: onDragStart: %j", n), t.props.onStart(e, (0, o.createDraggableData)(N(t), n)) === !1) return !1;
+					return D(this, s), t = n.call(this, e), re(P(t), "onDragStart", function(e, n) {
+						if ((0, l.default)("Draggable: onDragStart: %j", n), t.props.onStart(e, (0, o.createDraggableData)(P(t), n)) === !1) return !1;
 						t.setState({
 							dragging: !0,
 							dragged: !0
 						});
-					}), P(N(t), "onDrag", function(e, n) {
+					}), re(P(t), "onDrag", function(e, n) {
 						if (!t.state.dragging) return !1;
 						(0, l.default)("Draggable: onDrag: %j", n);
-						var r = (0, o.createDraggableData)(N(t), n), i = {
+						var r = (0, o.createDraggableData)(P(t), n), i = {
 							x: r.x,
 							y: r.y
 						};
 						if (t.props.bounds) {
 							var a = i.x, s = i.y;
 							i.x += t.state.slackX, i.y += t.state.slackY;
-							var c = y((0, o.getBoundPosition)(N(t), i.x, i.y), 2), u = c[0], d = c[1];
+							var c = y((0, o.getBoundPosition)(P(t), i.x, i.y), 2), u = c[0], d = c[1];
 							i.x = u, i.y = d, i.slackX = t.state.slackX + (a - i.x), i.slackY = t.state.slackY + (s - i.y), r.x = i.x, r.y = i.y, r.deltaX = i.x - t.state.x, r.deltaY = i.y - t.state.y;
 						}
 						if (t.props.onDrag(e, r) === !1) return !1;
 						t.setState(i);
-					}), P(N(t), "onDragStop", function(e, n) {
-						if (!t.state.dragging || t.props.onStop(e, (0, o.createDraggableData)(N(t), n)) === !1) return !1;
+					}), re(P(t), "onDragStop", function(e, n) {
+						if (!t.state.dragging || t.props.onStop(e, (0, o.createDraggableData)(P(t), n)) === !1) return !1;
 						(0, l.default)("Draggable: onDragStop: %j", n);
 						var r = {
 							dragging: !1,
@@ -9416,7 +9411,7 @@ var ke = class extends v {
 								y: (0, o.canDragY)(this) && y ? this.state.y : b.y
 							};
 							this.state.isElementSVG ? v = (0, a.createSVGTransform)(x, p) : _ = (0, a.createCSSTransform)(x, p);
-							var S = (0, i.default)(r.props.className || "", l, (e = {}, P(e, u, this.state.dragging), P(e, d, this.state.dragged), e));
+							var S = (0, i.default)(r.props.className || "", l, (e = {}, re(e, u, this.state.dragging), re(e, d, this.state.dragged), e));
 							return t.createElement(c.default, h({}, m, {
 								onStart: this.onDragStart,
 								onDrag: this.onDrag,
@@ -9430,7 +9425,7 @@ var ke = class extends v {
 					}
 				]), s;
 			}(t.Component);
-			e.default = ie, P(ie, "displayName", "Draggable"), P(ie, "propTypes", E(E({}, c.default.propTypes), {}, {
+			e.default = ie, re(ie, "displayName", "Draggable"), re(ie, "propTypes", E(E({}, c.default.propTypes), {}, {
 				axis: n.default.oneOf([
 					"both",
 					"x",
@@ -9465,7 +9460,7 @@ var ke = class extends v {
 				className: s.dontSetMe,
 				style: s.dontSetMe,
 				transform: s.dontSetMe
-			})), P(ie, "defaultProps", E(E({}, c.default.defaultProps), {}, {
+			})), re(ie, "defaultProps", E(E({}, c.default.defaultProps), {}, {
 				axis: "both",
 				bounds: !1,
 				defaultClassName: "react-draggable",
@@ -10056,26 +10051,26 @@ var ke = class extends v {
 			}
 			e.prototype = t === null ? Object.create(t) : (n.prototype = t.prototype, new n());
 		}
-		var fi = function() {
-			return fi = Object.assign || function(e) {
+		var U = function() {
+			return U = Object.assign || function(e) {
 				for (var t, n = 1, r = arguments.length; n < r; n++) for (var i in t = arguments[n], t) Object.prototype.hasOwnProperty.call(t, i) && (e[i] = t[i]);
 				return e;
-			}, fi.apply(this, arguments);
+			}, U.apply(this, arguments);
 		};
-		function pi(e, t) {
+		function fi(e, t) {
 			var n = {};
 			for (var r in e) Object.prototype.hasOwnProperty.call(e, r) && t.indexOf(r) < 0 && (n[r] = e[r]);
 			if (e != null && typeof Object.getOwnPropertySymbols == "function") for (var i = 0, r = Object.getOwnPropertySymbols(e); i < r.length; i++) t.indexOf(r[i]) < 0 && Object.prototype.propertyIsEnumerable.call(e, r[i]) && (n[r[i]] = e[r[i]]);
 			return n;
 		}
-		var mi = Ur.default, hi = {
+		var pi = Ur.default, mi = {
 			width: "auto",
 			height: "auto",
 			display: "inline-block",
 			position: "absolute",
 			top: 0,
 			left: 0
-		}, gi = function(e) {
+		}, hi = function(e) {
 			return {
 				bottom: e,
 				bottomLeft: e,
@@ -10086,7 +10081,7 @@ var ke = class extends v {
 				topLeft: e,
 				topRight: e
 			};
-		}, _i = function(e) {
+		}, gi = function(e) {
 			di(t, e);
 			function t(t) {
 				var n = e.call(this, t) || this;
@@ -10192,7 +10187,7 @@ var ke = class extends v {
 			}, t.prototype.onDrag = function(e, t) {
 				if (this.props.onDrag) {
 					var n = this.offsetFromParent;
-					return this.props.onDrag(e, fi(fi({}, t), {
+					return this.props.onDrag(e, U(U({}, t), {
 						x: t.x - n.left,
 						y: t.y - n.top
 					}));
@@ -10200,7 +10195,7 @@ var ke = class extends v {
 			}, t.prototype.onDragStop = function(e, t) {
 				if (this.props.onDragStop) {
 					var n = this.offsetFromParent, r = n.left, i = n.top;
-					return this.props.onDragStop(e, fi(fi({}, t), {
+					return this.props.onDragStop(e, U(U({}, t), {
 						x: t.x + r,
 						y: t.y + i
 					}));
@@ -10303,15 +10298,15 @@ var ke = class extends v {
 			}, t.prototype.render = function() {
 				var e = this.props, t = e.disableDragging, n = e.style, r = e.dragHandleClassName, i = e.position, a = e.onMouseDown, o = e.onMouseUp, s = e.dragAxis, c = e.dragGrid, l = e.bounds, u = e.enableUserSelectHack, d = e.cancel, f = e.children;
 				e.onResizeStart, e.onResize, e.onResizeStop, e.onDragStart, e.onDrag, e.onDragStop;
-				var p = e.resizeHandleStyles, m = e.resizeHandleClasses, h = e.resizeHandleComponent, g = e.enableResizing, _ = e.resizeGrid, v = e.resizeHandleWrapperClass, b = e.resizeHandleWrapperStyle, x = e.scale, S = e.allowAnyClick, C = pi(e, "disableDragging.style.dragHandleClassName.position.onMouseDown.onMouseUp.dragAxis.dragGrid.bounds.enableUserSelectHack.cancel.children.onResizeStart.onResize.onResizeStop.onDragStart.onDrag.onDragStop.resizeHandleStyles.resizeHandleClasses.resizeHandleComponent.enableResizing.resizeGrid.resizeHandleWrapperClass.resizeHandleWrapperStyle.scale.allowAnyClick".split(".")), w = this.props.default ? fi({}, this.props.default) : void 0;
+				var p = e.resizeHandleStyles, m = e.resizeHandleClasses, h = e.resizeHandleComponent, g = e.enableResizing, _ = e.resizeGrid, v = e.resizeHandleWrapperClass, b = e.resizeHandleWrapperStyle, x = e.scale, S = e.allowAnyClick, C = fi(e, "disableDragging.style.dragHandleClassName.position.onMouseDown.onMouseUp.dragAxis.dragGrid.bounds.enableUserSelectHack.cancel.children.onResizeStart.onResize.onResizeStop.onDragStart.onDrag.onDragStop.resizeHandleStyles.resizeHandleClasses.resizeHandleComponent.enableResizing.resizeGrid.resizeHandleWrapperClass.resizeHandleWrapperStyle.scale.allowAnyClick".split(".")), w = this.props.default ? U({}, this.props.default) : void 0;
 				delete C.default;
-				var T = t || r ? { cursor: "auto" } : { cursor: "move" }, E = fi(fi(fi({}, hi), T), n), D = this.offsetFromParent, O = D.left, ee = D.top, k;
+				var T = t || r ? { cursor: "auto" } : { cursor: "move" }, E = U(U(U({}, mi), T), n), D = this.offsetFromParent, O = D.left, ee = D.top, k;
 				i && (k = {
 					x: i.x - O,
 					y: i.y - ee
 				});
 				var A = this.resizing ? void 0 : k, j = this.resizing ? "both" : s;
-				return (0, y.createElement)(mi, {
+				return (0, y.createElement)(pi, {
 					ref: this.refDraggable,
 					handle: r ? "." + r : void 0,
 					defaultPosition: w,
@@ -10330,11 +10325,11 @@ var ke = class extends v {
 					scale: x,
 					allowAnyClick: S,
 					nodeRef: this.resizableElement
-				}, (0, y.createElement)(li, fi({}, C, {
+				}, (0, y.createElement)(li, U({}, C, {
 					ref: this.refResizable,
 					defaultSize: w,
 					size: this.props.size,
-					enable: typeof g == "boolean" ? gi(g) : g,
+					enable: typeof g == "boolean" ? hi(g) : g,
 					onResizeStart: this.onResizeStart,
 					onResize: this.onResize,
 					onResizeStop: this.onResizeStop,
@@ -10365,7 +10360,7 @@ var ke = class extends v {
 				onDrag: function() {},
 				onDragStop: function() {}
 			}, t;
-		}(y.PureComponent), vi = class extends y.Component {
+		}(y.PureComponent), _i = class extends y.Component {
 			constructor(e) {
 				super(e), this.handleTabClick = this.handleTabClick.bind(this);
 			}
@@ -10375,14 +10370,14 @@ var ke = class extends v {
 				});
 			}
 			render() {
-				return y.createElement("div", { className: "ck-inspector-horizontal-nav" }, this.props.definitions.map((e) => y.createElement(yi, {
+				return y.createElement("div", { className: "ck-inspector-horizontal-nav" }, this.props.definitions.map((e) => y.createElement(vi, {
 					key: e,
 					label: e,
 					isActive: this.props.activeTab === e,
 					onClick: () => this.handleTabClick(e)
 				})));
 			}
-		}, yi = class extends y.Component {
+		}, vi = class extends y.Component {
 			render() {
 				return y.createElement("button", {
 					className: ["ck-inspector-horizontal-nav__item", this.props.isActive ? " ck-inspector-horizontal-nav__item_active" : ""].join(" "),
@@ -10391,12 +10386,12 @@ var ke = class extends v {
 					type: "button"
 				}, this.props.label);
 			}
-		}, bi = class extends y.Component {
+		}, yi = class extends y.Component {
 			render() {
 				let e = Array.isArray(this.props.children) ? this.props.children : [this.props.children];
 				return y.createElement("div", { className: "ck-inspector-navbox" }, e.length > 1 ? y.createElement("div", { className: "ck-inspector-navbox__navigation" }, e[0]) : "", y.createElement("div", { className: "ck-inspector-navbox__content" }, e[e.length - 1]));
 			}
-		}, xi = class extends y.Component {
+		}, bi = class extends y.Component {
 			constructor(e) {
 				super(e), this.handleTabClick = this.handleTabClick.bind(this);
 			}
@@ -10405,9 +10400,9 @@ var ke = class extends v {
 			}
 			render() {
 				let e = Array.isArray(this.props.children) ? this.props.children : [this.props.children];
-				return y.createElement(bi, null, [
+				return y.createElement(yi, null, [
 					this.props.contentBefore,
-					y.createElement(vi, {
+					y.createElement(_i, {
 						key: "navigation",
 						definitions: e.map((e) => e.props.label),
 						activeTab: this.props.activeTab,
@@ -10417,25 +10412,25 @@ var ke = class extends v {
 				], e.filter((e) => e.props.label === this.props.activeTab));
 			}
 		};
-		function Si(e, t) {
+		function xi(e, t) {
 			return e === t || Number.isNaN(e) && Number.isNaN(t);
 		}
-		function Ci(e) {
+		function Si(e) {
 			return Object.getOwnPropertySymbols(e).filter((t) => Object.prototype.propertyIsEnumerable.call(e, t));
 		}
-		function wi(e) {
+		function Ci(e) {
 			return e == null ? e === void 0 ? "[object Undefined]" : "[object Null]" : Object.prototype.toString.call(e);
 		}
-		var Ti = "[object RegExp]", Ei = "[object String]", Di = "[object Number]", Oi = "[object Boolean]", ki = "[object Symbol]", Ai = "[object Date]", ji = "[object Map]", Mi = "[object Set]", Ni = "[object Array]", Pi = "[object Function]", Fi = "[object ArrayBuffer]", Ii = "[object Object]", Li = "[object Error]", U = "[object DataView]", W = "[object Uint8Array]", Ri = "[object Uint8ClampedArray]", zi = "[object Uint16Array]", Bi = "[object Uint32Array]", Vi = "[object BigUint64Array]", Hi = "[object Int8Array]", Ui = "[object Int16Array]", Wi = "[object Int32Array]", Gi = "[object BigInt64Array]", Ki = "[object Float32Array]", qi = "[object Float64Array]";
-		function Ji(e) {
+		var wi = "[object RegExp]", Ti = "[object String]", Ei = "[object Number]", Di = "[object Boolean]", Oi = "[object Symbol]", ki = "[object Date]", Ai = "[object Map]", ji = "[object Set]", Mi = "[object Array]", Ni = "[object Function]", Pi = "[object ArrayBuffer]", Fi = "[object Object]", Ii = "[object Error]", W = "[object DataView]", G = "[object Uint8Array]", Li = "[object Uint8ClampedArray]", Ri = "[object Uint16Array]", zi = "[object Uint32Array]", Bi = "[object BigUint64Array]", Vi = "[object Int8Array]", Hi = "[object Int16Array]", Ui = "[object Int32Array]", Wi = "[object BigInt64Array]", Gi = "[object Float32Array]", Ki = "[object Float64Array]";
+		function qi(e) {
 			if (!e || typeof e != "object") return !1;
 			let t = Object.getPrototypeOf(e);
 			return t === null || t === Object.prototype || Object.getPrototypeOf(t) === null ? Object.prototype.toString.call(e) === "[object Object]" : !1;
 		}
-		function Yi(e, t, n) {
-			return Xi(e, t, void 0, void 0, void 0, void 0, n);
+		function Ji(e, t, n) {
+			return Yi(e, t, void 0, void 0, void 0, void 0, n);
 		}
-		function Xi(e, t, n, r, i, a, o) {
+		function Yi(e, t, n, r, i, a, o) {
 			let s = o(e, t, n, r, i, a);
 			if (s !== void 0) return s;
 			if (typeof e == typeof t) switch (typeof e) {
@@ -10446,22 +10441,22 @@ var ke = class extends v {
 				case "undefined": return e === t;
 				case "number": return e === t || Object.is(e, t);
 				case "function": return e === t;
-				case "object": return Zi(e, t, a, o);
+				case "object": return Xi(e, t, a, o);
 			}
-			return Zi(e, t, a, o);
+			return Xi(e, t, a, o);
 		}
-		function Zi(e, t, n, r) {
+		function Xi(e, t, n, r) {
 			if (Object.is(e, t)) return !0;
-			let i = wi(e), a = wi(t);
-			if (i === "[object Arguments]" && (i = Ii), a === "[object Arguments]" && (a = Ii), i !== a) return !1;
+			let i = Ci(e), a = Ci(t);
+			if (i === "[object Arguments]" && (i = Fi), a === "[object Arguments]" && (a = Fi), i !== a) return !1;
 			switch (i) {
-				case Ei: return e.toString() === t.toString();
-				case Di: return Si(e.valueOf(), t.valueOf());
-				case Oi:
-				case Ai:
-				case ki: return Object.is(e.valueOf(), t.valueOf());
-				case Ti: return e.source === t.source && e.flags === t.flags;
-				case Pi: return e === t;
+				case Ti: return e.toString() === t.toString();
+				case Ei: return xi(e.valueOf(), t.valueOf());
+				case Di:
+				case ki:
+				case Oi: return Object.is(e.valueOf(), t.valueOf());
+				case wi: return e.source === t.source && e.flags === t.flags;
+				case Ni: return e === t;
 			}
 			n ??= /* @__PURE__ */ new Map();
 			let o = n.get(e), s = n.get(t);
@@ -10469,22 +10464,23 @@ var ke = class extends v {
 			n.set(e, t), n.set(t, e);
 			try {
 				switch (i) {
-					case ji:
+					case Ai:
 						if (e.size !== t.size) return !1;
-						for (let [i, a] of e.entries()) if (!t.has(i) || !Xi(a, t.get(i), i, e, t, n, r)) return !1;
+						for (let [i, a] of e.entries()) if (!t.has(i) || !Yi(a, t.get(i), i, e, t, n, r)) return !1;
 						return !0;
-					case Mi: {
+					case ji: {
 						if (e.size !== t.size) return !1;
 						let i = Array.from(e.values()), a = Array.from(t.values());
 						for (let o = 0; o < i.length; o++) {
-							let s = i[o], c = a.findIndex((i) => Xi(s, i, void 0, e, t, n, r));
+							let s = i[o], c = a.findIndex((i) => Yi(s, i, void 0, e, t, n, r));
 							if (c === -1) return !1;
 							a.splice(c, 1);
 						}
 						return !0;
 					}
-					case Ni:
-					case W:
+					case Mi:
+					case G:
+					case Li:
 					case Ri:
 					case zi:
 					case Bi:
@@ -10494,22 +10490,21 @@ var ke = class extends v {
 					case Wi:
 					case Gi:
 					case Ki:
-					case qi:
 						if (typeof Buffer < "u" && Buffer.isBuffer(e) !== Buffer.isBuffer(t) || e.length !== t.length) return !1;
-						for (let i = 0; i < e.length; i++) if (!Xi(e[i], t[i], i, e, t, n, r)) return !1;
+						for (let i = 0; i < e.length; i++) if (!Yi(e[i], t[i], i, e, t, n, r)) return !1;
 						return !0;
-					case Fi: return e.byteLength === t.byteLength && Zi(new Uint8Array(e), new Uint8Array(t), n, r);
-					case U: return e.byteLength !== t.byteLength || e.byteOffset !== t.byteOffset ? !1 : Zi(new Uint8Array(e), new Uint8Array(t), n, r);
-					case Li: return e.name === t.name && e.message === t.message;
-					case Ii: {
-						if (!(Zi(e.constructor, t.constructor, n, r) || Ji(e) && Ji(t))) return !1;
-						let i = [...Object.keys(e), ...Ci(e)], a = [...Object.keys(t), ...Ci(t)];
+					case Pi: return e.byteLength === t.byteLength && Xi(new Uint8Array(e), new Uint8Array(t), n, r);
+					case W: return e.byteLength !== t.byteLength || e.byteOffset !== t.byteOffset ? !1 : Xi(new Uint8Array(e), new Uint8Array(t), n, r);
+					case Ii: return e.name === t.name && e.message === t.message;
+					case Fi: {
+						if (!(Xi(e.constructor, t.constructor, n, r) || qi(e) && qi(t))) return !1;
+						let i = [...Object.keys(e), ...Si(e)], a = [...Object.keys(t), ...Si(t)];
 						if (i.length !== a.length) return !1;
 						for (let a = 0; a < i.length; a++) {
 							let o = i[a], s = e[o];
 							if (!Object.hasOwn(t, o)) return !1;
 							let c = t[o];
-							if (!Xi(s, c, o, e, t, n, r)) return !1;
+							if (!Yi(s, c, o, e, t, n, r)) return !1;
 						}
 						return !0;
 					}
@@ -10519,11 +10514,11 @@ var ke = class extends v {
 				n.delete(e), n.delete(t);
 			}
 		}
-		function Qi() {}
-		function $i(e, t) {
-			return Yi(e, t, Qi);
+		function Zi() {}
+		function Qi(e, t) {
+			return Ji(e, t, Zi);
 		}
-		var ea = class extends y.Component {
+		var $i = class extends y.Component {
 			render() {
 				return [y.createElement("label", {
 					htmlFor: this.props.id,
@@ -10539,9 +10534,9 @@ var ke = class extends v {
 				}, e)))];
 			}
 			shouldComponentUpdate(e) {
-				return !$i(this.props, e);
+				return !Qi(this.props, e);
 			}
-		}, G = class extends y.PureComponent {
+		}, K = class extends y.PureComponent {
 			render() {
 				let e = [
 					"ck-inspector-button",
@@ -10556,7 +10551,7 @@ var ke = class extends v {
 					title: this.props.title || this.props.text
 				}, y.createElement("span", null, this.props.text), this.props.icon);
 			}
-		}, ta = class extends y.Component {
+		}, ea = class extends y.Component {
 			render() {
 				return y.createElement("div", { className: [
 					"ck-inspector-pane",
@@ -10564,22 +10559,22 @@ var ke = class extends v {
 					this.props.isEmpty ? "ck-inspector-pane_empty" : ""
 				].join(" ") }, this.props.children);
 			}
-		}, na = y.createContext({
+		}, ta = y.createContext({
 			document: typeof document > "u" ? null : document,
 			window: typeof window > "u" ? null : window
-		}), ra = 200, ia = { position: "relative" }, aa = class extends y.Component {
-			static contextType = na;
+		}), na = 200, ra = { position: "relative" }, ia = class extends y.Component {
+			static contextType = ta;
 			get maxSidePaneWidth() {
 				let e = this.context.window;
 				return Math.min(e.innerWidth - 400, e.innerWidth * .8);
 			}
 			render() {
-				return y.createElement("div", { className: "ck-inspector-side-pane" }, y.createElement(_i, {
+				return y.createElement("div", { className: "ck-inspector-side-pane" }, y.createElement(gi, {
 					enableResizing: { left: !0 },
 					disableDragging: !0,
-					minWidth: ra,
+					minWidth: na,
 					maxWidth: this.maxSidePaneWidth,
-					style: ia,
+					style: ra,
 					position: {
 						x: "100%",
 						y: "100%"
@@ -10591,7 +10586,7 @@ var ke = class extends v {
 					onResizeStop: (e, t, n) => this.props.setSidePaneWidth(n.style.width)
 				}, this.props.children));
 			}
-		}, oa = L(({ ui: { sidePaneWidth: e } }) => ({ sidePaneWidth: e }), { setSidePaneWidth: ht })(aa), sa = class extends y.Component {
+		}, aa = L(({ ui: { sidePaneWidth: e } }) => ({ sidePaneWidth: e }), { setSidePaneWidth: ht })(ia), oa = class extends y.Component {
 			constructor(e) {
 				super(e), this.handleClick = this.handleClick.bind(this);
 			}
@@ -10599,7 +10594,7 @@ var ke = class extends v {
 				this.globalTreeProps.onClick(e, this.definition.node);
 			}
 			getChildren() {
-				return this.definition.children.map((e, t) => ma(e, t, this.props.globalTreeProps));
+				return this.definition.children.map((e, t) => pa(e, t, this.props.globalTreeProps));
 			}
 			get definition() {
 				return this.props.definition;
@@ -10611,17 +10606,17 @@ var ke = class extends v {
 				return this.definition.node === this.globalTreeProps.activeNode;
 			}
 			shouldComponentUpdate(e) {
-				return !$i(this.props, e);
+				return !Qi(this.props, e);
 			}
-		}, ca = 500, la = class extends y.PureComponent {
+		}, sa = 500, ca = class extends y.PureComponent {
 			render() {
-				let e, t = Lt(this.props.value, ca);
+				let e, t = Lt(this.props.value, sa);
 				return this.props.dontRenderValue || (e = y.createElement("span", { className: "ck-inspector-tree-node__attribute__value" }, t)), y.createElement("span", { className: "ck-inspector-tree-node__attribute" }, y.createElement("span", {
 					className: "ck-inspector-tree-node__attribute__name",
 					title: t
 				}, this.props.name), e);
 			}
-		}, ua = class extends y.Component {
+		}, la = class extends y.Component {
 			render() {
 				let e = this.props.definition, t = {
 					className: [
@@ -10635,9 +10630,9 @@ var ke = class extends v {
 				return e.presentation && e.presentation.color && (t.style["--ck-inspector-color-tree-position"] = e.presentation.color), e.type === "marker" && (t["data-marker-name"] = e.name), y.createElement("span", t, "​");
 			}
 			shouldComponentUpdate(e) {
-				return !$i(this.props, e);
+				return !Qi(this.props, e);
 			}
-		}, da = class extends sa {
+		}, ua = class extends oa {
 			render() {
 				let e = this.definition, t = e.presentation, n = t && t.isEmpty, r = t && t.cssClass, i = this.getChildren(), a = [
 					"ck-inspector-code",
@@ -10647,17 +10642,17 @@ var ke = class extends v {
 					r
 				], o = [], s = [];
 				e.positionsBefore && e.positionsBefore.forEach((e, t) => {
-					o.push(y.createElement(ua, {
+					o.push(y.createElement(la, {
 						key: "position-before:" + t,
 						definition: e
 					}));
 				}), e.positionsAfter && e.positionsAfter.forEach((e, t) => {
-					s.push(y.createElement(ua, {
+					s.push(y.createElement(la, {
 						key: "position-after:" + t,
 						definition: e
 					}));
 				}), e.positions && e.positions.forEach((e, t) => {
-					i.push(y.createElement(ua, {
+					i.push(y.createElement(la, {
 						key: "position" + t,
 						definition: e
 					}));
@@ -10670,7 +10665,7 @@ var ke = class extends v {
 			}
 			getAttributes() {
 				let e = [], t = this.definition;
-				for (let [n, r] of t.attributes) e.push(y.createElement(la, {
+				for (let [n, r] of t.attributes) e.push(y.createElement(ca, {
 					key: n,
 					name: n,
 					value: r
@@ -10678,25 +10673,25 @@ var ke = class extends v {
 				return e;
 			}
 			shouldComponentUpdate(e) {
-				return !$i(this.props, e);
+				return !Qi(this.props, e);
 			}
-		}, fa = class extends sa {
+		}, da = class extends oa {
 			render() {
 				let e = this.definition, t = ["ck-inspector-tree-text", this.isActive ? "ck-inspector-tree-node_active" : ""].join(" "), n = this.definition.text;
 				e.positions && e.positions.length && (n = n.split(""), Array.from(e.positions).sort((e, t) => e.offset < t.offset ? -1 : e.offset === t.offset ? 0 : 1).reverse().forEach((t, r) => {
-					n.splice(t.offset - e.startOffset, 0, y.createElement(ua, {
+					n.splice(t.offset - e.startOffset, 0, y.createElement(la, {
 						key: "position" + r,
 						definition: t
 					}));
 				}));
 				let r = [n];
 				return e.positionsBefore && e.positionsBefore.length && e.positionsBefore.forEach((e, t) => {
-					r.unshift(y.createElement(ua, {
+					r.unshift(y.createElement(la, {
 						key: "position-before:" + t,
 						definition: e
 					}));
 				}), e.positionsAfter && e.positionsAfter.length && e.positionsAfter.forEach((e, t) => {
-					r.push(y.createElement(ua, {
+					r.push(y.createElement(la, {
 						key: "position-after:" + t,
 						definition: e
 					}));
@@ -10707,7 +10702,7 @@ var ke = class extends v {
 			}
 			getAttributes() {
 				let e = [], t = this.definition, n = t.presentation, r = n && n.dontRenderAttributeValue;
-				for (let [n, i] of t.attributes) e.push(y.createElement(la, {
+				for (let [n, i] of t.attributes) e.push(y.createElement(ca, {
 					key: n,
 					name: n,
 					value: i,
@@ -10716,9 +10711,9 @@ var ke = class extends v {
 				return y.createElement("span", { className: "ck-inspector-tree-text__attributes" }, e);
 			}
 			shouldComponentUpdate(e) {
-				return !$i(this.props, e);
+				return !Qi(this.props, e);
 			}
-		}, pa = class extends y.Component {
+		}, fa = class extends y.Component {
 			render() {
 				return y.createElement("span", {
 					className: "ck-inspector-tree-comment",
@@ -10726,26 +10721,26 @@ var ke = class extends v {
 				});
 			}
 		};
-		function ma(e, t, n) {
-			if (e.type === "element") return y.createElement(da, {
+		function pa(e, t, n) {
+			if (e.type === "element") return y.createElement(ua, {
 				key: t,
 				definition: e,
 				globalTreeProps: n
 			});
-			if (e.type === "text") return y.createElement(fa, {
+			if (e.type === "text") return y.createElement(da, {
 				key: t,
 				definition: e,
 				globalTreeProps: n
 			});
-			if (e.type === "comment") return y.createElement(pa, {
+			if (e.type === "comment") return y.createElement(fa, {
 				key: t,
 				definition: e
 			});
 		}
-		var ha = class extends y.Component {
+		var ma = class extends y.Component {
 			render() {
 				let e;
-				return e = this.props.definition ? this.props.definition.map((e, t) => ma(e, t, {
+				return e = this.props.definition ? this.props.definition.map((e, t) => pa(e, t, {
 					onClick: this.props.onClick,
 					showCompactText: this.props.showCompactText,
 					showElementTypes: this.props.showElementTypes,
@@ -10757,7 +10752,7 @@ var ke = class extends v {
 					this.props.showCompactText ? "ck-inspector-tree_compact-text" : ""
 				].join(" ") }, e);
 			}
-		}, ga = class extends y.PureComponent {
+		}, ha = class extends y.PureComponent {
 			render() {
 				return [y.createElement("input", {
 					type: "checkbox",
@@ -10771,7 +10766,7 @@ var ke = class extends v {
 					key: "label"
 				}, this.props.label)];
 			}
-		}, _a = class extends y.Component {
+		}, ga = class extends y.Component {
 			constructor(e) {
 				super(e), this.handleTreeClick = this.handleTreeClick.bind(this), this.handleRootChange = this.handleRootChange.bind(this);
 			}
@@ -10783,11 +10778,11 @@ var ke = class extends v {
 			}
 			render() {
 				let e = this.props.editors.get(this.props.currentEditorName);
-				return y.createElement(bi, null, [
+				return y.createElement(yi, null, [
 					y.createElement("div", {
 						className: "ck-inspector-tree__config",
 						key: "root-cfg"
-					}, y.createElement(ea, {
+					}, y.createElement($i, {
 						id: "view-root-select",
 						label: "Root",
 						value: this.props.currentRootName,
@@ -10801,18 +10796,18 @@ var ke = class extends v {
 					y.createElement("div", {
 						className: "ck-inspector-tree__config",
 						key: "text-cfg"
-					}, y.createElement(ga, {
+					}, y.createElement(ha, {
 						label: "Compact text",
 						id: "model-compact-text",
 						isChecked: this.props.showCompactText,
 						onChange: this.props.toggleModelShowCompactText
-					}), y.createElement(ga, {
+					}), y.createElement(ha, {
 						label: "Show markers",
 						id: "model-show-markers",
 						isChecked: this.props.showMarkers,
 						onChange: this.props.toggleModelShowMarkers
 					}))
-				], y.createElement(ha, {
+				], y.createElement(ma, {
 					className: [this.props.showMarkers ? "" : "ck-inspector-model-tree__hide-markers"],
 					definition: this.props.treeDefinition,
 					textDirection: e.locale.contentLanguageDirection,
@@ -10821,7 +10816,7 @@ var ke = class extends v {
 					activeNode: this.props.currentNode
 				}));
 			}
-		}, va = L(({ editors: e, currentEditorName: t, model: { treeDefinition: n, currentRootName: r, currentNode: i, ui: { showMarkers: a, showCompactText: o } } }) => ({
+		}, _a = L(({ editors: e, currentEditorName: t, model: { treeDefinition: n, currentRootName: r, currentNode: i, ui: { showMarkers: a, showCompactText: o } } }) => ({
 			treeDefinition: n,
 			editors: e,
 			currentEditorName: t,
@@ -10835,11 +10830,11 @@ var ke = class extends v {
 			toggleModelShowMarkers: rt,
 			setModelCurrentNode: tt,
 			setModelActiveTab: nt
-		})(_a), ya = 2e3, ba = class e extends y.Component {
+		})(ga), va = 2e3, ya = class e extends y.Component {
 			render() {
 				let t = this.props.presentation && this.props.presentation.expandCollapsibles, n = [];
 				for (let r in this.props.itemDefinitions) {
-					let i = this.props.itemDefinitions[r], { subProperties: a, presentation: o = {} } = i, s = a && Object.keys(a).length, c = Lt(String(i.value), ya), l = [y.createElement(xa, {
+					let i = this.props.itemDefinitions[r], { subProperties: a, presentation: o = {} } = i, s = a && Object.keys(a).length, c = Lt(String(i.value), va), l = [y.createElement(ba, {
 						key: `${this.props.name}-${r}-name`,
 						name: r,
 						listUid: this.props.name,
@@ -10864,9 +10859,9 @@ var ke = class extends v {
 				return y.createElement("dl", { className: "ck-inspector-property-list ck-inspector-code" }, n);
 			}
 			shouldComponentUpdate(e) {
-				return !$i(this.props, e);
+				return !Qi(this.props, e);
 			}
-		}, xa = class extends y.PureComponent {
+		}, ba = class extends y.PureComponent {
 			constructor(e) {
 				super(e), this.state = { isCollapsed: !this.props.expandCollapsibles }, this.handleCollapsedChange = this.handleCollapsedChange.bind(this);
 			}
@@ -10887,17 +10882,17 @@ var ke = class extends v {
 					title: this.props.title
 				}, this.props.name), ":");
 			}
-		}, Sa = class extends y.PureComponent {
+		}, xa = class extends y.PureComponent {
 			render() {
 				let e = [];
 				for (let t of this.props.lists) Object.keys(t.itemDefinitions).length && e.push(y.createElement("hr", { key: `${t.name}-separator` }), y.createElement("h3", { key: `${t.name}-header` }, y.createElement("a", {
 					href: t.url,
 					target: "_blank",
 					rel: "noopener noreferrer"
-				}, t.name), t.buttons && t.buttons.map((e, t) => y.createElement(G, {
+				}, t.name), t.buttons && t.buttons.map((e, t) => y.createElement(K, {
 					key: "button" + t,
 					...e
-				}))), y.createElement(ba, {
+				}))), y.createElement(ya, {
 					key: `${t.name}-list`,
 					name: t.name,
 					itemDefinitions: t.itemDefinitions,
@@ -10906,7 +10901,7 @@ var ke = class extends v {
 				}));
 				return y.createElement("div", { className: "ck-inspector__object-inspector" }, y.createElement("h2", { className: "ck-inspector-code" }, this.props.header), e);
 			}
-		}, Ca = s(((e) => {
+		}, Sa = s(((e) => {
 			var t = m(), n = 60103;
 			if (e.Fragment = 60107, typeof Symbol == "function" && Symbol.for) {
 				var r = Symbol.for;
@@ -10932,25 +10927,25 @@ var ke = class extends v {
 				};
 			}
 			e.jsx = s, e.jsxs = s;
-		})), K = s(((e, t) => {
-			t.exports = Ca();
-		}))(), wa = (e) => (0, K.jsx)("svg", {
+		})), q = s(((e, t) => {
+			t.exports = Sa();
+		}))(), Ca = (e) => (0, q.jsx)("svg", {
 			viewBox: "0 0 19 19",
 			xmlns: "http://www.w3.org/2000/svg",
 			...e,
-			children: (0, K.jsx)("path", { d: "M17 15.75a.75.75 0 0 1 .102 1.493L17 17.25H9a.75.75 0 0 1-.102-1.493L9 15.75h8ZM2.156 2.947l.095.058 7.58 5.401a.75.75 0 0 1 .084 1.152l-.083.069-7.58 5.425a.75.75 0 0 1-.958-1.148l.086-.071 6.724-4.815-6.723-4.792a.75.75 0 0 1-.233-.95l.057-.096a.75.75 0 0 1 .951-.233Z" })
-		}), Ta = (e) => (0, K.jsx)("svg", {
+			children: (0, q.jsx)("path", { d: "M17 15.75a.75.75 0 0 1 .102 1.493L17 17.25H9a.75.75 0 0 1-.102-1.493L9 15.75h8ZM2.156 2.947l.095.058 7.58 5.401a.75.75 0 0 1 .084 1.152l-.083.069-7.58 5.425a.75.75 0 0 1-.958-1.148l.086-.071 6.724-4.815-6.723-4.792a.75.75 0 0 1-.233-.95l.057-.096a.75.75 0 0 1 .951-.233Z" })
+		}), wa = (e) => (0, q.jsx)("svg", {
 			fill: "none",
 			xmlns: "http://www.w3.org/2000/svg",
 			viewBox: "0 0 19 19",
 			...e,
-			children: (0, K.jsx)("path", {
+			children: (0, q.jsx)("path", {
 				fillRule: "evenodd",
 				clipRule: "evenodd",
 				d: "M6 1a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-2v2h5a1 1 0 0 1 1 1v3h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-3a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1v-2.5a.5.5 0 0 0-.5-.5H10v3h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1v-3H4.5a.5.5 0 0 0-.5.5V13h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1v-3a1 1 0 0 1 1-1h5V7H7a1 1 0 0 1-1-1V1Zm1.5 4.5v-4h4v4h-4Zm-5 11v-2h2v2h-2Zm6-2v2h2v-2h-2Zm6 2v-2h2v2h-2Z",
 				fill: "#000"
 			})
-		}), Ea = class extends y.Component {
+		}), Ta = class extends y.Component {
 			constructor(e) {
 				super(e), this.handleNodeLogButtonClick = this.handleNodeLogButtonClick.bind(this), this.handleNodeSchemaButtonClick = this.handleNodeSchemaButtonClick.bind(this);
 			}
@@ -10963,22 +10958,22 @@ var ke = class extends v {
 			}
 			render() {
 				let e = this.props.currentNodeDefinition;
-				return e ? y.createElement(Sa, {
+				return e ? y.createElement(xa, {
 					header: [
 						y.createElement("span", { key: "link" }, y.createElement("a", {
 							href: e.url,
 							target: "_blank",
 							rel: "noopener noreferrer"
 						}, y.createElement("b", null, e.type)), ":", e.type === "Text" ? y.createElement("em", null, e.name) : e.name),
-						y.createElement(G, {
+						y.createElement(K, {
 							key: "log",
-							icon: y.createElement(wa, null),
+							icon: y.createElement(Ca, null),
 							text: "Log in console",
 							onClick: this.handleNodeLogButtonClick
 						}),
-						y.createElement(G, {
+						y.createElement(K, {
 							key: "schema",
-							icon: y.createElement(Ta, null),
+							icon: y.createElement(wa, null),
 							text: "Show in schema",
 							onClick: this.handleNodeSchemaButtonClick
 						})
@@ -10992,22 +10987,22 @@ var ke = class extends v {
 						url: e.url,
 						itemDefinitions: e.properties
 					}]
-				}) : y.createElement(ta, { isEmpty: "true" }, y.createElement("p", null, "Select a node in the tree to inspect"));
+				}) : y.createElement(ea, { isEmpty: "true" }, y.createElement("p", null, "Select a node in the tree to inspect"));
 			}
-		}, Da = L(({ editors: e, currentEditorName: t, model: { currentNodeDefinition: n } }) => ({
+		}, Ea = L(({ editors: e, currentEditorName: t, model: { currentNodeDefinition: n } }) => ({
 			editors: e,
 			currentEditorName: t,
 			currentNodeDefinition: n
 		}), {
 			setActiveTab: vt,
 			setSchemaCurrentDefinitionName: pr
-		})(Ea), Oa = (e) => (0, K.jsx)("svg", {
+		})(Ta), Da = (e) => (0, q.jsx)("svg", {
 			viewBox: "0 0 19 19",
 			xmlns: "http://www.w3.org/2000/svg",
 			...e,
-			children: (0, K.jsx)("path", { d: "M9.5 4.5c1.85 0 3.667.561 5.199 1.519C16.363 7.059 17.5 8.4 17.5 9.5s-1.137 2.441-2.801 3.481c-1.532.958-3.35 1.519-5.199 1.519-1.85 0-3.667-.561-5.199-1.519C2.637 11.941 1.5 10.6 1.5 9.5s1.137-2.441 2.801-3.481C5.833 5.06 7.651 4.5 9.5 4.5Zm0 1a4 4 0 1 1-.2.005l.2-.005c-1.655 0-3.29.505-4.669 1.367C3.431 7.742 2.5 8.84 2.5 9.5c0 .66.931 1.758 2.331 2.633C6.21 12.995 7.845 13.5 9.5 13.5c1.655 0 3.29-.505 4.669-1.367 1.4-.875 2.331-1.974 2.331-2.633 0-.66-.931-1.758-2.331-2.633C12.79 6.005 11.155 5.5 9.5 5.5ZM8 6.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z" })
-		}), q = "https://ckeditor.com/docs/ckeditor5/latest/api/module_engine_model_selection-Selection.html", ka = class extends y.Component {
-			static contextType = na;
+			children: (0, q.jsx)("path", { d: "M9.5 4.5c1.85 0 3.667.561 5.199 1.519C16.363 7.059 17.5 8.4 17.5 9.5s-1.137 2.441-2.801 3.481c-1.532.958-3.35 1.519-5.199 1.519-1.85 0-3.667-.561-5.199-1.519C2.637 11.941 1.5 10.6 1.5 9.5s1.137-2.441 2.801-3.481C5.833 5.06 7.651 4.5 9.5 4.5Zm0 1a4 4 0 1 1-.2.005l.2-.005c-1.655 0-3.29.505-4.669 1.367C3.431 7.742 2.5 8.84 2.5 9.5c0 .66.931 1.758 2.331 2.633C6.21 12.995 7.845 13.5 9.5 13.5c1.655 0 3.29-.505 4.669-1.367 1.4-.875 2.331-1.974 2.331-2.633 0-.66-.931-1.758-2.331-2.633C12.79 6.005 11.155 5.5 9.5 5.5ZM8 6.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z" })
+		}), Oa = "https://ckeditor.com/docs/ckeditor5/latest/api/module_engine_model_selection-Selection.html", ka = class extends y.Component {
+			static contextType = ta;
 			constructor(e) {
 				super(e), this.handleSelectionLogButtonClick = this.handleSelectionLogButtonClick.bind(this), this.handleScrollToSelectionButtonClick = this.handleScrollToSelectionButtonClick.bind(this);
 			}
@@ -11024,22 +11019,22 @@ var ke = class extends v {
 			}
 			render() {
 				let e = this.props.editor, t = this.props.info;
-				return y.createElement(Sa, {
+				return y.createElement(xa, {
 					header: [
 						y.createElement("span", { key: "link" }, y.createElement("a", {
-							href: q,
+							href: Oa,
 							target: "_blank",
 							rel: "noopener noreferrer"
 						}, y.createElement("b", null, "Selection"))),
-						y.createElement(G, {
+						y.createElement(K, {
 							key: "log",
-							icon: y.createElement(wa, null),
+							icon: y.createElement(Ca, null),
 							text: "Log in console",
 							onClick: this.handleSelectionLogButtonClick
 						}),
-						y.createElement(G, {
+						y.createElement(K, {
 							key: "scroll",
-							icon: y.createElement(Oa, null),
+							icon: y.createElement(Da, null),
 							text: "Scroll to selection",
 							onClick: this.handleScrollToSelectionButtonClick
 						})
@@ -11047,19 +11042,19 @@ var ke = class extends v {
 					lists: [
 						{
 							name: "Attributes",
-							url: `${q}#function-getAttributes`,
+							url: `${Oa}#function-getAttributes`,
 							itemDefinitions: t.attributes
 						},
 						{
 							name: "Properties",
-							url: `${q}`,
+							url: `${Oa}`,
 							itemDefinitions: t.properties
 						},
 						{
 							name: "Anchor",
-							url: `${q}#member-anchor`,
+							url: `${Oa}#member-anchor`,
 							buttons: [{
-								icon: y.createElement(wa, null),
+								icon: y.createElement(Ca, null),
 								text: "Log in console",
 								onClick: () => R.log(e.model.document.selection.anchor)
 							}],
@@ -11067,9 +11062,9 @@ var ke = class extends v {
 						},
 						{
 							name: "Focus",
-							url: `${q}#member-focus`,
+							url: `${Oa}#member-focus`,
 							buttons: [{
-								icon: y.createElement(wa, null),
+								icon: y.createElement(Ca, null),
 								text: "Log in console",
 								onClick: () => R.log(e.model.document.selection.focus)
 							}],
@@ -11077,9 +11072,9 @@ var ke = class extends v {
 						},
 						{
 							name: "Ranges",
-							url: `${q}#function-getRanges`,
+							url: `${Oa}#function-getRanges`,
 							buttons: [{
-								icon: y.createElement(wa, null),
+								icon: y.createElement(Ca, null),
 								text: "Log in console",
 								onClick: () => R.log(...e.model.document.selection.getRanges())
 							}],
@@ -11143,14 +11138,14 @@ var ke = class extends v {
 		var Na = "https://ckeditor.com/docs/ckeditor5/latest/api/module_engine_model_markercollection-Marker.html", Pa = class extends y.Component {
 			render() {
 				let e = Ia(this.props.markers), t = La(e), n = this.props.editors.get(this.props.currentEditorName);
-				return Object.keys(e).length ? y.createElement(Sa, {
+				return Object.keys(e).length ? y.createElement(xa, {
 					header: [y.createElement("span", { key: "link" }, y.createElement("a", {
 						href: Na,
 						target: "_blank",
 						rel: "noopener noreferrer"
-					}, y.createElement("b", null, "Markers"))), y.createElement(G, {
+					}, y.createElement("b", null, "Markers"))), y.createElement(K, {
 						key: "log",
-						icon: y.createElement(wa, null),
+						icon: y.createElement(Ca, null),
 						text: "Log in console",
 						onClick: () => R.log([...n.model.markers])
 					})],
@@ -11159,7 +11154,7 @@ var ke = class extends v {
 						itemDefinitions: t,
 						presentation: { expandCollapsibles: !0 }
 					}]
-				}) : y.createElement(ta, { isEmpty: "true" }, y.createElement("p", null, "No markers in the document."));
+				}) : y.createElement(ea, { isEmpty: "true" }, y.createElement("p", null, "No markers in the document."));
 			}
 		}, Fa = L(({ editors: e, currentEditorName: t, model: { markers: n } }) => ({
 			editors: e,
@@ -11209,10 +11204,10 @@ var ke = class extends v {
 		}
 		var za = class extends y.Component {
 			render() {
-				return this.props.currentEditorName ? y.createElement(ta, { splitVertically: "true" }, y.createElement(va, null), y.createElement(oa, null, y.createElement(xi, {
+				return this.props.currentEditorName ? y.createElement(ea, { splitVertically: "true" }, y.createElement(_a, null), y.createElement(aa, null, y.createElement(bi, {
 					onTabChange: this.props.setModelActiveTab,
 					activeTab: this.props.activeTab
-				}, y.createElement(Da, { label: "Inspect" }), y.createElement(Aa, { label: "Selection" }), y.createElement(Fa, { label: "Markers" })))) : y.createElement(ta, { isEmpty: "true" }, y.createElement("p", null, "Nothing to show. Attach another editor instance to start inspecting."));
+				}, y.createElement(Ea, { label: "Inspect" }), y.createElement(Aa, { label: "Selection" }), y.createElement(Fa, { label: "Markers" })))) : y.createElement(ea, { isEmpty: "true" }, y.createElement("p", null, "Nothing to show. Attach another editor instance to start inspecting."));
 			}
 		}, Ba = L(({ currentEditorName: e, model: { ui: { activeTab: t } } }) => ({
 			currentEditorName: e,
@@ -11229,11 +11224,11 @@ var ke = class extends v {
 			}
 			render() {
 				let e = this.props.editors.get(this.props.currentEditorName);
-				return y.createElement(bi, null, [
+				return y.createElement(yi, null, [
 					y.createElement("div", {
 						className: "ck-inspector-tree__config",
 						key: "root-cfg"
-					}, y.createElement(ea, {
+					}, y.createElement($i, {
 						id: "view-root-select",
 						label: "Root",
 						value: this.props.currentRootName,
@@ -11247,13 +11242,13 @@ var ke = class extends v {
 					y.createElement("div", {
 						className: "ck-inspector-tree__config",
 						key: "types-cfg"
-					}, y.createElement(ga, {
+					}, y.createElement(ha, {
 						label: "Show element types",
 						id: "view-show-types",
 						isChecked: this.props.showElementTypes,
 						onChange: this.props.toggleViewShowElementTypes
 					}))
-				], y.createElement(ha, {
+				], y.createElement(ma, {
 					definition: this.props.treeDefinition,
 					textDirection: e.locale.contentLanguageDirection,
 					onClick: this.handleTreeClick,
@@ -11283,14 +11278,14 @@ var ke = class extends v {
 			}
 			render() {
 				let e = this.props.currentNodeDefinition;
-				return e ? y.createElement(Sa, {
+				return e ? y.createElement(xa, {
 					header: [y.createElement("span", { key: "link" }, y.createElement("a", {
 						href: e.url,
 						target: "_blank",
 						rel: "noopener noreferrer"
-					}, y.createElement("b", null, e.type), ":"), e.type === "Text" ? y.createElement("em", null, e.name) : e.name), y.createElement(G, {
+					}, y.createElement("b", null, e.type), ":"), e.type === "Text" ? y.createElement("em", null, e.name) : e.name), y.createElement(K, {
 						key: "log",
-						icon: y.createElement(wa, null),
+						icon: y.createElement(Ca, null),
 						text: "Log in console",
 						onClick: this.handleNodeLogButtonClick
 					})],
@@ -11311,10 +11306,10 @@ var ke = class extends v {
 							itemDefinitions: e.customProperties
 						}
 					]
-				}) : y.createElement(ta, { isEmpty: "true" }, y.createElement("p", null, "Select a node in the tree to inspect"));
+				}) : y.createElement(ea, { isEmpty: "true" }, y.createElement("p", null, "Select a node in the tree to inspect"));
 			}
 		}, Wa = L(({ view: { currentNodeDefinition: e } }) => ({ currentNodeDefinition: e }), {})(Ua), Ga = "https://ckeditor.com/docs/ckeditor5/latest/api/module_engine_view_selection-Selection.html", Ka = class extends y.Component {
-			static contextType = na;
+			static contextType = ta;
 			constructor(e) {
 				super(e), this.handleSelectionLogButtonClick = this.handleSelectionLogButtonClick.bind(this), this.handleScrollToSelectionButtonClick = this.handleScrollToSelectionButtonClick.bind(this);
 			}
@@ -11331,22 +11326,22 @@ var ke = class extends v {
 			}
 			render() {
 				let e = this.props.editor, t = this.props.info;
-				return y.createElement(Sa, {
+				return y.createElement(xa, {
 					header: [
 						y.createElement("span", { key: "link" }, y.createElement("a", {
 							href: Ga,
 							target: "_blank",
 							rel: "noopener noreferrer"
 						}, y.createElement("b", null, "Selection"))),
-						y.createElement(G, {
+						y.createElement(K, {
 							key: "log",
-							icon: y.createElement(wa, null),
+							icon: y.createElement(Ca, null),
 							text: "Log in console",
 							onClick: this.handleSelectionLogButtonClick
 						}),
-						y.createElement(G, {
+						y.createElement(K, {
 							key: "scroll",
-							icon: y.createElement(Oa, null),
+							icon: y.createElement(Da, null),
 							text: "Scroll to selection",
 							onClick: this.handleScrollToSelectionButtonClick
 						})
@@ -11439,10 +11434,10 @@ var ke = class extends v {
 		}
 		var Xa = class extends y.Component {
 			render() {
-				return this.props.currentEditorName ? y.createElement(ta, { splitVertically: "true" }, y.createElement(Ha, null), y.createElement(oa, null, y.createElement(xi, {
+				return this.props.currentEditorName ? y.createElement(ea, { splitVertically: "true" }, y.createElement(Ha, null), y.createElement(aa, null, y.createElement(bi, {
 					onTabChange: this.props.setViewActiveTab,
 					activeTab: this.props.activeTab
-				}, y.createElement(Wa, { label: "Inspect" }), y.createElement(qa, { label: "Selection" })))) : y.createElement(ta, { isEmpty: "true" }, y.createElement("p", null, "Nothing to show. Attach another editor instance to start inspecting."));
+				}, y.createElement(Wa, { label: "Inspect" }), y.createElement(qa, { label: "Selection" })))) : y.createElement(ea, { isEmpty: "true" }, y.createElement("p", null, "Nothing to show. Attach another editor instance to start inspecting."));
 			}
 		}, Za = L(({ currentEditorName: e, view: { ui: { activeTab: t } } }) => ({
 			currentEditorName: e,
@@ -11458,7 +11453,7 @@ var ke = class extends v {
 				e.persist(), e.stopPropagation(), this.props.setCommandsCurrentCommandName(t);
 			}
 			render() {
-				return y.createElement(bi, null, y.createElement(ha, {
+				return y.createElement(yi, null, y.createElement(ma, {
 					definition: this.props.treeDefinition,
 					onClick: this.handleTreeClick,
 					activeNode: this.props.currentCommandName
@@ -11467,11 +11462,11 @@ var ke = class extends v {
 		}, $a = L(({ commands: { treeDefinition: e, currentCommandName: t } }) => ({
 			treeDefinition: e,
 			currentCommandName: t
-		}), { setCommandsCurrentCommandName: or })(Qa), eo = (e) => (0, K.jsx)("svg", {
+		}), { setCommandsCurrentCommandName: or })(Qa), eo = (e) => (0, q.jsx)("svg", {
 			viewBox: "0 0 19 19",
 			xmlns: "http://www.w3.org/2000/svg",
 			...e,
-			children: (0, K.jsx)("path", { d: "M9.25 1.25a8 8 0 1 1 0 16 8 8 0 0 1 0-16Zm0 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM7.344 6.485l4.98 2.765-4.98 3.018V6.485Z" })
+			children: (0, q.jsx)("path", { d: "M9.25 1.25a8 8 0 1 1 0 16 8 8 0 0 1 0-16Zm0 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM7.344 6.485l4.98 2.765-4.98 3.018V6.485Z" })
 		}), to = class extends y.Component {
 			constructor(e) {
 				super(e), this.handleCommandLogButtonClick = this.handleCommandLogButtonClick.bind(this), this.handleCommandExecuteButtonClick = this.handleCommandExecuteButtonClick.bind(this);
@@ -11484,22 +11479,22 @@ var ke = class extends v {
 			}
 			render() {
 				let e = this.props.currentCommandDefinition;
-				return e ? y.createElement(Sa, {
+				return e ? y.createElement(xa, {
 					header: [
 						y.createElement("span", { key: "link" }, y.createElement("a", {
 							href: e.url,
 							target: "_blank",
 							rel: "noopener noreferrer"
 						}, y.createElement("b", null, e.type)), ":", this.props.currentCommandName),
-						y.createElement(G, {
+						y.createElement(K, {
 							key: "exec",
 							icon: y.createElement(eo, null),
 							text: "Execute command",
 							onClick: this.handleCommandExecuteButtonClick
 						}),
-						y.createElement(G, {
+						y.createElement(K, {
 							key: "log",
-							icon: y.createElement(wa, null),
+							icon: y.createElement(Ca, null),
 							text: "Log in console",
 							onClick: this.handleCommandLogButtonClick
 						})
@@ -11509,7 +11504,7 @@ var ke = class extends v {
 						url: e.url,
 						itemDefinitions: e.properties
 					}]
-				}) : y.createElement(ta, { isEmpty: "true" }, y.createElement("p", null, "Select a command to inspect"));
+				}) : y.createElement(ea, { isEmpty: "true" }, y.createElement("p", null, "Select a command to inspect"));
 			}
 		}, no = L(({ editors: e, currentEditorName: t, commands: { currentCommandName: n, currentCommandDefinition: r } }) => ({
 			editors: e,
@@ -11518,7 +11513,7 @@ var ke = class extends v {
 			currentCommandDefinition: r
 		}), {})(to), ro = class extends y.Component {
 			render() {
-				return this.props.currentEditorName ? y.createElement(ta, { splitVertically: "true" }, y.createElement($a, null), y.createElement(oa, null, y.createElement(xi, { activeTab: "Inspect" }, y.createElement(no, { label: "Inspect" })))) : y.createElement(ta, { isEmpty: "true" }, y.createElement("p", null, "Nothing to show. Attach another editor instance to start inspecting."));
+				return this.props.currentEditorName ? y.createElement(ea, { splitVertically: "true" }, y.createElement($a, null), y.createElement(aa, null, y.createElement(bi, { activeTab: "Inspect" }, y.createElement(no, { label: "Inspect" })))) : y.createElement(ea, { isEmpty: "true" }, y.createElement("p", null, "Nothing to show. Attach another editor instance to start inspecting."));
 			}
 		}, io = L(({ currentEditorName: e }) => ({ currentEditorName: e }), { updateCommandsState: sr })(ro), ao = class extends y.Component {
 			constructor(e) {
@@ -11528,7 +11523,7 @@ var ke = class extends v {
 				e.persist(), e.stopPropagation(), this.props.setSchemaCurrentDefinitionName(t);
 			}
 			render() {
-				return y.createElement(bi, null, y.createElement(ha, {
+				return y.createElement(yi, null, y.createElement(ma, {
 					definition: this.props.treeDefinition,
 					onClick: this.handleTreeClick,
 					activeNode: this.props.currentSchemaDefinitionName
@@ -11540,7 +11535,7 @@ var ke = class extends v {
 		}), { setSchemaCurrentDefinitionName: pr })(ao), oo = class extends y.Component {
 			render() {
 				let e = this.props.currentSchemaDefinition;
-				return e ? y.createElement(Sa, {
+				return e ? y.createElement(xa, {
 					header: [y.createElement("span", { key: "link" }, y.createElement("a", {
 						href: e.urls.general,
 						target: "_blank",
@@ -11574,7 +11569,7 @@ var ke = class extends v {
 							}
 						}
 					]
-				}) : y.createElement(ta, { isEmpty: "true" }, y.createElement("p", null, "Select a schema definition to inspect"));
+				}) : y.createElement(ea, { isEmpty: "true" }, y.createElement("p", null, "Select a schema definition to inspect"));
 			}
 		}, so = L(({ editors: e, currentEditorName: t, schema: { currentSchemaDefinitionName: n, currentSchemaDefinition: r } }) => ({
 			editors: e,
@@ -11583,7 +11578,7 @@ var ke = class extends v {
 			currentSchemaDefinition: r
 		}), { setSchemaCurrentDefinitionName: pr })(oo), co = class extends y.Component {
 			render() {
-				return this.props.currentEditorName ? y.createElement(ta, { splitVertically: "true" }, y.createElement(J, null), y.createElement(oa, null, y.createElement(xi, { activeTab: "Inspect" }, y.createElement(so, { label: "Inspect" })))) : y.createElement(ta, { isEmpty: "true" }, y.createElement("p", null, "Nothing to show. Attach another editor instance to start inspecting."));
+				return this.props.currentEditorName ? y.createElement(ea, { splitVertically: "true" }, y.createElement(J, null), y.createElement(aa, null, y.createElement(bi, { activeTab: "Inspect" }, y.createElement(so, { label: "Inspect" })))) : y.createElement(ea, { isEmpty: "true" }, y.createElement("p", null, "Nothing to show. Attach another editor instance to start inspecting."));
 			}
 		}, lo = L(({ currentEditorName: e }) => ({ currentEditorName: e }))(co), uo = s(((e, t) => {
 			t.exports = function() {
@@ -12428,13 +12423,13 @@ var ke = class extends v {
 				return e && e.__esModule ? e : { default: e };
 			}
 			e.default = n.default, t.exports = e.default;
-		})), jo = u(Y()), Mo = u(Ao()), No = (e) => (0, K.jsx)("svg", {
+		})), jo = u(Y()), Mo = u(Ao()), No = (e) => (0, q.jsx)("svg", {
 			viewBox: "0 0 19 19",
 			xmlns: "http://www.w3.org/2000/svg",
 			...e,
-			children: (0, K.jsxs)("g", { children: [(0, K.jsx)("path", { d: "m12.936 0 5 4.5v12.502l-1.504-.001v.003h1.504v1.499h-5v-1.501l3.496-.001V5.208L12.21 1.516 3.436 1.5v15.504l3.5-.001v1.5h-5V0h11Z" }), (0, K.jsx)("path", { d: "m10.374 9.463.085.072.477.464L11 10v.06l3.545 3.453-1.047 1.075L11 12.155 11 19H9v-6.9l-2.424 2.476-1.072-1.05L9.4 9.547a.75.75 0 0 1 .974-.084ZM12.799 1.5l-.001 2.774h3.645v1.5h-5.144V1.5z" })] })
+			children: (0, q.jsxs)("g", { children: [(0, q.jsx)("path", { d: "m12.936 0 5 4.5v12.502l-1.504-.001v.003h1.504v1.499h-5v-1.501l3.496-.001V5.208L12.21 1.516 3.436 1.5v15.504l3.5-.001v1.5h-5V0h11Z" }), (0, q.jsx)("path", { d: "m10.374 9.463.085.072.477.464L11 10v.06l3.545 3.453-1.047 1.075L11 12.155 11 19H9v-6.9l-2.424 2.476-1.072-1.05L9.4 9.547a.75.75 0 0 1 .974-.084ZM12.799 1.5l-.001 2.774h3.645v1.5h-5.144V1.5z" })] })
 		}), Po = class extends y.Component {
-			static contextType = na;
+			static contextType = ta;
 			constructor(e) {
 				super(e), this.state = {
 					isModalOpen: !1,
@@ -12442,7 +12437,7 @@ var ke = class extends v {
 				}, this.textarea = y.createRef();
 			}
 			render() {
-				return [y.createElement(G, {
+				return [y.createElement(K, {
 					text: "Set editor data",
 					icon: y.createElement(No, null),
 					isEnabled: !!this.props.editor,
@@ -12495,36 +12490,36 @@ var ke = class extends v {
 			_handleModalAfterOpen() {
 				this.setState({ editorDataValue: this.props.editor.getData() }), this.textarea.current.select();
 			}
-		}, Fo = (e) => (0, K.jsx)("svg", {
+		}, Fo = (e) => (0, q.jsx)("svg", {
 			viewBox: "0 0 19 19",
 			xmlns: "http://www.w3.org/2000/svg",
 			...e,
-			children: (0, K.jsxs)("g", { children: [(0, K.jsx)("path", { d: "m12.936 0 5 4.5v14.003h-4.503L14.936 17h-10l1.503 1.503H1.936V0h11Zm-9.5 1.5v15.504h12.996V5.208L12.21 1.516 3.436 1.5Z" }), (0, K.jsx)("path", { d: "m12.799 1.5-.001 2.774h3.645v1.5h-5.144V1.5zM9.675 18.859l-.085-.072-4.086-3.978 1.047-1.075L9 16.119 9 9h2v7.273l2.473-2.526 1.072 1.049-3.896 3.979a.75.75 0 0 1-.974.084Z" })] })
-		}), Io = (e) => (0, K.jsx)("svg", {
+			children: (0, q.jsxs)("g", { children: [(0, q.jsx)("path", { d: "m12.936 0 5 4.5v14.003h-4.503L14.936 17h-10l1.503 1.503H1.936V0h11Zm-9.5 1.5v15.504h12.996V5.208L12.21 1.516 3.436 1.5Z" }), (0, q.jsx)("path", { d: "m12.799 1.5-.001 2.774h3.645v1.5h-5.144V1.5zM9.675 18.859l-.085-.072-4.086-3.978 1.047-1.075L9 16.119 9 9h2v7.273l2.473-2.526 1.072 1.049-3.896 3.979a.75.75 0 0 1-.974.084Z" })] })
+		}), Io = (e) => (0, q.jsx)("svg", {
 			viewBox: "0 0 19 19",
 			xmlns: "http://www.w3.org/2000/svg",
 			...e,
-			children: (0, K.jsx)("path", { d: "m3.144 15.748 2.002 1.402-1.976.516-.026-1.918ZM2.438 3.391l15.346 11.023-.875 1.218-5.202-3.736-2.877 4.286.006.005-3.055.797-2.646-1.852-.04-2.95-.006-.005.006-.008v-.025l.01.008L6.02 7.81l-4.457-3.2.876-1.22ZM7.25 8.695l-2.13 3.198 3.277 2.294 2.104-3.158-3.25-2.334ZM14.002 0l2.16 1.512-.856 1.222c.828.967 1.144 2.141.432 3.158l-2.416 3.599-1.214-.873 2.396-3.593.005.003c.317-.452-.16-1.332-1.064-1.966-.891-.624-1.865-.776-2.197-.349l-.006-.004-2.384 3.575-1.224-.879 2.376-3.539c.674-.932 1.706-1.155 3.096-.668l.046.018.85-1.216Z" })
-		}), Lo = (e) => (0, K.jsx)("svg", {
+			children: (0, q.jsx)("path", { d: "m3.144 15.748 2.002 1.402-1.976.516-.026-1.918ZM2.438 3.391l15.346 11.023-.875 1.218-5.202-3.736-2.877 4.286.006.005-3.055.797-2.646-1.852-.04-2.95-.006-.005.006-.008v-.025l.01.008L6.02 7.81l-4.457-3.2.876-1.22ZM7.25 8.695l-2.13 3.198 3.277 2.294 2.104-3.158-3.25-2.334ZM14.002 0l2.16 1.512-.856 1.222c.828.967 1.144 2.141.432 3.158l-2.416 3.599-1.214-.873 2.396-3.593.005.003c.317-.452-.16-1.332-1.064-1.966-.891-.624-1.865-.776-2.197-.349l-.006-.004-2.384 3.575-1.224-.879 2.376-3.539c.674-.932 1.706-1.155 3.096-.668l.046.018.85-1.216Z" })
+		}), Lo = (e) => (0, q.jsx)("svg", {
 			viewBox: "0 0 19 19",
 			xmlns: "http://www.w3.org/2000/svg",
 			...e,
-			children: (0, K.jsx)("path", { d: "M11.28 1a1 1 0 0 1 .948.684l.333 1 .018.066H16a.75.75 0 0 1 .102 1.493L16 4.25h-.5V16a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2V4.25H3a.75.75 0 0 1-.102-1.493L3 2.75h3.42a1 1 0 0 1 .019-.066l.333-1A1 1 0 0 1 7.721 1h3.558ZM14 4.5H5V16a.5.5 0 0 0 .41.492l.09.008h8a.5.5 0 0 0 .492-.41L14 16V4.5ZM7.527 6.06v8.951h-1V6.06h1Zm5 0v8.951h-1V6.06h1ZM10 6.06v8.951H9V6.06h1Z" })
-		}), Ro = (e) => (0, K.jsx)("svg", {
+			children: (0, q.jsx)("path", { d: "M11.28 1a1 1 0 0 1 .948.684l.333 1 .018.066H16a.75.75 0 0 1 .102 1.493L16 4.25h-.5V16a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2V4.25H3a.75.75 0 0 1-.102-1.493L3 2.75h3.42a1 1 0 0 1 .019-.066l.333-1A1 1 0 0 1 7.721 1h3.558ZM14 4.5H5V16a.5.5 0 0 0 .41.492l.09.008h8a.5.5 0 0 0 .492-.41L14 16V4.5ZM7.527 6.06v8.951h-1V6.06h1Zm5 0v8.951h-1V6.06h1ZM10 6.06v8.951H9V6.06h1Z" })
+		}), Ro = (e) => (0, q.jsx)("svg", {
 			viewBox: "0 0 20 20",
 			xmlns: "http://www.w3.org/2000/svg",
 			...e,
-			children: (0, K.jsxs)("g", { children: [(0, K.jsx)("path", { d: "M2.284 2.498c-.239.266-.184.617-.184 1.002V4H2a.5.5 0 0 0-.492.41L1.5 4.5V17a1 1 0 0 0 .883.993L2.5 18h10a1 1 0 0 0 .97-.752l-.081-.062c.438.368.976.54 1.507.526a2.5 2.5 0 0 1-2.232 1.783l-.164.005h-10a2.5 2.5 0 0 1-2.495-2.336L0 17V4.5a2 2 0 0 1 1.85-1.995L2 2.5l.284-.002zm10.532 0L13 2.5a2 2 0 0 1 1.995 1.85L15 4.5v2.28a2.243 2.243 0 0 0-1.5.404V4.5a.5.5 0 0 0-.41-.492L13 4v-.5l-.007-.144c-.031-.329.032-.626-.177-.858z" }), (0, K.jsx)("path", { d: "m6 .49-.144.006a1.75 1.75 0 0 0-1.41.94l-.029.058.083-.004c-.69 0-1.25.56-1.25 1.25v1c0 .69.56 1.25 1.25 1.25h6c.69 0 1.25-.56 1.25-1.25v-1l-.006-.128a1.25 1.25 0 0 0-1.116-1.116l-.046-.002-.027-.058A1.75 1.75 0 0 0 9 .49H6zm0 1.5h3a.25.25 0 0 1 .25.25l.007.102A.75.75 0 0 0 10 2.99h.25v.5h-5.5v-.5H5a.75.75 0 0 0 .743-.648l.007-.102A.25.25 0 0 1 6 1.99zM15.374 8.54a.75.75 0 0 1-.093 1.056l-2.33 1.954h6.127a.75.75 0 0 1 0 1.501h-5.949l2.19 1.837a.75.75 0 1 1-.966 1.15l-3.788-3.18a.747.747 0 0 1-.21-.285.75.75 0 0 1 .17-.945l3.792-3.182a.75.75 0 0 1 1.057.093z" })] })
-		}), zo = (e) => (0, K.jsx)("svg", {
+			children: (0, q.jsxs)("g", { children: [(0, q.jsx)("path", { d: "M2.284 2.498c-.239.266-.184.617-.184 1.002V4H2a.5.5 0 0 0-.492.41L1.5 4.5V17a1 1 0 0 0 .883.993L2.5 18h10a1 1 0 0 0 .97-.752l-.081-.062c.438.368.976.54 1.507.526a2.5 2.5 0 0 1-2.232 1.783l-.164.005h-10a2.5 2.5 0 0 1-2.495-2.336L0 17V4.5a2 2 0 0 1 1.85-1.995L2 2.5l.284-.002zm10.532 0L13 2.5a2 2 0 0 1 1.995 1.85L15 4.5v2.28a2.243 2.243 0 0 0-1.5.404V4.5a.5.5 0 0 0-.41-.492L13 4v-.5l-.007-.144c-.031-.329.032-.626-.177-.858z" }), (0, q.jsx)("path", { d: "m6 .49-.144.006a1.75 1.75 0 0 0-1.41.94l-.029.058.083-.004c-.69 0-1.25.56-1.25 1.25v1c0 .69.56 1.25 1.25 1.25h6c.69 0 1.25-.56 1.25-1.25v-1l-.006-.128a1.25 1.25 0 0 0-1.116-1.116l-.046-.002-.027-.058A1.75 1.75 0 0 0 9 .49H6zm0 1.5h3a.25.25 0 0 1 .25.25l.007.102A.75.75 0 0 0 10 2.99h.25v.5h-5.5v-.5H5a.75.75 0 0 0 .743-.648l.007-.102A.25.25 0 0 1 6 1.99zM15.374 8.54a.75.75 0 0 1-.093 1.056l-2.33 1.954h6.127a.75.75 0 0 1 0 1.501h-5.949l2.19 1.837a.75.75 0 1 1-.966 1.15l-3.788-3.18a.747.747 0 0 1-.21-.285.75.75 0 0 1 .17-.945l3.792-3.182a.75.75 0 0 1 1.057.093z" })] })
+		}), zo = (e) => (0, q.jsx)("svg", {
 			viewBox: "0 0 20 20",
 			xmlns: "http://www.w3.org/2000/svg",
 			...e,
-			children: (0, K.jsx)("path", {
+			children: (0, q.jsx)("path", {
 				fill: "#4fa800",
 				d: "M6.972 16.615a.997.997 0 0 1-.744-.292l-4.596-4.596a1 1 0 1 1 1.414-1.414l3.926 3.926 9.937-9.937a1 1 0 0 1 1.414 1.415L7.717 16.323a.997.997 0 0 1-.745.292z"
 			})
 		}), Bo = "Lock from Inspector (@ckeditor/ckeditor5-inspector)", Vo = class extends y.Component {
-			static contextType = na;
+			static contextType = ta;
 			constructor(e) {
 				super(e), this.state = {
 					isShiftKeyPressed: !1,
@@ -12532,18 +12527,18 @@ var ke = class extends v {
 				}, this._keyDownHandler = this._handleKeyDown.bind(this), this._keyUpHandler = this._handleKeyUp.bind(this), this._readOnlyHandler = this._handleReadOnly.bind(this), this._editorDataJustCopiedTimeout = null;
 			}
 			render() {
-				return y.createElement("div", { className: "ck-inspector-editor-quick-actions" }, y.createElement(G, {
+				return y.createElement("div", { className: "ck-inspector-editor-quick-actions" }, y.createElement(K, {
 					text: "Log editor",
-					icon: y.createElement(wa, null),
+					icon: y.createElement(Ca, null),
 					isEnabled: !!this.props.editor,
 					onClick: () => console.log(this.props.editor)
-				}), this._getLogButton(), y.createElement(Po, { editor: this.props.editor }), y.createElement(G, {
+				}), this._getLogButton(), y.createElement(Po, { editor: this.props.editor }), y.createElement(K, {
 					text: "Toggle read only",
 					icon: y.createElement(Io, null),
 					isOn: this.props.isReadOnly,
 					isEnabled: !!this.props.editor,
 					onClick: this._readOnlyHandler
-				}), y.createElement(G, {
+				}), y.createElement(K, {
 					text: "Destroy editor",
 					icon: y.createElement(Lo, null),
 					isEnabled: !!this.props.editor,
@@ -12560,7 +12555,7 @@ var ke = class extends v {
 			}
 			_getLogButton() {
 				let e, t;
-				return this.state.wasEditorDataJustCopied ? (e = y.createElement(zo, null), t = "Data copied to clipboard.") : (e = this.state.isShiftKeyPressed ? y.createElement(Ro, null) : y.createElement(Fo, null), t = "Log editor data (press with Shift to copy)"), y.createElement(G, {
+				return this.state.wasEditorDataJustCopied ? (e = y.createElement(zo, null), t = "Data copied to clipboard.") : (e = this.state.isShiftKeyPressed ? y.createElement(Ro, null) : y.createElement(Fo, null), t = "Log editor data (press with Shift to copy)"), y.createElement(K, {
 					text: t,
 					icon: e,
 					className: this.state.wasEditorDataJustCopied ? "ck-inspector-button_data-copied" : "",
@@ -12585,11 +12580,11 @@ var ke = class extends v {
 		}, Ho = L(({ editors: e, currentEditorName: t, currentEditorGlobals: { isReadOnly: n } }) => ({
 			editor: e.get(t),
 			isReadOnly: n
-		}), {})(Vo), Uo = (e) => (0, K.jsx)("svg", {
+		}), {})(Vo), Uo = (e) => (0, q.jsx)("svg", {
 			viewBox: "0 0 19 19",
 			xmlns: "http://www.w3.org/2000/svg",
 			...e,
-			children: (0, K.jsx)("path", { d: "M17.03 6.47a.75.75 0 0 1 .073.976l-.072.084-6.984 7a.75.75 0 0 1-.977.073l-.084-.072-7.016-7a.75.75 0 0 1 .976-1.134l.084.072 6.485 6.47 6.454-6.469a.75.75 0 0 1 .977-.073l.084.072Z" })
+			children: (0, q.jsx)("path", { d: "M17.03 6.47a.75.75 0 0 1 .073.976l-.072.084-6.984 7a.75.75 0 0 1-.977.073l-.084-.072-7.016-7a.75.75 0 0 1 .976-1.134l.084.072 6.485 6.47 6.454-6.469a.75.75 0 0 1 .977-.073l.084.072Z" })
 		}), Wo = "100", Go = 30, Ko = {
 			position: "fixed",
 			bottom: "0",
@@ -12597,7 +12592,7 @@ var ke = class extends v {
 			right: "0",
 			top: "auto"
 		}, qo = class extends y.Component {
-			static contextType = na;
+			static contextType = ta;
 			constructor(e) {
 				super(e), this.handleInspectorResize = this.handleInspectorResize.bind(this);
 			}
@@ -12610,7 +12605,7 @@ var ke = class extends v {
 			}
 			render() {
 				let e = this.context.document.body;
-				return this.props.isCollapsed ? (e.classList.remove("ck-inspector-body-expanded"), e.classList.add("ck-inspector-body-collapsed")) : (e.classList.remove("ck-inspector-body-collapsed"), e.classList.add("ck-inspector-body-expanded")), y.createElement(_i, {
+				return this.props.isCollapsed ? (e.classList.remove("ck-inspector-body-expanded"), e.classList.add("ck-inspector-body-collapsed")) : (e.classList.remove("ck-inspector-body-collapsed"), e.classList.add("ck-inspector-body-expanded")), y.createElement(gi, {
 					bounds: "window",
 					enableResizing: { top: !this.props.isCollapsed },
 					disableDragging: !0,
@@ -12627,7 +12622,7 @@ var ke = class extends v {
 						height: this.props.isCollapsed ? Go : this.props.height
 					},
 					onResizeStop: this.handleInspectorResize
-				}, y.createElement(xi, {
+				}, y.createElement(bi, {
 					onTabChange: this.props.setActiveTab,
 					contentBefore: y.createElement(Yo, { key: "docs" }),
 					activeTab: this.props.activeTab,
@@ -12673,12 +12668,12 @@ var ke = class extends v {
 				}, "CKEditor documentation");
 			}
 		}, Xo = class extends y.Component {
-			static contextType = na;
+			static contextType = ta;
 			constructor(e) {
 				super(e), this.handleShortcut = this.handleShortcut.bind(this);
 			}
 			render() {
-				return y.createElement(G, {
+				return y.createElement(K, {
 					text: "Toggle inspector",
 					icon: y.createElement(Uo, null),
 					onClick: this.props.toggleIsCollapsed,
@@ -12700,7 +12695,7 @@ var ke = class extends v {
 				return y.createElement("div", {
 					className: "ck-inspector-editor-selector",
 					key: "editor-selector"
-				}, this.props.currentEditorName ? y.createElement(ea, {
+				}, this.props.currentEditorName ? y.createElement($i, {
 					id: "inspector-editor-selector",
 					label: "Instance",
 					value: this.props.currentEditorName,
@@ -12794,7 +12789,7 @@ var ke = class extends v {
 				}), e._store.subscribe(() => {
 					let t = e._store, n = t.getState().ui.isCollapsed, r = s && !n;
 					s = n, r && (t.dispatch(at()), t.dispatch(sr()), t.dispatch(Cn()));
-				}), b.render(y.createElement(na.Provider, { value: {
+				}), b.render(y.createElement(ta.Provider, { value: {
 					document: r,
 					window: i
 				} }, y.createElement(ie, { store: e._store }, y.createElement(Jo, null))), a);
@@ -12805,7 +12800,7 @@ var ke = class extends v {
 		};
 		return ns._editors = /* @__PURE__ */ new Map(), ns._wrapper = null, ns;
 	});
-})))(), 1), Ie = function(e) {
+})))(), 1), Le = function(e) {
 	let t = e.plugins.get(y), n = $(e.ui.view.element), r = $(e.sourceElement), i = `ckeditor${Math.floor(Math.random() * 1e9)}`, a = [
 		"keypress",
 		"keyup",
@@ -12825,12 +12820,12 @@ var ke = class extends v {
 			});
 		} else e.off(`.${i}`);
 	});
-}, Le = function(e, t) {
+}, Re = function(e, t) {
 	if (t.heading !== void 0) {
 		var n = t.heading.options;
 		n.find((e) => e.view === "h1") !== void 0 && e.keystrokes.set("Ctrl+Alt+1", () => e.execute("heading", { value: "heading1" })), n.find((e) => e.view === "h2") !== void 0 && e.keystrokes.set("Ctrl+Alt+2", () => e.execute("heading", { value: "heading2" })), n.find((e) => e.view === "h3") !== void 0 && e.keystrokes.set("Ctrl+Alt+3", () => e.execute("heading", { value: "heading3" })), n.find((e) => e.view === "h4") !== void 0 && e.keystrokes.set("Ctrl+Alt+4", () => e.execute("heading", { value: "heading4" })), n.find((e) => e.view === "h5") !== void 0 && e.keystrokes.set("Ctrl+Alt+5", () => e.execute("heading", { value: "heading5" })), n.find((e) => e.view === "h6") !== void 0 && e.keystrokes.set("Ctrl+Alt+6", () => e.execute("heading", { value: "heading6" })), n.find((e) => e.model === "paragraph") !== void 0 && e.keystrokes.set("Ctrl+Alt+p", "paragraph");
 	}
-}, Re = function(e, t) {
+}, ze = function(e, t) {
 	let n = null, r = e.editing.view.document, i = e.plugins.get("ClipboardPipeline");
 	r.on("clipboardOutput", (t, r) => {
 		n = e.id;
@@ -12849,7 +12844,7 @@ var ke = class extends v {
 					let r = RegExp("data-entry-id=\"" + i + "\"");
 					if (n !== e.id || r.test(f)) {
 						let r = null;
-						n !== e.id && (t.includes(De) ? r = e.config.get("entryTypeOptions").map((e) => e.value) : (Craft.cp.displayError(M("This field doesn’t allow nested entries.", {}, "ckeditor")), c = !0)), await j.post("ckeditor/ckeditor/duplicate-nested-entry", {
+						n !== e.id && (t.includes(Oe) ? r = e.config.get("entryTypeOptions").map((e) => e.value) : (Craft.cp.displayError(N("This field doesn’t allow nested entries.", {}, "ckeditor")), c = !0)), await j.post("ckeditor/ckeditor/duplicate-nested-entry", {
 							entryId: i,
 							targetSiteId: l,
 							sourceSiteId: a,
@@ -12871,10 +12866,10 @@ var ke = class extends v {
 			c || (a.content = e.data.htmlProcessor.toView(s), i.fire("inputTransformation", a));
 		}
 	});
-}, ze = async function(e, n) {
+}, Be = async function(e, n) {
 	typeof e == "string" && (e = document.querySelector(`#${e}`)), n.licenseKey = n.licenseKey || "GPL", n.attachTo = e;
 	let r = await t.create(n);
-	return window.CKE_SHOW_INSPECTOR && Craft.userIsAdmin && Fe.default.attach(r), r.editing.view.change((e) => {
+	return window.CKE_SHOW_INSPECTOR && Craft.userIsAdmin && Ie.default.attach(r), r.editing.view.change((e) => {
 		let t = r.editing.view.document.getRoot();
 		if (n.accessibleFieldName !== void 0 && n.accessibleFieldName.length) {
 			let r = t.getAttribute("aria-label");
@@ -12883,6 +12878,6 @@ var ke = class extends v {
 		n.describedBy !== void 0 && n.describedBy.length && e.setAttribute("aria-describedby", n.describedBy, t);
 	}), r.updateSourceElement(), r.model.document.on("change:data", () => {
 		r.updateSourceElement();
-	}), n.plugins.includes(y) && Ie(r, y), n.plugins.includes(c) && Le(r, n), Re(r, n.plugins), r;
+	}), n.plugins.includes(y) && Le(r, y), n.plugins.includes(c) && Re(r, n), ze(r, n.plugins), r;
 };
-export { De as CraftEntries, ue as CraftImageInsertUI, le as CraftImageTextAlternativeUI, Pe as CraftLink, ye as ImageEditor, I as ImageTransform, ze as create };
+export { Oe as CraftEntries, de as CraftImageInsertUI, ue as CraftImageTextAlternativeUI, Fe as CraftLink, be as ImageEditor, ge as ImageTransform, Be as create };

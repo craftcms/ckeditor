@@ -5,7 +5,11 @@
  */
 
 import {ButtonView, IconImage, ImageInsertUI} from 'ckeditor5';
-import {actionClient, t as craftT} from '@craftcms/cp';
+import {
+  actionClient,
+  createElementSelectorModal,
+  t as craftT,
+} from '@craftcms/cp';
 
 export default class CraftImageInsertUI extends ImageInsertUI {
   static get pluginName() {
@@ -87,24 +91,22 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       kind: 'image',
     });
 
-    Craft.createElementSelectorModal('CraftCms\\Cms\\Asset\\Elements\\Asset', {
+    void createElementSelectorModal('CraftCms\\Cms\\Asset\\Elements\\Asset', {
       ...this._imageModalSettings,
       storageKey: `ckeditor:${this.pluginName}:'CraftCms\\Cms\\Asset\\Elements\\Asset'`,
       sources,
       criteria,
       defaultSiteId: config.get('elementSiteId'),
       transforms: config.get('transforms'),
-      autoFocusSearchBox: false,
       multiSelect: true,
-      onSelect: (assets, transform) => {
-        this._processSelectedAssets(assets, transform).then(() => {
+      onSelect: (assets, {transform}) => {
+        return this._processSelectedAssets(assets, transform).then(() => {
           editor.editing.view.focus();
         });
       },
-      onHide: () => {
+      onClose: () => {
         editor.editing.view.focus();
       },
-      closeOtherModals: false,
     });
   }
 
@@ -126,7 +128,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
 
     for (const asset of assets) {
       const siteId = asset.siteId ?? editor.config.get('elementSiteId');
-      const alt = `${asset.$element.data('alt') ?? ''}#asset:${asset.id}${siteId ? `@${siteId}` : ''}:alt`;
+      const alt = `${asset.alt ?? ''}#asset:${asset.id}${siteId ? `@${siteId}` : ''}:alt`;
 
       const hasTransform = this._isTransformUrl(asset.url);
 
