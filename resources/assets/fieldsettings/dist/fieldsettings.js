@@ -188,49 +188,55 @@ var ToolbarBuilder_default = Garnish.Base.extend({
 			});
 		}
 	}
-}), ConfigOptions_default = Garnish.Base.extend({
-	jsonSchemaUri: null,
-	jsonSchema: null,
-	mode: null,
-	lastCodeMode: null,
-	$container: null,
-	$modeInput: null,
-	$jsonContainer: null,
-	$jsContainer: null,
-	$fileContainer: null,
-	jsonEditor: null,
-	jsEditor: null,
-	defaults: null,
-	init: function(id, jsonSchemaUri, mode, hasFiles, jsonSchema = null) {
-		this.jsonSchemaUri = jsonSchemaUri, this.jsonSchema = jsonSchema, this.mode = mode, this.mode !== "file" && (this.lastCodeMode = mode), this.$container = $(`#${id}`), this.$modeInput = $(`#${id}-mode`), this.$jsonContainer = $(`#${id}-json-container`), this.$jsContainer = $(`#${id}-js-container`), this.$fileContainer = $(`#${id}-file-container`), this.jsonEditor = document.getElementById(`${id}-json`), this.jsEditor = document.getElementById(`${id}-js`);
-		const $modePicker = this.$container.children("craft-button-group");
+}), isPlainObject = (e) => typeof e == "object" && !!e && [Object.prototype, null].includes(Object.getPrototypeOf(e)), ConfigOptions = class {
+	jsonSchemaUri = null;
+	jsonSchema = null;
+	mode = null;
+	lastCodeMode = null;
+	container = null;
+	modeInput = null;
+	jsonContainer = null;
+	jsContainer = null;
+	fileContainer = null;
+	jsonEditor = null;
+	jsEditor = null;
+	defaults = null;
+	constructor(id, jsonSchemaUri, mode, hasFiles, jsonSchema = null) {
+		this.jsonSchemaUri = jsonSchemaUri, this.jsonSchema = jsonSchema, this.mode = mode, this.mode !== "file" && (this.lastCodeMode = mode), this.container = document.getElementById(id), this.modeInput = document.getElementById(`${id}-mode`), this.jsonContainer = document.getElementById(`${id}-json-container`), this.jsContainer = document.getElementById(`${id}-js-container`), this.fileContainer = document.getElementById(`${id}-file-container`), this.jsonEditor = document.getElementById(`${id}-json`), this.jsEditor = document.getElementById(`${id}-js`);
+		const modePicker = this.container.querySelector(":scope > craft-listbox");
 		this.defaults = {};
-		const $containers = this.$jsonContainer.add(this.$jsContainer).add(this.$fileContainer);
-		new Craft.Listbox($modePicker, { onChange: (e) => {
-			switch (this.mode = e.data("mode"), (this.mode !== "file" || hasFiles) && this.$modeInput.val(this.mode), $containers.addClass("hidden"), this.mode) {
-				case "json":
-					if (this.lastCodeMode === "js") {
-						let e = this.getValue(this.jsEditor);
-						if (this.jsContainsFunctions(e) && !confirm(Craft.t("ckeditor", "Your JavaScript config contains functions. If you switch to JSON, they will be lost. Would you like to continue?"))) {
-							$modePicker.children("[data-mode=\"js\"]")[0]?.click();
-							break;
+		const containers = [
+			this.jsonContainer,
+			this.jsContainer,
+			this.fileContainer
+		];
+		modePicker.addEventListener("change", (e) => {
+			if (e.target === modePicker) {
+				switch (this.mode = e.detail.$selectedOption.dataset.mode, (this.mode !== "file" || hasFiles) && (this.modeInput.value = this.mode), containers.forEach((e) => e.classList.add("hidden")), this.mode) {
+					case "json":
+						if (this.lastCodeMode === "js") {
+							let e = this.getValue(this.jsEditor);
+							if (this.jsContainsFunctions(e) && !confirm(Craft.t("ckeditor", "Your JavaScript config contains functions. If you switch to JSON, they will be lost. Would you like to continue?"))) {
+								modePicker.querySelector("[data-mode=\"js\"]")?.click();
+								break;
+							}
+							let t = this.js2json(e);
+							this.setValue(this.jsonEditor, t || "{\n  \n}"), this.setValue(this.jsEditor, "");
 						}
-						let t = this.js2json(e);
-						this.setValue(this.jsonEditor, t || "{\n  \n}"), this.setValue(this.jsEditor, "");
-					}
-					this.$jsonContainer.removeClass("hidden");
-					break;
-				case "js":
-					if (this.lastCodeMode === "json") {
-						let e = this.getValue(this.jsonEditor), t = this.json2js(e);
-						this.setValue(this.jsEditor, t || "return {\n  \n}"), this.setValue(this.jsonEditor, "");
-					}
-					this.$jsContainer.removeClass("hidden");
-					break;
-				case "file": this.$fileContainer.removeClass("hidden");
+						this.jsonContainer.classList.remove("hidden");
+						break;
+					case "js":
+						if (this.lastCodeMode === "json") {
+							let e = this.getValue(this.jsonEditor), t = this.json2js(e);
+							this.setValue(this.jsEditor, t || "return {\n  \n}"), this.setValue(this.jsonEditor, "");
+						}
+						this.jsContainer.classList.remove("hidden");
+						break;
+					case "file": this.fileContainer.classList.remove("hidden");
+				}
+				this.mode !== "file" && (this.lastCodeMode = this.mode);
 			}
-			this.mode !== "file" && (this.lastCodeMode = this.mode);
-		} }), this.jsonEditor.addEventListener("paste", (ev) => {
+		}), this.jsonEditor.addEventListener("paste", (ev) => {
 			const pastedContent = ev.clipboardData?.getData("text") ?? "";
 			let config;
 			try {
@@ -244,14 +250,14 @@ var ToolbarBuilder_default = Garnish.Base.extend({
 			const { selectionStart, selectionEnd, value } = this.jsonEditor;
 			this.setValue(this.jsonEditor, value.slice(0, selectionStart) + trimmed + value.slice(selectionEnd)), this.jsonEditor.selectionStart = this.jsonEditor.selectionEnd = selectionStart + trimmed.length;
 		});
-	},
-	getValue: function(e) {
+	}
+	getValue(e) {
 		return e.value;
-	},
-	setValue: function(e, t) {
+	}
+	setValue(e, t) {
 		e.value = t, e.dispatchEvent(new Event("input", { bubbles: !0 }));
-	},
-	getConfig: function() {
+	}
+	getConfig() {
 		let e;
 		if (this.mode === "json") e = this.getValue(this.jsonEditor).trim() || "{}";
 		else {
@@ -260,28 +266,28 @@ var ToolbarBuilder_default = Garnish.Base.extend({
 		}
 		try {
 			let t = JSON.parse(e);
-			return $.isPlainObject(t) ? t : !1;
+			return isPlainObject(t) ? t : !1;
 		} catch {
 			return !1;
 		}
-	},
-	setConfig: function(e) {
+	}
+	setConfig(e) {
 		let t = this.config2json(e);
 		if (this.mode === "json") this.setValue(this.jsonEditor, t);
 		else {
 			let e = this.json2js(t);
 			this.setValue(this.jsEditor, e || "return {\n  \n}");
 		}
-	},
-	addSetting: function(e) {
+	}
+	addSetting(e) {
 		let t = this.getConfig();
 		t && t[e] === void 0 && (this.defaults[e] === void 0 && (this.populateDefault(e), this.defaults[e] === void 0) || (t[e] = this.defaults[e], this.setConfig(t)));
-	},
-	removeSetting: function(e) {
+	}
+	removeSetting(e) {
 		let t = this.getConfig();
 		t && t[e] !== void 0 && (this.defaults[e] = t[e], delete t[e], this.setConfig(t));
-	},
-	populateDefault: function(e) {
+	}
+	populateDefault(e) {
 		let t;
 		if (t = this.jsonSchema, !t) {
 			console.warn("Couldn’t get config options JSON schema.");
@@ -302,19 +308,19 @@ var ToolbarBuilder_default = Garnish.Base.extend({
 		if (!r) return;
 		let i = r[1];
 		t.$defs[i] && t.$defs[i].default && (this.defaults[e] = t.$defs[i].default);
-	},
-	replacer: function(e, t) {
+	}
+	replacer(e, t) {
 		return typeof t == "function" ? "__HAS__FUNCTION__" : t;
-	},
-	jsContainsFunctions: function(e) {
+	}
+	jsContainsFunctions(e) {
 		let t = this.getValidJsonConfig(e);
 		return !!(t === !1 || JSON.stringify(t, this.replacer, 2).match(/__HAS__FUNCTION__/));
-	},
-	config2json: function(e) {
+	}
+	config2json(e) {
 		let t = JSON.stringify(e, null, 2);
 		return t === "{}" && (t = "{\n  \n}"), t;
-	},
-	getValidJsonConfig: function(js) {
+	}
+	getValidJsonConfig(js) {
 		const m = (js || "").match(/return\s*(\{[\w\W]*})/);
 		if (!m) return !1;
 		let config;
@@ -324,52 +330,52 @@ var ToolbarBuilder_default = Garnish.Base.extend({
 			return !1;
 		}
 		return config;
-	},
-	js2json: function(e) {
+	}
+	js2json(e) {
 		let t = this.getValidJsonConfig(e);
 		return t !== !1 && this.config2json(t);
-	},
-	json2js: function(e) {
+	}
+	json2js(e) {
 		let t;
 		try {
 			t = JSON.parse(e);
 		} catch {
 			return !1;
 		}
-		if (!$.isPlainObject(t)) return !1;
+		if (!isPlainObject(t)) return !1;
 		let n = this.jsify(t, "");
 		return n === "{\n}" && (n = "{\n  \n}"), `return ${n}`;
-	},
-	jsify: function(e, t) {
+	}
+	jsify(e, t) {
 		let n;
 		if (Array.isArray(e)) {
 			n = "[\n";
 			for (let r of e) n += `${t}  ${this.jsify(r, t + "  ")},\n`;
 			n += `${t}]`;
-		} else if ($.isPlainObject(e)) {
+		} else if (isPlainObject(e)) {
 			n = "{\n";
 			for (let [r, i] of Object.entries(e)) n += `${t}  ${r}: ${this.jsify(i, t + "  ")},\n`;
 			n += `${t}}`;
 		} else n = typeof e == "string" && !e.match(/[\r\n']/) ? `'${e}'` : JSON.stringify(e);
 		return n;
 	}
-}), CssOptions_default = Garnish.Base.extend({
-	mode: null,
-	$container: null,
-	$modeInput: null,
-	$cssContainer: null,
-	$fileContainer: null,
-	init: function(e, t, n) {
-		this.mode = t, this.$container = $(`#${e}`), this.$modeInput = $(`#${e}-mode`), this.$cssContainer = $(`#${e}-css-container`), this.$fileContainer = $(`#${e}-file-container`);
-		let r = this.$container.children("craft-button-group"), i = this.$cssContainer.add(this.$fileContainer);
-		new Craft.Listbox(r, { onChange: (e) => {
-			switch (this.mode = e.data("mode"), (this.mode !== "file" || n) && this.$modeInput.val(this.mode), i.addClass("hidden"), this.mode) {
+}, CssOptions = class {
+	mode = null;
+	container = null;
+	modeInput = null;
+	cssContainer = null;
+	fileContainer = null;
+	constructor(e, t, n) {
+		this.mode = t, this.container = document.getElementById(e), this.modeInput = document.getElementById(`${e}-mode`), this.cssContainer = document.getElementById(`${e}-css-container`), this.fileContainer = document.getElementById(`${e}-file-container`);
+		let r = this.container.querySelector(":scope > craft-listbox"), i = [this.cssContainer, this.fileContainer];
+		r.addEventListener("change", (e) => {
+			if (e.target === r) switch (this.mode = e.detail.$selectedOption.dataset.mode, (this.mode !== "file" || n) && (this.modeInput.value = this.mode), i.forEach((e) => e.classList.add("hidden")), this.mode) {
 				case "css":
-					this.$cssContainer.removeClass("hidden");
+					this.cssContainer.classList.remove("hidden");
 					break;
-				case "file": this.$fileContainer.removeClass("hidden");
+				case "file": this.fileContainer.classList.remove("hidden");
 			}
-		} });
+		});
 	}
-});
-export { ConfigOptions_default as ConfigOptions, CssOptions_default as CssOptions, ToolbarBuilder_default as ToolbarBuilder };
+};
+export { ConfigOptions, CssOptions, ToolbarBuilder_default as ToolbarBuilder };

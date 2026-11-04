@@ -23,6 +23,7 @@ import CraftLinkElementView from './linkelementview.js';
 import CraftLinkSitesView from './linksitesview.js';
 import CraftLinkAdvancedView from './linkadvancedview.js';
 import {resolveAdvancedFieldAttributeValue} from './linkutils.js';
+import {createElementSelectorModal} from '@craftcms/cp';
 
 export default class CraftLinkUI extends Plugin {
   static get requires() {
@@ -475,7 +476,7 @@ export default class CraftLinkUI extends Plugin {
       this._linkUI._showFakeVisualSelection();
     }
 
-    Craft.createElementSelectorModal(linkOption.elementType, {
+    createElementSelectorModal(linkOption.elementType, {
       storageKey: `ckeditor:${this.pluginName}:${linkOption.elementType}`,
       sources: linkOption.sources,
       criteria: linkOption.criteria,

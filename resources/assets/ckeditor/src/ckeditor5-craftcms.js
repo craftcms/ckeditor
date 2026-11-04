@@ -15,15 +15,15 @@ import CraftEntries from './entries/entries';
 import CraftLink from './link/link';
 import CKEditorInspector from '@ckeditor/ckeditor5-inspector';
 import {ClassicEditor, Heading, SourceEditing} from 'ckeditor5';
+import {showError} from '@craftcms/cp';
 
 export {CraftEntries};
 export {CraftLink};
 
 const trackChangesInSourceMode = function (editor) {
   const sourceEditing = editor.plugins.get(SourceEditing);
-  const $editorElement = $(editor.ui.view.element);
-  const $sourceElement = $(editor.sourceElement);
-  const ns = `ckeditor${Math.floor(Math.random() * 1000000000)}`;
+  const editorElement = editor.ui.view.element;
+  const sourceElement = editor.sourceElement;
   const events = [
     'keypress',
     'keyup',
@@ -33,26 +33,38 @@ const trackChangesInSourceMode = function (editor) {
     'click',
     'mousedown',
     'mouseup',
-  ]
-    .map((type) => `${type}.${ns}`)
-    .join(' ');
+  ];
+  let listeners = null;
 
   sourceEditing.on('change:isSourceEditingMode', () => {
-    const $sourceEditingContainer = $editorElement.find(
-      '.ck-source-editing-area',
-    );
-
     if (sourceEditing.isSourceEditingMode) {
-      let content = $sourceEditingContainer.attr('data-value');
-      $sourceEditingContainer.on(events, () => {
-        if (
-          content !== (content = $sourceEditingContainer.attr('data-value'))
-        ) {
-          $sourceElement.val(content);
-        }
-      });
+      const sourceEditingContainer = editorElement.querySelector(
+        '.ck-source-editing-area',
+      );
+      if (!sourceEditingContainer) {
+        return;
+      }
+
+      listeners = new AbortController();
+      let content = sourceEditingContainer.getAttribute('data-value');
+      for (const type of events) {
+        sourceEditingContainer.addEventListener(
+          type,
+          () => {
+            if (
+              content !==
+                (content = sourceEditingContainer.getAttribute('data-value')) &&
+              content !== null
+            ) {
+              sourceElement.value = content;
+            }
+          },
+          {signal: listeners.signal},
+        );
+      }
     } else {
-      $sourceEditingContainer.off(`.${ns}`);
+      listeners?.abort();
+      listeners = null;
     }
   });
 };
@@ -159,7 +171,6 @@ const handleClipboard = function (editor, plugins) {
         // before we can call further events
         event.stop();
 
-        const $editorElement = $(editor.ui.view.element);
         const owner = editor.config.get('craftOwner');
 
         // get the target owner ID, in case we're pasting to a different element all together,
@@ -172,7 +183,8 @@ const handleClipboard = function (editor, plugins) {
         // get the target field id, in case we're pasting to a different field all together (not different instance, different field)
         layoutElementUid =
           editor.config.get('layoutElementUid') ??
-          $editorElement.parents('.field').data('layoutElement');
+          editor.ui.view.element.parentElement?.closest('.field')?.dataset
+            .layoutElement;
 
         // for each nested entry ID we found
         for (let i = 0; i < matches.length; i++) {
@@ -199,7 +211,7 @@ const handleClipboard = function (editor, plugins) {
               if (copyFromEditorId !== editor.id) {
                 if (!plugins.includes(CraftEntries)) {
                   // if we're pasting to a different editor instance and that instance doesn't have CraftEntries plugins - bail straight away
-                  Craft.cp.displayError(
+                  showError(
                     Craft.t(
                       'ckeditor',
                       'This field doesn’t allow nested entries.',
@@ -256,7 +268,7 @@ const handleClipboard = function (editor, plugins) {
                 })
                 .catch((e) => {
                   errors = true;
-                  Craft.cp.displayError(e?.response?.data?.message);
+                  showError(e?.response?.data?.message);
                   console.error(e?.response?.data?.additionalMessage);
                 });
             }

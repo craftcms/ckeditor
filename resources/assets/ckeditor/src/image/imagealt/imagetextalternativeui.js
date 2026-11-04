@@ -5,6 +5,7 @@
  */
 
 import {ButtonView, FormRowView, ImageTextAlternativeUI} from 'ckeditor5';
+import {showError, showSuccess} from '@craftcms/cp';
 
 const assetAltRefPattern = /#asset:\d+(?:@\d+)?:alt$/;
 const assetSrcRefPattern = /#asset:(\d+)(?:@(\d+))?/;
@@ -127,7 +128,7 @@ export default class CraftImageTextAlternativeUI extends ImageTextAlternativeUI 
         },
       );
     } catch (e) {
-      Craft.cp.displayError(e?.response?.data?.message);
+      showError(e?.response?.data?.message);
       throw e;
     }
 
@@ -138,7 +139,7 @@ export default class CraftImageTextAlternativeUI extends ImageTextAlternativeUI 
     const fieldView = this._form.labeledInput.fieldView;
 
     if (fieldView.value == alt) {
-      Craft.cp.displaySuccess(
+      showSuccess(
         Craft.t('ckeditor', 'The alternative text was already in sync.'),
       );
       return;
@@ -150,7 +151,7 @@ export default class CraftImageTextAlternativeUI extends ImageTextAlternativeUI 
       newValue: value,
     });
 
-    Craft.cp.displaySuccess(
+    showSuccess(
       Craft.t('ckeditor', 'The alternative text was synced from the asset.'),
     );
   }

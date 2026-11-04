@@ -14,7 +14,8 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: ['ckeditor5'],
+      // `@craftcms/cp` is published through the control panel’s import map (see `Cp::sharedModules()`)
+      external: ['ckeditor5', '@craftcms/cp'],
     },
   },
 });

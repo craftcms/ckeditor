@@ -5,6 +5,7 @@
  */
 
 import {ButtonView, IconImage, ImageInsertUI} from 'ckeditor5';
+import {createElementSelectorModal, showError} from '@craftcms/cp';
 
 export default class CraftImageInsertUI extends ImageInsertUI {
   static get pluginName() {
@@ -13,9 +14,9 @@ export default class CraftImageInsertUI extends ImageInsertUI {
 
   constructor() {
     super(...arguments);
-    this.$container = null;
+    this.container = null;
     this.progressBar = null;
-    this.$fileInput = null;
+    this.fileInput = null;
     this.uploader = null;
   }
 
@@ -86,7 +87,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       kind: 'image',
     });
 
-    Craft.createElementSelectorModal('CraftCms\\Cms\\Asset\\Elements\\Asset', {
+    createElementSelectorModal('CraftCms\\Cms\\Asset\\Elements\\Asset', {
       ...this._imageModalSettings,
       storageKey: `ckeditor:${this.pluginName}:'CraftCms\\Cms\\Asset\\Elements\\Asset'`,
       sources,
@@ -125,7 +126,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
 
     for (const asset of assets) {
       const siteId = asset.siteId ?? editor.config.get('elementSiteId');
-      const alt = `${asset.$element.data('alt') ?? ''}#asset:${asset.id}${siteId ? `@${siteId}` : ''}:alt`;
+      const alt = `${asset.alt ?? ''}#asset:${asset.id}${siteId ? `@${siteId}` : ''}:alt`;
 
       const hasTransform = this._isTransformUrl(asset.url);
 
@@ -174,7 +175,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
         },
       );
     } catch (e) {
-      Craft.cp.displayError();
+      showError();
       throw e;
     }
 
@@ -242,20 +243,21 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       return;
     }
 
-    this.$container = $(editor.sourceElement).closest('.ckeditor-container');
-    this.progressBar = $(
-      '<craft-progress-bar class="hidden mt-sm" smooth></craft-progress-bar>',
-    ).appendTo(this.$container)[0];
+    this.container = editor.sourceElement.closest('.ckeditor-container');
+    this.progressBar = document.createElement('craft-progress-bar');
+    this.progressBar.className = 'hidden mt-sm';
+    this.progressBar.setAttribute('smooth', '');
+    this.container?.append(this.progressBar);
 
-    this.$fileInput = $('<input/>', {
-      type: 'file',
-      class: 'hidden',
-      multiple: true,
-    }).insertAfter(editor.sourceElement);
+    this.fileInput = document.createElement('input');
+    this.fileInput.type = 'file';
+    this.fileInput.className = 'hidden';
+    this.fileInput.multiple = true;
+    editor.sourceElement.after(this.fileInput);
 
-    this.uploader = new Craft.Uploaders.Uploader(this.$container[0], {
-      dropZone: this.$container[0],
-      fileInput: this.$fileInput[0],
+    this.uploader = new Craft.Uploaders.Uploader(this.container, {
+      dropZone: this.container,
+      fileInput: this.fileInput,
       allowedKinds: ['image'],
       on: {
         start: this._onUploadStart.bind(this),
@@ -360,7 +362,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       }
     }
 
-    Craft.cp.displayError(message);
+    showError(message);
   }
 
   /**

@@ -35,11 +35,13 @@
 {% elseif part == 'options' %}
 
     <div id="{{ 'config-options'|namespaceInputId }}">
-        <craft-button-group aria-label="{{ 'CKEditor config option mode'|t('ckeditor') }}">
-            <craft-button type="button" variant="outline" size="small" data-mode="json" aria-pressed="{{ configMode == 'json' ? 'true' : 'false' }}"{{ configMode == 'json' ? ' active' }}>JSON</craft-button>
-            <craft-button type="button" variant="outline" size="small" data-mode="js" aria-pressed="{{ configMode == 'js' ? 'true' : 'false' }}"{{ configMode == 'js' ? ' active' }}>JavaScript</craft-button>
-            <craft-button type="button" variant="outline" size="small" data-mode="file" aria-pressed="{{ configMode == 'file' ? 'true' : 'false' }}"{{ configMode == 'file' ? ' active' }}>File</craft-button>
-        </craft-button-group>
+        <craft-listbox>
+            <craft-button-group aria-label="{{ 'CKEditor config option mode'|t('ckeditor') }}">
+                <craft-button type="button" variant="outline" size="small" data-mode="json" aria-pressed="{{ configMode == 'json' ? 'true' : 'false' }}"{{ configMode == 'json' ? ' active' }}>JSON</craft-button>
+                <craft-button type="button" variant="outline" size="small" data-mode="js" aria-pressed="{{ configMode == 'js' ? 'true' : 'false' }}"{{ configMode == 'js' ? ' active' }}>JavaScript</craft-button>
+                <craft-button type="button" variant="outline" size="small" data-mode="file" aria-pressed="{{ configMode == 'file' ? 'true' : 'false' }}"{{ configMode == 'file' ? ' active' }}>File</craft-button>
+            </craft-button-group>
+        </craft-listbox>
         <input type="hidden" id="{{ 'config-options-mode'|namespaceInputId }}" name="configMode" value="{{ configMode }}">
     </div>
 
@@ -124,10 +126,12 @@
 {% elseif part == 'styles' %}
 
     <div id="{{ 'css-options'|namespaceInputId }}">
-        <craft-button-group aria-label="{{ 'CSS mode'|t('ckeditor') }}">
-            <craft-button type="button" variant="outline" size="small" data-mode="css" aria-pressed="{{ cssMode == 'css' ? 'true' : 'false' }}"{{ cssMode == 'css' ? ' active' }}>CSS</craft-button>
-            <craft-button type="button" variant="outline" size="small" data-mode="file" aria-pressed="{{ cssMode == 'file' ? 'true' : 'false' }}"{{ cssMode == 'file' ? ' active' }}>File</craft-button>
-        </craft-button-group>
+        <craft-listbox>
+            <craft-button-group aria-label="{{ 'CSS mode'|t('ckeditor') }}">
+                <craft-button type="button" variant="outline" size="small" data-mode="css" aria-pressed="{{ cssMode == 'css' ? 'true' : 'false' }}"{{ cssMode == 'css' ? ' active' }}>CSS</craft-button>
+                <craft-button type="button" variant="outline" size="small" data-mode="file" aria-pressed="{{ cssMode == 'file' ? 'true' : 'false' }}"{{ cssMode == 'file' ? ' active' }}>File</craft-button>
+            </craft-button-group>
+        </craft-listbox>
         <input type="hidden" id="{{ 'css-options-mode'|namespaceInputId }}" name="cssMode" value="{{ cssMode }}">
     </div>
 

@@ -1,4 +1,5 @@
 import {View} from 'ckeditor5';
+import {showError} from '@craftcms/cp';
 
 export default class CraftLinkElementView extends View {
   constructor(locale, options = {}) {
@@ -180,7 +181,7 @@ export default class CraftLinkElementView extends View {
           }
         })
         .catch((e) => {
-          Craft.cp.displayError(e?.response?.data?.message);
+          showError(e?.response?.data?.message);
           throw e?.response?.data?.message ?? e;
         });
     }
