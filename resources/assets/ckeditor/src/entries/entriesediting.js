@@ -5,7 +5,13 @@ import {
   Widget,
 } from 'ckeditor5';
 import CraftEntriesCommand from './entriescommand';
-import {actionClient, t as craftT, loadElementThumbs} from '@craftcms/cp';
+import {
+  actionClient,
+  appendBodyHtml,
+  appendHeadHtml,
+  t as craftT,
+  loadElementThumbs,
+} from '@craftcms/cp';
 
 export default class CraftEntriesEditing extends Plugin {
   /**
@@ -129,8 +135,11 @@ export default class CraftEntriesEditing extends Plugin {
           null,
           function (domElement) {
             domElement.innerHTML = data.cardHtml;
-            Craft.appendHeadHtml(data.headHtml);
-            Craft.appendBodyHtml(data.bodyHtml);
+            // CKEditor fills raw elements synchronously, so the card's scripts
+            // are appended behind it, head before body.
+            void appendHeadHtml(data.headHtml).then(() =>
+              appendBodyHtml(data.bodyHtml),
+            );
           },
         );
 

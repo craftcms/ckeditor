@@ -12,6 +12,8 @@ import CraftEntryTypeDropdownView from './entrytypedropdownview.js';
 import CraftFakeEntryTypeButtonView from './fakeentrytypebuttonview.js';
 import {
   actionClient,
+  appendBodyHtml,
+  appendHeadHtml,
   t as craftT,
   loadElementThumbs,
   showError,
@@ -399,8 +401,8 @@ export default class CraftEntriesUI extends Plugin {
     }
 
     domElement.innerHTML = data.cardHtml;
-    Craft.appendHeadHtml(data.headHtml);
-    Craft.appendBodyHtml(data.bodyHtml);
+    await appendHeadHtml(data.headHtml);
+    await appendBodyHtml(data.bodyHtml);
     loadElementThumbs(domElement);
   }
 
