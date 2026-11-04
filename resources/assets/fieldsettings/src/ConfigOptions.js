@@ -8,9 +8,10 @@ import './fieldsettings.css';
 import {t as craftT} from '@craftcms/cp';
 
 /** Whether a parsed config is an object literal rather than an array or null. */
-function isPlainObject(value) {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
+const isPlainObject = (value) =>
+  value !== null &&
+  typeof value === 'object' &&
+  [Object.prototype, null].includes(Object.getPrototypeOf(value));
 
 export default class ConfigOptions {
   constructor(id, jsonSchemaUri, mode, hasFiles, jsonSchema = null) {
@@ -28,7 +29,7 @@ export default class ConfigOptions {
     // this.jsEditor = window.monacoEditorInstances[`${id}-js`];
     this.jsonEditor = document.getElementById(`${id}-json`);
     this.jsEditor = document.getElementById(`${id}-js`);
-    const modePicker = this.container.querySelector('craft-listbox');
+    const modePicker = this.container.querySelector(':scope > craft-listbox');
 
     this.defaults = {};
 
@@ -38,14 +39,13 @@ export default class ConfigOptions {
       this.fileContainer,
     ];
 
-    // `<craft-listbox>` tracks which option is pressed; this reacts to the choice
-    modePicker.addEventListener('click', (event) => {
-      const option = event.target.closest?.('[data-mode]');
-      if (!option || !modePicker.contains(option)) {
+    // <craft-listbox> re-emits its listbox’s `change` event
+    modePicker.addEventListener('change', (event) => {
+      if (event.target !== modePicker) {
         return;
       }
 
-      this.mode = option.dataset.mode;
+      this.mode = event.detail.$selectedOption.dataset.mode;
       if (this.mode !== 'file' || hasFiles) {
         this.modeInput.value = this.mode;
       }

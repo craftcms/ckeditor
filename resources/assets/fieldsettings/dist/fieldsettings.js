@@ -172,25 +172,19 @@ var ToolbarBuilder = class {
 			});
 		}
 	}
-};
-// resources/assets/fieldsettings/src/ConfigOptions.js
-function isPlainObject(e) {
-	return typeof e == "object" && !!e && !Array.isArray(e);
-}
-var ConfigOptions = class {
+}, isPlainObject = (e) => typeof e == "object" && !!e && [Object.prototype, null].includes(Object.getPrototypeOf(e)), ConfigOptions = class {
 	constructor(id, jsonSchemaUri, mode, hasFiles, jsonSchema = null) {
 		this.jsonSchemaUri = jsonSchemaUri, this.jsonSchema = jsonSchema, this.mode = mode, this.lastCodeMode = mode === "file" ? null : mode, this.container = document.getElementById(id), this.modeInput = document.getElementById(`${id}-mode`), this.jsonContainer = document.getElementById(`${id}-json-container`), this.jsContainer = document.getElementById(`${id}-js-container`), this.fileContainer = document.getElementById(`${id}-file-container`), this.jsonEditor = document.getElementById(`${id}-json`), this.jsEditor = document.getElementById(`${id}-js`);
-		const modePicker = this.container.querySelector("craft-listbox");
+		const modePicker = this.container.querySelector(":scope > craft-listbox");
 		this.defaults = {};
 		const containers = [
 			this.jsonContainer,
 			this.jsContainer,
 			this.fileContainer
 		];
-		modePicker.addEventListener("click", (e) => {
-			let n = e.target.closest?.("[data-mode]");
-			if (n && modePicker.contains(n)) {
-				switch (this.mode = n.dataset.mode, (this.mode !== "file" || hasFiles) && (this.modeInput.value = this.mode), containers.forEach((e) => e.classList.add("hidden")), this.mode) {
+		modePicker.addEventListener("change", (e) => {
+			if (e.target === modePicker) {
+				switch (this.mode = e.detail.$selectedOption.dataset.mode, (this.mode !== "file" || hasFiles) && (this.modeInput.value = this.mode), containers.forEach((e) => e.classList.add("hidden")), this.mode) {
 					case "json":
 						if (this.lastCodeMode === "js") {
 							let e = this.getValue(this.jsEditor);
@@ -339,9 +333,10 @@ var ConfigOptions = class {
 	}
 }, CssOptions = class {
 	constructor(e, n, r) {
-		this.mode = n, this.container = document.getElementById(e), this.modeInput = document.getElementById(`${e}-mode`), this.cssContainer = document.getElementById(`${e}-css-container`), this.fileContainer = document.getElementById(`${e}-file-container`), this.container.addEventListener("click", (e) => {
-			let n = e.target.closest?.("[data-mode]");
-			n && this.container.contains(n) && (this.mode = n.dataset.mode, (this.mode !== "file" || r) && (this.modeInput.value = this.mode), this.cssContainer.classList.toggle("hidden", this.mode !== "css"), this.fileContainer.classList.toggle("hidden", this.mode !== "file"));
+		this.mode = n, this.container = document.getElementById(e), this.modeInput = document.getElementById(`${e}-mode`), this.cssContainer = document.getElementById(`${e}-css-container`), this.fileContainer = document.getElementById(`${e}-file-container`);
+		let i = this.container.querySelector(":scope > craft-listbox");
+		i.addEventListener("change", (e) => {
+			e.target === i && (this.mode = e.detail.$selectedOption.dataset.mode, (this.mode !== "file" || r) && (this.modeInput.value = this.mode), this.cssContainer.classList.toggle("hidden", this.mode !== "css"), this.fileContainer.classList.toggle("hidden", this.mode !== "file"));
 		});
 	}
 };

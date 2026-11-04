@@ -2043,6 +2043,10 @@ import {create} from '@craftcms/ckeditor';
 import {t as craftT} from '@craftcms/cp';
 
 export default async function (element, options = {}) {
+  // Custom config JS may still refer to `$`, so it’s kept for when jQuery is on the page
+  const $ = window.jQuery;
+  const isPlainObject = (value) => value !== null && typeof value === 'object' &&
+    [Object.prototype, null].includes(Object.getPrototypeOf(value));
   const customConfig = $configJs;
   const config = Object.assign({
     translations: [coreTranslations],
@@ -2056,7 +2060,7 @@ export default async function (element, options = {}) {
   });
 
 
-  if (config.toolbar?.constructor !== Object) {
+  if (!isPlainObject(config.toolbar)) {
     config.toolbar = {};
   }
   config.toolbar.items = $toolbarJs;

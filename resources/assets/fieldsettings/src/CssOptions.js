@@ -12,13 +12,15 @@ export default class CssOptions {
     this.cssContainer = document.getElementById(`${id}-css-container`);
     this.fileContainer = document.getElementById(`${id}-file-container`);
 
-    this.container.addEventListener('click', (event) => {
-      const option = event.target.closest?.('[data-mode]');
-      if (!option || !this.container.contains(option)) {
+    const modePicker = this.container.querySelector(':scope > craft-listbox');
+
+    // <craft-listbox> re-emits its listbox’s `change` event
+    modePicker.addEventListener('change', (event) => {
+      if (event.target !== modePicker) {
         return;
       }
 
-      this.mode = option.dataset.mode;
+      this.mode = event.detail.$selectedOption.dataset.mode;
 
       // “File” isn’t a real choice until there’s a file to pick
       if (this.mode !== 'file' || hasFiles) {
