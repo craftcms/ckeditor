@@ -2042,7 +2042,6 @@ $uiTranslationImport
 import {create} from '@craftcms/ckeditor';
 
 export default async function (element, options = {}) {
-  const $ = jQuery;
   const customConfig = $configJs;
   const config = Object.assign({
     translations: [coreTranslations],
@@ -2056,7 +2055,7 @@ export default async function (element, options = {}) {
   });
 
 
-  if (!jQuery.isPlainObject(config.toolbar)) {
+  if (config.toolbar?.constructor !== Object) {
     config.toolbar = {};
   }
   config.toolbar.items = $toolbarJs;
