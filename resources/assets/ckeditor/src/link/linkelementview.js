@@ -1,8 +1,10 @@
 import {View} from 'ckeditor5';
 import {
   actionClient,
+  addActionsToChip,
   appendBodyHtml,
   appendHeadHtml,
+  cpConfig,
   t as craftT,
   showError,
 } from '@craftcms/cp';
@@ -113,7 +115,10 @@ export default class CraftLinkElementView extends View {
         .then(async (response) => {
           if (Object.keys(response.data.elements).length > 0) {
             // if it's a multisite, disable sites that are not in the response
-            if (Craft.isMultiSite && this.linkUi.sitesView != null) {
+            if (
+              cpConfig().get('isMultiSite') &&
+              this.linkUi.sitesView != null
+            ) {
               for (const [siteId, model] of Object.entries(
                 this.linkUi.sitesView.siteDropdownItemModels,
               )) {
@@ -152,7 +157,7 @@ export default class CraftLinkElementView extends View {
               },
             ];
 
-            Craft.addActionsToChip($element, actions);
+            addActionsToChip($element, actions);
 
             // only show the sites dropdown, if an element has been selected
             if (this.linkUi.sitesView?.siteDropdownView?.buttonView) {

@@ -21,6 +21,7 @@ const cpSharedModuleExports: Record<string, string[] | null> = {
   vue: null,
   '@craftcms/cp': [
     'Uploads',
+    'Uploader',
     'actionClient',
     'addActionsToChip',
     'appendBodyHtml',
@@ -28,6 +29,7 @@ const cpSharedModuleExports: Record<string, string[] | null> = {
     'appendHeadHtml',
     'createElementEditor',
     'createElementSelectorModal',
+    'cpConfig',
     'escapeHtml',
     'getActionUrl',
     'loadElementThumbs',

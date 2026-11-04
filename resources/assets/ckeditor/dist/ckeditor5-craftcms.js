@@ -1,16 +1,16 @@
 import { ButtonView as e, ClassicEditor as t, Collection as n, Command as r, ContextualBalloon as i, DomEventObserver as a, DropdownButtonView as o, FormRowView as s, Heading as c, IconImage as l, IconObjectSizeMedium as u, IconPlus as d, ImageInsertUI as f, ImageTextAlternativeUI as p, ImageUtils as m, LabeledFieldView as h, LinkUI as g, ModelRange as _, Plugin as v, SourceEditing as y, SwitchButtonView as b, View as x, ViewModel as S, Widget as C, WidgetToolbarRepository as w, addListToDropdown as T, createDropdown as E, createLabeledInputText as D, findAttributeRange as O, isWidget as ee, toWidget as k, viewToModelPositionOutsideModelElement as A } from "ckeditor5";
-import { actionClient as j, appendBodyHtml as M, appendHeadHtml as te, createElementSelectorModal as N, loadElementThumbs as ne, showError as P, showSuccess as F, t as I } from "@craftcms/cp";
+import { Uploader as j, actionClient as M, addActionsToChip as te, appendBodyHtml as N, appendHeadHtml as ne, cpConfig as P, createElementEditor as re, createElementSelectorModal as ie, escapeHtml as F, getActionUrl as ae, loadElementThumbs as oe, openAssetImageEditor as se, openSlideout as ce, showError as le, showSuccess as ue, t as I } from "@craftcms/cp";
 // \0rolldown/runtime.js
-var re = Object.create, ie = Object.defineProperty, ae = Object.getOwnPropertyDescriptor, oe = Object.getOwnPropertyNames, se = Object.getPrototypeOf, ce = Object.prototype.hasOwnProperty, le = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), ue = (e, t, n, r) => {
-	if (t && typeof t == "object" || typeof t == "function") for (var i = oe(t), a = 0, o = i.length, s; a < o; a++) s = i[a], !ce.call(e, s) && s !== n && ie(e, s, {
+var de = Object.create, fe = Object.defineProperty, pe = Object.getOwnPropertyDescriptor, me = Object.getOwnPropertyNames, L = Object.getPrototypeOf, he = Object.prototype.hasOwnProperty, ge = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), _e = (e, t, n, r) => {
+	if (t && typeof t == "object" || typeof t == "function") for (var i = me(t), a = 0, o = i.length, s; a < o; a++) s = i[a], !he.call(e, s) && s !== n && fe(e, s, {
 		get: ((e) => t[e]).bind(null, s),
-		enumerable: !(r = ae(t, s)) || r.enumerable
+		enumerable: !(r = pe(t, s)) || r.enumerable
 	});
 	return e;
-}, de = (e, t, n) => (n = e == null ? {} : re(se(e)), ue(t || !e || !e.__esModule || !ce.call(e, "default") ? ie(n, "default", {
+}, ve = (e, t, n) => (n = e == null ? {} : de(L(e)), _e(t || !e || !e.__esModule || !he.call(e, "default") ? fe(n, "default", {
 	value: e,
 	enumerable: !0
-}) : n, e)), fe = /#asset:\d+(?:@\d+)?:alt$/, pe = /#asset:(\d+)(?:@(\d+))?/, me = class extends p {
+}) : n, e)), ye = /#asset:\d+(?:@\d+)?:alt$/, be = /#asset:(\d+)(?:@(\d+))?/, xe = class extends p {
 	static get pluginName() {
 		return "CraftImageTextAlternativeUI";
 	}
@@ -20,7 +20,7 @@ var re = Object.create, ie = Object.defineProperty, ae = Object.getOwnPropertyDe
 	_createForm() {
 		super._createForm(), this._createSyncButton(), this.listenTo(this._form, "submit", () => {
 			let e = this._form.labeledInput.fieldView, t = this.editor.commands.get("imageTextAlternative").value || "";
-			fe.test(t) && e.element.value === this._visibleAltText(t) && (e.value = e.element.value = t);
+			ye.test(t) && e.element.value === this._visibleAltText(t) && (e.value = e.element.value = t);
 		}, { priority: "high" });
 	}
 	_showForm() {
@@ -29,14 +29,14 @@ var re = Object.create, ie = Object.defineProperty, ae = Object.getOwnPropertyDe
 		e.value = e.element.value = t, this._syncButton.isEnabled = !!this._srcInfo(this._selectedImage()), e.select();
 	}
 	_visibleAltText(e) {
-		return e.replace(fe, "");
+		return e.replace(ye, "");
 	}
 	_selectedImage() {
 		return this.editor.plugins.get("ImageUtils").getClosestSelectedImageElement(this.editor.model.document.selection);
 	}
 	_srcInfo(e) {
 		if (!e || !e.hasAttribute("src")) return null;
-		let t = e.getAttribute("src").match(pe);
+		let t = e.getAttribute("src").match(be);
 		return t ? {
 			assetId: t[1],
 			siteId: t[2] ?? null
@@ -57,20 +57,20 @@ var re = Object.create, ie = Object.defineProperty, ae = Object.getOwnPropertyDe
 		if (!t) return;
 		let n;
 		try {
-			n = await j.post("ckeditor/ckeditor/image-alt", {
+			n = await M.post("ckeditor/ckeditor/image-alt", {
 				assetId: t.assetId,
 				siteId: t.siteId ?? this.editor.config.get("elementSiteId")
 			});
 		} catch (e) {
-			throw P(e?.response?.data?.message), e;
+			throw le(e?.response?.data?.message), e;
 		}
 		let r = n.data.siteId ?? t.siteId, i = n.data.alt ?? "", a = `${i}#asset:${t.assetId}${r ? `@${r}` : ""}:alt`, o = this._form.labeledInput.fieldView;
-		o.value == i ? F(I("The alternative text was already in sync.", {}, "ckeditor")) : (o.value = o.element.value = i, this.editor.execute("imageTextAlternative", { newValue: a }), F(I("The alternative text was synced from the asset.", {}, "ckeditor")));
+		o.value == i ? ue(I("The alternative text was already in sync.", {}, "ckeditor")) : (o.value = o.element.value = i, this.editor.execute("imageTextAlternative", { newValue: a }), ue(I("The alternative text was synced from the asset.", {}, "ckeditor")));
 	}
 	destroy() {
 		this._syncButton && this._syncButton.destroy(), super.destroy();
 	}
-}, L = class extends f {
+}, Se = class extends f {
 	static get pluginName() {
 		return "CraftImageInsertUI";
 	}
@@ -109,7 +109,7 @@ var re = Object.create, ie = Object.defineProperty, ae = Object.getOwnPropertyDe
 	}
 	_showImageSelectModal() {
 		let e = this._imageSources, t = this.editor, n = t.config, r = Object.assign({}, n.get("assetSelectionCriteria"), { kind: "image" });
-		N("CraftCms\\Cms\\Asset\\Elements\\Asset", {
+		ie("CraftCms\\Cms\\Asset\\Elements\\Asset", {
 			...this._imageModalSettings,
 			storageKey: `ckeditor:${this.pluginName}:'CraftCms\\Cms\\Asset\\Elements\\Asset'`,
 			sources: e,
@@ -155,12 +155,12 @@ var re = Object.create, ie = Object.defineProperty, ae = Object.getOwnPropertyDe
 		r?.ownerId() && (n.ownerId = await r.prepare());
 		let i;
 		try {
-			i = await j.post("ckeditor/ckeditor/create-image-entry", {
+			i = await M.post("ckeditor/ckeditor/create-image-entry", {
 				...n,
 				assetIds: [e]
 			});
 		} catch (e) {
-			throw P(), e;
+			throw le(), e;
 		}
 		t.commands.execute("insertEntry", {
 			entryId: i.data.entryId,
@@ -179,7 +179,7 @@ var re = Object.create, ie = Object.defineProperty, ae = Object.getOwnPropertyDe
 	async _getTransformUrl(e, t) {
 		let n;
 		try {
-			n = await j.post("ckeditor/ckeditor/image-url", {
+			n = await M.post("ckeditor/ckeditor/image-url", {
 				assetId: e,
 				transform: t
 			});
@@ -202,7 +202,7 @@ var re = Object.create, ie = Object.defineProperty, ae = Object.getOwnPropertyDe
 			type: "file",
 			class: "hidden",
 			multiple: !0
-		}).insertAfter(e.sourceElement), this.uploader = new Craft.Uploaders.Uploader(this.$container[0], {
+		}).insertAfter(e.sourceElement), this.uploader = new j(this.$container[0], {
 			dropZone: this.$container[0],
 			fileInput: this.$fileInput[0],
 			allowedKinds: ["image"],
@@ -248,12 +248,12 @@ var re = Object.create, ie = Object.defineProperty, ae = Object.getOwnPropertyDe
 	_onUploadFailure({ error: e, canceled: t, file: n }) {
 		if (t) return;
 		let r = e?.data || {}, i = e instanceof Error ? e.message : void 0, a = r.filename || n?.name, { errors: o } = r, s = o ? Object.values(o).flat() : [];
-		i ||= s.length ? s.join("\n") : a ? I("Upload failed for “{filename}”.", { filename: a }) : I("Upload failed."), P(i);
+		i ||= s.length ? s.join("\n") : a ? I("Upload failed for “{filename}”.", { filename: a }) : I("Upload failed."), le(i);
 	}
 	_onUploadStop() {
 		this.progressBar.classList.add("hidden");
 	}
-}, he = class extends r {
+}, Ce = class extends r {
 	refresh() {
 		let e = this._element(), t = this._srcInfo(e);
 		this.isEnabled = !!t, this.value = t ? { transform: t.transform } : null;
@@ -278,7 +278,7 @@ var re = Object.create, ie = Object.defineProperty, ae = Object.getOwnPropertyDe
 			t.change((e) => {
 				let t = r.src.replace(/#.*/, "") + i;
 				e.setAttribute("src", t, n);
-			}), j.post("ckeditor/ckeditor/image-url", {
+			}), M.post("ckeditor/ckeditor/image-url", {
 				assetId: r.assetId,
 				transform: e.transform
 			}).then(({ data: e }) => {
@@ -289,7 +289,7 @@ var re = Object.create, ie = Object.defineProperty, ae = Object.getOwnPropertyDe
 			});
 		}
 	}
-}, ge = class extends v {
+}, we = class extends v {
 	static get requires() {
 		return [m];
 	}
@@ -300,12 +300,12 @@ var re = Object.create, ie = Object.defineProperty, ae = Object.getOwnPropertyDe
 		super(e), e.config.define("transforms", []);
 	}
 	init() {
-		let e = this.editor, t = new he(e);
+		let e = this.editor, t = new Ce(e);
 		e.commands.add("transformImage", t);
 	}
-}, _e = u, ve = class extends v {
+}, Te = u, Ee = class extends v {
 	static get requires() {
-		return [ge];
+		return [we];
 	}
 	static get pluginName() {
 		return "ImageTransformUI";
@@ -328,7 +328,7 @@ var re = Object.create, ie = Object.defineProperty, ae = Object.getOwnPropertyDe
 			return l.set({
 				tooltip: n("Resize image"),
 				commandValue: null,
-				icon: _e,
+				icon: Te,
 				isToggleable: !0,
 				label: this._getOptionLabelValue(r),
 				withText: !0,
@@ -358,30 +358,30 @@ var re = Object.create, ie = Object.defineProperty, ae = Object.getOwnPropertyDe
 					icon: null
 				})
 			};
-			n.model.bind("isOn").to(t, "value", ye(e.value)), r.add(n);
+			n.model.bind("isOn").to(t, "value", De(e.value)), r.add(n);
 		}), r;
 	}
 };
-function ye(e) {
+function De(e) {
 	return (t) => {
 		let n = t;
 		return e === null && n === e || n !== null && n.transform === e;
 	};
 }
 // resources/assets/ckeditor/src/image/imagetransform.js
-var be = class extends v {
+var Oe = class extends v {
 	static get requires() {
-		return [ge, ve];
+		return [we, Ee];
 	}
 	static get pluginName() {
 		return "ImageTransform";
 	}
-}, xe = class extends r {
+}, ke = class extends r {
 	refresh() {
 		let e = this._element(), t = this._srcInfo(e);
 		if (this.isEnabled = !!t, this.isEnabled) {
 			let e = { assetId: t.assetId };
-			j.post("ckeditor/ckeditor/image-permissions", e).then((e) => {
+			M.post("ckeditor/ckeditor/image-permissions", e).then((e) => {
 				e.data.editable === !1 && (this.isEnabled = !1);
 			});
 		}
@@ -402,10 +402,10 @@ var be = class extends v {
 	execute() {
 		this.editor.model;
 		let e = this._element(), t = this._srcInfo(e);
-		t && Craft.openAssetImageEditor(parseInt(t.assetId, 10), (e) => {
+		t && se(parseInt(t.assetId, 10), (e) => {
 			this._reloadImage(t.assetId, e);
 		}).catch((e) => {
-			P(e?.response?.data?.message);
+			le(e?.response?.data?.message);
 		});
 	}
 	_reloadImage(e, t) {
@@ -417,7 +417,7 @@ var be = class extends v {
 						assetId: t.srcInfo.assetId,
 						handle: t.srcInfo.transform
 					};
-					j.post("assets/generate-transform", e).then((e) => {
+					M.post("assets/generate-transform", e).then((e) => {
 						let r = this._getNewSrc(e.data, t);
 						n.change((e) => {
 							e.setAttribute("src", r, t.element);
@@ -425,7 +425,7 @@ var be = class extends v {
 					});
 				} else {
 					let e = { assetId: t.srcInfo.assetId };
-					j.post("ckeditor/ckeditor/image-url", e).then((e) => {
+					M.post("ckeditor/ckeditor/image-url", e).then((e) => {
 						let r = this._getNewSrc(e.data, t);
 						n.change((e) => {
 							e.setAttribute("src", r, t.element);
@@ -450,7 +450,7 @@ var be = class extends v {
 		}
 		return n;
 	}
-}, Se = class extends v {
+}, Ae = class extends v {
 	static get requires() {
 		return [m];
 	}
@@ -458,12 +458,12 @@ var be = class extends v {
 		return "ImageEditorEditing";
 	}
 	init() {
-		let e = this.editor, t = new xe(e);
+		let e = this.editor, t = new ke(e);
 		e.commands.add("imageEditor", t);
 	}
-}, Ce = class extends v {
+}, je = class extends v {
 	static get requires() {
-		return [Se];
+		return [Ae];
 	}
 	static get pluginName() {
 		return "ImageEditorUI";
@@ -484,14 +484,14 @@ var be = class extends v {
 			}), i;
 		});
 	}
-}, we = class extends v {
+}, Me = class extends v {
 	static get requires() {
-		return [Se, Ce];
+		return [Ae, je];
 	}
 	static get pluginName() {
 		return "ImageEditor";
 	}
-}, Te = class extends r {
+}, Ne = class extends r {
 	execute(e) {
 		let t = this.editor, n = t.model.document.selection;
 		if (!n.isCollapsed && n.getFirstRange()) {
@@ -511,7 +511,7 @@ var be = class extends v {
 	refresh() {
 		this.isEnabled = !0;
 	}
-}, Ee = class extends v {
+}, Pe = class extends v {
 	static get requires() {
 		return [C];
 	}
@@ -521,7 +521,7 @@ var be = class extends v {
 	init() {
 		this._defineSchema(), this._defineConverters();
 		let e = this.editor;
-		e.commands.add("insertEntry", new Te(e)), e.editing.mapper.on("viewToModelPosition", A(e.model, (e) => {
+		e.commands.add("insertEntry", new Ne(e)), e.editing.mapper.on("viewToModelPosition", A(e.model, (e) => {
 			e.hasClass("cke-entry-card");
 		}));
 	}
@@ -571,12 +571,12 @@ var be = class extends v {
 		let t = (e, t, n) => {
 			this._getCardHtml(e).then((e) => {
 				let r = t.createRawElement("div", null, function(t) {
-					t.innerHTML = e.cardHtml, te(e.headHtml).then(() => M(e.bodyHtml));
+					t.innerHTML = e.cardHtml, ne(e.headHtml).then(() => N(e.bodyHtml));
 				});
 				t.insert(t.createPositionAt(n, 0), r);
 				let i = this.editor;
 				i.editing.view.focus(), setTimeout(() => {
-					ne(i.ui.element);
+					oe(i.ui.element);
 				}, 100), i.model.change((e) => {
 					i.ui.update(), $(i.sourceElement).trigger("keyup");
 				});
@@ -588,24 +588,24 @@ var be = class extends v {
 		if (t) return { cardHtml: t };
 		let n = $(this.editor.sourceElement).parents(".field"), r = this.editor.config.get("layoutElementUid") ?? $(n[0]).data("layout-element"), i = e.getAttribute("entryId") ?? null, a = e.getAttribute("siteId") ?? null;
 		try {
-			let { data: e } = await j.post("ckeditor/ckeditor/entry-card-html", {
+			let { data: e } = await M.post("ckeditor/ckeditor/entry-card-html", {
 				entryId: i,
 				siteId: a,
 				layoutElementUid: r
 			});
 			return e;
 		} catch (e) {
-			return console.error(e?.response?.data), { cardHtml: "<craft-card><craft-callout variant=\"danger\" role=\"alert\">" + Craft.escapeHtml(e?.response?.data?.message || I("An unknown error occurred.", {}, "ckeditor")) + "</craft-callout></craft-card>" };
+			return console.error(e?.response?.data), { cardHtml: "<craft-card><craft-callout variant=\"danger\" role=\"alert\">" + F(e?.response?.data?.message || I("An unknown error occurred.", {}, "ckeditor")) + "</craft-callout></craft-card>" };
 		}
 	}
-}, De = class extends a {
+}, Fe = class extends a {
 	constructor(e) {
 		super(e), this.domEventType = "dblclick";
 	}
 	onDomEvent(e) {
 		this.fire(e.type, e);
 	}
-}, Oe = class extends x {
+}, Ie = class extends x {
 	constructor(t, n = {}) {
 		super(t), this.set("isFocused", !1), this.entriesUi = n.entriesUi, this.editor = this.entriesUi.editor, this.entryType = n.entryType;
 		let r = this.editor.commands.get("insertEntry"), i = new e(), a = {
@@ -625,7 +625,7 @@ var be = class extends v {
 	focus() {
 		this.element.children[0].focus();
 	}
-}, ke = class extends x {
+}, Le = class extends x {
 	constructor(e, t = {}) {
 		super(e), this.bindTemplate, this.set("isFocused", !1), this.entriesUi = t.entriesUi, this.editor = this.entriesUi.editor;
 		let r = t.entryTypes, i = this.editor.commands.get("insertEntry"), a = new n();
@@ -649,7 +649,7 @@ var be = class extends v {
 	focus() {
 		this.element.children[0].children[0].focus();
 	}
-}, Ae = class extends x {
+}, Re = class extends x {
 	constructor(e, t = {}) {
 		super(e), this.bindTemplate, this.set("isFocused", !1), this.entriesUi = t.entriesUi, this.editor = this.entriesUi.editor;
 		let n = this.editor.commands.get("insertEntry"), r = E(e);
@@ -672,7 +672,7 @@ var be = class extends v {
 	focus() {
 		this.element.focus();
 	}
-}, je = class extends v {
+}, ze = class extends v {
 	static get requires() {
 		return [w];
 	}
@@ -694,7 +694,7 @@ var be = class extends v {
 	}
 	_listenToEvents() {
 		let e = this.editor.editing.view, t = e.document;
-		e.addObserver(De), this.editor.listenTo(t, "dblclick", (e, t) => {
+		e.addObserver(Fe), this.editor.listenTo(t, "dblclick", (e, t) => {
 			if (!this.editor.isReadOnly) {
 				let e = this.editor.editing.mapper.toModelElement(t.target.parent);
 				e.name === "craftEntryModel" && this._initEditEntrySlideout(t, e);
@@ -710,15 +710,15 @@ var be = class extends v {
 	_createToolbarEntriesButtons() {
 		let e = this.editor.config.get("entryTypeOptions");
 		if (e && e.length) {
-			if (e.length == 1 && e[0].value == "fake") this.editor.ui.componentFactory.add("createEntry", (e) => new Ae(this.editor.locale, { entriesUi: this }));
+			if (e.length == 1 && e[0].value == "fake") this.editor.ui.componentFactory.add("createEntry", (e) => new Re(this.editor.locale, { entriesUi: this }));
 			else {
 				let t = this._getEntryTypeButtonsCollection(e ?? []), n = t.filter((e) => e.model.expanded), r = t.filter((e) => !e.model.expanded);
 				n.forEach((e, t) => {
-					this.editor.ui.componentFactory.add(`createEntry-${e.model.uid}`, (t) => new Oe(this.editor.locale, {
+					this.editor.ui.componentFactory.add(`createEntry-${e.model.uid}`, (t) => new Ie(this.editor.locale, {
 						entriesUi: this,
 						entryType: e
 					}));
-				}), r.length && this.editor.ui.componentFactory.add("createEntry", (e) => new ke(this.editor.locale, {
+				}), r.length && this.editor.ui.componentFactory.add("createEntry", (e) => new Le(this.editor.locale, {
 					entriesUi: this,
 					entryTypes: r
 				}));
@@ -749,7 +749,7 @@ var be = class extends v {
 		let n = new e(t);
 		return n.set({
 			isEnabled: !0,
-			label: I("Edit {type}", { type: (Craft.elementTypeNames["CraftCms\\Cms\\Entry\\Elements\\Entry"] ?? Craft.elementTypeNames["craft\\elements\\Entry"])[2] }),
+			label: I("Edit {type}", { type: (P().get("elementTypeNames")["CraftCms\\Cms\\Entry\\Elements\\Entry"] ?? P().get("elementTypeNames")["craft\\elements\\Entry"])[2] }),
 			tooltip: !0,
 			withText: !0
 		}), this.listenTo(n, "execute", (e) => {
@@ -771,7 +771,7 @@ var be = class extends v {
 		let u = o.parents(".field");
 		u.length && $(u[0]).hasClass("has-errors") && (s.prevalidate = 1);
 		let d = null;
-		Craft.openSlideout(Craft.getActionUrl("elements/edit", s), {
+		ce(ae("elements/edit", s), {
 			opener: o[0] ?? null,
 			prepareNestedOwner: async () => o.is("[data-owner-is-canonical]") && !o.is("[data-is-unpublished-draft]") ? r.prepare() : null,
 			onSaved: (t) => {
@@ -799,18 +799,18 @@ var be = class extends v {
 		if (t ||= (r((t) => t.removeAttribute("cardHtml", e)), await n.plugins.get("CraftEntriesEditing")._getCardHtml(e)), e.root.rootName === "$graveyard") return;
 		r((n) => n.setAttribute("cardHtml", t.cardHtml, e));
 		let i = n.editing.mapper.toViewElement(e), a = i ? [...i.getChildren()].find((e) => e.is("rawElement")) : null, o = a ? n.editing.view.domConverter.mapViewToDom(a) : null;
-		o ? (o.innerHTML = t.cardHtml, await te(t.headHtml), await M(t.bodyHtml), ne(o)) : n.editing.reconvertItem(e);
+		o ? (o.innerHTML = t.cardHtml, await ne(t.headHtml), await N(t.bodyHtml), oe(o)) : n.editing.reconvertItem(e);
 	}
 	async _showCreateEntrySlideout(e) {
 		let t = this.editor, n = t.model, r = n.document.selection.getFirstRange(), i = t.config.get("nestedElementAttributes"), a = Object.assign({}, i, { typeId: e }), o = t.config.get("craftOwner");
 		o?.ownerId() && (a.ownerId = await o.prepare());
 		let s;
 		try {
-			s = (await j.post("elements/create", a)).data;
+			s = (await M.post("elements/create", a)).data;
 		} catch (e) {
-			throw P(e?.response?.data?.error), e;
+			throw le(e?.response?.data?.error), e;
 		}
-		let c = Craft.createElementEditor(this.elementType, {
+		let c = re(this.elementType, {
 			elementId: s.element.id,
 			draftId: s.element.draftId,
 			params: {
@@ -830,20 +830,20 @@ var be = class extends v {
 			}), t.editing.view.focus();
 		});
 	}
-}, Me = class extends v {
+}, Be = class extends v {
 	static get requires() {
-		return [Ee, je];
+		return [Pe, ze];
 	}
 	static get pluginName() {
 		return "CraftEntries";
 	}
 };
 // resources/assets/ckeditor/src/link/linkutils.js
-function Ne(e, t) {
+function Ve(e, t) {
 	if (t) return e.type === "bool" && e.value == 1 ? "" : t;
 }
 // resources/assets/ckeditor/src/link/linkediting.js
-var Pe = class extends v {
+var He = class extends v {
 	static get pluginName() {
 		return "CraftLinkEditing";
 	}
@@ -901,7 +901,7 @@ var Pe = class extends v {
 					o = r?.hasAttribute("linkHref") ? O(n, "linkHref", r.getAttribute("linkHref"), e.model) : t.createRangeOn(r);
 				}
 				this.conversionData.forEach((n) => {
-					let r = Ne(n, i[n.model]);
+					let r = Ve(n, i[n.model]);
 					if (a.isCollapsed) r === void 0 ? t.removeAttribute(n.model, o) : t.setAttribute(n.model, r, o);
 					else {
 						let i = e.model.schema.getValidRanges(a.getRanges(), n.model);
@@ -925,7 +925,7 @@ var Pe = class extends v {
 			}));
 		}, { priority: "high" });
 	}
-}, Fe = class extends x {
+}, Ue = class extends x {
 	constructor(e, t = {}) {
 		super(e), this.bindTemplate, this.set("isFocused", !1), this.linkUi = t.linkUi, this.editor = this.linkUi.editor, this.elementId = this.linkUi._getLinkElementId(), this.siteId = this.linkUi._getLinkSiteId(), this.linkOption = t.linkOption;
 		let n = this.linkUi._getLinkElementRefHandle();
@@ -966,7 +966,7 @@ var Pe = class extends v {
 				let r = t.formView.displayedTextInputView.fieldView.element.value;
 				t._hideUI(!1), e._showElementSelectorModal(n, r);
 			}
-		}), this.element.children.length == 0 && j.post("ckeditor/ckeditor/render-element-with-supported-sites", { elements: [{
+		}), this.element.children.length == 0 && M.post("ckeditor/ckeditor/render-element-with-supported-sites", { elements: [{
 			type: n.elementType,
 			id: this.elementId,
 			siteId: this.siteId,
@@ -978,8 +978,8 @@ var Pe = class extends v {
 			}]
 		}] }).then(async (t) => {
 			if (Object.keys(t.data.elements).length > 0) {
-				if (Craft.isMultiSite && this.linkUi.sitesView != null) for (let [e, n] of Object.entries(this.linkUi.sitesView.siteDropdownItemModels)) t.data.siteIds.includes(parseInt(e)) || e == "current" ? n.set("isEnabled", !0) : n.set("isEnabled", !1);
-				this.element.innerHTML = t.data.elements[this.elementId][0], await te(t.data.headHtml), await M(t.data.bodyHtml);
+				if (P().get("isMultiSite") && this.linkUi.sitesView != null) for (let [e, n] of Object.entries(this.linkUi.sitesView.siteDropdownItemModels)) t.data.siteIds.includes(parseInt(e)) || e == "current" ? n.set("isEnabled", !0) : n.set("isEnabled", !1);
+				this.element.innerHTML = t.data.elements[this.elementId][0], await ne(t.data.headHtml), await N(t.data.bodyHtml);
 				let n = this.element.firstChild, r = [{
 					icon: "arrows-rotate",
 					label: I("Replace"),
@@ -993,16 +993,16 @@ var Pe = class extends v {
 						this.editor.commands.get("unlink").execute();
 					}
 				}];
-				Craft.addActionsToChip(n, r), this.linkUi.sitesView?.siteDropdownView?.buttonView && this.linkUi.sitesView?.siteDropdownView.buttonView.set("isVisible", !0), e._alignFocus();
+				te(n, r), this.linkUi.sitesView?.siteDropdownView?.buttonView && this.linkUi.sitesView?.siteDropdownView.buttonView.set("isVisible", !0), e._alignFocus();
 			} else if (this.linkUi.previousLinkValue?.length > 0) {
 				let { formView: e } = this.linkUi._linkUI;
 				e.urlInputView.fieldView.set("value", this.linkUi.previousLinkValue);
 			} else this.button = this._createChooseButton(), this.button.render(), this.element.innerHTML = this.button.element.outerHTML;
 		}).catch((e) => {
-			throw P(e?.response?.data?.message), e?.response?.data?.message ?? e;
+			throw le(e?.response?.data?.message), e?.response?.data?.message ?? e;
 		});
 	}
-}, Ie = class extends x {
+}, We = class extends x {
 	constructor(e, t = {}) {
 		super(e), this.bindTemplate, this.set("isFocused", !1), this.linkUi = t.linkUi, this.editor = this.linkUi.editor, this.elementId = this.linkUi._getLinkElementId(), this.siteId = this.linkUi._getLinkSiteId(), this.linkOption = t.linkOption, this.linkUi._getLinkElementRefHandle(), this.siteDropdownView = E(this.linkUi._linkUI.formView.locale), this.siteDropdownItemModels = null, this.localizedRefHandleRE = null;
 		let n = CKE_LOCALIZED_REF_HANDLES.join("|");
@@ -1027,7 +1027,7 @@ var Pe = class extends v {
 			label: "",
 			withText: !0,
 			isVisible: !0
-		}), this.siteDropdownItemModels = Object.fromEntries(Craft.sites.map((e) => [e.id, new S({
+		}), this.siteDropdownItemModels = Object.fromEntries(P().get("sites").map((e) => [e.id, new S({
 			label: e.name,
 			siteId: e.id,
 			withText: !0
@@ -1035,7 +1035,7 @@ var Pe = class extends v {
 			label: I("Link to the current site", {}, "ckeditor"),
 			siteId: null,
 			withText: !0
-		}), T(this.siteDropdownView, new n([...Craft.sites.map((e) => ({
+		}), T(this.siteDropdownView, new n([...P().get("sites").map((e) => ({
 			type: "button",
 			model: this.siteDropdownItemModels[e.id]
 		})), {
@@ -1071,7 +1071,7 @@ var Pe = class extends v {
 			e.set("isOn", e.siteId === t.siteId);
 		});
 	}
-}, Le = class extends x {
+}, Ge = class extends x {
 	constructor(e, t = {}) {
 		super(e);
 		let n = this.bindTemplate;
@@ -1114,7 +1114,7 @@ var Pe = class extends v {
 			t._focusables.remove(e), t.focusTracker.remove(e.element);
 		});
 	}
-}, Re = class extends v {
+}, Ke = class extends v {
 	static get requires() {
 		return [g];
 	}
@@ -1210,13 +1210,13 @@ var Pe = class extends v {
 	}
 	_showLinkTypeForm(e) {
 		let { formView: t } = this._linkUI, { children: n } = t, { urlInputView: r } = t, { displayedTextInputView: i } = t;
-		i.focus(), this.linkTypeWrapperView !== null && n.remove(this.linkTypeWrapperView), e === "default" ? (this.elementInputView = r, this.sitesView !== null && this.sitesView?.siteDropdownView?.buttonView && this.sitesView.siteDropdownView.buttonView.set("isVisible", !1)) : (this.elementInputView = new Fe(t.locale, {
+		i.focus(), this.linkTypeWrapperView !== null && n.remove(this.linkTypeWrapperView), e === "default" ? (this.elementInputView = r, this.sitesView !== null && this.sitesView?.siteDropdownView?.buttonView && this.sitesView.siteDropdownView.buttonView.set("isVisible", !1)) : (this.elementInputView = new Ue(t.locale, {
 			linkUi: this,
 			linkOption: e,
 			value: this._urlInputValue()
 		}), this.sitesView !== null && this.sitesView?.siteDropdownView?.buttonView && this.sitesView.siteDropdownView.buttonView.set("isVisible", !1));
 		let a = [this.linkTypeDropdownView, this.elementInputView];
-		if (Craft.isMultiSite && this.sitesView == null && (this.sitesView = new Ie(t.locale, {
+		if (P().get("isMultiSite") && this.sitesView == null && (this.sitesView = new We(t.locale, {
 			linkUi: this,
 			linkOption: e
 		})), this.sitesView != null) {
@@ -1244,7 +1244,7 @@ var Pe = class extends v {
 				e.setSelection(o);
 			}), this._linkUI._hideFakeVisualSelection();
 		};
-		s || this._linkUI._showFakeVisualSelection(), N(e.elementType, {
+		s || this._linkUI._showFakeVisualSelection(), ie(e.elementType, {
 			storageKey: `ckeditor:${this.pluginName}:${e.elementType}`,
 			sources: e.sources,
 			criteria: e.criteria,
@@ -1261,7 +1261,7 @@ var Pe = class extends v {
 					} else r.change((e) => {
 						let n = this._getAdvancedFieldValues(), r = { linkHref: d };
 						this.conversionData.forEach((e) => {
-							let t = Ne(e, n[e.model]);
+							let t = Ve(e, n[e.model]);
 							t !== void 0 && (r[e.model] = t);
 						});
 						let a = t || c.label;
@@ -1286,7 +1286,7 @@ var Pe = class extends v {
 	}
 	_addAdvancedLinkFieldInputs() {
 		let e = this.editor.commands.get("link"), { formView: t } = this._linkUI, { children: n } = t;
-		this.advancedView = new Le(t.locale, { linkUi: this }), n.add(this.advancedView, 3);
+		this.advancedView = new Ge(t.locale, { linkUi: this }), n.add(this.advancedView, 3);
 		for (let n of this.advancedLinkFields) {
 			let r = n.conversion?.model;
 			if (r && t[r] === void 0) {
@@ -1376,14 +1376,14 @@ var Pe = class extends v {
 			n.type === "bool" ? r[n.model] = e[n.model].element.value : r[n.model] = e[n.model].fieldView.element.value, Object.assign(t, r);
 		}), t;
 	}
-}, ze = class extends v {
+}, R = class extends v {
 	static get requires() {
-		return [Pe, Re];
+		return [He, Ke];
 	}
 	static get pluginName() {
 		return "CraftLink";
 	}
-}, Be = /* @__PURE__ */ de((/* @__PURE__ */ le(((e, t, n) => {
+}, qe = /* @__PURE__ */ ve((/* @__PURE__ */ ge(((e, t, n) => {
 	(function() {
 		((e, t = {}) => {
 			if (typeof document > "u") return;
@@ -1572,24 +1572,24 @@ var Pe = class extends v {
 			function P(e, t) {
 				e.func.call(e.context, t, e.count++);
 			}
-			function F(e, t, n) {
+			function re(e, t, n) {
 				var r = e.result, i = e.keyPrefix;
-				e = e.func.call(e.context, t, e.count++), Array.isArray(e) ? I(e, r, n, function(e) {
+				e = e.func.call(e.context, t, e.count++), Array.isArray(e) ? ie(e, r, n, function(e) {
 					return e;
 				}) : e != null && (O(e) && (e = D(e, i + (!e.key || t && t.key === e.key ? "" : ("" + e.key).replace(k, "$&/") + "/") + n)), r.push(e));
 			}
-			function I(e, t, n, r, i) {
+			function ie(e, t, n, r, i) {
 				var a = "";
-				n != null && (a = ("" + n).replace(k, "$&/") + "/"), t = j(t, a, r, i), N(e, F, t), M(t);
+				n != null && (a = ("" + n).replace(k, "$&/") + "/"), t = j(t, a, r, i), N(e, re, t), M(t);
 			}
-			var re = { current: null };
-			function ie() {
-				var e = re.current;
+			var F = { current: null };
+			function ae() {
+				var e = F.current;
 				if (e === null) throw Error(g(321));
 				return e;
 			}
-			var ae = {
-				ReactCurrentDispatcher: re,
+			var oe = {
+				ReactCurrentDispatcher: F,
 				ReactCurrentBatchConfig: { suspense: null },
 				ReactCurrentOwner: C,
 				IsSomeRendererActing: { current: !1 },
@@ -1599,7 +1599,7 @@ var Pe = class extends v {
 				map: function(e, t, n) {
 					if (e == null) return e;
 					var r = [];
-					return I(e, r, null, t, n), r;
+					return ie(e, r, null, t, n), r;
 				},
 				forEach: function(e, t, n) {
 					if (e == null) return e;
@@ -1612,7 +1612,7 @@ var Pe = class extends v {
 				},
 				toArray: function(e) {
 					var t = [];
-					return I(e, t, null, function(e) {
+					return ie(e, t, null, function(e) {
 						return e;
 					}), t;
 				},
@@ -1620,7 +1620,7 @@ var Pe = class extends v {
 					if (!O(e)) throw Error(g(143));
 					return e;
 				}
-			}, e.Component = y, e.Fragment = a, e.Profiler = s, e.PureComponent = x, e.StrictMode = o, e.Suspense = d, e.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = ae, e.cloneElement = function(e, n, i) {
+			}, e.Component = y, e.Fragment = a, e.Profiler = s, e.PureComponent = x, e.StrictMode = o, e.Suspense = d, e.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = oe, e.cloneElement = function(e, n, i) {
 				if (e == null) throw Error(g(267, e));
 				var a = t({}, e.props), o = e.key, s = e.ref, c = e._owner;
 				if (n != null) {
@@ -1679,23 +1679,23 @@ var Pe = class extends v {
 					compare: t === void 0 ? null : t
 				};
 			}, e.useCallback = function(e, t) {
-				return ie().useCallback(e, t);
+				return ae().useCallback(e, t);
 			}, e.useContext = function(e, t) {
-				return ie().useContext(e, t);
+				return ae().useContext(e, t);
 			}, e.useDebugValue = function() {}, e.useEffect = function(e, t) {
-				return ie().useEffect(e, t);
+				return ae().useEffect(e, t);
 			}, e.useImperativeHandle = function(e, t, n) {
-				return ie().useImperativeHandle(e, t, n);
+				return ae().useImperativeHandle(e, t, n);
 			}, e.useLayoutEffect = function(e, t) {
-				return ie().useLayoutEffect(e, t);
+				return ae().useLayoutEffect(e, t);
 			}, e.useMemo = function(e, t) {
-				return ie().useMemo(e, t);
+				return ae().useMemo(e, t);
 			}, e.useReducer = function(e, t, n) {
-				return ie().useReducer(e, t, n);
+				return ae().useReducer(e, t, n);
 			}, e.useRef = function(e) {
-				return ie().useRef(e);
+				return ae().useRef(e);
 			}, e.useState = function(e) {
-				return ie().useState(e);
+				return ae().useState(e);
 			}, e.version = "16.14.0";
 		})), m = s(((e, t) => {
 			t.exports = p();
@@ -1837,7 +1837,7 @@ var Pe = class extends v {
 					k = null, A = o, j = !1;
 				}
 			}
-			function F(e) {
+			function re(e) {
 				switch (e) {
 					case 1: return -1;
 					case 2: return 250;
@@ -1846,7 +1846,7 @@ var Pe = class extends v {
 					default: return 5e3;
 				}
 			}
-			var I = a;
+			var ie = a;
 			e.unstable_IdlePriority = 5, e.unstable_ImmediatePriority = 1, e.unstable_LowPriority = 4, e.unstable_NormalPriority = 3, e.unstable_Profiling = null, e.unstable_UserBlockingPriority = 2, e.unstable_cancelCallback = function(e) {
 				e.callback = null;
 			}, e.unstable_continueExecution = function() {
@@ -1871,7 +1871,7 @@ var Pe = class extends v {
 				} finally {
 					A = n;
 				}
-			}, e.unstable_pauseExecution = function() {}, e.unstable_requestPaint = I, e.unstable_runWithPriority = function(e, t) {
+			}, e.unstable_pauseExecution = function() {}, e.unstable_requestPaint = ie, e.unstable_runWithPriority = function(e, t) {
 				switch (e) {
 					case 1:
 					case 2:
@@ -1891,8 +1891,8 @@ var Pe = class extends v {
 				var s = e.unstable_now();
 				if (typeof o == "object" && o) {
 					var c = o.delay;
-					c = typeof c == "number" && 0 < c ? s + c : s, o = typeof o.timeout == "number" ? o.timeout : F(i);
-				} else o = F(i), c = s;
+					c = typeof c == "number" && 0 < c ? s + c : s, o = typeof o.timeout == "number" ? o.timeout : re(i);
+				} else o = re(i), c = s;
 				return o = c + o, i = {
 					id: ee++,
 					callback: a,
@@ -2015,23 +2015,23 @@ var Pe = class extends v {
 			function P(e, t, n, r, i) {
 				return e(t, n, r, i);
 			}
-			function F() {}
-			var I = ne, re = !1, ie = !1;
-			function ae() {
-				(A !== null || j !== null) && (F(), N());
+			function re() {}
+			var ie = ne, F = !1, ae = !1;
+			function oe() {
+				(A !== null || j !== null) && (re(), N());
 			}
-			function oe(e, t, n) {
-				if (ie) return e(t, n);
-				ie = !0;
+			function se(e, t, n) {
+				if (ae) return e(t, n);
+				ae = !0;
 				try {
-					return I(e, t, n);
+					return ie(e, t, n);
 				} finally {
-					ie = !1, ae();
+					ae = !1, oe();
 				}
 			}
-			var se = /^[:A-Z_a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD][:A-Z_a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\-.0-9\u00B7\u0300-\u036F\u203F-\u2040]*$/, ce = Object.prototype.hasOwnProperty, le = {}, ue = {};
+			var ce = /^[:A-Z_a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD][:A-Z_a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\-.0-9\u00B7\u0300-\u036F\u203F-\u2040]*$/, le = Object.prototype.hasOwnProperty, ue = {}, I = {};
 			function de(e) {
-				return ce.call(ue, e) ? !0 : ce.call(le, e) ? !1 : se.test(e) ? ue[e] = !0 : (le[e] = !0, !1);
+				return le.call(I, e) ? !0 : le.call(ue, e) ? !1 : ce.test(e) ? I[e] = !0 : (ue[e] = !0, !1);
 			}
 			function fe(e, t, n, r) {
 				if (n !== null && n.type === 0) return !1;
@@ -2796,13 +2796,13 @@ var Pe = class extends v {
 				n ? e.addEventListener(t, r, !0) : e.addEventListener(t, r, !1);
 			}
 			function _n(e, t, n, r) {
-				re || F();
-				var i = yn, a = re;
-				re = !0;
+				F || re();
+				var i = yn, a = F;
+				F = !0;
 				try {
 					P(i, e, t, n, r);
 				} finally {
-					(re = a) || ae();
+					(F = a) || oe();
 				}
 			}
 			function vn(e, t, n, r) {
@@ -2818,7 +2818,7 @@ var Pe = class extends v {
 						else if (!$t(i, e, t, n, r)) {
 							Zt(e, r), e = Pt(e, r, null, t);
 							try {
-								oe(Ft, e);
+								se(Ft, e);
 							} finally {
 								Nt(e);
 							}
@@ -2843,7 +2843,7 @@ var Pe = class extends v {
 				}
 				e = Pt(e, r, n, t);
 				try {
-					oe(Ft, e);
+					se(Ft, e);
 				} finally {
 					Nt(e);
 				}
@@ -3352,13 +3352,13 @@ var Pe = class extends v {
 			}
 			function qr(e) {
 				if (e.propertyName === "value" && Ur(Vr)) {
-					if (e = zr(Vr, e, At(e)), re) kt(e);
+					if (e = zr(Vr, e, At(e)), F) kt(e);
 					else {
-						re = !0;
+						F = !0;
 						try {
 							ne(Hr, e);
 						} finally {
-							re = !1, ae();
+							F = !1, oe();
 						}
 					}
 				}
@@ -6464,9 +6464,9 @@ var Pe = class extends v {
 				} finally {
 					X = a, X === Gs && _a();
 				}
-			}, F = function() {
+			}, re = function() {
 				(X & (1 | qs | Js)) === Gs && (Ac(), Kc());
-			}, I = function(e, t) {
+			}, ie = function(e, t) {
 				var n = X;
 				X |= 2;
 				try {
@@ -6772,8 +6772,8 @@ var Pe = class extends v {
 			};
 			return u;
 		}
-		var F = typeof window < "u" && window.document !== void 0 && window.document.createElement !== void 0 ? y.useLayoutEffect : y.useEffect;
-		function I(e) {
+		var re = typeof window < "u" && window.document !== void 0 && window.document.createElement !== void 0 ? y.useLayoutEffect : y.useEffect;
+		function ie(e) {
 			var t = e.store, n = e.context, r = e.children, i = (0, y.useMemo)(function() {
 				return {
 					store: t,
@@ -6782,7 +6782,7 @@ var Pe = class extends v {
 			}, [t]), a = (0, y.useMemo)(function() {
 				return t.getState();
 			}, [t]);
-			F(function() {
+			re(function() {
 				var e = i.subscription;
 				return e.onStateChange = e.notifyNestedSubs, e.trySubscribe(), a !== t.getState() && e.notifyNestedSubs(), function() {
 					e.tryUnsubscribe(), e.onStateChange = null;
@@ -6791,16 +6791,16 @@ var Pe = class extends v {
 			var o = n || k;
 			return y.createElement(o.Provider, { value: i }, r);
 		}
-		function re() {
-			return re = Object.assign ? Object.assign.bind() : function(e) {
+		function F() {
+			return F = Object.assign ? Object.assign.bind() : function(e) {
 				for (var t = 1; t < arguments.length; t++) {
 					var n = arguments[t];
 					for (var r in n) ({}).hasOwnProperty.call(n, r) && (e[r] = n[r]);
 				}
 				return e;
-			}, re.apply(null, arguments);
+			}, F.apply(null, arguments);
 		}
-		function ie(e, t) {
+		function ae(e, t) {
 			if (e == null) return {};
 			var n = {};
 			for (var r in e) if ({}.hasOwnProperty.call(e, r)) {
@@ -6809,7 +6809,7 @@ var Pe = class extends v {
 			}
 			return n;
 		}
-		var ae = s(((e) => {
+		var oe = s(((e) => {
 			var t = typeof Symbol == "function" && Symbol.for, n = t ? Symbol.for("react.element") : 60103, r = t ? Symbol.for("react.portal") : 60106, i = t ? Symbol.for("react.fragment") : 60107, a = t ? Symbol.for("react.strict_mode") : 60108, o = t ? Symbol.for("react.profiler") : 60114, s = t ? Symbol.for("react.provider") : 60109, c = t ? Symbol.for("react.context") : 60110, l = t ? Symbol.for("react.async_mode") : 60111, u = t ? Symbol.for("react.concurrent_mode") : 60111, d = t ? Symbol.for("react.forward_ref") : 60112, f = t ? Symbol.for("react.suspense") : 60113, p = t ? Symbol.for("react.suspense_list") : 60120, m = t ? Symbol.for("react.memo") : 60115, h = t ? Symbol.for("react.lazy") : 60116, g = t ? Symbol.for("react.block") : 60121, _ = t ? Symbol.for("react.fundamental") : 60117, v = t ? Symbol.for("react.responder") : 60118, y = t ? Symbol.for("react.scope") : 60119;
 			function b(e) {
 				if (typeof e == "object" && e) {
@@ -6865,10 +6865,10 @@ var Pe = class extends v {
 			}, e.isValidElementType = function(e) {
 				return typeof e == "string" || typeof e == "function" || e === i || e === u || e === o || e === a || e === f || e === p || typeof e == "object" && !!e && (e.$$typeof === h || e.$$typeof === m || e.$$typeof === s || e.$$typeof === c || e.$$typeof === d || e.$$typeof === _ || e.$$typeof === v || e.$$typeof === y || e.$$typeof === g);
 			}, e.typeOf = b;
-		})), oe = s(((e, t) => {
-			t.exports = ae();
 		})), se = s(((e, t) => {
-			var n = oe(), r = {
+			t.exports = oe();
+		})), ce = s(((e, t) => {
+			var n = se(), r = {
 				childContextTypes: !0,
 				contextType: !0,
 				contextTypes: !0,
@@ -6928,7 +6928,7 @@ var Pe = class extends v {
 				return e;
 			}
 			t.exports = h;
-		})), ce = s(((e) => {
+		})), le = s(((e) => {
 			var t = 60103, n = 60106, r = 60107, i = 60108, a = 60114, o = 60109, s = 60110, c = 60112, l = 60113, u = 60120, d = 60115, f = 60116;
 			if (typeof Symbol == "function" && Symbol.for) {
 				var p = Symbol.for;
@@ -6960,9 +6960,9 @@ var Pe = class extends v {
 			e.isContextConsumer = function(e) {
 				return m(e) === s;
 			};
-		})), le = s(((e, t) => {
-			t.exports = ce();
-		})), ue = u(se()), de = le(), fe = [
+		})), ue = s(((e, t) => {
+			t.exports = le();
+		})), I = u(ce()), de = ue(), fe = [
 			"getDisplayName",
 			"methodName",
 			"renderCountProp",
@@ -6977,7 +6977,7 @@ var Pe = class extends v {
 			return [t.payload, n + 1];
 		}
 		function ge(e, t, n) {
-			F(function() {
+			re(function() {
 				return e.apply(void 0, t);
 			}, n);
 		}
@@ -7014,9 +7014,9 @@ var Pe = class extends v {
 				return "ConnectAdvanced(" + e + ")";
 			} : r, a = n.methodName, o = a === void 0 ? "connectAdvanced" : a, s = n.renderCountProp, c = s === void 0 ? void 0 : s, l = n.shouldHandleStateChanges, u = l === void 0 || l, d = n.storeKey, f = d === void 0 ? "store" : d;
 			n.withRef;
-			var p = n.forwardRef, m = p !== void 0 && p, h = n.context, g = h === void 0 ? k : h, _ = ie(n, fe), v = g;
+			var p = n.forwardRef, m = p !== void 0 && p, h = n.context, g = h === void 0 ? k : h, _ = ae(n, fe), v = g;
 			return function(t) {
-				var n = t.displayName || t.name || "Component", r = i(n), a = re({}, _, {
+				var n = t.displayName || t.name || "Component", r = i(n), a = F({}, _, {
 					getDisplayName: i,
 					methodName: o,
 					renderCountProp: c,
@@ -7034,7 +7034,7 @@ var Pe = class extends v {
 				};
 				function p(e) {
 					var n = (0, y.useMemo)(function() {
-						var t = e.reactReduxForwardedRef, n = ie(e, pe);
+						var t = e.reactReduxForwardedRef, n = ae(e, pe);
 						return [
 							e.context,
 							t,
@@ -7055,7 +7055,7 @@ var Pe = class extends v {
 						c,
 						s
 					]), h = m[0], g = m[1], _ = (0, y.useMemo)(function() {
-						return c ? s : re({}, s, { subscription: h });
+						return c ? s : F({}, s, { subscription: h });
 					}, [
 						c,
 						s,
@@ -7094,7 +7094,7 @@ var Pe = class extends v {
 						p
 					]);
 					var O = (0, y.useMemo)(function() {
-						return y.createElement(t, re({}, D, { ref: i }));
+						return y.createElement(t, F({}, D, { ref: i }));
 					}, [
 						i,
 						t,
@@ -7111,11 +7111,11 @@ var Pe = class extends v {
 				var h = s ? y.memo(p) : p;
 				if (h.WrappedComponent = t, h.displayName = p.displayName = r, m) {
 					var g = y.forwardRef(function(e, t) {
-						return y.createElement(h, re({}, e, { reactReduxForwardedRef: t }));
+						return y.createElement(h, F({}, e, { reactReduxForwardedRef: t }));
 					});
-					return g.displayName = r, g.WrappedComponent = t, (0, ue.default)(g, t);
+					return g.displayName = r, g.WrappedComponent = t, (0, I.default)(g, t);
 				}
-				return (0, ue.default)(h, t);
+				return (0, I.default)(h, t);
 			};
 		}
 		function xe(e, t) {
@@ -7192,7 +7192,7 @@ var Pe = class extends v {
 		}
 		var Ne = [je, Me];
 		function Pe(e, t, n) {
-			return re({}, n, e, t);
+			return F({}, n, e, t);
 		}
 		function Fe(e) {
 			return function(t, n) {
@@ -7246,7 +7246,7 @@ var Pe = class extends v {
 			};
 		}
 		function He(e, t) {
-			var n = t.initMapStateToProps, r = t.initMapDispatchToProps, i = t.initMergeProps, a = ie(t, ze), o = n(e, a), s = r(e, a), c = i(e, a);
+			var n = t.initMapStateToProps, r = t.initMapDispatchToProps, i = t.initMergeProps, a = ae(t, ze), o = n(e, a), s = r(e, a), c = i(e, a);
 			return (a.pure ? Ve : Be)(o, s, c, e, a);
 		}
 		var Ue = [
@@ -7272,8 +7272,8 @@ var Pe = class extends v {
 			var t = e === void 0 ? {} : e, n = t.connectHOC, r = n === void 0 ? be : n, i = t.mapStateToPropsFactories, a = i === void 0 ? Ne : i, o = t.mapDispatchToPropsFactories, s = o === void 0 ? Ae : o, c = t.mergePropsFactories, l = c === void 0 ? Re : c, u = t.selectorFactory, d = u === void 0 ? He : u;
 			return function(e, t, n, i) {
 				i === void 0 && (i = {});
-				var o = i, c = o.pure, u = c === void 0 || c, f = o.areStatesEqual, p = f === void 0 ? Ge : f, m = o.areOwnPropsEqual, h = m === void 0 ? Se : m, g = o.areStatePropsEqual, _ = g === void 0 ? Se : g, v = o.areMergedPropsEqual, y = v === void 0 ? Se : v, b = ie(o, Ue), x = We(e, a, "mapStateToProps"), S = We(t, s, "mapDispatchToProps"), C = We(n, l, "mergeProps");
-				return r(d, re({
+				var o = i, c = o.pure, u = c === void 0 || c, f = o.areStatesEqual, p = f === void 0 ? Ge : f, m = o.areOwnPropsEqual, h = m === void 0 ? Se : m, g = o.areStatePropsEqual, _ = g === void 0 ? Se : g, v = o.areMergedPropsEqual, y = v === void 0 ? Se : v, b = ae(o, Ue), x = We(e, a, "mapStateToProps"), S = We(t, s, "mapDispatchToProps"), C = We(n, l, "mergeProps");
+				return r(d, F({
 					methodName: "connect",
 					getDisplayName: function(e) {
 						return "Connect(" + e + ")";
@@ -9233,7 +9233,7 @@ var Pe = class extends v {
 				for (var t = 1; t < arguments.length; t++) {
 					var n = arguments[t] == null ? {} : arguments[t];
 					t % 2 ? T(Object(n), !0).forEach(function(t) {
-						F(e, t, n[t]);
+						re(e, t, n[t]);
 					}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : T(Object(n)).forEach(function(t) {
 						Object.defineProperty(e, t, Object.getOwnPropertyDescriptor(n, t));
 					});
@@ -9297,7 +9297,7 @@ var Pe = class extends v {
 					return e.__proto__ || Object.getPrototypeOf(e);
 				}, P(e);
 			}
-			function F(e, t, n) {
+			function re(e, t, n) {
 				return t in e ? Object.defineProperty(e, t, {
 					value: n,
 					enumerable: !0,
@@ -9305,7 +9305,7 @@ var Pe = class extends v {
 					writable: !0
 				}) : e[t] = n, e;
 			}
-			var I = function(e) {
+			var ie = function(e) {
 				A(s, e);
 				var n = M(s);
 				k(s, null, [{
@@ -9324,13 +9324,13 @@ var Pe = class extends v {
 				}]);
 				function s(e) {
 					var t;
-					return D(this, s), t = n.call(this, e), F(N(t), "onDragStart", function(e, n) {
+					return D(this, s), t = n.call(this, e), re(N(t), "onDragStart", function(e, n) {
 						if ((0, l.default)("Draggable: onDragStart: %j", n), t.props.onStart(e, (0, o.createDraggableData)(N(t), n)) === !1) return !1;
 						t.setState({
 							dragging: !0,
 							dragged: !0
 						});
-					}), F(N(t), "onDrag", function(e, n) {
+					}), re(N(t), "onDrag", function(e, n) {
 						if (!t.state.dragging) return !1;
 						(0, l.default)("Draggable: onDrag: %j", n);
 						var r = (0, o.createDraggableData)(N(t), n), i = {
@@ -9345,7 +9345,7 @@ var Pe = class extends v {
 						}
 						if (t.props.onDrag(e, r) === !1) return !1;
 						t.setState(i);
-					}), F(N(t), "onDragStop", function(e, n) {
+					}), re(N(t), "onDragStop", function(e, n) {
 						if (!t.state.dragging || t.props.onStop(e, (0, o.createDraggableData)(N(t), n)) === !1) return !1;
 						(0, l.default)("Draggable: onDragStop: %j", n);
 						var r = {
@@ -9411,7 +9411,7 @@ var Pe = class extends v {
 								y: (0, o.canDragY)(this) && y ? this.state.y : b.y
 							};
 							this.state.isElementSVG ? v = (0, a.createSVGTransform)(x, p) : _ = (0, a.createCSSTransform)(x, p);
-							var S = (0, i.default)(r.props.className || "", l, (e = {}, F(e, u, this.state.dragging), F(e, d, this.state.dragged), e));
+							var S = (0, i.default)(r.props.className || "", l, (e = {}, re(e, u, this.state.dragging), re(e, d, this.state.dragged), e));
 							return t.createElement(c.default, h({}, m, {
 								onStart: this.onDragStart,
 								onDrag: this.onDrag,
@@ -9425,7 +9425,7 @@ var Pe = class extends v {
 					}
 				]), s;
 			}(t.Component);
-			e.default = I, F(I, "displayName", "Draggable"), F(I, "propTypes", E(E({}, c.default.propTypes), {}, {
+			e.default = ie, re(ie, "displayName", "Draggable"), re(ie, "propTypes", E(E({}, c.default.propTypes), {}, {
 				axis: n.default.oneOf([
 					"both",
 					"x",
@@ -9460,7 +9460,7 @@ var Pe = class extends v {
 				className: s.dontSetMe,
 				style: s.dontSetMe,
 				transform: s.dontSetMe
-			})), F(I, "defaultProps", E(E({}, c.default.defaultProps), {}, {
+			})), re(ie, "defaultProps", E(E({}, c.default.defaultProps), {}, {
 				axis: "both",
 				bounds: !1,
 				defaultClassName: "react-draggable",
@@ -12792,7 +12792,7 @@ var Pe = class extends v {
 				}), b.render(y.createElement(ta.Provider, { value: {
 					document: r,
 					window: i
-				} }, y.createElement(I, { store: e._store }, y.createElement(Jo, null))), a);
+				} }, y.createElement(ie, { store: e._store }, y.createElement(Jo, null))), a);
 			}
 			static _isAttachedTo(t) {
 				return [...e._editors.values()].includes(t);
@@ -12800,7 +12800,7 @@ var Pe = class extends v {
 		};
 		return ns._editors = /* @__PURE__ */ new Map(), ns._wrapper = null, ns;
 	});
-})))(), 1), Ve = function(e) {
+})))(), 1), Je = function(e) {
 	let t = e.plugins.get(y), n = $(e.ui.view.element), r = $(e.sourceElement), i = `ckeditor${Math.floor(Math.random() * 1e9)}`, a = [
 		"keypress",
 		"keyup",
@@ -12820,19 +12820,19 @@ var Pe = class extends v {
 			});
 		} else e.off(`.${i}`);
 	});
-}, He = function(e, t) {
+}, Ye = function(e, t) {
 	if (t.heading !== void 0) {
 		var n = t.heading.options;
 		n.find((e) => e.view === "h1") !== void 0 && e.keystrokes.set("Ctrl+Alt+1", () => e.execute("heading", { value: "heading1" })), n.find((e) => e.view === "h2") !== void 0 && e.keystrokes.set("Ctrl+Alt+2", () => e.execute("heading", { value: "heading2" })), n.find((e) => e.view === "h3") !== void 0 && e.keystrokes.set("Ctrl+Alt+3", () => e.execute("heading", { value: "heading3" })), n.find((e) => e.view === "h4") !== void 0 && e.keystrokes.set("Ctrl+Alt+4", () => e.execute("heading", { value: "heading4" })), n.find((e) => e.view === "h5") !== void 0 && e.keystrokes.set("Ctrl+Alt+5", () => e.execute("heading", { value: "heading5" })), n.find((e) => e.view === "h6") !== void 0 && e.keystrokes.set("Ctrl+Alt+6", () => e.execute("heading", { value: "heading6" })), n.find((e) => e.model === "paragraph") !== void 0 && e.keystrokes.set("Ctrl+Alt+p", "paragraph");
 	}
-}, Ue = function(e, t) {
+}, Xe = function(e, t) {
 	let n = null, r = e.editing.view.document, i = e.plugins.get("ClipboardPipeline");
 	r.on("clipboardOutput", (t, r) => {
 		n = e.id;
 	}), r.on("clipboardInput", async (r, a) => {
 		let o = a.dataTransfer.getData("text/html");
 		if (o && o.includes("<craft-entry") && (a.method != "drop" || n !== e.id) && (a.method == "paste" || a.method == "drop" && n !== e.id)) {
-			let s = o, c = !1, l = Craft.siteId, u = null, d = null, f = e.getData(), p = [...o.matchAll(/data-entry-id="([0-9]+)[^>]*data-site-id="([0-9]+)/g)];
+			let s = o, c = !1, l = P().get("siteId"), u = null, d = null, f = e.getData(), p = [...o.matchAll(/data-entry-id="([0-9]+)[^>]*data-site-id="([0-9]+)/g)];
 			r.stop();
 			let m = $(e.ui.view.element), h = e.config.get("craftOwner");
 			h?.ownerId() && (u = await h.prepare()), u ??= e.config.get("nestedElementAttributes")?.ownerId, d = e.config.get("layoutElementUid") ?? m.parents(".field").data("layoutElement");
@@ -12844,7 +12844,7 @@ var Pe = class extends v {
 					let r = RegExp("data-entry-id=\"" + i + "\"");
 					if (n !== e.id || r.test(f)) {
 						let r = null;
-						n !== e.id && (t.includes(Me) ? r = e.config.get("entryTypeOptions").map((e) => e.value) : (P(I("This field doesn’t allow nested entries.", {}, "ckeditor")), c = !0)), await j.post("ckeditor/ckeditor/duplicate-nested-entry", {
+						n !== e.id && (t.includes(Be) ? r = e.config.get("entryTypeOptions").map((e) => e.value) : (le(I("This field doesn’t allow nested entries.", {}, "ckeditor")), c = !0)), await M.post("ckeditor/ckeditor/duplicate-nested-entry", {
 							entryId: i,
 							targetSiteId: l,
 							sourceSiteId: a,
@@ -12853,12 +12853,12 @@ var Pe = class extends v {
 							targetLayoutElementUid: d
 						}).then((e) => {
 							if (e.data.newEntryId) {
-								let t = e.data.cardHtml ? " data-card-html=\"" + Craft.escapeHtml(e.data.cardHtml).replace(/"/g, "&quot;") + "\"" : "";
+								let t = e.data.cardHtml ? " data-card-html=\"" + F(e.data.cardHtml).replace(/"/g, "&quot;") + "\"" : "";
 								s = s.replace("data-entry-id=\"" + i + "\"", "data-entry-id=\"" + e.data.newEntryId + "\"" + t);
 							}
 							e.data.newSiteId && (s = s.replace("data-site-id=\"" + a + "\"", "data-site-id=\"" + e.data.newSiteId + "\""));
 						}).catch((e) => {
-							c = !0, P(e?.response?.data?.message), console.error(e?.response?.data?.additionalMessage);
+							c = !0, le(e?.response?.data?.message), console.error(e?.response?.data?.additionalMessage);
 						});
 					}
 				}
@@ -12866,10 +12866,10 @@ var Pe = class extends v {
 			c || (a.content = e.data.htmlProcessor.toView(s), i.fire("inputTransformation", a));
 		}
 	});
-}, We = async function(e, n) {
+}, Ze = async function(e, n) {
 	typeof e == "string" && (e = document.querySelector(`#${e}`)), n.licenseKey = n.licenseKey || "GPL", n.attachTo = e;
 	let r = await t.create(n);
-	return window.CKE_SHOW_INSPECTOR && Craft.userIsAdmin && Be.default.attach(r), r.editing.view.change((e) => {
+	return window.CKE_SHOW_INSPECTOR && P().get("userIsAdmin") && qe.default.attach(r), r.editing.view.change((e) => {
 		let t = r.editing.view.document.getRoot();
 		if (n.accessibleFieldName !== void 0 && n.accessibleFieldName.length) {
 			let r = t.getAttribute("aria-label");
@@ -12878,6 +12878,6 @@ var Pe = class extends v {
 		n.describedBy !== void 0 && n.describedBy.length && e.setAttribute("aria-describedby", n.describedBy, t);
 	}), r.updateSourceElement(), r.model.document.on("change:data", () => {
 		r.updateSourceElement();
-	}), n.plugins.includes(y) && Ve(r, y), n.plugins.includes(c) && He(r, n), Ue(r, n.plugins), r;
+	}), n.plugins.includes(y) && Je(r, y), n.plugins.includes(c) && Ye(r, n), Xe(r, n.plugins), r;
 };
-export { Me as CraftEntries, L as CraftImageInsertUI, me as CraftImageTextAlternativeUI, ze as CraftLink, we as ImageEditor, be as ImageTransform, We as create };
+export { Be as CraftEntries, Se as CraftImageInsertUI, xe as CraftImageTextAlternativeUI, R as CraftLink, Me as ImageEditor, Oe as ImageTransform, Ze as create };

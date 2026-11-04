@@ -7,7 +7,7 @@ import {
   View,
   ViewModel,
 } from 'ckeditor5';
-import {t as craftT} from '@craftcms/cp';
+import {cpConfig, t as craftT} from '@craftcms/cp';
 
 export default class CraftLinkSitesView extends View {
   constructor(locale, options = {}) {
@@ -67,14 +67,16 @@ export default class CraftLinkSitesView extends View {
     });
 
     this.siteDropdownItemModels = Object.fromEntries(
-      Craft.sites.map((site) => [
-        site.id,
-        new ViewModel({
-          label: site.name,
-          siteId: site.id,
-          withText: true,
-        }),
-      ]),
+      cpConfig()
+        .get('sites')
+        .map((site) => [
+          site.id,
+          new ViewModel({
+            label: site.name,
+            siteId: site.id,
+            withText: true,
+          }),
+        ]),
     );
 
     this.siteDropdownItemModels.current = new ViewModel({
@@ -86,10 +88,12 @@ export default class CraftLinkSitesView extends View {
     addListToDropdown(
       this.siteDropdownView,
       new Collection([
-        ...Craft.sites.map((site) => ({
-          type: 'button',
-          model: this.siteDropdownItemModels[site.id],
-        })),
+        ...cpConfig()
+          .get('sites')
+          .map((site) => ({
+            type: 'button',
+            model: this.siteDropdownItemModels[site.id],
+          })),
         {
           type: 'button',
           model: this.siteDropdownItemModels.current,

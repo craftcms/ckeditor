@@ -23,7 +23,7 @@ import CraftLinkElementView from './linkelementview.js';
 import CraftLinkSitesView from './linksitesview.js';
 import CraftLinkAdvancedView from './linkadvancedview.js';
 import {resolveAdvancedFieldAttributeValue} from './linkutils.js';
-import {createElementSelectorModal, t as craftT} from '@craftcms/cp';
+import {cpConfig, t as craftT, createElementSelectorModal} from '@craftcms/cp';
 
 export default class CraftLinkUI extends Plugin {
   static get requires() {
@@ -407,7 +407,7 @@ export default class CraftLinkUI extends Plugin {
     ];
 
     // only add sites dropdown if this is a multisite install and we haven't done so already
-    if (Craft.isMultiSite && this.sitesView == null) {
+    if (cpConfig().get('isMultiSite') && this.sitesView == null) {
       this.sitesView = new CraftLinkSitesView(formView.locale, {
         linkUi: this,
         linkOption: linkOption,

@@ -15,7 +15,13 @@ import CraftEntries from './entries/entries';
 import CraftLink from './link/link';
 import CKEditorInspector from '@ckeditor/ckeditor5-inspector';
 import {ClassicEditor, Heading, SourceEditing} from 'ckeditor5';
-import {actionClient, t as craftT, showError} from '@craftcms/cp';
+import {
+  actionClient,
+  cpConfig,
+  t as craftT,
+  escapeHtml,
+  showError,
+} from '@craftcms/cp';
 
 export {CraftEntries};
 export {CraftLink};
@@ -145,7 +151,7 @@ const handleClipboard = function (editor, plugins) {
       ) {
         let duplicatedContent = pasteContent;
         let errors = false;
-        const targetSiteId = Craft.siteId;
+        const targetSiteId = cpConfig().get('siteId');
         let ownerId = null;
         let layoutElementUid = null;
         const editorData = editor.getData();
@@ -227,10 +233,10 @@ const handleClipboard = function (editor, plugins) {
                 .then((response) => {
                   if (response.data.newEntryId) {
                     // pass the duplicate’s card HTML along, so it doesn’t have to be requested separately
-                    // (`Craft.escapeHtml()` leaves quotes alone, so escape them too, for the attribute value)
+                    // (`escapeHtml()` leaves quotes alone, so escape them too, for the attribute value)
                     const cardHtmlAttr = response.data.cardHtml
                       ? ' data-card-html="' +
-                        Craft.escapeHtml(response.data.cardHtml).replace(
+                        escapeHtml(response.data.cardHtml).replace(
                           /"/g,
                           '&quot;',
                         ) +
@@ -282,7 +288,7 @@ export const create = async function (element, config) {
   config.attachTo = element;
   const editor = await ClassicEditor.create(config);
 
-  if (window.CKE_SHOW_INSPECTOR && Craft.userIsAdmin) {
+  if (window.CKE_SHOW_INSPECTOR && cpConfig().get('userIsAdmin')) {
     CKEditorInspector.attach(editor);
   }
 

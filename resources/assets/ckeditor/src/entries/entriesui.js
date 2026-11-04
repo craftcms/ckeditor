@@ -14,8 +14,12 @@ import {
   actionClient,
   appendBodyHtml,
   appendHeadHtml,
+  cpConfig,
   t as craftT,
+  createElementEditor,
+  getActionUrl,
   loadElementThumbs,
+  openSlideout,
   showError,
 } from '@craftcms/cp';
 
@@ -224,9 +228,9 @@ export default class CraftEntriesUI extends Plugin {
     button.set({
       isEnabled: true,
       label: craftT('Edit {type}', {
-        type: (Craft.elementTypeNames[
+        type: (cpConfig().get('elementTypeNames')[
           'CraftCms\\Cms\\Entry\\Elements\\Entry'
-        ] ?? Craft.elementTypeNames['craft\\elements\\Entry'])[2],
+        ] ?? cpConfig().get('elementTypeNames')['craft\\elements\\Entry'])[2],
       }),
       tooltip: true,
       withText: true,
@@ -301,7 +305,7 @@ export default class CraftEntriesUI extends Plugin {
 
     let draftRefreshTimeout = null;
 
-    Craft.openSlideout(Craft.getActionUrl('elements/edit', params), {
+    openSlideout(getActionUrl('elements/edit', params), {
       opener: $element[0] ?? null,
       // Only move the entry into the owner’s draft if it isn’t already there, like Matrix does
       // (see `useNestedElementOperations.ts` `prepareEdit()`)
@@ -442,7 +446,7 @@ export default class CraftEntriesUI extends Plugin {
       throw e;
     }
 
-    const slideout = Craft.createElementEditor(this.elementType, {
+    const slideout = createElementEditor(this.elementType, {
       elementId: data.element.id,
       draftId: data.element.draftId,
       params: {

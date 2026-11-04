@@ -10,6 +10,7 @@ import {
   appendBodyHtml,
   appendHeadHtml,
   t as craftT,
+  escapeHtml,
   loadElementThumbs,
 } from '@craftcms/cp';
 
@@ -200,7 +201,7 @@ export default class CraftEntriesEditing extends Plugin {
       const cardHtml =
         '<craft-card>' +
         '<craft-callout variant="danger" role="alert">' +
-        Craft.escapeHtml(
+        escapeHtml(
           e?.response?.data?.message ||
             craftT('An unknown error occurred.', {}, 'ckeditor'),
         ) +

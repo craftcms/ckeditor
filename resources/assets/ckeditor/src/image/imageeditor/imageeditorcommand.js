@@ -5,7 +5,7 @@
  */
 
 import {Command} from 'ckeditor5';
-import {actionClient, showError} from '@craftcms/cp';
+import {actionClient, openAssetImageEditor, showError} from '@craftcms/cp';
 
 /**
  * The transform image command.
@@ -84,7 +84,7 @@ export default class ImageEditorCommand extends Command {
 
     if (srcInfo) {
       // the asset ID must be a number, otherwise Craft treats it as the editor settings
-      Craft.openAssetImageEditor(parseInt(srcInfo.assetId, 10), (data) => {
+      void openAssetImageEditor(parseInt(srcInfo.assetId, 10), (data) => {
         this._reloadImage(srcInfo.assetId, data);
       }).catch((e) => {
         showError(e?.response?.data?.message);

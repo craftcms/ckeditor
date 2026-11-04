@@ -63,5 +63,12 @@ declare module '@craftcms/cp' {
     onSave?: (data: any) => void,
   ): Promise<any>;
 
+  export function cpConfig(): {get(key: string, fallback?: unknown): any};
+
+  export class Uploader {
+    constructor(element: HTMLElement, settings?: Record<string, any>);
+    destroy(): void;
+  }
+
   export const Uploads: Record<string, any>;
 }

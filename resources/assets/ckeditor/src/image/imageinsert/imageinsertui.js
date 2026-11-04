@@ -10,6 +10,7 @@ import {
   t as craftT,
   createElementSelectorModal,
   showError,
+  Uploader,
 } from '@craftcms/cp';
 
 export default class CraftImageInsertUI extends ImageInsertUI {
@@ -248,7 +249,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       multiple: true,
     }).insertAfter(editor.sourceElement);
 
-    this.uploader = new Craft.Uploaders.Uploader(this.$container[0], {
+    this.uploader = new Uploader(this.$container[0], {
       dropZone: this.$container[0],
       fileInput: this.$fileInput[0],
       allowedKinds: ['image'],

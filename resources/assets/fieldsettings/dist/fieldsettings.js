@@ -1,6 +1,6 @@
 import "ckeditor5";
 import { create } from "@craftcms/ckeditor";
-import { t } from "@craftcms/cp";
+import { cpConfig, t } from "@craftcms/cp";
 // resources/assets/fieldsettings/src/ToolbarBuilder.js
 var ToolbarBuilder_default = Garnish.Base.extend({
 	$sourceContainer: null,
@@ -61,7 +61,7 @@ var ToolbarBuilder_default = Garnish.Base.extend({
 					}), this.draggingSourceItem) {
 						if (this.draggingSeparator) e.css("visibility", "");
 						else {
-							let n = Craft.orientation === "ltr" ? "margin-right" : "margin-left", r = -1 * e.outerWidth();
+							let n = cpConfig().get("orientation") === "ltr" ? "margin-right" : "margin-left", r = -1 * e.outerWidth();
 							e.stop().velocity({ [n]: r }, 200, () => {
 								e.addClass("hidden");
 							});
@@ -99,7 +99,7 @@ var ToolbarBuilder_default = Garnish.Base.extend({
 						}
 						if (!this.draggingSeparator) {
 							e.removeClass("hidden");
-							let n = Craft.orientation === "ltr" ? "margin-right" : "margin-left", r = e.css(n);
+							let n = cpConfig().get("orientation") === "ltr" ? "margin-right" : "margin-left", r = e.css(n);
 							e.css(n, "");
 							let i = e.css(n);
 							e.css(n, r), e.stop().velocity({ [n]: i }, 200, () => {

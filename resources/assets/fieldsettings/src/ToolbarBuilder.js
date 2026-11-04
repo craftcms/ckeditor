@@ -8,6 +8,7 @@
 import './fieldsettings.css';
 import * as CKEditor5 from 'ckeditor5';
 import {create} from '@craftcms/ckeditor';
+import {cpConfig} from '@craftcms/cp';
 
 export default Garnish.Base.extend({
   $sourceContainer: null,
@@ -110,7 +111,7 @@ export default Garnish.Base.extend({
                   $draggee.css('visibility', '');
                 } else {
                   const property =
-                    Craft.orientation === 'ltr'
+                    cpConfig().get('orientation') === 'ltr'
                       ? 'margin-right'
                       : 'margin-left';
                   const margin = -1 * $draggee.outerWidth();
@@ -179,7 +180,7 @@ export default Garnish.Base.extend({
                 if (!this.draggingSeparator) {
                   $draggee.removeClass('hidden');
                   const property =
-                    Craft.orientation === 'ltr'
+                    cpConfig().get('orientation') === 'ltr'
                       ? 'margin-right'
                       : 'margin-left';
                   const currentMargin = $draggee.css(property);
