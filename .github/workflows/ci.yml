@@ -17,9 +17,30 @@ jobs:
     with:
       craft_version: '6'
       node_version: '22'
-      jobs: '["phpstan", "prettier"]'
-      notify_slack: true
-      slack_subteam: <!subteam^SGFL9NKNZ>
+      jobs: '["prettier"]'
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}
+  phpstan:
+    name: PHPStan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: gd, pdo_sqlite
+          tools: composer:v2
+      - run: composer install --no-interaction --no-ansi --no-progress
+      - run: composer phpstan
+  notify-slack:
+    name: Notify Slack
+    needs: [ci, phpstan]
+    if: ${{ always() && github.event_name != 'pull_request' }}
+    uses: craftcms/.github/.github/workflows/notify-slack.yml@v3
+    with:
+      success: ${{ !contains(needs.*.result, 'failure') }}
+      failure: ${{ contains(needs.*.result, 'failure') }}
+      failure_text_prefix: <!subteam^SGFL9NKNZ>
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
       slack_webhook_url: ${{ secrets.SLACK_PLUGIN_WEBHOOK_URL }}

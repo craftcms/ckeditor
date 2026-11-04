@@ -13,17 +13,20 @@ interface DefineChipActionsEvent extends CustomEvent {
 
 // Whether the element belongs to a CKEditor field’s settings
 function inCkeditorSettings(element: Element): boolean {
-  for (let el = element.parentElement; el; el = el.parentElement) {
-    if (el.querySelector(':scope .ckeditor-editor-config')) {
-      return true;
-    }
-  }
-  return false;
+  // The toolbar’s field exists before its async control mounts. Stay within this
+  // settings group so a CKEditor elsewhere on the page doesn't match other fields.
+  return Boolean(
+    element
+      .closest('craft-field-group')
+      ?.querySelector('craft-field[id$="-editorConfig"]'),
+  );
 }
 
 function parseValue(input: HTMLInputElement): Record<string, any> | null {
   try {
-    return JSON.parse(input.value);
+    const value = JSON.parse(input.value);
+    // Newly selected entry types start with just their ID.
+    return typeof value === 'number' ? {id: value} : value;
   } catch (e) {
     return null;
   }
