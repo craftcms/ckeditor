@@ -21,9 +21,9 @@ export default class CraftImageInsertUI extends ImageInsertUI {
   constructor() {
     super(...arguments);
     this.container = null;
-    this.progressBar = null;
     this.fileInput = null;
     this.uploader = null;
+    this.placeholders = [];
   }
 
   init() {
@@ -240,11 +240,6 @@ export default class CraftImageInsertUI extends ImageInsertUI {
 
     this.container = editor.sourceElement.closest('.ckeditor-container');
 
-    this.progressBar = document.createElement('craft-progress-bar');
-    this.progressBar.className = 'hidden mt-sm';
-    this.progressBar.toggleAttribute('smooth', true);
-    this.container.append(this.progressBar);
-
     this.fileInput = document.createElement('input');
     this.fileInput.type = 'file';
     this.fileInput.className = 'hidden';
@@ -256,8 +251,6 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       fileInput: this.fileInput,
       allowedKinds: ['image'],
       on: {
-        start: this._onUploadStart.bind(this),
-        progress: this._onUploadProgress.bind(this),
         done: this._onUploadComplete.bind(this),
         fail: this._onUploadFailure.bind(this),
         stop: this._onUploadStop.bind(this),
@@ -273,8 +266,6 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     editor.editing.view.document.on(
       'drop',
       async (event, data) => {
-        const view = editor.editing.view;
-        const model = editor.model;
         const mapper = editor.editing.mapper;
 
         const dropRange = data.dropRange;
@@ -288,32 +279,141 @@ export default class CraftImageInsertUI extends ImageInsertUI {
             writer.setSelection(modelPosition, 0);
           });
         }
+
+        await this._addPlaceholders(data.dataTransfer?.files ?? []);
       },
       {priority: 'high'},
     );
   }
 
   /**
-   * On upload start.
+   * Inserts a placeholder for each dropped image, so the content doesn’t jump when the upload lands.
+   *
+   * The placeholders go in at the drop position, in the order they were dropped, and are matched back up
+   * with their uploads by file. Upload progress itself is reported by the upload notification.
    */
-  _onUploadStart() {
-    this.progressBar.progress = 0;
-    this.progressBar.classList.remove('hidden');
+  async _addPlaceholders(files) {
+    for (const file of files) {
+      if (!file.type.startsWith('image/')) {
+        continue;
+      }
+
+      const {width, height} = await this._imageSize(file);
+      const element = this._insertPlaceholder(width, height);
+
+      if (element) {
+        this.placeholders.push({
+          key: this._fileKey(file),
+          element,
+          width,
+          height,
+        });
+      }
+    }
   }
 
   /**
-   * On upload progress.
+   * Inserts one placeholder image at the current selection and returns its model element.
    */
-  _onUploadProgress({loaded, total}) {
-    const progress = parseInt(Math.min(loaded / total, 1) * 100, 10);
-    this.progressBar.progress = progress;
+  _insertPlaceholder(width, height) {
+    const svg =
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" ` +
+      `viewBox="0 0 ${width} ${height}">` +
+      `<rect width="${width}" height="${height}" fill="#808080" fill-opacity="0.18"/>` +
+      '</svg>';
+
+    this.editor.execute('insertImage', {
+      source: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
+      breakBlock: true,
+    });
+
+    return this.editor.model.document.selection.getSelectedElement();
+  }
+
+  /**
+   * Puts placeholders back for uploads that are still in flight.
+   *
+   * Replacing the editor’s value — which happens once the owner’s draft is created — drops them, since
+   * they were never part of the saved content. They go back in at the end, the position being lost with them.
+   */
+  restorePlaceholders() {
+    const model = this.editor.model;
+
+    for (const placeholder of this.placeholders) {
+      if (placeholder.element.root.rootName !== '$graveyard') {
+        continue;
+      }
+
+      model.change((writer) =>
+        writer.setSelection(
+          writer.createPositionAt(model.document.getRoot(), 'end'),
+        ),
+      );
+      placeholder.element =
+        this._insertPlaceholder(placeholder.width, placeholder.height) ??
+        placeholder.element;
+    }
+  }
+
+  /**
+   * Returns a dropped image’s pixel dimensions, falling back to 3:2 if it can’t be read.
+   */
+  async _imageSize(file) {
+    try {
+      const bitmap = await createImageBitmap(file);
+      const {width, height} = bitmap;
+      bitmap.close();
+      if (width && height) {
+        return {width, height};
+      }
+    } catch {
+      // not decodable here; the server still gets its chance
+    }
+
+    return {width: 600, height: 400};
+  }
+
+  _fileKey(file) {
+    return `${file.name}:${file.size}:${file.lastModified}`;
+  }
+
+  /**
+   * Hands back the placeholder for an uploaded file, preferring an exact match over the oldest pending one —
+   * the uploader may rebuild the `File` on its way through the drop target, so identity can’t be relied on.
+   */
+  _takePlaceholder(file) {
+    const key = file ? this._fileKey(file) : null;
+    let index = key
+      ? this.placeholders.findIndex((placeholder) => placeholder.key === key)
+      : -1;
+    if (index === -1) {
+      index = 0;
+    }
+
+    const [placeholder] = this.placeholders.splice(index, 1);
+
+    // it may have been undone or deleted while the upload was in flight
+    return placeholder?.element.root.rootName === '$graveyard'
+      ? null
+      : (placeholder?.element ?? null);
+  }
+
+  _removePlaceholder(element) {
+    if (!element) {
+      return;
+    }
+
+    this.editor.model.change((writer) => writer.remove(element));
   }
 
   /**
    * On a file being uploaded.
    */
-  async _onUploadComplete({result: asset}) {
+  async _onUploadComplete({result: asset, file}) {
+    const placeholder = this._takePlaceholder(file);
+
     if (this._imageMode === 'entries') {
+      this._removePlaceholder(placeholder);
       await this._createImageEntry(asset.assetId);
       return;
     }
@@ -330,6 +430,13 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       url = this._buildAssetUrl(asset.assetId, asset.url);
     }
 
+    if (placeholder) {
+      this.editor.model.change((writer) =>
+        writer.setAttribute('src', url, placeholder),
+      );
+      return;
+    }
+
     this.editor.execute('insertImage', {source: url, breakBlock: true});
   }
 
@@ -337,6 +444,8 @@ export default class CraftImageInsertUI extends ImageInsertUI {
    * On Upload Failure.
    */
   _onUploadFailure({error, canceled, file}) {
+    this._removePlaceholder(this._takePlaceholder(file));
+
     if (canceled) {
       return;
     }
@@ -365,6 +474,12 @@ export default class CraftImageInsertUI extends ImageInsertUI {
    * Once all uploads have finished.
    */
   _onUploadStop() {
-    this.progressBar.classList.add('hidden');
+    // whatever is left was never uploaded — a file the uploader rejected, most likely
+    const orphans = this.placeholders.splice(0);
+    for (const {element} of orphans) {
+      if (element.root.rootName !== '$graveyard') {
+        this._removePlaceholder(element);
+      }
+    }
   }
 }

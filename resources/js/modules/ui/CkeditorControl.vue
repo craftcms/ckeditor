@@ -156,6 +156,10 @@
     rememberCards(data.cards);
     withoutEmitting(() => {
       editor.setData(data.value ?? '');
+      // in-flight image uploads have placeholders in the content that the saved value doesn’t
+      if (editor.plugins.has('CraftImageInsertUI')) {
+        editor.plugins.get('CraftImageInsertUI').restorePlaceholders();
+      }
       emittedValue = editor.getData();
     });
   };

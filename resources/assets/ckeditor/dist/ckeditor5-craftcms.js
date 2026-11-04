@@ -75,7 +75,7 @@ var de = Object.create, fe = Object.defineProperty, pe = Object.getOwnPropertyDe
 		return "CraftImageInsertUI";
 	}
 	constructor() {
-		super(...arguments), this.container = null, this.progressBar = null, this.fileInput = null, this.uploader = null;
+		super(...arguments), this.container = null, this.fileInput = null, this.uploader = null, this.placeholders = [];
 	}
 	init() {
 		if (!this._imageSources) {
@@ -198,13 +198,11 @@ var de = Object.create, fe = Object.defineProperty, pe = Object.getOwnPropertyDe
 	}
 	_attachUploader() {
 		let e = this.editor, t = e.config.get("defaultUploadFolderId");
-		t && (this.container = e.sourceElement.closest(".ckeditor-container"), this.progressBar = document.createElement("craft-progress-bar"), this.progressBar.className = "hidden mt-sm", this.progressBar.toggleAttribute("smooth", !0), this.container.append(this.progressBar), this.fileInput = document.createElement("input"), this.fileInput.type = "file", this.fileInput.className = "hidden", this.fileInput.multiple = !0, e.sourceElement.after(this.fileInput), this.uploader = new j(this.container, {
+		t && (this.container = e.sourceElement.closest(".ckeditor-container"), this.fileInput = document.createElement("input"), this.fileInput.type = "file", this.fileInput.className = "hidden", this.fileInput.multiple = !0, e.sourceElement.after(this.fileInput), this.uploader = new j(this.container, {
 			dropZone: this.container,
 			fileInput: this.fileInput,
 			allowedKinds: ["image"],
 			on: {
-				start: this._onUploadStart.bind(this),
-				progress: this._onUploadProgress.bind(this),
 				done: this._onUploadComplete.bind(this),
 				fail: this._onUploadFailure.bind(this),
 				stop: this._onUploadStop.bind(this)
@@ -213,7 +211,6 @@ var de = Object.create, fe = Object.defineProperty, pe = Object.getOwnPropertyDe
 			folderId: t,
 			siteId: e.config.get("elementSiteId")
 		}), e.editing.view.document.on("drop", async (t, n) => {
-			e.editing.view, e.model;
 			let r = e.editing.mapper, i = n.dropRange;
 			if (i) {
 				let t = i.start, n = r.toModelPosition(t);
@@ -221,33 +218,77 @@ var de = Object.create, fe = Object.defineProperty, pe = Object.getOwnPropertyDe
 					e.setSelection(n, 0);
 				});
 			}
+			await this._addPlaceholders(n.dataTransfer?.files ?? []);
 		}, { priority: "high" }));
 	}
-	_onUploadStart() {
-		this.progressBar.progress = 0, this.progressBar.classList.remove("hidden");
+	async _addPlaceholders(e) {
+		for (let t of e) {
+			if (!t.type.startsWith("image/")) continue;
+			let { width: e, height: n } = await this._imageSize(t), r = this._insertPlaceholder(e, n);
+			r && this.placeholders.push({
+				key: this._fileKey(t),
+				element: r,
+				width: e,
+				height: n
+			});
+		}
 	}
-	_onUploadProgress({ loaded: e, total: t }) {
-		let n = parseInt(Math.min(e / t, 1) * 100, 10);
-		this.progressBar.progress = n;
+	_insertPlaceholder(e, t) {
+		let n = `<svg xmlns="http://www.w3.org/2000/svg" width="${e}" height="${t}" viewBox="0 0 ${e} ${t}"><rect width="${e}" height="${t}" fill="#808080" fill-opacity="0.18"/></svg>`;
+		return this.editor.execute("insertImage", {
+			source: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(n)}`,
+			breakBlock: !0
+		}), this.editor.model.document.selection.getSelectedElement();
 	}
-	async _onUploadComplete({ result: e }) {
+	restorePlaceholders() {
+		let e = this.editor.model;
+		for (let t of this.placeholders) t.element.root.rootName === "$graveyard" && (e.change((t) => t.setSelection(t.createPositionAt(e.document.getRoot(), "end"))), t.element = this._insertPlaceholder(t.width, t.height) ?? t.element);
+	}
+	async _imageSize(e) {
+		try {
+			let t = await createImageBitmap(e), { width: n, height: r } = t;
+			if (t.close(), n && r) return {
+				width: n,
+				height: r
+			};
+		} catch {}
+		return {
+			width: 600,
+			height: 400
+		};
+	}
+	_fileKey(e) {
+		return `${e.name}:${e.size}:${e.lastModified}`;
+	}
+	_takePlaceholder(e) {
+		let t = e ? this._fileKey(e) : null, n = t ? this.placeholders.findIndex((e) => e.key === t) : -1;
+		n === -1 && (n = 0);
+		let [r] = this.placeholders.splice(n, 1);
+		return r?.element.root.rootName === "$graveyard" ? null : r?.element ?? null;
+	}
+	_removePlaceholder(e) {
+		e && this.editor.model.change((t) => t.remove(e));
+	}
+	async _onUploadComplete({ result: e, file: t }) {
+		let n = this._takePlaceholder(t);
 		if (this._imageMode === "entries") {
-			await this._createImageEntry(e.assetId);
+			this._removePlaceholder(n), await this._createImageEntry(e.assetId);
 			return;
 		}
-		let t = this.editor.config.get("defaultTransform"), n = this._isTransformUrl(e.url), r;
-		r = !e.url || !n && t ? await this._getTransformUrl(e.assetId, t) : this._buildAssetUrl(e.assetId, e.url), this.editor.execute("insertImage", {
-			source: r,
+		let r = this.editor.config.get("defaultTransform"), i = this._isTransformUrl(e.url), a;
+		a = !e.url || !i && r ? await this._getTransformUrl(e.assetId, r) : this._buildAssetUrl(e.assetId, e.url), n ? this.editor.model.change((e) => e.setAttribute("src", a, n)) : this.editor.execute("insertImage", {
+			source: a,
 			breakBlock: !0
 		});
 	}
 	_onUploadFailure({ error: e, canceled: t, file: n }) {
-		if (t) return;
+		if (this._removePlaceholder(this._takePlaceholder(n)), t) return;
 		let r = e?.data || {}, i = e instanceof Error ? e.message : void 0, a = r.filename || n?.name, { errors: o } = r, s = o ? Object.values(o).flat() : [];
 		i ||= s.length ? s.join("\n") : a ? I("Upload failed for “{filename}”.", { filename: a }) : I("Upload failed."), le(i);
 	}
 	_onUploadStop() {
-		this.progressBar.classList.add("hidden");
+		let e = this.placeholders.splice(0);
+		for (let { element: t } of e) t.root.rootName !== "$graveyard" && this._removePlaceholder(t);
 	}
 }, Ce = class extends r {
 	refresh() {
