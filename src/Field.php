@@ -2240,8 +2240,8 @@ JS;
     /**
      * Returns the HTML sanitizer, adjusted for the CKEditor config.
      *
-     * Named sanitizers (selected in the field settings) are used as-is. Craft’s default sanitizer
-     * config is extended with the markup CKEditor needs, based on the field’s toolbar and options.
+     * The selected sanitizer’s config is extended with the markup CKEditor needs, based on the field’s
+     * toolbar and options. Sanitizers registered as instances don’t expose their config, so they’re used as-is.
      */
     #[Override]
     protected function htmlSanitizer(): HtmlSanitizerInterface
@@ -2251,15 +2251,37 @@ JS;
 
     private function createHtmlSanitizer(): HtmlSanitizerInterface
     {
-        if ($this->htmlSanitizer !== null && $this->htmlSanitizer !== 'default' && HtmlSanitizers::has($this->htmlSanitizer)) {
-            return HtmlSanitizers::sanitizer($this->htmlSanitizer);
+        $name = $this->htmlSanitizer !== null && HtmlSanitizers::has($this->htmlSanitizer)
+            ? $this->htmlSanitizer
+            : HtmlSanitizers::getDefaultDriver();
+
+        $config = HtmlSanitizers::config($name);
+
+        if ($config === null) {
+            return HtmlSanitizers::sanitizer($name);
         }
 
-        $config = HtmlSanitizers::defaultConfig()
-            ->allowAttribute('class', '*')
-            ->allowAttribute('style', ['div', 'span'])
-            ->allowAttribute('target', ['a'])
-            ->allowAttribute('rel', ['a']);
+        if ($name === HtmlSanitizers::getDefaultDriver()) {
+            $config = $config
+                ->allowAttribute('class', '*')
+                ->allowAttribute('style', ['div', 'span']);
+        }
+
+        // Only allow link `target` and `rel` attributes when the field’s link options can produce them
+        $allowTarget = isset($this->options['link']['addTargetToExternalLinks']) || in_array('target', $this->advancedLinkFields ?? []);
+        $allowRel = in_array('rel', $this->advancedLinkFields ?? []);
+        foreach ($this->options['link']['decorators'] ?? [] as $decorator) {
+            $allowTarget = $allowTarget || isset($decorator['attributes']['target']);
+            $allowRel = $allowRel || isset($decorator['attributes']['rel']);
+        }
+
+        if ($allowTarget) {
+            $config = $config->allowAttribute('target', ['a']);
+        }
+
+        if ($allowRel) {
+            $config = $config->allowAttribute('rel', ['a']);
+        }
 
         if (! empty($this->advancedLinkFields) && in_array('ariaLabel', $this->advancedLinkFields)) {
             $config = $config->allowAttribute('aria-label', ['a']);

@@ -15,7 +15,8 @@ use CraftCms\Ckeditor\Field;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 
 /**
- * Dispatched when a CKEditor field builds its HTML sanitizer config, when the field uses the default sanitizer.
+ * Dispatched when a CKEditor field builds its HTML sanitizer config. It isn’t dispatched for sanitizers
+ * registered as instances, as their config can’t be modified.
  *
  * `HtmlSanitizerConfig` is immutable, so listeners must assign the modified config back:
  *

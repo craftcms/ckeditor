@@ -167,7 +167,24 @@ You can then register custom CSS styles that should be applied within the editor
 
 CKEditor fields pass input through Craft’s HTML sanitizer (built on [`symfony/html-sanitizer`](https://symfony.com/doc/current/html_sanitizer.html)) to avoid saving malicious code to the database. This helps prevent XSS attacks and other vulnerabilities.
 
-Each CKEditor field with **Advanced** &rarr; **Sanitize HTML** enabled uses its selected **HTML Sanitizer**. When the default sanitizer is selected, CKEditor extends it with the markup the field’s toolbar needs (such as list styles, to-do list checkboxes, link `target` and `rel` attributes, and `<craft-entry>` tags for nested entries). Other sanitizers can be registered with `CraftCms\Cms\Support\Facades\HtmlSanitizers::extend()`, and are used as-is.
+Each CKEditor field with **Advanced** &rarr; **Sanitize HTML** enabled uses its selected **HTML Sanitizer**. Other sanitizers can be defined as array config files in `config/craft/sanitizers/` (the file name becomes the sanitizer name), or registered with `CraftCms\Cms\Support\Facades\HtmlSanitizers::extend()`, and are listed in the field’s **HTML Sanitizer** setting:
+
+```php
+<?php
+
+// config/craft/sanitizers/no-headings.php
+return [
+    'allow_safe_elements' => true,
+    'block_elements' => ['h1', 'h2'],
+];
+```
+
+The keys mirror [`HtmlSanitizerConfig`](https://symfony.com/doc/current/html_sanitizer.html)’s methods in snake case (`allow_elements`, `block_elements`, `drop_elements`, `allow_attributes`, `force_attributes`, `allowed_link_schemes`, etc.).
+
+CKEditor extends the selected sanitizer’s config with the markup the field’s toolbar and options need (such as list styles, to-do list checkboxes, `<craft-entry>` tags for nested entries, and link `target` and `rel` attributes when the field’s link options or advanced link fields can add them). Sanitizers registered as instances (e.g. `HtmlSanitizers::extend('name', new HtmlSanitizer(...))`) can’t be extended, so they’re used as-is, and must allow that markup themselves.
+
+> [!WARNING]
+> When upgrading from Craft 5, each field’s **Purify HTML** and **HTML Purifier Config** settings are mapped onto **Sanitize HTML** and **HTML Sanitizer** automatically, but `config/craft/htmlpurifier/*.json` files are deprecated, and are only loaded when the Yii 2 adapter is installed. CKEditor doesn’t extend them with the markup the field needs, so any markup they don’t allow—including `<craft-entry>` tags for nested entries—is removed when content is saved. Recreate them as array config files in `config/craft/sanitizers/`, keeping the same file name so fields continue to reference them.
 
 This behavior is independent of CKEditor’s own HTML sanitization engine—the client-side editor automatically strips out any markup that isn’t supported by an enabled feature or plugin. If you [install additional plugins](#adding-ckeditor-plugins) or add [custom styles](#registering-custom-styles), you may need to relax the sanitizer config to ensure the markup is not removed by the server when saved.
 
@@ -175,7 +192,7 @@ This behavior is independent of CKEditor’s own HTML sanitization engine—the 
 > _Disabling HTML sanitizing entirely can expose your site to significant security risks, even if you don’t accept input from anonymous users._  
 > The sanitizer provides a layer of security, while CKEditor is primarily concerned with hygiene.
 
-The sanitizer config used by CKEditor fields can be modified with the `CraftCms\Ckeditor\Events\HtmlSanitizerConfigResolving` event. `HtmlSanitizerConfig` is immutable, so assign the modified config back to the event:
+The sanitizer config used by CKEditor fields can be modified with the `CraftCms\Ckeditor\Events\HtmlSanitizerConfigResolving` event, which is dispatched after CKEditor has extended it. The event isn’t dispatched for sanitizers registered as instances (including legacy `config/craft/htmlpurifier/*.json` files). `HtmlSanitizerConfig` is immutable, so assign the modified config back to the event:
 
 ```php
 use CraftCms\Ckeditor\Events\HtmlSanitizerConfigResolving;
