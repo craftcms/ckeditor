@@ -7,6 +7,7 @@ import {
   View,
   ViewModel,
 } from 'ckeditor5';
+import {t as craftT} from '@craftcms/cp';
 
 export default class CraftLinkSitesView extends View {
   constructor(locale, options = {}) {
@@ -77,7 +78,7 @@ export default class CraftLinkSitesView extends View {
     );
 
     this.siteDropdownItemModels.current = new ViewModel({
-      label: Craft.t('ckeditor', 'Link to the current site'),
+      label: craftT('Link to the current site', {}, 'ckeditor'),
       siteId: null,
       withText: true,
     });
@@ -148,7 +149,7 @@ export default class CraftLinkSitesView extends View {
 
     // update the button label
     const label = siteId
-      ? Craft.t('ckeditor', 'Site: {name}', {name: itemModel.label})
+      ? craftT('Site: {name}', {name: itemModel.label}, 'ckeditor')
       : itemModel.label;
 
     this.siteDropdownView.buttonView.set('label', label);

@@ -16,7 +16,7 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: ['ckeditor5', 'jquery', '@craftcms/ckeditor'],
+      external: ['ckeditor5', 'jquery', '@craftcms/ckeditor', '@craftcms/cp'],
       globals: {
         jquery: '$',
       },

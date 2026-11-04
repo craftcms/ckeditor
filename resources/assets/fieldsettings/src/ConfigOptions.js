@@ -6,6 +6,7 @@
 
 /** global: CKEditor5, Garnish, $ */
 import './fieldsettings.css';
+import {t as craftT} from '@craftcms/cp';
 
 export default Garnish.Base.extend({
   jsonSchemaUri: null,
@@ -64,9 +65,10 @@ export default Garnish.Base.extend({
                 // if it does - show the confirmation dialogue
                 if (
                   !confirm(
-                    Craft.t(
-                      'ckeditor',
+                    craftT(
                       'Your JavaScript config contains functions. If you switch to JSON, they will be lost. Would you like to continue?',
+                      {},
+                      'ckeditor',
                     ),
                   )
                 ) {

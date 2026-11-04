@@ -1,4 +1,5 @@
 import {View} from 'ckeditor5';
+import {t as craftT} from '@craftcms/cp';
 
 export default class CraftLinkElementView extends View {
   constructor(locale, options = {}) {
@@ -22,7 +23,7 @@ export default class CraftLinkElementView extends View {
       if (
         this.linkUi.linkTypeDropdownView.buttonView.label == itemModel.label
       ) {
-        this.button = Craft.t('app', 'Loading');
+        this.button = craftT('Loading');
       }
     }
 
@@ -54,7 +55,7 @@ export default class CraftLinkElementView extends View {
         icon: 'plus',
         'data-choose': true,
       },
-      children: [Craft.t('app', 'Choose')],
+      children: [craftT('Choose')],
     });
     return button;
   }
@@ -135,14 +136,14 @@ export default class CraftLinkElementView extends View {
             const actions = [
               {
                 icon: 'arrows-rotate',
-                label: Craft.t('app', 'Replace'),
+                label: craftT('Replace'),
                 callback: () => {
                   this.linkUi._showElementSelectorModal(this.linkOption);
                 },
               },
               {
                 icon: 'remove',
-                label: Craft.t('app', 'Remove'),
+                label: craftT('Remove'),
                 callback: () => {
                   const unlinkCommand = this.editor.commands.get('unlink');
                   unlinkCommand.execute();

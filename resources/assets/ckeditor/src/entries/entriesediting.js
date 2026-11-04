@@ -5,6 +5,7 @@ import {
   Widget,
 } from 'ckeditor5';
 import CraftEntriesCommand from './entriescommand';
+import {t as craftT} from '@craftcms/cp';
 
 export default class CraftEntriesEditing extends Plugin {
   /**
@@ -195,7 +196,7 @@ export default class CraftEntriesEditing extends Plugin {
         '<craft-callout variant="danger" role="alert">' +
         Craft.escapeHtml(
           e?.response?.data?.message ||
-            Craft.t('ckeditor', 'An unknown error occurred.'),
+            craftT('An unknown error occurred.', {}, 'ckeditor'),
         ) +
         '</craft-callout>' +
         '</craft-card>';

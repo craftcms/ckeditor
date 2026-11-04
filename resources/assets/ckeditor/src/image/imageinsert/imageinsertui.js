@@ -5,6 +5,7 @@
  */
 
 import {ButtonView, IconImage, ImageInsertUI} from 'ckeditor5';
+import {t as craftT} from '@craftcms/cp';
 
 export default class CraftImageInsertUI extends ImageInsertUI {
   static get pluginName() {
@@ -354,9 +355,9 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       if (errorMessages.length) {
         message = errorMessages.join('\n');
       } else if (filename) {
-        message = Craft.t('app', 'Upload failed for “{filename}”.', {filename});
+        message = craftT('Upload failed for “{filename}”.', {filename});
       } else {
-        message = Craft.t('app', 'Upload failed.');
+        message = craftT('Upload failed.');
       }
     }
 

@@ -10,6 +10,7 @@ import {DoubleClickObserver} from '../observers/domevent';
 import CraftEntryTypeButtonView from './entrytypebuttonview.js';
 import CraftEntryTypeDropdownView from './entrytypedropdownview.js';
 import CraftFakeEntryTypeButtonView from './fakeentrytypebuttonview.js';
+import {t as craftT} from '@craftcms/cp';
 
 export default class CraftEntriesUI extends Plugin {
   /**
@@ -48,7 +49,7 @@ export default class CraftEntriesUI extends Plugin {
       WidgetToolbarRepository,
     );
     widgetToolbarRepository.register('entriesBalloon', {
-      ariaLabel: Craft.t('ckeditor', 'Entry toolbar'),
+      ariaLabel: craftT('Entry toolbar', {}, 'ckeditor'),
       // Toolbar Buttons
       items: ['editEntryBtn'],
       // If a related element is returned the toolbar is attached
@@ -215,7 +216,7 @@ export default class CraftEntriesUI extends Plugin {
     const button = new ButtonView(locale);
     button.set({
       isEnabled: true,
-      label: Craft.t('app', 'Edit {type}', {
+      label: craftT('Edit {type}', {
         type: (Craft.elementTypeNames[
           'CraftCms\\Cms\\Entry\\Elements\\Entry'
         ] ?? Craft.elementTypeNames['craft\\elements\\Entry'])[2],

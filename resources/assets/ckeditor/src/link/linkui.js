@@ -23,6 +23,7 @@ import CraftLinkElementView from './linkelementview.js';
 import CraftLinkSitesView from './linksitesview.js';
 import CraftLinkAdvancedView from './linkadvancedview.js';
 import {resolveAdvancedFieldAttributeValue} from './linkutils.js';
+import {t as craftT} from '@craftcms/cp';
 
 export default class CraftLinkUI extends Plugin {
   static get requires() {
@@ -319,7 +320,7 @@ export default class CraftLinkUI extends Plugin {
 
     // update the button label
     const label = elementRefHandle
-      ? Craft.t('app', '{name}', {name: itemModel.label})
+      ? craftT('{name}', {name: itemModel.label})
       : itemModel.label;
     this.linkTypeDropdownView.buttonView.set('label', label);
 
@@ -348,7 +349,7 @@ export default class CraftLinkUI extends Plugin {
 
     itemDefinitions.push(
       new ViewModel({
-        label: Craft.t('app', 'URL'),
+        label: craftT('URL'),
         handle: 'default',
         withText: true,
       }),

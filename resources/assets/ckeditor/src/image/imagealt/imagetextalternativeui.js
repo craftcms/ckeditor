@@ -5,6 +5,7 @@
  */
 
 import {ButtonView, FormRowView, ImageTextAlternativeUI} from 'ckeditor5';
+import {t as craftT} from '@craftcms/cp';
 
 const assetAltRefPattern = /#asset:\d+(?:@\d+)?:alt$/;
 const assetSrcRefPattern = /#asset:(\d+)(?:@(\d+))?/;
@@ -87,7 +88,7 @@ export default class CraftImageTextAlternativeUI extends ImageTextAlternativeUI 
     const syncButton = new ButtonView(editor.locale);
 
     syncButton.set({
-      label: Craft.t('ckeditor', 'Sync from asset'),
+      label: craftT('Sync from asset', {}, 'ckeditor'),
       withText: true,
       class: 'btn',
     });
@@ -139,7 +140,7 @@ export default class CraftImageTextAlternativeUI extends ImageTextAlternativeUI 
 
     if (fieldView.value == alt) {
       Craft.cp.displaySuccess(
-        Craft.t('ckeditor', 'The alternative text was already in sync.'),
+        craftT('The alternative text was already in sync.', {}, 'ckeditor'),
       );
       return;
     }
@@ -151,7 +152,7 @@ export default class CraftImageTextAlternativeUI extends ImageTextAlternativeUI 
     });
 
     Craft.cp.displaySuccess(
-      Craft.t('ckeditor', 'The alternative text was synced from the asset.'),
+      craftT('The alternative text was synced from the asset.', {}, 'ckeditor'),
     );
   }
 

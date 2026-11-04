@@ -15,6 +15,7 @@ import CraftEntries from './entries/entries';
 import CraftLink from './link/link';
 import CKEditorInspector from '@ckeditor/ckeditor5-inspector';
 import {ClassicEditor, Heading, SourceEditing} from 'ckeditor5';
+import {t as craftT} from '@craftcms/cp';
 
 export {CraftEntries};
 export {CraftLink};
@@ -200,9 +201,10 @@ const handleClipboard = function (editor, plugins) {
                 if (!plugins.includes(CraftEntries)) {
                   // if we're pasting to a different editor instance and that instance doesn't have CraftEntries plugins - bail straight away
                   Craft.cp.displayError(
-                    Craft.t(
-                      'ckeditor',
+                    craftT(
                       'This field doesn’t allow nested entries.',
+                      {},
+                      'ckeditor',
                     ),
                   );
                   errors = true;
