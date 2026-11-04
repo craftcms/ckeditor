@@ -153,7 +153,7 @@ export default class ImageEditorCommand extends Command {
     // so that the image is reloaded after it was edited, because the URL might still be the same
     // (e.g. if using native stuff and you "just" rotated the image)
     // if revAssetUrls is on, then the asset's URL should already have a "v=" param
-    if (!Craft.revAssetUrls) {
+    if (!window.CKE_REV_ASSET_URLS) {
       newSrc += (newSrc.includes('?') ? '&' : '?') + new Date().getTime();
     }
 

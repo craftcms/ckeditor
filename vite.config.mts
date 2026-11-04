@@ -19,6 +19,24 @@ import laravel from 'laravel-vite-plugin';
  */
 const cpSharedModuleExports: Record<string, string[] | null> = {
   vue: null,
+  '@craftcms/cp': [
+    'Uploads',
+    'actionClient',
+    'addActionsToChip',
+    'appendBodyHtml',
+    'appendElementHtml',
+    'appendHeadHtml',
+    'createElementEditor',
+    'createElementSelectorModal',
+    'escapeHtml',
+    'getActionUrl',
+    'loadElementThumbs',
+    'openAssetImageEditor',
+    'openSlideout',
+    'showError',
+    'showSuccess',
+    't',
+  ],
 };
 const cpSharedModules = Object.keys(cpSharedModuleExports);
 

@@ -285,7 +285,7 @@ export const create = async function (element, config) {
   config.attachTo = element;
   const editor = await ClassicEditor.create(config);
 
-  if (Craft.showCkeditorInspector && Craft.userIsAdmin) {
+  if (window.CKE_SHOW_INSPECTOR && Craft.userIsAdmin) {
     CKEditorInspector.attach(editor);
   }
 

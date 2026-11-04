@@ -1,3 +1,5 @@
+import {t} from '@craftcms/cp';
+
 /**
  * Adds the “Expand to a separate button” / “Collapse to a dropdown” action and the
  * “Show as a separate button” indicator to the entry type chips in a CKEditor field’s settings.
@@ -55,7 +57,7 @@ function toggleIndicator(chip: HTMLElement, show: boolean): void {
     label.append(indicators);
   }
 
-  const title = Craft.t('ckeditor', 'Show as a separate button');
+  const title = t('Show as a separate button', {}, 'ckeditor');
   indicator = document.createElement('div');
   indicator.className = 'cp-icon puny ckeditor-expanded-indicator';
   indicator.setAttribute('title', title);
@@ -100,8 +102,8 @@ export function registerEntryTypeChipActions(): void {
     }
 
     const labels = {
-      expand: Craft.t('ckeditor', 'Expand to a separate button'),
-      collapse: Craft.t('ckeditor', 'Collapse to a dropdown'),
+      expand: t('Expand to a separate button', {}, 'ckeditor'),
+      collapse: t('Collapse to a dropdown', {}, 'ckeditor'),
     };
     const expanded = Boolean(config.expanded);
     toggleIndicator(chip, expanded);

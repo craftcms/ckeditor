@@ -440,7 +440,7 @@ var he = class extends v {
 	}
 	_getNewSrc(e, t) {
 		let n = e.url;
-		return Craft.revAssetUrls || (n += (n.includes("?") ? "&" : "?") + (/* @__PURE__ */ new Date()).getTime()), n += "#asset:" + t.srcInfo.assetId, t.srcInfo.transform && (n += ":transform:" + t.srcInfo.transform), n;
+		return window.CKE_REV_ASSET_URLS || (n += (n.includes("?") ? "&" : "?") + (/* @__PURE__ */ new Date()).getTime()), n += "#asset:" + t.srcInfo.assetId, t.srcInfo.transform && (n += ":transform:" + t.srcInfo.transform), n;
 	}
 	_getAllImageAssets() {
 		let e = this.editor.model, t = e.createRangeIn(e.document.getRoot()), n = [];
@@ -12873,7 +12873,7 @@ var Oe = class extends v {
 }, Re = async function(e, n) {
 	typeof e == "string" && (e = document.querySelector(`#${e}`)), n.licenseKey = n.licenseKey || "GPL", n.attachTo = e;
 	let r = await t.create(n);
-	return Craft.showCkeditorInspector && Craft.userIsAdmin && Pe.default.attach(r), r.editing.view.change((e) => {
+	return window.CKE_SHOW_INSPECTOR && Craft.userIsAdmin && Pe.default.attach(r), r.editing.view.change((e) => {
 		let t = r.editing.view.document.getRoot();
 		if (n.accessibleFieldName !== void 0 && n.accessibleFieldName.length) {
 			let r = t.getAttribute("aria-label");

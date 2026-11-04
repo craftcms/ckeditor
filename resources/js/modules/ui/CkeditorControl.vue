@@ -7,6 +7,7 @@
    * control’s value whenever it changes.
    */
   import {h, onBeforeUnmount, onMounted, ref, watch} from 'vue';
+  import {actionClient} from '@craftcms/cp';
   import {
     applyGlobals,
     importModule,
@@ -144,17 +145,11 @@
    * Replaces the editor’s content with the field’s saved value for the owner, without reporting it as a change.
    */
   const reloadValue = async (ownerId: number) => {
-    const {data} = await Craft.sendActionRequest(
-      'POST',
-      'ckeditor/ckeditor/field-value',
-      {
-        data: {
-          ownerId,
-          siteId: props.control.props.owner?.ownerSiteId ?? null,
-          layoutElementUid: editor.config.get('layoutElementUid'),
-        },
-      },
-    );
+    const {data} = await actionClient.post('ckeditor/ckeditor/field-value', {
+      ownerId,
+      siteId: props.control.props.owner?.ownerSiteId ?? null,
+      layoutElementUid: editor.config.get('layoutElementUid'),
+    });
     if (!editor) {
       return;
     }

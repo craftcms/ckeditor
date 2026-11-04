@@ -64,9 +64,8 @@ export function loadScript(
 
 export function applyGlobals(globals: EditorGlobals): void {
   window.CKE_LOCALIZED_REF_HANDLES = globals.localizedRefHandles ?? [];
-  window.Craft = window.Craft || {};
-  window.Craft.showCkeditorInspector = !!globals.showInspector;
-  window.Craft.revAssetUrls = !!globals.revAssetUrls;
+  window.CKE_SHOW_INSPECTOR = !!globals.showInspector;
+  window.CKE_REV_ASSET_URLS = !!globals.revAssetUrls;
 }
 
 /**

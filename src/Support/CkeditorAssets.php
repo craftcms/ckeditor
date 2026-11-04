@@ -192,14 +192,15 @@ class CkeditorAssets
 
         $globals = $this->editorGlobals();
 
-        HtmlStack::scriptWithVars(fn ($refHandles) => <<<JS
+        HtmlStack::scriptWithVars(fn ($refHandles, $showInspector, $revAssetUrls) => <<<JS
 window.CKE_LOCALIZED_REF_HANDLES = $refHandles;
-JS, [$globals['localizedRefHandles']], Position::Head, ['type' => 'module']);
-
-        HtmlStack::jsWithVars(fn ($attach, $revAssetUrls) => <<<JS
-Craft.showCkeditorInspector = $attach;
-Craft.revAssetUrls = $revAssetUrls;
-JS, [$globals['showInspector'], $globals['revAssetUrls']], Position::BodyEnd);
+window.CKE_SHOW_INSPECTOR = $showInspector;
+window.CKE_REV_ASSET_URLS = $revAssetUrls;
+JS, [
+            $globals['localizedRefHandles'],
+            $globals['showInspector'],
+            $globals['revAssetUrls'],
+        ], Position::Head, ['type' => 'module']);
     }
 
     /**
