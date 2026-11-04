@@ -1,5 +1,5 @@
 import {ButtonView, View} from 'ckeditor5';
-import {t as craftT} from '@craftcms/cp';
+import * as Craft from '@craftcms/cp';
 
 export default class CraftEntryTypeButtonView extends View {
   constructor(locale, options = {}) {
@@ -18,7 +18,7 @@ export default class CraftEntryTypeButtonView extends View {
       commandValue: this.entryType.model.commandValue, //entry type id
       label: this.entryType.model.label,
       withText: !this.entryType.model.icon,
-      tooltip: craftT('New {type}', {
+      tooltip: Craft.t('New {type}', {
         type: this.entryType.model.label,
       }),
     };
@@ -48,7 +48,7 @@ export default class CraftEntryTypeButtonView extends View {
     this.setTemplate({
       tag: 'div',
       attributes: {
-        // ck-reset_all-excluded class is needed so that CKE doesn't mess with the styles we already have
+        // ck-reset_all-excluded class is needed so that CKE doesn'Craft.t mess with the styles we already have
         class: ['entry-type-button'],
       },
       children: [button],

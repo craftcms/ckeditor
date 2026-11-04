@@ -5,7 +5,7 @@
  */
 
 import {Command} from 'ckeditor5';
-import {actionClient} from '@craftcms/cp';
+import * as Craft from '@craftcms/cp';
 
 /**
  * The transform image command.
@@ -82,14 +82,14 @@ export default class TransformImageCommand extends Command {
         `#asset:${srcInfo.assetId}` +
         (options.transform ? `:transform:${options.transform}` : '');
 
-      // update the src hash immediately, so the transform is applied even if the real URL doesn’t load successfully
+      // update the src hash immediately, so the transform is applied even if the real URL doesn’Craft.t load successfully
       model.change((writer) => {
         const src = srcInfo.src.replace(/#.*/, '') + hash;
         writer.setAttribute('src', src, element);
       });
 
       // load the real URL and then update the src again
-      actionClient
+      Craft.actionClient
         .post('ckeditor/ckeditor/image-url', {
           assetId: srcInfo.assetId,
           transform: options.transform,

@@ -15,13 +15,7 @@ import CraftEntries from './entries/entries';
 import CraftLink from './link/link';
 import CKEditorInspector from '@ckeditor/ckeditor5-inspector';
 import {ClassicEditor, Heading, SourceEditing} from 'ckeditor5';
-import {
-  actionClient,
-  cpConfig,
-  t as craftT,
-  escapeHtml,
-  showError,
-} from '@craftcms/cp';
+import * as Craft from '@craftcms/cp';
 
 export {CraftEntries};
 export {CraftLink};
@@ -69,7 +63,7 @@ const trackChangesInSourceMode = function (editor) {
             editor.sourceElement.value = content;
           }
         },
-        // Captured, since focus and blur don’t bubble out of the textarea.
+        // Captured, since focus and blur don’Craft.t bubble out of the textarea.
         {capture: true, signal: listeners.signal},
       );
     }
@@ -163,7 +157,7 @@ const handleClipboard = function (editor, plugins) {
       ) {
         let duplicatedContent = pasteContent;
         let errors = false;
-        const targetSiteId = cpConfig().get('siteId');
+        const targetSiteId = Craft.cpConfig().get('siteId');
         let ownerId = null;
         let layoutElementUid = null;
         const editorData = editor.getData();
@@ -206,7 +200,7 @@ const handleClipboard = function (editor, plugins) {
           if (entryId !== null) {
             // check if we're copying to a different field and if this entry ID is in the field already
             const regex = new RegExp('data-entry-id="' + entryId + '"');
-            // if we're pasting to the same editor instance and that entryId isn't in use there (cut & paste) - carry on
+            // if we're pasting to the same editor instance and that entryId isn'Craft.t in use there (cut & paste) - carry on
             if (copyFromEditorId === editor.id && !regex.test(editorData)) {
               // if it's not - carry on
             } else {
@@ -216,10 +210,10 @@ const handleClipboard = function (editor, plugins) {
               let targetEntryTypeIds = null;
               if (copyFromEditorId !== editor.id) {
                 if (!plugins.includes(CraftEntries)) {
-                  // if we're pasting to a different editor instance and that instance doesn't have CraftEntries plugins - bail straight away
-                  showError(
-                    craftT(
-                      'This field doesn’t allow nested entries.',
+                  // if we're pasting to a different editor instance and that instance doesn'Craft.t have CraftEntries plugins - bail straight away
+                  Craft.showError(
+                    Craft.t(
+                      'This field doesn’Craft.t allow nested entries.',
                       {},
                       'ckeditor',
                     ),
@@ -232,7 +226,7 @@ const handleClipboard = function (editor, plugins) {
                 }
               }
 
-              await actionClient
+              await Craft.actionClient
                 .post('ckeditor/ckeditor/duplicate-nested-entry', {
                   entryId: entryId,
                   targetSiteId: targetSiteId,
@@ -243,11 +237,11 @@ const handleClipboard = function (editor, plugins) {
                 })
                 .then((response) => {
                   if (response.data.newEntryId) {
-                    // pass the duplicate’s card HTML along, so it doesn’t have to be requested separately
-                    // (`escapeHtml()` leaves quotes alone, so escape them too, for the attribute value)
+                    // pass the duplicate’s card HTML along, so it doesn’Craft.t have to be requested separately
+                    // (`Craft.escapeHtml()` leaves quotes alone, so escape them too, for the attribute value)
                     const cardHtmlAttr = response.data.cardHtml
                       ? ' data-card-html="' +
-                        escapeHtml(response.data.cardHtml).replace(
+                        Craft.escapeHtml(response.data.cardHtml).replace(
                           /"/g,
                           '&quot;',
                         ) +
@@ -270,14 +264,14 @@ const handleClipboard = function (editor, plugins) {
                 })
                 .catch((e) => {
                   errors = true;
-                  showError(e?.response?.data?.message);
+                  Craft.showError(e?.response?.data?.message);
                   console.error(e?.response?.data?.additionalMessage);
                 });
             }
           }
         }
 
-        // only update the data.content and fire further callbacks if we didn't encounter errors;
+        // only update the data.content and fire further callbacks if we didn'Craft.t encounter errors;
         if (!errors) {
           // data.content is what's passed down the chain to be pasted in
           data.content = editor.data.htmlProcessor.toView(duplicatedContent);
@@ -299,7 +293,7 @@ export const create = async function (element, config) {
   config.attachTo = element;
   const editor = await ClassicEditor.create(config);
 
-  if (window.CKE_SHOW_INSPECTOR && cpConfig().get('userIsAdmin')) {
+  if (window.CKE_SHOW_INSPECTOR && Craft.cpConfig().get('userIsAdmin')) {
     CKEditorInspector.attach(editor);
   }
 

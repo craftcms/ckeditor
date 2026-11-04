@@ -2040,10 +2040,11 @@ JS;
 $imports
 $uiTranslationImport
 import {create} from '@craftcms/ckeditor';
-import {t as craftT} from '@craftcms/cp';
+import {t} from '@craftcms/cp';
 
 export default async function (element, options = {}) {
-  // Custom config JS may still refer to `$`, so it’s kept for when jQuery is on the page
+  // Custom config JS may still refer to `$` or `Craft`, so they’re kept for when they’re on the page.
+  // (`t` is imported above rather than namespaced, so it can’t shadow `Craft` for that config.)
   const $ = window.jQuery;
   const isPlainObject = (value) => value !== null && typeof value === 'object' &&
     [Object.prototype, null].includes(Object.getPrototypeOf(value));
@@ -2126,12 +2127,12 @@ export default async function (element, options = {}) {
     config.wordCount.onUpdate = (stats) => {
       const statText = [];
       if (config.wordCount.displayWords || typeof config.wordCount.displayWords === 'undefined') {
-        statText.push(craftT('{num, number} {num, plural, =1{word} other{words}}', {
+        statText.push(t('{num, number} {num, plural, =1{word} other{words}}', {
           num: stats.words
         }, 'ckeditor'));
       }
       if (config.wordCount.displayCharacters) { // false by default
-        statText.push(craftT('{num, number} {num, plural, =1{character} other{characters}}', {
+        statText.push(t('{num, number} {num, plural, =1{character} other{characters}}', {
           num: stats.characters
         }, 'ckeditor'));
       }

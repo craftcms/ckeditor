@@ -10,18 +10,7 @@ import {DoubleClickObserver} from '../observers/domevent';
 import CraftEntryTypeButtonView from './entrytypebuttonview.js';
 import CraftEntryTypeDropdownView from './entrytypedropdownview.js';
 import CraftFakeEntryTypeButtonView from './fakeentrytypebuttonview.js';
-import {
-  actionClient,
-  appendBodyHtml,
-  appendHeadHtml,
-  cpConfig,
-  t as craftT,
-  createElementEditor,
-  getActionUrl,
-  loadElementThumbs,
-  openSlideout,
-  showError,
-} from '@craftcms/cp';
+import * as Craft from '@craftcms/cp';
 
 export default class CraftEntriesUI extends Plugin {
   /**
@@ -60,7 +49,7 @@ export default class CraftEntriesUI extends Plugin {
       WidgetToolbarRepository,
     );
     widgetToolbarRepository.register('entriesBalloon', {
-      ariaLabel: craftT('Entry toolbar', {}, 'ckeditor'),
+      ariaLabel: Craft.t('Entry toolbar', {}, 'ckeditor'),
       // Toolbar Buttons
       items: ['editEntryBtn'],
       // If a related element is returned the toolbar is attached
@@ -227,10 +216,13 @@ export default class CraftEntriesUI extends Plugin {
     const button = new ButtonView(locale);
     button.set({
       isEnabled: true,
-      label: craftT('Edit {type}', {
-        type: (cpConfig().get('elementTypeNames')[
+      label: Craft.t('Edit {type}', {
+        type: (Craft.cpConfig().get('elementTypeNames')[
           'CraftCms\\Cms\\Entry\\Elements\\Entry'
-        ] ?? cpConfig().get('elementTypeNames')['craft\\elements\\Entry'])[2],
+        ] ??
+          Craft.cpConfig().get('elementTypeNames')[
+            'craft\\elements\\Entry'
+          ])[2],
       }),
       tooltip: true,
       withText: true,
@@ -305,9 +297,9 @@ export default class CraftEntriesUI extends Plugin {
 
     let draftRefreshTimeout = null;
 
-    openSlideout(getActionUrl('elements/edit', params), {
+    Craft.openSlideout(Craft.getActionUrl('elements/edit', params), {
       opener: card,
-      // Only move the entry into the owner’s draft if it isn’t already there, like Matrix does
+      // Only move the entry into the owner’s draft if it isn’Craft.t already there, like Matrix does
       // (see `useNestedElementOperations.ts` `prepareEdit()`)
       prepareNestedOwner: async () =>
         card?.hasAttribute('data-owner-is-canonical') &&
@@ -366,7 +358,7 @@ export default class CraftEntriesUI extends Plugin {
   }
 
   /**
-   * Replaces an entry card’s HTML with a freshly rendered one, in place, so the editor’s height doesn’t jump.
+   * Replaces an entry card’s HTML with a freshly rendered one, in place, so the editor’s height doesn’Craft.t jump.
    *
    * @private
    */
@@ -405,9 +397,9 @@ export default class CraftEntriesUI extends Plugin {
     }
 
     domElement.innerHTML = data.cardHtml;
-    await appendHeadHtml(data.headHtml);
-    await appendBodyHtml(data.bodyHtml);
-    loadElementThumbs(domElement);
+    await Craft.appendHeadHtml(data.headHtml);
+    await Craft.appendBodyHtml(data.bodyHtml);
+    Craft.loadElementThumbs(domElement);
   }
 
   /**
@@ -439,14 +431,14 @@ export default class CraftEntriesUI extends Plugin {
     let data;
 
     try {
-      const response = await actionClient.post('elements/create', params);
+      const response = await Craft.actionClient.post('elements/create', params);
       data = response.data;
     } catch (e) {
-      showError(e?.response?.data?.error);
+      Craft.showError(e?.response?.data?.error);
       throw e;
     }
 
-    const slideout = createElementEditor(this.elementType, {
+    const slideout = Craft.createElementEditor(this.elementType, {
       elementId: data.element.id,
       draftId: data.element.draftId,
       params: {

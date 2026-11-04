@@ -1,5 +1,5 @@
 import {View} from 'ckeditor5';
-import {t as craftT} from '@craftcms/cp';
+import * as Craft from '@craftcms/cp';
 
 export default class CraftLinkAdvancedView extends View {
   constructor(locale, options = {}) {
@@ -7,7 +7,7 @@ export default class CraftLinkAdvancedView extends View {
 
     const bind = this.bindTemplate;
 
-    this.set('label', craftT('Advanced'));
+    this.set('label', Craft.t('Advanced'));
 
     this.linkUi = options.linkUi;
     this.editor = this.linkUi.editor;

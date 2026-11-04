@@ -1,4 +1,4 @@
-import {t} from '@craftcms/cp';
+import * as Craft from '@craftcms/cp';
 
 /**
  * Adds the “Expand to a separate button” / “Collapse to a dropdown” action and the
@@ -16,7 +16,7 @@ interface DefineChipActionsEvent extends CustomEvent {
 // Whether the element belongs to a CKEditor field’s settings
 function inCkeditorSettings(element: Element): boolean {
   // The toolbar’s field exists before its async control mounts. Stay within this
-  // settings group so a CKEditor elsewhere on the page doesn't match other fields.
+  // settings group so a CKEditor elsewhere on the page doesn'Craft.t match other fields.
   return Boolean(
     element
       .closest('craft-field-group')
@@ -57,7 +57,7 @@ function toggleIndicator(chip: HTMLElement, show: boolean): void {
     label.append(indicators);
   }
 
-  const title = t('Show as a separate button', {}, 'ckeditor');
+  const title = Craft.t('Show as a separate button', {}, 'ckeditor');
   indicator = document.createElement('div');
   indicator.className = 'cp-icon puny ckeditor-expanded-indicator';
   indicator.setAttribute('title', title);
@@ -102,8 +102,8 @@ export function registerEntryTypeChipActions(): void {
     }
 
     const labels = {
-      expand: t('Expand to a separate button', {}, 'ckeditor'),
-      collapse: t('Collapse to a dropdown', {}, 'ckeditor'),
+      expand: Craft.t('Expand to a separate button', {}, 'ckeditor'),
+      collapse: Craft.t('Collapse to a dropdown', {}, 'ckeditor'),
     };
     const expanded = Boolean(config.expanded);
     toggleIndicator(chip, expanded);
@@ -116,7 +116,7 @@ export function registerEntryTypeChipActions(): void {
         const wasExpanded = Boolean(current.expanded);
         current.expanded = !wasExpanded;
         input.value = JSON.stringify(current);
-        // Programmatic value changes don’t fire `change`; announce it so the control picks up the new value
+        // Programmatic value changes don’Craft.t fire `change`; announce it so the control picks up the new value
         input.dispatchEvent(new Event('change', {bubbles: true}));
 
         // Chip actions are only defined once, so update the menu item in place

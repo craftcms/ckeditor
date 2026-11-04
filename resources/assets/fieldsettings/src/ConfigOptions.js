@@ -5,7 +5,7 @@
  */
 
 import './fieldsettings.css';
-import {t as craftT} from '@craftcms/cp';
+import * as Craft from '@craftcms/cp';
 
 /** Whether a parsed config is an object literal rather than an array or null. */
 const isPlainObject = (value) =>
@@ -61,7 +61,7 @@ export default class ConfigOptions {
               // if it does - show the confirmation dialogue
               if (
                 !confirm(
-                  craftT(
+                  Craft.t(
                     'Your JavaScript config contains functions. If you switch to JSON, they will be lost. Would you like to continue?',
                     {},
                     'ckeditor',
@@ -240,12 +240,12 @@ export default class ConfigOptions {
     //       (s) => s.uri === this.jsonSchemaUri,
     //     ).schema;
     // } catch (e) {
-    //   console.warn('Couldn’t get config options JSON schema.', e);
+    //   console.warn('Couldn’Craft.t get config options JSON schema.', e);
     //   return;
     // }
     schema = this.jsonSchema;
     if (!schema) {
-      console.warn('Couldn’t get config options JSON schema.');
+      console.warn('Couldn’Craft.t get config options JSON schema.');
       return;
     }
 

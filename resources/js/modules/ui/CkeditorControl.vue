@@ -7,7 +7,7 @@
    * control’s value whenever it changes.
    */
   import {h, onBeforeUnmount, onMounted, ref, watch} from 'vue';
-  import {actionClient} from '@craftcms/cp';
+  import * as Craft from '@craftcms/cp';
   import {
     applyGlobals,
     importModule,
@@ -51,7 +51,7 @@
     (event: 'update:value', value: string, kind: 'typing'): void;
   }>();
 
-  // Vue templates can’t contain `<style>` tags, so render the field’s scoped CSS with a render function
+  // Vue templates can’Craft.t contain `<style>` tags, so render the field’s scoped CSS with a render function
   const ScopedCss = (p: {css: string}) => h('style', p.css);
 
   const root = ref<HTMLElement | null>(null);
@@ -64,7 +64,7 @@
   );
   let editor: any = null;
   let destroyed = false;
-  // The value last emitted, so changes that don’t affect it (e.g. a refreshed entry card) aren’t emitted
+  // The value last emitted, so changes that don’Craft.t affect it (e.g. a refreshed entry card) aren’Craft.t emitted
   let emittedValue: string | null = null;
   let syncing = false;
   // Runs a change to the editor without emitting it as a value change
@@ -145,18 +145,21 @@
    * Replaces the editor’s content with the field’s saved value for the owner, without reporting it as a change.
    */
   const reloadValue = async (ownerId: number) => {
-    const {data} = await actionClient.post('ckeditor/ckeditor/field-value', {
-      ownerId,
-      siteId: props.control.props.owner?.ownerSiteId ?? null,
-      layoutElementUid: editor.config.get('layoutElementUid'),
-    });
+    const {data} = await Craft.actionClient.post(
+      'ckeditor/ckeditor/field-value',
+      {
+        ownerId,
+        siteId: props.control.props.owner?.ownerSiteId ?? null,
+        layoutElementUid: editor.config.get('layoutElementUid'),
+      },
+    );
     if (!editor) {
       return;
     }
     rememberCards(data.cards);
     withoutEmitting(() => {
       editor.setData(data.value ?? '');
-      // in-flight image uploads have placeholders in the content that the saved value doesn’t
+      // in-flight image uploads have placeholders in the content that the saved value doesn’Craft.t
       if (editor.plugins.has('CraftImageInsertUI')) {
         editor.plugins.get('CraftImageInsertUI').restorePlaceholders();
       }
@@ -167,7 +170,7 @@
   // When the owner changes (its draft is created, applied or discarded), the entry cards’ owner info is out of date,
   // so re-render them. Once the owner’s draft is applied, the nested entries created or copied for it get new IDs,
   // which the server adjusts the saved value for, so reload the content from there instead. The control keeps its
-  // value, which doesn’t need saving again.
+  // value, which doesn’Craft.t need saving again.
   watch(
     () =>
       [

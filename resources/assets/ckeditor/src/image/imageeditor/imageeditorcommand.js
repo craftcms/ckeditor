@@ -5,7 +5,7 @@
  */
 
 import {Command} from 'ckeditor5';
-import {actionClient, openAssetImageEditor, showError} from '@craftcms/cp';
+import * as Craft from '@craftcms/cp';
 
 /**
  * The transform image command.
@@ -22,7 +22,7 @@ export default class ImageEditorCommand extends Command {
         assetId: srcInfo.assetId,
       };
 
-      actionClient
+      Craft.actionClient
         .post('ckeditor/ckeditor/image-permissions', data)
         .then((response) => {
           if (response.data.editable === false) {
@@ -84,10 +84,10 @@ export default class ImageEditorCommand extends Command {
 
     if (srcInfo) {
       // the asset ID must be a number, otherwise Craft treats it as the editor settings
-      void openAssetImageEditor(parseInt(srcInfo.assetId, 10), (data) => {
+      void Craft.openAssetImageEditor(parseInt(srcInfo.assetId, 10), (data) => {
         this._reloadImage(srcInfo.assetId, data);
       }).catch((e) => {
-        showError(e?.response?.data?.message);
+        Craft.showError(e?.response?.data?.message);
       });
     }
   }
@@ -108,13 +108,13 @@ export default class ImageEditorCommand extends Command {
     images.forEach((image) => {
       // if it's the image we just edited
       if (image.srcInfo.assetId == assetId) {
-        // if it doesn't have a transform
+        // if it doesn'Craft.t have a transform
         if (!image.srcInfo.transform) {
           let data = {
             assetId: image.srcInfo.assetId,
           };
 
-          actionClient
+          Craft.actionClient
             .post('ckeditor/ckeditor/image-url', data)
             .then((response) => {
               let newSrc = this._getNewSrc(response.data, image);
@@ -130,7 +130,7 @@ export default class ImageEditorCommand extends Command {
           };
 
           // get the new url
-          actionClient
+          Craft.actionClient
             .post('assets/generate-transform', data)
             .then((response) => {
               // get new src

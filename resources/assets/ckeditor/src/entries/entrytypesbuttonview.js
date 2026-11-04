@@ -6,7 +6,7 @@ import {
   IconPlus,
   View,
 } from 'ckeditor5';
-import {t as craftT} from '@craftcms/cp';
+import * as Craft from '@craftcms/cp';
 
 export default class CraftEntryTypesButtonView extends View {
   constructor(locale, options = {}) {
@@ -40,7 +40,7 @@ export default class CraftEntryTypesButtonView extends View {
             label: item.model.label,
             icon: item.model.icon,
             withText: false,
-            tooltip: craftT(
+            tooltip: Craft.t(
               'New {type}',
               {
                 type: item.model.label,
@@ -67,7 +67,7 @@ export default class CraftEntryTypesButtonView extends View {
     if (textButtons.length > 0) {
       const dropdownView = createDropdown(locale);
       dropdownView.buttonView.set({
-        label: craftT('Add nested content', {}, 'ckeditor'),
+        label: Craft.t('Add nested content', {}, 'ckeditor'),
         icon: IconPlus,
         tooltip: true,
         withText: false,
@@ -78,7 +78,7 @@ export default class CraftEntryTypesButtonView extends View {
       dropdownView.id = crypto.randomUUID();
 
       addListToDropdown(dropdownView, () => textButtons, {
-        ariaLabel: craftT('Entry types list', {}, 'ckeditor'),
+        ariaLabel: Craft.t('Entry types list', {}, 'ckeditor'),
       });
       // Execute command when an item from the dropdown is selected.
       this.listenTo(dropdownView, 'execute', (evt) => {
@@ -91,7 +91,7 @@ export default class CraftEntryTypesButtonView extends View {
     this.setTemplate({
       tag: 'div',
       attributes: {
-        // ck-reset_all-excluded class is needed so that CKE doesn't mess with the styles we already have
+        // ck-reset_all-excluded class is needed so that CKE doesn'Craft.t mess with the styles we already have
         class: ['entry-type-buttons'],
         tabindex: -1,
       },

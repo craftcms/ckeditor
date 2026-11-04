@@ -5,14 +5,7 @@ import {
   Widget,
 } from 'ckeditor5';
 import CraftEntriesCommand from './entriescommand';
-import {
-  actionClient,
-  appendBodyHtml,
-  appendHeadHtml,
-  t as craftT,
-  escapeHtml,
-  loadElementThumbs,
-} from '@craftcms/cp';
+import * as Craft from '@craftcms/cp';
 
 export default class CraftEntriesEditing extends Plugin {
   /**
@@ -80,7 +73,7 @@ export default class CraftEntriesEditing extends Plugin {
       },
       model: (viewElement, {writer: modelWriter}) => {
         const entryId = viewElement.getAttribute('data-entry-id');
-        // the control passes the card HTML separately, so the value doesn’t change whenever the cards are re-rendered
+        // the control passes the card HTML separately, so the value doesn’Craft.t change whenever the cards are re-rendered
         const cardHtml =
           viewElement.getAttribute('data-card-html') ??
           this.editor.config.get('craftCardHtml')?.(entryId) ??
@@ -120,7 +113,7 @@ export default class CraftEntriesEditing extends Plugin {
         const entryId = modelItem.getAttribute('entryId') ?? null;
         const siteId = modelItem.getAttribute('siteId') ?? null;
 
-        // an empty element, so the data processor doesn’t add an `&nbsp;` filler that the saved value won’t have
+        // an empty element, so the data processor doesn’Craft.t add an `&nbsp;` filler that the saved value won’Craft.t have
         return viewWriter.createEmptyElement('craft-entry', {
           'data-entry-id': entryId,
           'data-site-id': siteId,
@@ -138,8 +131,8 @@ export default class CraftEntriesEditing extends Plugin {
             domElement.innerHTML = data.cardHtml;
             // CKEditor fills raw elements synchronously, so the card's scripts
             // are appended behind it, head before body.
-            void appendHeadHtml(data.headHtml).then(() =>
-              appendBodyHtml(data.bodyHtml),
+            void Craft.appendHeadHtml(data.headHtml).then(() =>
+              Craft.appendBodyHtml(data.bodyHtml),
             );
           },
         );
@@ -150,7 +143,7 @@ export default class CraftEntriesEditing extends Plugin {
         editor.editing.view.focus();
 
         setTimeout(() => {
-          loadElementThumbs(editor.ui.element);
+          Craft.loadElementThumbs(editor.ui.element);
         }, 100);
 
         // refresh ui after drag&drop or sourceMode exit
@@ -188,7 +181,7 @@ export default class CraftEntriesEditing extends Plugin {
     const siteId = modelItem.getAttribute('siteId') ?? null;
 
     try {
-      const {data} = await actionClient.post(
+      const {data} = await Craft.actionClient.post(
         'ckeditor/ckeditor/entry-card-html',
         {
           entryId: entryId,
@@ -203,9 +196,9 @@ export default class CraftEntriesEditing extends Plugin {
       const cardHtml =
         '<craft-card>' +
         '<craft-callout variant="danger" role="alert">' +
-        escapeHtml(
+        Craft.escapeHtml(
           e?.response?.data?.message ||
-            craftT('An unknown error occurred.', {}, 'ckeditor'),
+            Craft.t('An unknown error occurred.', {}, 'ckeditor'),
         ) +
         '</craft-callout>' +
         '</craft-card>';

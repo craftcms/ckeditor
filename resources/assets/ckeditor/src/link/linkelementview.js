@@ -1,13 +1,5 @@
 import {View} from 'ckeditor5';
-import {
-  actionClient,
-  addActionsToChip,
-  appendBodyHtml,
-  appendHeadHtml,
-  cpConfig,
-  t as craftT,
-  showError,
-} from '@craftcms/cp';
+import * as Craft from '@craftcms/cp';
 
 export default class CraftLinkElementView extends View {
   constructor(locale, options = {}) {
@@ -31,7 +23,7 @@ export default class CraftLinkElementView extends View {
       if (
         this.linkUi.linkTypeDropdownView.buttonView.label == itemModel.label
       ) {
-        this.button = craftT('Loading');
+        this.button = Craft.t('Loading');
       }
     }
 
@@ -42,7 +34,7 @@ export default class CraftLinkElementView extends View {
     this.setTemplate({
       tag: 'div',
       attributes: {
-        // ck-reset_all-excluded class is needed so that CKE doesn't mess with the styles we already have
+        // ck-reset_all-excluded class is needed so that CKE doesn'Craft.t mess with the styles we already have
         class: ['elementselect', 'ck-reset_all-excluded'],
         tabindex: 0,
       },
@@ -63,7 +55,7 @@ export default class CraftLinkElementView extends View {
         icon: 'plus',
         'data-choose': true,
       },
-      children: [craftT('Choose')],
+      children: [Craft.t('Choose')],
     });
     return button;
   }
@@ -91,10 +83,10 @@ export default class CraftLinkElementView extends View {
       }
     });
 
-    // if element doesn't have children, it means it doesn't have the "Choose" button in it,
+    // if element doesn'Craft.t have children, it means it doesn'Craft.t have the "Choose" button in it,
     // so we should insert the element chip
     if (this.element.children.length == 0) {
-      actionClient
+      Craft.actionClient
         .post('ckeditor/ckeditor/render-element-with-supported-sites', {
           elements: [
             {
@@ -116,7 +108,7 @@ export default class CraftLinkElementView extends View {
           if (Object.keys(response.data.elements).length > 0) {
             // if it's a multisite, disable sites that are not in the response
             if (
-              cpConfig().get('isMultiSite') &&
+              Craft.cpConfig().get('isMultiSite') &&
               this.linkUi.sitesView != null
             ) {
               for (const [siteId, model] of Object.entries(
@@ -134,22 +126,22 @@ export default class CraftLinkElementView extends View {
             }
 
             this.element.innerHTML = response.data.elements[this.elementId][0];
-            await appendHeadHtml(response.data.headHtml);
-            await appendBodyHtml(response.data.bodyHtml);
+            await Craft.appendHeadHtml(response.data.headHtml);
+            await Craft.appendBodyHtml(response.data.bodyHtml);
 
             const chip = this.element.firstChild;
 
             const actions = [
               {
                 icon: 'arrows-rotate',
-                label: craftT('Replace'),
+                label: Craft.t('Replace'),
                 callback: () => {
                   this.linkUi._showElementSelectorModal(this.linkOption);
                 },
               },
               {
                 icon: 'remove',
-                label: craftT('Remove'),
+                label: Craft.t('Remove'),
                 callback: () => {
                   const unlinkCommand = this.editor.commands.get('unlink');
                   unlinkCommand.execute();
@@ -157,7 +149,7 @@ export default class CraftLinkElementView extends View {
               },
             ];
 
-            addActionsToChip(chip, actions);
+            Craft.addActionsToChip(chip, actions);
 
             // only show the sites dropdown, if an element has been selected
             if (this.linkUi.sitesView?.siteDropdownView?.buttonView) {
@@ -186,7 +178,7 @@ export default class CraftLinkElementView extends View {
           }
         })
         .catch((e) => {
-          showError(e?.response?.data?.message);
+          Craft.showError(e?.response?.data?.message);
           throw e?.response?.data?.message ?? e;
         });
     }

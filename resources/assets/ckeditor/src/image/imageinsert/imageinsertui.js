@@ -5,13 +5,7 @@
  */
 
 import {ButtonView, IconImage, ImageInsertUI} from 'ckeditor5';
-import {
-  actionClient,
-  t as craftT,
-  createElementSelectorModal,
-  showError,
-  Uploader,
-} from '@craftcms/cp';
+import * as Craft from '@craftcms/cp';
 
 export default class CraftImageInsertUI extends ImageInsertUI {
   static get pluginName() {
@@ -93,23 +87,26 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       kind: 'image',
     });
 
-    void createElementSelectorModal('CraftCms\\Cms\\Asset\\Elements\\Asset', {
-      ...this._imageModalSettings,
-      storageKey: `ckeditor:${this.pluginName}:'CraftCms\\Cms\\Asset\\Elements\\Asset'`,
-      sources,
-      criteria,
-      defaultSiteId: config.get('elementSiteId'),
-      transforms: config.get('transforms'),
-      multiSelect: true,
-      onSelect: (assets, {transform}) => {
-        return this._processSelectedAssets(assets, transform).then(() => {
+    void Craft.createElementSelectorModal(
+      'CraftCms\\Cms\\Asset\\Elements\\Asset',
+      {
+        ...this._imageModalSettings,
+        storageKey: `ckeditor:${this.pluginName}:'CraftCms\\Cms\\Asset\\Elements\\Asset'`,
+        sources,
+        criteria,
+        defaultSiteId: config.get('elementSiteId'),
+        transforms: config.get('transforms'),
+        multiSelect: true,
+        onSelect: (assets, {transform}) => {
+          return this._processSelectedAssets(assets, transform).then(() => {
+            editor.editing.view.focus();
+          });
+        },
+        onClose: () => {
           editor.editing.view.focus();
-        });
+        },
       },
-      onClose: () => {
-        editor.editing.view.focus();
-      },
-    });
+    );
   }
 
   async _processSelectedAssets(assets, transform) {
@@ -168,7 +165,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
 
     let response;
     try {
-      response = await actionClient.post(
+      response = await Craft.actionClient.post(
         'ckeditor/ckeditor/create-image-entry',
         {
           ...params,
@@ -176,7 +173,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
         },
       );
     } catch (e) {
-      showError();
+      Craft.showError();
       throw e;
     }
 
@@ -203,7 +200,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
   async _getTransformUrl(assetId, handle) {
     let response;
     try {
-      response = await actionClient.post('ckeditor/ckeditor/image-url', {
+      response = await Craft.actionClient.post('ckeditor/ckeditor/image-url', {
         assetId: assetId,
         transform: handle,
       });
@@ -246,7 +243,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     this.fileInput.multiple = true;
     editor.sourceElement.after(this.fileInput);
 
-    this.uploader = new Uploader(this.container, {
+    this.uploader = new Craft.Uploader(this.container, {
       dropZone: this.container,
       fileInput: this.fileInput,
       allowedKinds: ['image'],
@@ -317,7 +314,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
    */
   _insertPlaceholder(width, height) {
     const svg =
-      `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" ` +
+      `<svg xmlns="Craft.http://www.w3.org/2000/svg" width="${width}" height="${height}" ` +
       `viewBox="0 0 ${width} ${height}">` +
       `<rect width="${width}" height="${height}" fill="#808080" fill-opacity="0.18"/>` +
       '</svg>';
@@ -461,13 +458,13 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       if (errorMessages.length) {
         message = errorMessages.join('\n');
       } else if (filename) {
-        message = craftT('Upload failed for “{filename}”.', {filename});
+        message = Craft.t('Upload failed for “{filename}”.', {filename});
       } else {
-        message = craftT('Upload failed.');
+        message = Craft.t('Upload failed.');
       }
     }
 
-    showError(message);
+    Craft.showError(message);
   }
 
   /**

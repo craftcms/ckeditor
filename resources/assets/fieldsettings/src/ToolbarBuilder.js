@@ -6,15 +6,8 @@
 
 import './fieldsettings.css';
 import {create} from '@craftcms/ckeditor';
-import {cpConfig} from '@craftcms/cp';
-import {
-  DragDrop,
-  getDist,
-  getOffset,
-  getOuterHeight,
-  getOuterWidth,
-  hitTest,
-} from '@craftcms/garnish';
+import * as Craft from '@craftcms/cp';
+import * as Garnish from '@craftcms/garnish';
 
 /** Per-item state, keyed off the elements it belongs to. */
 const componentNames = new WeakMap();
@@ -103,7 +96,7 @@ export default class ToolbarBuilder {
         }
 
         if (!this.readOnly) {
-          this.drag = new DragDrop({
+          this.drag = new Garnish.DragDrop({
             dropTargets: this.targetContainer,
             helper: (item) => {
               const outerContainer = document.createElement('div');
@@ -125,22 +118,22 @@ export default class ToolbarBuilder {
               );
               this.insertion = document.createElement('div');
               this.insertion.className = 'ckeditor-tb--insertion';
-              this.insertion.style.width = `${getOuterWidth(draggee)}px`;
-              this.insertion.style.height = `${getOuterHeight(draggee)}px`;
+              this.insertion.style.width = `${Garnish.getOuterWidth(draggee)}px`;
+              this.insertion.style.height = `${Garnish.getOuterHeight(draggee)}px`;
               if (this.draggingSourceItem) {
                 if (this.draggingSeparator) {
-                  // don't hide the draggee as we're just going to duplicate it
+                  // don'Craft.t hide the draggee as we're just going to duplicate it
                   draggee.style.visibility = '';
                 } else {
                   const property =
-                    cpConfig().get('orientation') === 'ltr'
+                    Craft.cpConfig().get('orientation') === 'ltr'
                       ? 'margin-right'
                       : 'margin-left';
                   animateMargin(
                     draggee,
                     property,
                     '0px',
-                    `${-1 * getOuterWidth(draggee)}px`,
+                    `${-1 * Garnish.getOuterWidth(draggee)}px`,
                     () => draggee.classList.add('hidden'),
                   );
                 }
@@ -206,7 +199,7 @@ export default class ToolbarBuilder {
                 if (!this.draggingSeparator) {
                   draggee.classList.remove('hidden');
                   const property =
-                    cpConfig().get('orientation') === 'ltr'
+                    Craft.cpConfig().get('orientation') === 'ltr'
                       ? 'margin-right'
                       : 'margin-left';
                   const currentMargin =
@@ -357,7 +350,9 @@ export default class ToolbarBuilder {
   }
 
   getClosestItem() {
-    if (!hitTest(this.drag.mouseX, this.drag.mouseY, this.targetContainer)) {
+    if (
+      !Garnish.hitTest(this.drag.mouseX, this.drag.mouseY, this.targetContainer)
+    ) {
       return false;
     }
 
@@ -372,7 +367,7 @@ export default class ToolbarBuilder {
 
     const mouseDiffs = items.map((item) => {
       const midpoint = midpoints.get(item);
-      return getDist(
+      return Garnish.getDist(
         midpoint.left,
         midpoint.top,
         this.drag.mouseX,
@@ -419,10 +414,10 @@ export default class ToolbarBuilder {
     }
 
     for (const item of items) {
-      const offset = getOffset(item);
+      const offset = Garnish.getOffset(item);
       midpoints.set(item, {
-        left: offset.left + getOuterWidth(item) / 2,
-        top: offset.top + getOuterHeight(item) / 2,
+        left: offset.left + Garnish.getOuterWidth(item) / 2,
+        top: offset.top + Garnish.getOuterHeight(item) / 2,
       });
     }
   }

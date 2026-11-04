@@ -1,59 +1,59 @@
 import { create } from "@craftcms/ckeditor";
-import { cpConfig, t } from "@craftcms/cp";
-import { DragDrop, getDist, getOffset, getOuterHeight, getOuterWidth, hitTest } from "@craftcms/garnish";
+import * as Craft from "@craftcms/cp";
+import * as Garnish from "@craftcms/garnish";
 // resources/assets/fieldsettings/src/ToolbarBuilder.js
 var componentNames = /* @__PURE__ */ new WeakMap(), sourceItems = /* @__PURE__ */ new WeakMap(), midpoints = /* @__PURE__ */ new WeakMap(), MARGIN_DURATION = 200;
-function animateMargin(e, n, r, i, a) {
-	e.getAnimations().forEach((e) => e.cancel()), e.style.setProperty(n, r), e.animate([{ [n]: r }, { [n]: i }], {
+function animateMargin(e, t, n, r, i) {
+	e.getAnimations().forEach((e) => e.cancel()), e.style.setProperty(t, n), e.animate([{ [t]: n }, { [t]: r }], {
 		duration: MARGIN_DURATION,
 		easing: "ease-in-out"
 	}).finished.catch(() => {}).then(() => {
-		e.style.setProperty(n, i), a?.();
+		e.style.setProperty(t, r), i?.();
 	});
 }
 var ToolbarBuilder = class {
-	constructor(e, n, r = []) {
+	constructor(e, t, n = []) {
 		this.container = document.getElementById(e), this.sourceContainer = this.container.querySelector(".ckeditor-tb--source .ck-toolbar__items"), this.targetContainer = this.container.querySelector(".ckeditor-tb--target .ck-toolbar__items"), this.input = this.container.querySelector("input"), this.value = JSON.parse(this.input.value), this.readOnly = this.container.classList.contains("disabled"), this.components = {}, this.drag = null, this.items = [], this.draggingSourceItem = null, this.draggingSeparator = null, this.insertion = null, this.showingInsertion = !1;
+		let r = document.createElement("div");
+		r.classList.add("hidden");
 		let i = document.createElement("div");
-		i.classList.add("hidden");
-		let a = document.createElement("div");
-		i.appendChild(a), this.container.append(i), create(a, {
+		r.appendChild(i), this.container.append(r), create(i, {
 			linkOptions: [{ elementType: "CraftCms\\Cms\\Asset\\Elements\\Asset" }],
 			imageSources: ["*"],
 			entryTypeOptions: [{
 				label: "fake",
 				value: "fake"
 			}],
-			plugins: r
+			plugins: n
 		}).then((e) => {
-			let r = e.ui.componentFactory;
-			for (let e of r.names()) this.components[e] = r.create(e);
-			let i = JSON.parse(this.container.getAttribute("data-available-items"));
-			for (let e = 0; e < i.length; e++) {
-				let n = i[e];
-				if (n.length > 1) {
-					let r = this.value.findIndex((e) => n.some((n) => n.button === e));
-					if (r !== -1) {
-						for (let a = 0; a < n.length; a++) if (this.value[r + a] !== n[a].button) {
-							i.splice(e, 1, ...n.map((e) => [e])), e += n.length - 1;
+			let n = e.ui.componentFactory;
+			for (let e of n.names()) this.components[e] = n.create(e);
+			let r = JSON.parse(this.container.getAttribute("data-available-items"));
+			for (let e = 0; e < r.length; e++) {
+				let t = r[e];
+				if (t.length > 1) {
+					let n = this.value.findIndex((e) => t.some((t) => t.button === e));
+					if (n !== -1) {
+						for (let i = 0; i < t.length; i++) if (this.value[n + i] !== t[i].button) {
+							r.splice(e, 1, ...t.map((e) => [e])), e += t.length - 1;
 							break;
 						}
 					}
 				}
 			}
-			this.readOnly || (this.drag = new DragDrop({
+			this.readOnly || (this.drag = new Garnish.DragDrop({
 				dropTargets: this.targetContainer,
 				helper: (e) => {
+					let t = document.createElement("div");
+					t.className = "offset-drag-helper ck ck-reset_all ck-editor ck-rounded-corners";
 					let n = document.createElement("div");
-					n.className = "offset-drag-helper ck ck-reset_all ck-editor ck-rounded-corners";
-					let r = document.createElement("div");
-					return r.className = "ck ck-toolbar", r.append(e), n.append(r), n;
+					return n.className = "ck ck-toolbar", n.append(e), t.append(n), t;
 				},
 				moveHelperToCursor: !0,
 				onDragStart: () => {
 					document.body.classList.add("dragging");
 					let [e] = this.drag.$draggee;
-					this.draggingSourceItem = this.sourceContainer.contains(e), this.draggingSeparator = e.classList.contains("ckeditor-tb--separator"), this.insertion = document.createElement("div"), this.insertion.className = "ckeditor-tb--insertion", this.insertion.style.width = `${getOuterWidth(e)}px`, this.insertion.style.height = `${getOuterHeight(e)}px`, this.draggingSourceItem ? this.draggingSeparator ? e.style.visibility = "" : animateMargin(e, cpConfig().get("orientation") === "ltr" ? "margin-right" : "margin-left", "0px", `${-1 * getOuterWidth(e)}px`, () => e.classList.add("hidden")) : (e.classList.add("hidden"), e.before(this.insertion), this.showingInsertion = !0), this.setMidpoints();
+					this.draggingSourceItem = this.sourceContainer.contains(e), this.draggingSeparator = e.classList.contains("ckeditor-tb--separator"), this.insertion = document.createElement("div"), this.insertion.className = "ckeditor-tb--insertion", this.insertion.style.width = `${Garnish.getOuterWidth(e)}px`, this.insertion.style.height = `${Garnish.getOuterHeight(e)}px`, this.draggingSourceItem ? this.draggingSeparator ? e.style.visibility = "" : animateMargin(e, Craft.cpConfig().get("orientation") === "ltr" ? "margin-right" : "margin-left", "0px", `${-1 * Garnish.getOuterWidth(e)}px`, () => e.classList.add("hidden")) : (e.classList.add("hidden"), e.before(this.insertion), this.showingInsertion = !0), this.setMidpoints();
 				},
 				onDrag: () => {
 					this.checkForNewClosestItem();
@@ -63,32 +63,32 @@ var ToolbarBuilder = class {
 					let [e] = this.drag.$draggee;
 					if (this.checkForNewClosestItem(), this.showingInsertion) {
 						if (this.draggingSourceItem) {
-							let r;
-							if (this.draggingSeparator) r = this.renderSeparator();
+							let n;
+							if (this.draggingSeparator) n = this.renderSeparator();
 							else {
-								let a = componentNames.get(e);
-								r = this.renderComponentGroup(a);
-								for (let e of a) {
-									let r = i.flat().find(({ button: n }) => n === e);
-									r && r.configOption && n.addSetting(r.configOption);
+								let i = componentNames.get(e);
+								n = this.renderComponentGroup(i);
+								for (let e of i) {
+									let n = r.flat().find(({ button: t }) => t === e);
+									n && n.configOption && t.addSetting(n.configOption);
 								}
 							}
-							sourceItems.set(r, e), r.style.visibility = "hidden", this.insertion.replaceWith(r), this.drag.$draggee = [r];
+							sourceItems.set(n, e), n.style.visibility = "hidden", this.insertion.replaceWith(n), this.drag.$draggee = [n];
 						} else this.insertion.replaceWith(e), e.classList.remove("hidden");
 					} else {
 						if (!this.draggingSourceItem) {
-							let r = sourceItems.get(e);
-							if (e.remove(), e = r, this.drag.$draggee = [e], !this.draggingSeparator) for (let e of componentNames.get(r)) {
-								let r = i.flat().find(({ button: n }) => n === e);
-								r && r.configOption && n.removeSetting(r.configOption);
+							let n = sourceItems.get(e);
+							if (e.remove(), e = n, this.drag.$draggee = [e], !this.draggingSeparator) for (let e of componentNames.get(n)) {
+								let n = r.flat().find(({ button: t }) => t === e);
+								n && n.configOption && t.removeSetting(n.configOption);
 							}
 						}
 						if (!this.draggingSeparator) {
 							e.classList.remove("hidden");
-							let n = cpConfig().get("orientation") === "ltr" ? "margin-right" : "margin-left", r = e.style.getPropertyValue(n) || "0px";
-							e.style.removeProperty(n);
-							let i = getComputedStyle(e).getPropertyValue(n);
-							animateMargin(e, n, r, i, () => e.style.removeProperty(n));
+							let t = Craft.cpConfig().get("orientation") === "ltr" ? "margin-right" : "margin-left", n = e.style.getPropertyValue(t) || "0px";
+							e.style.removeProperty(t);
+							let r = getComputedStyle(e).getPropertyValue(t);
+							animateMargin(e, t, n, r, () => e.style.removeProperty(t));
 						}
 					}
 					this.drag.returnHelpersToDraggees(), this.items = [...this.targetContainer.children], this.value = [];
@@ -96,66 +96,66 @@ var ToolbarBuilder = class {
 					this.input.value = JSON.stringify(this.value);
 				}
 			}));
-			let a = {};
-			for (let e of i) {
-				let n = this.renderComponentGroup(e);
-				n && (this.sourceContainer.append(n), a[e.map((e) => e.button).join(",")] = n, this.value.includes(e[0].button) && n.classList.add("hidden"));
+			let i = {};
+			for (let e of r) {
+				let t = this.renderComponentGroup(e);
+				t && (this.sourceContainer.append(t), i[e.map((e) => e.button).join(",")] = t, this.value.includes(e[0].button) && t.classList.add("hidden"));
 			}
-			let o = this.renderSeparator();
-			this.sourceContainer.append(o), a["|"] = o, this.items = [];
+			let a = this.renderSeparator();
+			this.sourceContainer.append(a), i["|"] = a, this.items = [];
 			for (let e = 0; e < this.value.length; e++) {
-				let n = this.value[e], r, o;
-				if (n === "|") r = this.renderSeparator(), this.targetContainer.append(r), o = "|";
+				let t = this.value[e], n, a;
+				if (t === "|") n = this.renderSeparator(), this.targetContainer.append(n), a = "|";
 				else {
-					let a = i.find((e) => e.some((e) => e.button === n));
-					if (!a || (r = this.renderComponentGroup(a), !r)) continue;
-					this.targetContainer.append(r), o = a.map((e) => e.button).join(","), e += a.length - 1;
+					let i = r.find((e) => e.some((e) => e.button === t));
+					if (!i || (n = this.renderComponentGroup(i), !n)) continue;
+					this.targetContainer.append(n), a = i.map((e) => e.button).join(","), e += i.length - 1;
 				}
-				sourceItems.set(r, a[o]), this.items.push(r);
+				sourceItems.set(n, i[a]), this.items.push(n);
 			}
 		}).catch(console.error);
 	}
 	renderSeparator() {
 		let e = document.createElement("div");
 		e.className = "ckeditor-tb--item ckeditor-tb--separator", e.setAttribute("data-cke-tooltip-text", "Separator");
-		let n = document.createElement("span");
-		return n.className = "ck ck-toolbar__separator", e.append(n), this.drag?.addItems(e), e;
+		let t = document.createElement("span");
+		return t.className = "ck ck-toolbar__separator", e.append(t), this.drag?.addItems(e), e;
 	}
 	renderComponentGroup(e) {
-		let n = e.map((e) => typeof e == "string" ? e : e.button), r = [], i = [];
-		for (let e of n) {
-			let n;
+		let t = e.map((e) => typeof e == "string" ? e : e.button), n = [], r = [];
+		for (let e of t) {
+			let t;
 			try {
-				n = this.renderComponent(e);
+				t = this.renderComponent(e);
 			} catch (e) {
 				console.warn(e);
 				continue;
 			}
-			r.push(n);
-			let a = (n.matches("[data-cke-tooltip-text]") ? n : n.querySelector("[data-cke-tooltip-text]"))?.getAttribute("data-cke-tooltip-text");
-			i.push(a ? a.replace(/ \(.*\)$/, "") : `${e[0].toUpperCase()}${e.slice(1)}`);
+			n.push(t);
+			let i = (t.matches("[data-cke-tooltip-text]") ? t : t.querySelector("[data-cke-tooltip-text]"))?.getAttribute("data-cke-tooltip-text");
+			r.push(i ? i.replace(/ \(.*\)$/, "") : `${e[0].toUpperCase()}${e.slice(1)}`);
 		}
-		if (!r.length) return !1;
-		let a = document.createElement("div");
-		return a.className = "ckeditor-tb--item", a.append(...r), a.setAttribute("data-cke-tooltip-text", i.join(", ")), componentNames.set(a, n), this.drag?.addItems(a), a;
+		if (!n.length) return !1;
+		let i = document.createElement("div");
+		return i.className = "ckeditor-tb--item", i.append(...n), i.setAttribute("data-cke-tooltip-text", r.join(", ")), componentNames.set(i, t), this.drag?.addItems(i), i;
 	}
 	renderComponent(e) {
-		let n = this.components[e];
-		if (!n) throw `Missing component: ${e}`;
-		n.isRendered || n.render();
-		let r = document.createElement("template");
-		return r.innerHTML = n.element.outerHTML.trim(), r.content.firstElementChild;
+		let t = this.components[e];
+		if (!t) throw `Missing component: ${e}`;
+		t.isRendered || t.render();
+		let n = document.createElement("template");
+		return n.innerHTML = t.element.outerHTML.trim(), n.content.firstElementChild;
 	}
 	getClosestItem() {
-		if (!hitTest(this.drag.mouseX, this.drag.mouseY, this.targetContainer)) return !1;
+		if (!Garnish.hitTest(this.drag.mouseX, this.drag.mouseY, this.targetContainer)) return !1;
 		if (!this.items.length) return null;
 		let e = [...this.items];
 		this.showingInsertion && e.push(this.insertion);
-		let n = e.map((e) => {
-			let n = midpoints.get(e);
-			return getDist(n.left, n.top, this.drag.mouseX, this.drag.mouseY);
-		}), r = Math.min(...n);
-		return e[n.indexOf(r)];
+		let t = e.map((e) => {
+			let t = midpoints.get(e);
+			return Garnish.getDist(t.left, t.top, this.drag.mouseX, this.drag.mouseY);
+		}), n = Math.min(...t);
+		return e[t.indexOf(n)];
 	}
 	checkForNewClosestItem() {
 		let e = this.getClosestItem();
@@ -164,11 +164,11 @@ var ToolbarBuilder = class {
 	setMidpoints() {
 		let e = [...this.items];
 		this.showingInsertion && e.push(this.insertion);
-		for (let n of e) {
-			let e = getOffset(n);
-			midpoints.set(n, {
-				left: e.left + getOuterWidth(n) / 2,
-				top: e.top + getOuterHeight(n) / 2
+		for (let t of e) {
+			let e = Garnish.getOffset(t);
+			midpoints.set(t, {
+				left: e.left + Garnish.getOuterWidth(t) / 2,
+				top: e.top + Garnish.getOuterHeight(t) / 2
 			});
 		}
 	}
@@ -188,19 +188,19 @@ var ToolbarBuilder = class {
 					case "json":
 						if (this.lastCodeMode === "js") {
 							let e = this.getValue(this.jsEditor);
-							if (this.jsContainsFunctions(e) && !confirm(t("Your JavaScript config contains functions. If you switch to JSON, they will be lost. Would you like to continue?", {}, "ckeditor"))) {
+							if (this.jsContainsFunctions(e) && !confirm(Craft.t("Your JavaScript config contains functions. If you switch to JSON, they will be lost. Would you like to continue?", {}, "ckeditor"))) {
 								modePicker.querySelector("[data-mode=\"js\"]")?.click();
 								break;
 							}
-							let n = this.js2json(e);
-							this.setValue(this.jsonEditor, n || "{\n  \n}"), this.setValue(this.jsEditor, "");
+							let t = this.js2json(e);
+							this.setValue(this.jsonEditor, t || "{\n  \n}"), this.setValue(this.jsEditor, "");
 						}
 						this.jsonContainer.classList.remove("hidden");
 						break;
 					case "js":
 						if (this.lastCodeMode === "json") {
-							let e = this.getValue(this.jsonEditor), n = this.json2js(e);
-							this.setValue(this.jsEditor, n || "return {\n  \n}"), this.setValue(this.jsonEditor, "");
+							let e = this.getValue(this.jsonEditor), t = this.json2js(e);
+							this.setValue(this.jsEditor, t || "return {\n  \n}"), this.setValue(this.jsonEditor, "");
 						}
 						this.jsContainer.classList.remove("hidden");
 						break;
@@ -226,71 +226,71 @@ var ToolbarBuilder = class {
 	getValue(e) {
 		return e.value;
 	}
-	setValue(e, n) {
-		e.value = n, e.dispatchEvent(new Event("input", { bubbles: !0 }));
+	setValue(e, t) {
+		e.value = t, e.dispatchEvent(new Event("input", { bubbles: !0 }));
 	}
 	getConfig() {
 		let e;
 		if (this.mode === "json") e = this.getValue(this.jsonEditor).trim() || "{}";
 		else {
-			let n = this.getValue(this.jsEditor).trim();
-			if (e = n ? this.js2json(n) : "{}", e === !1) return !1;
+			let t = this.getValue(this.jsEditor).trim();
+			if (e = t ? this.js2json(t) : "{}", e === !1) return !1;
 		}
 		try {
-			let n = JSON.parse(e);
-			return isPlainObject(n) ? n : !1;
+			let t = JSON.parse(e);
+			return isPlainObject(t) ? t : !1;
 		} catch {
 			return !1;
 		}
 	}
 	setConfig(e) {
-		let n = this.config2json(e);
-		if (this.mode === "json") this.setValue(this.jsonEditor, n);
+		let t = this.config2json(e);
+		if (this.mode === "json") this.setValue(this.jsonEditor, t);
 		else {
-			let e = this.json2js(n);
+			let e = this.json2js(t);
 			this.setValue(this.jsEditor, e || "return {\n  \n}");
 		}
 	}
 	addSetting(e) {
-		let n = this.getConfig();
-		n && n[e] === void 0 && (this.defaults[e] === void 0 && (this.populateDefault(e), this.defaults[e] === void 0) || (n[e] = this.defaults[e], this.setConfig(n)));
+		let t = this.getConfig();
+		t && t[e] === void 0 && (this.defaults[e] === void 0 && (this.populateDefault(e), this.defaults[e] === void 0) || (t[e] = this.defaults[e], this.setConfig(t)));
 	}
 	removeSetting(e) {
-		let n = this.getConfig();
-		n && n[e] !== void 0 && (this.defaults[e] = n[e], delete n[e], this.setConfig(n));
+		let t = this.getConfig();
+		t && t[e] !== void 0 && (this.defaults[e] = t[e], delete t[e], this.setConfig(t));
 	}
 	populateDefault(e) {
-		let n;
-		if (n = this.jsonSchema, !n) {
-			console.warn("Couldn’t get config options JSON schema.");
+		let t;
+		if (t = this.jsonSchema, !t) {
+			console.warn("Couldn’Craft.t get config options JSON schema.");
 			return;
 		}
-		if (!n.$defs || !n.$defs.EditorConfig || !n.$defs.EditorConfig.properties) {
+		if (!t.$defs || !t.$defs.EditorConfig || !t.$defs.EditorConfig.properties) {
 			console.warn("Config options JSON schema is missing $defs.EditorConfig.properties");
 			return;
 		}
-		if (!n.$defs.EditorConfig.properties[e]) return;
-		let r = n.$defs.EditorConfig.properties[e];
-		if (r.default) {
-			this.defaults[e] = r.default;
+		if (!t.$defs.EditorConfig.properties[e]) return;
+		let n = t.$defs.EditorConfig.properties[e];
+		if (n.default) {
+			this.defaults[e] = n.default;
 			return;
 		}
-		if (!r.$ref) return;
-		let i = r.$ref.match(/^#\/\$defs\/(\w+)/);
-		if (!i) return;
-		let a = i[1];
-		n.$defs[a] && n.$defs[a].default && (this.defaults[e] = n.$defs[a].default);
+		if (!n.$ref) return;
+		let r = n.$ref.match(/^#\/\$defs\/(\w+)/);
+		if (!r) return;
+		let i = r[1];
+		t.$defs[i] && t.$defs[i].default && (this.defaults[e] = t.$defs[i].default);
 	}
-	replacer(e, n) {
-		return typeof n == "function" ? "__HAS__FUNCTION__" : n;
+	replacer(e, t) {
+		return typeof t == "function" ? "__HAS__FUNCTION__" : t;
 	}
 	jsContainsFunctions(e) {
-		let n = this.getValidJsonConfig(e);
-		return !!(n === !1 || JSON.stringify(n, this.replacer, 2).match(/__HAS__FUNCTION__/));
+		let t = this.getValidJsonConfig(e);
+		return !!(t === !1 || JSON.stringify(t, this.replacer, 2).match(/__HAS__FUNCTION__/));
 	}
 	config2json(e) {
-		let n = JSON.stringify(e, null, 2);
-		return n === "{}" && (n = "{\n  \n}"), n;
+		let t = JSON.stringify(e, null, 2);
+		return t === "{}" && (t = "{\n  \n}"), t;
 	}
 	getValidJsonConfig(js) {
 		const m = (js || "").match(/return\s*(\{[\w\W]*})/);
@@ -304,39 +304,39 @@ var ToolbarBuilder = class {
 		return config;
 	}
 	js2json(e) {
-		let n = this.getValidJsonConfig(e);
-		return n !== !1 && this.config2json(n);
+		let t = this.getValidJsonConfig(e);
+		return t !== !1 && this.config2json(t);
 	}
 	json2js(e) {
-		let n;
+		let t;
 		try {
-			n = JSON.parse(e);
+			t = JSON.parse(e);
 		} catch {
 			return !1;
 		}
-		if (!isPlainObject(n)) return !1;
-		let r = this.jsify(n, "");
-		return r === "{\n}" && (r = "{\n  \n}"), `return ${r}`;
+		if (!isPlainObject(t)) return !1;
+		let n = this.jsify(t, "");
+		return n === "{\n}" && (n = "{\n  \n}"), `return ${n}`;
 	}
-	jsify(e, n) {
-		let r;
+	jsify(e, t) {
+		let n;
 		if (Array.isArray(e)) {
-			r = "[\n";
-			for (let i of e) r += `${n}  ${this.jsify(i, n + "  ")},\n`;
-			r += `${n}]`;
+			n = "[\n";
+			for (let r of e) n += `${t}  ${this.jsify(r, t + "  ")},\n`;
+			n += `${t}]`;
 		} else if (isPlainObject(e)) {
-			r = "{\n";
-			for (let [i, a] of Object.entries(e)) r += `${n}  ${i}: ${this.jsify(a, n + "  ")},\n`;
-			r += `${n}}`;
-		} else r = typeof e == "string" && !e.match(/[\r\n']/) ? `'${e}'` : JSON.stringify(e);
-		return r;
+			n = "{\n";
+			for (let [r, i] of Object.entries(e)) n += `${t}  ${r}: ${this.jsify(i, t + "  ")},\n`;
+			n += `${t}}`;
+		} else n = typeof e == "string" && !e.match(/[\r\n']/) ? `'${e}'` : JSON.stringify(e);
+		return n;
 	}
 }, CssOptions = class {
-	constructor(e, n, r) {
-		this.mode = n, this.container = document.getElementById(e), this.modeInput = document.getElementById(`${e}-mode`), this.cssContainer = document.getElementById(`${e}-css-container`), this.fileContainer = document.getElementById(`${e}-file-container`);
-		let i = this.container.querySelector(":scope > craft-listbox");
-		i.addEventListener("change", (e) => {
-			e.target === i && (this.mode = e.detail.$selectedOption.dataset.mode, (this.mode !== "file" || r) && (this.modeInput.value = this.mode), this.cssContainer.classList.toggle("hidden", this.mode !== "css"), this.fileContainer.classList.toggle("hidden", this.mode !== "file"));
+	constructor(e, t, n) {
+		this.mode = t, this.container = document.getElementById(e), this.modeInput = document.getElementById(`${e}-mode`), this.cssContainer = document.getElementById(`${e}-css-container`), this.fileContainer = document.getElementById(`${e}-file-container`);
+		let r = this.container.querySelector(":scope > craft-listbox");
+		r.addEventListener("change", (e) => {
+			e.target === r && (this.mode = e.detail.$selectedOption.dataset.mode, (this.mode !== "file" || n) && (this.modeInput.value = this.mode), this.cssContainer.classList.toggle("hidden", this.mode !== "css"), this.fileContainer.classList.toggle("hidden", this.mode !== "file"));
 		});
 	}
 };
