@@ -201,11 +201,12 @@ public function boot(CkeditorAssets $ckeditorAssets): void
 CKEditor field values are now sanitized with Craft’s HTML sanitizers (`CraftCms\Cms\Support\Facades\HtmlSanitizers`, built on `symfony/html-sanitizer`) instead of HTML Purifier, via `craftcms/html-field` 4.
 
 - The **Purify HTML** and **HTML Purifier Config** field settings are replaced by **Sanitize HTML** and **HTML Sanitizer**. Existing field settings are mapped automatically: `purifyHtml` becomes `sanitizeHtml`, and `purifierConfig: 'Simple.json'` becomes `htmlSanitizer: 'Simple'`.
-- When the default sanitizer is selected, CKEditor extends it with the markup the field’s toolbar needs (list styles and `data-list-item-id`, to-do list checkboxes, link `target`/`rel`/`aria-label`, `<craft-entry>` tags, and `class` attributes). A named sanitizer is used as-is, so it must allow that markup itself.
+- CKEditor extends the selected sanitizer’s config with the markup the field needs (list styles and `data-list-item-id`, to-do list checkboxes, link `aria-label`, and `<craft-entry>` tags), as it did for every HTML Purifier config. Link `target` and `rel` attributes are only allowed when the field’s link options or advanced link fields can add them, and the default sanitizer also gets `class` attributes. Sanitizers registered as instances (e.g. `HtmlSanitizers::extend('name', new HtmlSanitizer(...))`) can’t be extended, so they’re used as-is, and must allow that markup themselves.
+- `config/craft/htmlpurifier/*.json` files are deprecated, and only loaded when the Yii 2 adapter is installed. They’re registered as sanitizer instances, so CKEditor doesn’t extend them, and any markup they don’t allow (including `<craft-entry>` tags for nested entries) is removed when content is saved. Recreate them as array config files in `config/craft/sanitizers/`, keeping the same file name so fields continue to reference them.
 
 | Before | After |
 | --- | --- |
-| `craft\ckeditor\Field::EVENT_MODIFY_PURIFIER_CONFIG` | `CraftCms\Ckeditor\Events\HtmlSanitizerConfigResolving`, dispatched when a field uses the default sanitizer. To change every HTML field, use `HtmlSanitizers::defaults()`; to use a different sanitizer, register one with `HtmlSanitizers::extend()` and select it in the field settings. |
+| `craft\ckeditor\Field::EVENT_MODIFY_PURIFIER_CONFIG` | `CraftCms\Ckeditor\Events\HtmlSanitizerConfigResolving`, dispatched after CKEditor extends the selected sanitizer’s config (not for sanitizers registered as instances). To change every HTML field, use `HtmlSanitizers::defaults()`; to use a different sanitizer, register one with `HtmlSanitizers::extend()` and select it in the field settings. |
 | `craft\htmlfield\events\ModifyPurifierConfigEvent` | Removed (by `craftcms/html-field` 4). |
 
 Before:
