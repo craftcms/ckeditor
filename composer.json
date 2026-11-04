@@ -46,14 +46,24 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "CraftCms\\Ckeditor\\Tests\\": "tests/"
+      "CraftCms\\Ckeditor\\Tests\\": "tests/",
+      "Workbench\\App\\": "workbench/app/",
+      "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
     }
   },
   "scripts": {
     "check-cs": "pint --test",
     "fix-cs": "pint",
     "phpstan": "phpstan --memory-limit=1G",
-    "tests": "./vendor/bin/pest --compact"
+    "tests": "./vendor/bin/pest --compact",
+    "workbench:setup": [
+      "@php workbench/prepare.php",
+      "@php vendor/bin/testbench workbench:build --no-interaction"
+    ],
+    "serve": [
+      "Composer\\Config::disableProcessTimeout",
+      "@php vendor/bin/testbench serve --host=127.0.0.1 --port=8125"
+    ]
   },
   "extra": {
     "name": "CKEditor",

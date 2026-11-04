@@ -23,6 +23,8 @@
 /tests/ export-ignore
 /.github/ export-ignore
 /.husky/ export-ignore
+/workbench/ export-ignore
+/testbench.yaml export-ignore
 
 # Identify generated files
 /resources/assets/*/dist/** linguist-generated=true

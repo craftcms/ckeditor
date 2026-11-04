@@ -31,6 +31,7 @@ jobs:
           extensions: gd, pdo_sqlite
           tools: composer:v2
       - run: composer install --no-interaction --no-ansi --no-progress
+      - run: php workbench/prepare.php
       - run: composer phpstan
   notify-slack:
     name: Notify Slack
