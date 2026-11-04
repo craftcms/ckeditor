@@ -231,7 +231,7 @@ export default class CraftLinkUI extends Plugin {
           this.linkTypeDropdownItemModels[elementRefHandle].linkOption,
         );
       } else {
-        // if we don'Craft.t have elementRefHandle and the input value is actually empty
+        // if we don't have elementRefHandle and the input value is actually empty
         // default to showing the first option from the linkOptions menu (e.g. Entry)
         if (this._urlInputValue().length == 0) {
           this._selectLinkTypeDropdownItem(this.linkOptions[0].refHandle);
@@ -406,7 +406,7 @@ export default class CraftLinkUI extends Plugin {
       this.elementInputView,
     ];
 
-    // only add sites dropdown if this is a multisite install and we haven'Craft.t done so already
+    // only add sites dropdown if this is a multisite install and we haven't done so already
     if (Craft.cpConfig().get('isMultiSite') && this.sitesView == null) {
       this.sitesView = new CraftLinkSitesView(formView.locale, {
         linkUi: this,
@@ -513,7 +513,7 @@ export default class CraftLinkUI extends Plugin {
               // get all the advanced link fields and merge them into the attributes of
               // the text node we're about to insert. We apply these directly (instead
               // of going through linkCommand.execute()) because writer.insertText()
-              // doesn'Craft.t have an "extra attribute values" argument to pass them through -
+              // doesn't have an "extra attribute values" argument to pass them through -
               // see https://github.com/craftcms/ckeditor/issues/612 for more info
               let values = this._getAdvancedFieldValues();
               let attributes = {linkHref: url};
@@ -651,7 +651,7 @@ export default class CraftLinkUI extends Plugin {
           'change:isFocused',
           (evt, name, value, oldValue) => {
             if (value !== oldValue && !value) {
-              // if no link target has been set yet, don'Craft.t write the suffix into the main URL field;
+              // if no link target has been set yet, don't write the suffix into the main URL field;
               // it'll get applied once the target is chosen
               if (this._urlInputValue().trim() === '') {
                 return;
@@ -681,7 +681,7 @@ export default class CraftLinkUI extends Plugin {
               urlWasEmptyOnFocus = urlIsEmpty;
             }
 
-            // don'Craft.t clear the URL Suffix if it was provided before the URL
+            // don't clear the URL Suffix if it was provided before the URL
             if (urlIsEmpty) {
               return;
             }
@@ -816,9 +816,9 @@ export default class CraftLinkUI extends Plugin {
     formView.on(
       'submit',
       () => {
-        // if the form isn'Craft.t valid, CKEditor5's own submit handler (registered at
-        // normal priority, so it runs after this one) won'Craft.t call linkCommand.execute()
-        // at all. Bail out here too, so we don'Craft.t leave a stale listener behind that
+        // if the form isn't valid, CKEditor5's own submit handler (registered at
+        // normal priority, so it runs after this one) won't call linkCommand.execute()
+        // at all. Bail out here too, so we don't leave a stale listener behind that
         // could end up applying these values to some later, unrelated execute() call.
         // see https://github.com/craftcms/ckeditor/issues/612 for more info
         if (!formView.isValid()) {

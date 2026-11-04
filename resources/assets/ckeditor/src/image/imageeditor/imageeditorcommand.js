@@ -108,7 +108,7 @@ export default class ImageEditorCommand extends Command {
     images.forEach((image) => {
       // if it's the image we just edited
       if (image.srcInfo.assetId == assetId) {
-        // if it doesn'Craft.t have a transform
+        // if it doesn't have a transform
         if (!image.srcInfo.transform) {
           let data = {
             assetId: image.srcInfo.assetId,

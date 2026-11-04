@@ -16,7 +16,7 @@ interface DefineChipActionsEvent extends CustomEvent {
 // Whether the element belongs to a CKEditor field’s settings
 function inCkeditorSettings(element: Element): boolean {
   // The toolbar’s field exists before its async control mounts. Stay within this
-  // settings group so a CKEditor elsewhere on the page doesn'Craft.t match other fields.
+  // settings group so a CKEditor elsewhere on the page doesn't match other fields.
   return Boolean(
     element
       .closest('craft-field-group')
@@ -116,7 +116,7 @@ export function registerEntryTypeChipActions(): void {
         const wasExpanded = Boolean(current.expanded);
         current.expanded = !wasExpanded;
         input.value = JSON.stringify(current);
-        // Programmatic value changes don’Craft.t fire `change`; announce it so the control picks up the new value
+        // Programmatic value changes don’t fire `change`; announce it so the control picks up the new value
         input.dispatchEvent(new Event('change', {bubbles: true}));
 
         // Chip actions are only defined once, so update the menu item in place

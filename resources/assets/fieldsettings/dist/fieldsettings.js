@@ -2,14 +2,24 @@ import { create } from "@craftcms/ckeditor";
 import * as Craft from "@craftcms/cp";
 import * as Garnish from "@craftcms/garnish";
 // resources/assets/fieldsettings/src/ToolbarBuilder.js
-var componentNames = /* @__PURE__ */ new WeakMap(), sourceItems = /* @__PURE__ */ new WeakMap(), midpoints = /* @__PURE__ */ new WeakMap(), MARGIN_DURATION = 200;
+var componentNames = /* @__PURE__ */ new WeakMap(), sourceItems = /* @__PURE__ */ new WeakMap(), midpoints = /* @__PURE__ */ new WeakMap(), marginAnimations = /* @__PURE__ */ new WeakMap(), MARGIN_DURATION = 200;
 function animateMargin(e, t, n, r, i) {
-	e.getAnimations().forEach((e) => e.cancel()), e.style.setProperty(t, n), e.animate([{ [t]: n }, { [t]: r }], {
+	marginAnimations.get(e)?.cancel();
+	let a = () => {
+		e.style.setProperty(t, r), i?.();
+	};
+	if (Garnish.prefersReducedMotion()) {
+		a();
+		return;
+	}
+	e.style.setProperty(t, n);
+	let o = e.animate([{ [t]: n }, { [t]: r }], {
 		duration: MARGIN_DURATION,
 		easing: "ease-in-out"
-	}).finished.catch(() => {}).then(() => {
-		e.style.setProperty(t, r), i?.();
 	});
+	marginAnimations.set(e, o), o.finished.then(() => {
+		marginAnimations.delete(e), a();
+	}, () => {});
 }
 var ToolbarBuilder = class {
 	constructor(e, t, n = []) {
@@ -28,7 +38,7 @@ var ToolbarBuilder = class {
 		}).then((e) => {
 			let n = e.ui.componentFactory;
 			for (let e of n.names()) this.components[e] = n.create(e);
-			let r = JSON.parse(this.container.getAttribute("data-available-items"));
+			let r = JSON.parse(this.container.getAttribute("data-available-items")), i = new Map(r.flat().map(({ button: e, configOption: t }) => [e, t]));
 			for (let e = 0; e < r.length; e++) {
 				let t = r[e];
 				if (t.length > 1) {
@@ -66,11 +76,11 @@ var ToolbarBuilder = class {
 							let n;
 							if (this.draggingSeparator) n = this.renderSeparator();
 							else {
-								let i = componentNames.get(e);
-								n = this.renderComponentGroup(i);
-								for (let e of i) {
-									let n = r.flat().find(({ button: t }) => t === e);
-									n && n.configOption && t.addSetting(n.configOption);
+								let r = componentNames.get(e);
+								n = this.renderComponentGroup(r);
+								for (let e of r) {
+									let n = i.get(e);
+									n && t.addSetting(n);
 								}
 							}
 							sourceItems.set(n, e), n.style.visibility = "hidden", this.insertion.replaceWith(n), this.drag.$draggee = [n];
@@ -79,8 +89,8 @@ var ToolbarBuilder = class {
 						if (!this.draggingSourceItem) {
 							let n = sourceItems.get(e);
 							if (e.remove(), e = n, this.drag.$draggee = [e], !this.draggingSeparator) for (let e of componentNames.get(n)) {
-								let n = r.flat().find(({ button: t }) => t === e);
-								n && n.configOption && t.removeSetting(n.configOption);
+								let n = i.get(e);
+								n && t.removeSetting(n);
 							}
 						}
 						if (!this.draggingSeparator) {
@@ -96,22 +106,22 @@ var ToolbarBuilder = class {
 					this.input.value = JSON.stringify(this.value);
 				}
 			}));
-			let i = {};
+			let a = {};
 			for (let e of r) {
 				let t = this.renderComponentGroup(e);
-				t && (this.sourceContainer.append(t), i[e.map((e) => e.button).join(",")] = t, this.value.includes(e[0].button) && t.classList.add("hidden"));
+				t && (this.sourceContainer.append(t), a[e.map((e) => e.button).join(",")] = t, this.value.includes(e[0].button) && t.classList.add("hidden"));
 			}
-			let a = this.renderSeparator();
-			this.sourceContainer.append(a), i["|"] = a, this.items = [];
+			let o = this.renderSeparator();
+			this.sourceContainer.append(o), a["|"] = o, this.items = [];
 			for (let e = 0; e < this.value.length; e++) {
-				let t = this.value[e], n, a;
-				if (t === "|") n = this.renderSeparator(), this.targetContainer.append(n), a = "|";
+				let t = this.value[e], n, i;
+				if (t === "|") n = this.renderSeparator(), this.targetContainer.append(n), i = "|";
 				else {
-					let i = r.find((e) => e.some((e) => e.button === t));
-					if (!i || (n = this.renderComponentGroup(i), !n)) continue;
-					this.targetContainer.append(n), a = i.map((e) => e.button).join(","), e += i.length - 1;
+					let a = r.find((e) => e.some((e) => e.button === t));
+					if (!a || (n = this.renderComponentGroup(a), !n)) continue;
+					this.targetContainer.append(n), i = a.map((e) => e.button).join(","), e += a.length - 1;
 				}
-				sourceItems.set(n, i[a]), this.items.push(n);
+				sourceItems.set(n, a[i]), this.items.push(n);
 			}
 		}).catch(console.error);
 	}
@@ -142,9 +152,7 @@ var ToolbarBuilder = class {
 	renderComponent(e) {
 		let t = this.components[e];
 		if (!t) throw `Missing component: ${e}`;
-		t.isRendered || t.render();
-		let n = document.createElement("template");
-		return n.innerHTML = t.element.outerHTML.trim(), n.content.firstElementChild;
+		return t.isRendered || t.render(), t.element.cloneNode(!0);
 	}
 	getClosestItem() {
 		if (!Garnish.hitTest(this.drag.mouseX, this.drag.mouseY, this.targetContainer)) return !1;
@@ -262,7 +270,7 @@ var ToolbarBuilder = class {
 	populateDefault(e) {
 		let t;
 		if (t = this.jsonSchema, !t) {
-			console.warn("Couldn’Craft.t get config options JSON schema.");
+			console.warn("Couldn’t get config options JSON schema.");
 			return;
 		}
 		if (!t.$defs || !t.$defs.EditorConfig || !t.$defs.EditorConfig.properties) {

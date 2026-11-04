@@ -55,7 +55,7 @@ export default class CraftEntryTypesButtonView extends View {
     this.setTemplate({
       tag: 'div',
       attributes: {
-        // ck-reset_all-excluded class is needed so that CKE doesn'Craft.t mess with the styles we already have
+        // ck-reset_all-excluded class is needed so that CKE doesn't mess with the styles we already have
         class: ['entry-type-button'],
       },
       children: [dropdownView],

@@ -299,7 +299,7 @@ export default class CraftEntriesUI extends Plugin {
 
     Craft.openSlideout(Craft.getActionUrl('elements/edit', params), {
       opener: card,
-      // Only move the entry into the owner’s draft if it isn’Craft.t already there, like Matrix does
+      // Only move the entry into the owner’s draft if it isn’t already there, like Matrix does
       // (see `useNestedElementOperations.ts` `prepareEdit()`)
       prepareNestedOwner: async () =>
         card?.hasAttribute('data-owner-is-canonical') &&
@@ -358,7 +358,7 @@ export default class CraftEntriesUI extends Plugin {
   }
 
   /**
-   * Replaces an entry card’s HTML with a freshly rendered one, in place, so the editor’s height doesn’Craft.t jump.
+   * Replaces an entry card’s HTML with a freshly rendered one, in place, so the editor’s height doesn’t jump.
    *
    * @private
    */

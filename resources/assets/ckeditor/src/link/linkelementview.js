@@ -34,7 +34,7 @@ export default class CraftLinkElementView extends View {
     this.setTemplate({
       tag: 'div',
       attributes: {
-        // ck-reset_all-excluded class is needed so that CKE doesn'Craft.t mess with the styles we already have
+        // ck-reset_all-excluded class is needed so that CKE doesn't mess with the styles we already have
         class: ['elementselect', 'ck-reset_all-excluded'],
         tabindex: 0,
       },
@@ -83,7 +83,7 @@ export default class CraftLinkElementView extends View {
       }
     });
 
-    // if element doesn'Craft.t have children, it means it doesn'Craft.t have the "Choose" button in it,
+    // if element doesn't have children, it means it doesn't have the "Choose" button in it,
     // so we should insert the element chip
     if (this.element.children.length == 0) {
       Craft.actionClient

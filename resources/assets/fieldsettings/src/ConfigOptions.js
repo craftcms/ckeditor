@@ -240,12 +240,12 @@ export default class ConfigOptions {
     //       (s) => s.uri === this.jsonSchemaUri,
     //     ).schema;
     // } catch (e) {
-    //   console.warn('Couldn’Craft.t get config options JSON schema.', e);
+    //   console.warn('Couldn’t get config options JSON schema.', e);
     //   return;
     // }
     schema = this.jsonSchema;
     if (!schema) {
-      console.warn('Couldn’Craft.t get config options JSON schema.');
+      console.warn('Couldn’t get config options JSON schema.');
       return;
     }
 

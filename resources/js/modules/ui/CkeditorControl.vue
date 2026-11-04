@@ -51,7 +51,7 @@
     (event: 'update:value', value: string, kind: 'typing'): void;
   }>();
 
-  // Vue templates can’Craft.t contain `<style>` tags, so render the field’s scoped CSS with a render function
+  // Vue templates can’t contain `<style>` tags, so render the field’s scoped CSS with a render function
   const ScopedCss = (p: {css: string}) => h('style', p.css);
 
   const root = ref<HTMLElement | null>(null);
@@ -64,7 +64,7 @@
   );
   let editor: any = null;
   let destroyed = false;
-  // The value last emitted, so changes that don’Craft.t affect it (e.g. a refreshed entry card) aren’Craft.t emitted
+  // The value last emitted, so changes that don’t affect it (e.g. a refreshed entry card) aren’t emitted
   let emittedValue: string | null = null;
   let syncing = false;
   // Runs a change to the editor without emitting it as a value change
@@ -159,10 +159,6 @@
     rememberCards(data.cards);
     withoutEmitting(() => {
       editor.setData(data.value ?? '');
-      // in-flight image uploads have placeholders in the content that the saved value doesn’Craft.t
-      if (editor.plugins.has('CraftImageInsertUI')) {
-        editor.plugins.get('CraftImageInsertUI').restorePlaceholders();
-      }
       emittedValue = editor.getData();
     });
   };
@@ -170,7 +166,7 @@
   // When the owner changes (its draft is created, applied or discarded), the entry cards’ owner info is out of date,
   // so re-render them. Once the owner’s draft is applied, the nested entries created or copied for it get new IDs,
   // which the server adjusts the saved value for, so reload the content from there instead. The control keeps its
-  // value, which doesn’Craft.t need saving again.
+  // value, which doesn’t need saving again.
   watch(
     () =>
       [

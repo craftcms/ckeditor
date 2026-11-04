@@ -63,7 +63,7 @@ const trackChangesInSourceMode = function (editor) {
             editor.sourceElement.value = content;
           }
         },
-        // Captured, since focus and blur don’Craft.t bubble out of the textarea.
+        // Captured, since focus and blur don’t bubble out of the textarea.
         {capture: true, signal: listeners.signal},
       );
     }
@@ -200,7 +200,7 @@ const handleClipboard = function (editor, plugins) {
           if (entryId !== null) {
             // check if we're copying to a different field and if this entry ID is in the field already
             const regex = new RegExp('data-entry-id="' + entryId + '"');
-            // if we're pasting to the same editor instance and that entryId isn'Craft.t in use there (cut & paste) - carry on
+            // if we're pasting to the same editor instance and that entryId isn't in use there (cut & paste) - carry on
             if (copyFromEditorId === editor.id && !regex.test(editorData)) {
               // if it's not - carry on
             } else {
@@ -210,10 +210,10 @@ const handleClipboard = function (editor, plugins) {
               let targetEntryTypeIds = null;
               if (copyFromEditorId !== editor.id) {
                 if (!plugins.includes(CraftEntries)) {
-                  // if we're pasting to a different editor instance and that instance doesn'Craft.t have CraftEntries plugins - bail straight away
+                  // if we're pasting to a different editor instance and that instance doesn't have CraftEntries plugins - bail straight away
                   Craft.showError(
                     Craft.t(
-                      'This field doesn’Craft.t allow nested entries.',
+                      'This field doesn’t allow nested entries.',
                       {},
                       'ckeditor',
                     ),
@@ -237,7 +237,7 @@ const handleClipboard = function (editor, plugins) {
                 })
                 .then((response) => {
                   if (response.data.newEntryId) {
-                    // pass the duplicate’s card HTML along, so it doesn’Craft.t have to be requested separately
+                    // pass the duplicate’s card HTML along, so it doesn’t have to be requested separately
                     // (`Craft.escapeHtml()` leaves quotes alone, so escape them too, for the attribute value)
                     const cardHtmlAttr = response.data.cardHtml
                       ? ' data-card-html="' +
@@ -271,7 +271,7 @@ const handleClipboard = function (editor, plugins) {
           }
         }
 
-        // only update the data.content and fire further callbacks if we didn'Craft.t encounter errors;
+        // only update the data.content and fire further callbacks if we didn't encounter errors;
         if (!errors) {
           // data.content is what's passed down the chain to be pasted in
           data.content = editor.data.htmlProcessor.toView(duplicatedContent);

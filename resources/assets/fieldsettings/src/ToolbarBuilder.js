@@ -13,23 +13,35 @@ import * as Garnish from '@craftcms/garnish';
 const componentNames = new WeakMap();
 const sourceItems = new WeakMap();
 const midpoints = new WeakMap();
+const marginAnimations = new WeakMap();
 
 const MARGIN_DURATION = 200;
 
 /** Animates an item’s inline margin, leaving the end value in place. */
 function animateMargin(element, property, from, to, onFinish) {
-  element.getAnimations().forEach((animation) => animation.cancel());
+  marginAnimations.get(element)?.cancel();
+  const finish = () => {
+    element.style.setProperty(property, to);
+    onFinish?.();
+  };
+  if (Garnish.prefersReducedMotion()) {
+    finish();
+    return;
+  }
+
   element.style.setProperty(property, from);
   const animation = element.animate([{[property]: from}, {[property]: to}], {
     duration: MARGIN_DURATION,
     easing: 'ease-in-out',
   });
-  animation.finished
-    .catch(() => {})
-    .then(() => {
-      element.style.setProperty(property, to);
-      onFinish?.();
-    });
+  marginAnimations.set(element, animation);
+  animation.finished.then(
+    () => {
+      marginAnimations.delete(element);
+      finish();
+    },
+    () => {},
+  );
 }
 
 export default class ToolbarBuilder {
@@ -74,6 +86,9 @@ export default class ToolbarBuilder {
 
         const items = JSON.parse(
           this.container.getAttribute('data-available-items'),
+        );
+        const configOptionsByButton = new Map(
+          items.flat().map(({button, configOption}) => [button, configOption]),
         );
 
         // Flatten any groups that are only partially selected
@@ -122,7 +137,7 @@ export default class ToolbarBuilder {
               this.insertion.style.height = `${Garnish.getOuterHeight(draggee)}px`;
               if (this.draggingSourceItem) {
                 if (this.draggingSeparator) {
-                  // don'Craft.t hide the draggee as we're just going to duplicate it
+                  // don't hide the draggee as we're just going to duplicate it
                   draggee.style.visibility = '';
                 } else {
                   const property =
@@ -162,11 +177,9 @@ export default class ToolbarBuilder {
                     item = this.renderComponentGroup(names);
                     // add any config settings
                     for (const name of names) {
-                      const match = items
-                        .flat()
-                        .find(({button}) => button === name);
-                      if (match && match.configOption) {
-                        configOptions.addSetting(match.configOption);
+                      const configOption = configOptionsByButton.get(name);
+                      if (configOption) {
+                        configOptions.addSetting(configOption);
                       }
                     }
                   }
@@ -187,11 +200,9 @@ export default class ToolbarBuilder {
                   if (!this.draggingSeparator) {
                     // remove any config settings
                     for (const name of componentNames.get(sourceItem)) {
-                      const match = items
-                        .flat()
-                        .find(({button}) => button === name);
-                      if (match && match.configOption) {
-                        configOptions.removeSetting(match.configOption);
+                      const configOption = configOptionsByButton.get(name);
+                      if (configOption) {
+                        configOptions.removeSetting(configOption);
                       }
                     }
                   }
@@ -344,9 +355,7 @@ export default class ToolbarBuilder {
     if (!component.isRendered) {
       component.render();
     }
-    const template = document.createElement('template');
-    template.innerHTML = component.element.outerHTML.trim();
-    return template.content.firstElementChild;
+    return component.element.cloneNode(true);
   }
 
   getClosestItem() {
