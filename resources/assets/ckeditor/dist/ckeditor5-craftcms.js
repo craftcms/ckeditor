@@ -1,16 +1,16 @@
 import { ButtonView as e, ClassicEditor as t, Collection as n, Command as r, ContextualBalloon as i, DomEventObserver as a, DropdownButtonView as o, FormRowView as s, Heading as c, IconImage as l, IconObjectSizeMedium as u, IconPlus as d, ImageInsertUI as f, ImageTextAlternativeUI as p, ImageUtils as m, LabeledFieldView as h, LinkUI as g, ModelRange as _, Plugin as v, SourceEditing as y, SwitchButtonView as b, View as x, ViewModel as S, Widget as C, WidgetToolbarRepository as w, addListToDropdown as T, createDropdown as E, createLabeledInputText as D, findAttributeRange as O, isWidget as ee, toWidget as k, viewToModelPositionOutsideModelElement as A } from "ckeditor5";
-import { t as j } from "@craftcms/cp";
+import { actionClient as j, t as M } from "@craftcms/cp";
 // \0rolldown/runtime.js
-var M = Object.create, te = Object.defineProperty, N = Object.getOwnPropertyDescriptor, ne = Object.getOwnPropertyNames, re = Object.getPrototypeOf, P = Object.prototype.hasOwnProperty, ie = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), F = (e, t, n, r) => {
-	if (t && typeof t == "object" || typeof t == "function") for (var i = ne(t), a = 0, o = i.length, s; a < o; a++) s = i[a], !P.call(e, s) && s !== n && te(e, s, {
+var te = Object.create, N = Object.defineProperty, ne = Object.getOwnPropertyDescriptor, re = Object.getOwnPropertyNames, P = Object.getPrototypeOf, ie = Object.prototype.hasOwnProperty, F = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), ae = (e, t, n, r) => {
+	if (t && typeof t == "object" || typeof t == "function") for (var i = re(t), a = 0, o = i.length, s; a < o; a++) s = i[a], !ie.call(e, s) && s !== n && N(e, s, {
 		get: ((e) => t[e]).bind(null, s),
-		enumerable: !(r = N(t, s)) || r.enumerable
+		enumerable: !(r = ne(t, s)) || r.enumerable
 	});
 	return e;
-}, ae = (e, t, n) => (n = e == null ? {} : M(re(e)), F(t || !e || !e.__esModule || !P.call(e, "default") ? te(n, "default", {
+}, oe = (e, t, n) => (n = e == null ? {} : te(P(e)), ae(t || !e || !e.__esModule || !ie.call(e, "default") ? N(n, "default", {
 	value: e,
 	enumerable: !0
-}) : n, e)), oe = /#asset:\d+(?:@\d+)?:alt$/, se = /#asset:(\d+)(?:@(\d+))?/, ce = class extends p {
+}) : n, e)), se = /#asset:\d+(?:@\d+)?:alt$/, ce = /#asset:(\d+)(?:@(\d+))?/, le = class extends p {
 	static get pluginName() {
 		return "CraftImageTextAlternativeUI";
 	}
@@ -20,7 +20,7 @@ var M = Object.create, te = Object.defineProperty, N = Object.getOwnPropertyDesc
 	_createForm() {
 		super._createForm(), this._createSyncButton(), this.listenTo(this._form, "submit", () => {
 			let e = this._form.labeledInput.fieldView, t = this.editor.commands.get("imageTextAlternative").value || "";
-			oe.test(t) && e.element.value === this._visibleAltText(t) && (e.value = e.element.value = t);
+			se.test(t) && e.element.value === this._visibleAltText(t) && (e.value = e.element.value = t);
 		}, { priority: "high" });
 	}
 	_showForm() {
@@ -29,14 +29,14 @@ var M = Object.create, te = Object.defineProperty, N = Object.getOwnPropertyDesc
 		e.value = e.element.value = t, this._syncButton.isEnabled = !!this._srcInfo(this._selectedImage()), e.select();
 	}
 	_visibleAltText(e) {
-		return e.replace(oe, "");
+		return e.replace(se, "");
 	}
 	_selectedImage() {
 		return this.editor.plugins.get("ImageUtils").getClosestSelectedImageElement(this.editor.model.document.selection);
 	}
 	_srcInfo(e) {
 		if (!e || !e.hasAttribute("src")) return null;
-		let t = e.getAttribute("src").match(se);
+		let t = e.getAttribute("src").match(ce);
 		return t ? {
 			assetId: t[1],
 			siteId: t[2] ?? null
@@ -45,7 +45,7 @@ var M = Object.create, te = Object.defineProperty, N = Object.getOwnPropertyDesc
 	_createSyncButton() {
 		let t = this.editor, n = new e(t.locale);
 		n.set({
-			label: j("Sync from asset", {}, "ckeditor"),
+			label: M("Sync from asset", {}, "ckeditor"),
 			withText: !0,
 			class: "btn"
 		}), n.render(), this.listenTo(n, "execute", () => this._syncFromAsset());
@@ -57,20 +57,20 @@ var M = Object.create, te = Object.defineProperty, N = Object.getOwnPropertyDesc
 		if (!t) return;
 		let n;
 		try {
-			n = await Craft.sendActionRequest("POST", "ckeditor/ckeditor/image-alt", { data: {
+			n = await j.post("ckeditor/ckeditor/image-alt", {
 				assetId: t.assetId,
 				siteId: t.siteId ?? this.editor.config.get("elementSiteId")
-			} });
+			});
 		} catch (e) {
 			throw Craft.cp.displayError(e?.response?.data?.message), e;
 		}
 		let r = n.data.siteId ?? t.siteId, i = n.data.alt ?? "", a = `${i}#asset:${t.assetId}${r ? `@${r}` : ""}:alt`, o = this._form.labeledInput.fieldView;
-		o.value == i ? Craft.cp.displaySuccess(j("The alternative text was already in sync.", {}, "ckeditor")) : (o.value = o.element.value = i, this.editor.execute("imageTextAlternative", { newValue: a }), Craft.cp.displaySuccess(j("The alternative text was synced from the asset.", {}, "ckeditor")));
+		o.value == i ? Craft.cp.displaySuccess(M("The alternative text was already in sync.", {}, "ckeditor")) : (o.value = o.element.value = i, this.editor.execute("imageTextAlternative", { newValue: a }), Craft.cp.displaySuccess(M("The alternative text was synced from the asset.", {}, "ckeditor")));
 	}
 	destroy() {
 		this._syncButton && this._syncButton.destroy(), super.destroy();
 	}
-}, le = class extends f {
+}, ue = class extends f {
 	static get pluginName() {
 		return "CraftImageInsertUI";
 	}
@@ -159,10 +159,10 @@ var M = Object.create, te = Object.defineProperty, N = Object.getOwnPropertyDesc
 		r?.ownerId() && (n.ownerId = await r.prepare());
 		let i;
 		try {
-			i = await Craft.sendActionRequest("POST", "ckeditor/ckeditor/create-image-entry", { data: {
+			i = await j.post("ckeditor/ckeditor/create-image-entry", {
 				...n,
 				assetIds: [e]
-			} });
+			});
 		} catch (e) {
 			throw Craft.cp.displayError(), e;
 		}
@@ -183,10 +183,10 @@ var M = Object.create, te = Object.defineProperty, N = Object.getOwnPropertyDesc
 	async _getTransformUrl(e, t) {
 		let n;
 		try {
-			n = await Craft.sendActionRequest("POST", "ckeditor/ckeditor/image-url", { data: {
+			n = await j.post("ckeditor/ckeditor/image-url", {
 				assetId: e,
 				transform: t
-			} });
+			});
 		} catch {
 			alert("There was an error generating the transform URL.");
 		}
@@ -252,12 +252,12 @@ var M = Object.create, te = Object.defineProperty, N = Object.getOwnPropertyDesc
 	_onUploadFailure({ error: e, canceled: t, file: n }) {
 		if (t) return;
 		let r = e?.data || {}, i = e instanceof Error ? e.message : void 0, a = r.filename || n?.name, { errors: o } = r, s = o ? Object.values(o).flat() : [];
-		i ||= s.length ? s.join("\n") : a ? j("Upload failed for “{filename}”.", { filename: a }) : j("Upload failed."), Craft.cp.displayError(i);
+		i ||= s.length ? s.join("\n") : a ? M("Upload failed for “{filename}”.", { filename: a }) : M("Upload failed."), Craft.cp.displayError(i);
 	}
 	_onUploadStop() {
 		this.progressBar.classList.add("hidden");
 	}
-}, ue = class extends r {
+}, de = class extends r {
 	refresh() {
 		let e = this._element(), t = this._srcInfo(e);
 		this.isEnabled = !!t, this.value = t ? { transform: t.transform } : null;
@@ -282,10 +282,10 @@ var M = Object.create, te = Object.defineProperty, N = Object.getOwnPropertyDesc
 			t.change((e) => {
 				let t = r.src.replace(/#.*/, "") + i;
 				e.setAttribute("src", t, n);
-			}), Craft.sendActionRequest("post", "ckeditor/ckeditor/image-url", { data: {
+			}), j.post("ckeditor/ckeditor/image-url", {
 				assetId: r.assetId,
 				transform: e.transform
-			} }).then(({ data: e }) => {
+			}).then(({ data: e }) => {
 				t.change((t) => {
 					let r = e.url + i;
 					t.setAttribute("src", r, n), e.width && t.setAttribute("width", e.width, n), e.height && t.setAttribute("height", e.height, n);
@@ -293,7 +293,7 @@ var M = Object.create, te = Object.defineProperty, N = Object.getOwnPropertyDesc
 			});
 		}
 	}
-}, de = class extends v {
+}, fe = class extends v {
 	static get requires() {
 		return [m];
 	}
@@ -304,12 +304,12 @@ var M = Object.create, te = Object.defineProperty, N = Object.getOwnPropertyDesc
 		super(e), e.config.define("transforms", []);
 	}
 	init() {
-		let e = this.editor, t = new ue(e);
+		let e = this.editor, t = new de(e);
 		e.commands.add("transformImage", t);
 	}
-}, fe = u, pe = class extends v {
+}, pe = u, me = class extends v {
 	static get requires() {
-		return [de];
+		return [fe];
 	}
 	static get pluginName() {
 		return "ImageTransformUI";
@@ -332,7 +332,7 @@ var M = Object.create, te = Object.defineProperty, N = Object.getOwnPropertyDesc
 			return l.set({
 				tooltip: n("Resize image"),
 				commandValue: null,
-				icon: fe,
+				icon: pe,
 				isToggleable: !0,
 				label: this._getOptionLabelValue(r),
 				withText: !0,
@@ -362,30 +362,30 @@ var M = Object.create, te = Object.defineProperty, N = Object.getOwnPropertyDesc
 					icon: null
 				})
 			};
-			n.model.bind("isOn").to(t, "value", me(e.value)), r.add(n);
+			n.model.bind("isOn").to(t, "value", he(e.value)), r.add(n);
 		}), r;
 	}
 };
-function me(e) {
+function he(e) {
 	return (t) => {
 		let n = t;
 		return e === null && n === e || n !== null && n.transform === e;
 	};
 }
 // resources/assets/ckeditor/src/image/imagetransform.js
-var he = class extends v {
+var I = class extends v {
 	static get requires() {
-		return [de, pe];
+		return [fe, me];
 	}
 	static get pluginName() {
 		return "ImageTransform";
 	}
-}, I = class extends r {
+}, ge = class extends r {
 	refresh() {
 		let e = this._element(), t = this._srcInfo(e);
 		if (this.isEnabled = !!t, this.isEnabled) {
 			let e = { assetId: t.assetId };
-			Craft.sendActionRequest("POST", "ckeditor/ckeditor/image-permissions", { data: e }).then((e) => {
+			j.post("ckeditor/ckeditor/image-permissions", e).then((e) => {
 				e.data.editable === !1 && (this.isEnabled = !1);
 			});
 		}
@@ -421,7 +421,7 @@ var he = class extends v {
 						assetId: t.srcInfo.assetId,
 						handle: t.srcInfo.transform
 					};
-					Craft.sendActionRequest("POST", "assets/generate-transform", { data: e }).then((e) => {
+					j.post("assets/generate-transform", e).then((e) => {
 						let r = this._getNewSrc(e.data, t);
 						n.change((e) => {
 							e.setAttribute("src", r, t.element);
@@ -429,7 +429,7 @@ var he = class extends v {
 					});
 				} else {
 					let e = { assetId: t.srcInfo.assetId };
-					Craft.sendActionRequest("POST", "ckeditor/ckeditor/image-url", { data: e }).then((e) => {
+					j.post("ckeditor/ckeditor/image-url", e).then((e) => {
 						let r = this._getNewSrc(e.data, t);
 						n.change((e) => {
 							e.setAttribute("src", r, t.element);
@@ -454,7 +454,7 @@ var he = class extends v {
 		}
 		return n;
 	}
-}, ge = class extends v {
+}, _e = class extends v {
 	static get requires() {
 		return [m];
 	}
@@ -462,12 +462,12 @@ var he = class extends v {
 		return "ImageEditorEditing";
 	}
 	init() {
-		let e = this.editor, t = new I(e);
+		let e = this.editor, t = new ge(e);
 		e.commands.add("imageEditor", t);
 	}
-}, _e = class extends v {
+}, ve = class extends v {
 	static get requires() {
-		return [ge];
+		return [_e];
 	}
 	static get pluginName() {
 		return "ImageEditorUI";
@@ -488,14 +488,14 @@ var he = class extends v {
 			}), i;
 		});
 	}
-}, ve = class extends v {
+}, ye = class extends v {
 	static get requires() {
-		return [ge, _e];
+		return [_e, ve];
 	}
 	static get pluginName() {
 		return "ImageEditor";
 	}
-}, ye = class extends r {
+}, be = class extends r {
 	execute(e) {
 		let t = this.editor, n = t.model.document.selection;
 		if (!n.isCollapsed && n.getFirstRange()) {
@@ -515,7 +515,7 @@ var he = class extends v {
 	refresh() {
 		this.isEnabled = !0;
 	}
-}, be = class extends v {
+}, xe = class extends v {
 	static get requires() {
 		return [C];
 	}
@@ -525,7 +525,7 @@ var he = class extends v {
 	init() {
 		this._defineSchema(), this._defineConverters();
 		let e = this.editor;
-		e.commands.add("insertEntry", new ye(e)), e.editing.mapper.on("viewToModelPosition", A(e.model, (e) => {
+		e.commands.add("insertEntry", new be(e)), e.editing.mapper.on("viewToModelPosition", A(e.model, (e) => {
 			e.hasClass("cke-entry-card");
 		}));
 	}
@@ -592,31 +592,31 @@ var he = class extends v {
 		if (t) return { cardHtml: t };
 		let n = $(this.editor.sourceElement).parents(".field"), r = this.editor.config.get("layoutElementUid") ?? $(n[0]).data("layout-element"), i = e.getAttribute("entryId") ?? null, a = e.getAttribute("siteId") ?? null;
 		try {
-			let { data: e } = await Craft.sendActionRequest("POST", "ckeditor/ckeditor/entry-card-html", { data: {
+			let { data: e } = await j.post("ckeditor/ckeditor/entry-card-html", {
 				entryId: i,
 				siteId: a,
 				layoutElementUid: r
-			} });
+			});
 			return e;
 		} catch (e) {
-			return console.error(e?.response?.data), { cardHtml: "<craft-card><craft-callout variant=\"danger\" role=\"alert\">" + Craft.escapeHtml(e?.response?.data?.message || j("An unknown error occurred.", {}, "ckeditor")) + "</craft-callout></craft-card>" };
+			return console.error(e?.response?.data), { cardHtml: "<craft-card><craft-callout variant=\"danger\" role=\"alert\">" + Craft.escapeHtml(e?.response?.data?.message || M("An unknown error occurred.", {}, "ckeditor")) + "</craft-callout></craft-card>" };
 		}
 	}
-}, xe = class extends a {
+}, Se = class extends a {
 	constructor(e) {
 		super(e), this.domEventType = "dblclick";
 	}
 	onDomEvent(e) {
 		this.fire(e.type, e);
 	}
-}, Se = class extends x {
+}, Ce = class extends x {
 	constructor(t, n = {}) {
 		super(t), this.set("isFocused", !1), this.entriesUi = n.entriesUi, this.editor = this.entriesUi.editor, this.entryType = n.entryType;
 		let r = this.editor.commands.get("insertEntry"), i = new e(), a = {
 			commandValue: this.entryType.model.commandValue,
 			label: this.entryType.model.label,
 			withText: !this.entryType.model.icon,
-			tooltip: j("New {type}", { type: this.entryType.model.label })
+			tooltip: M("New {type}", { type: this.entryType.model.label })
 		}, o = ["btn", "ck-reset_all-excluded"];
 		this.entryType.model.icon && o.push(["icon", "cp-icon"]), a.class = o.join(" "), this.entryType.model.withIcon && (a.icon = this.entryType.model.icon), i.set(a), this.listenTo(i, "execute", (e) => {
 			this.entriesUi._showCreateEntrySlideout(e.source.commandValue);
@@ -629,7 +629,7 @@ var he = class extends v {
 	focus() {
 		this.element.children[0].focus();
 	}
-}, Ce = class extends x {
+}, we = class extends x {
 	constructor(e, t = {}) {
 		super(e), this.bindTemplate, this.set("isFocused", !1), this.entriesUi = t.entriesUi, this.editor = this.entriesUi.editor;
 		let r = t.entryTypes, i = this.editor.commands.get("insertEntry"), a = new n();
@@ -638,11 +638,11 @@ var he = class extends v {
 		});
 		let o = E(e);
 		o.buttonView.set({
-			label: j("Add nested content", {}, "ckeditor"),
+			label: M("Add nested content", {}, "ckeditor"),
 			icon: d,
 			tooltip: !0,
 			withText: !1
-		}), o.bind("isEnabled").to(i), o.id = crypto.randomUUID(), T(o, () => a, { ariaLabel: j("Entry types list", {}, "ckeditor") }), this.listenTo(o, "execute", (e) => {
+		}), o.bind("isEnabled").to(i), o.id = crypto.randomUUID(), T(o, () => a, { ariaLabel: M("Entry types list", {}, "ckeditor") }), this.listenTo(o, "execute", (e) => {
 			this.entriesUi._showCreateEntrySlideout(e.source.commandValue);
 		}), this.setTemplate({
 			tag: "div",
@@ -653,12 +653,12 @@ var he = class extends v {
 	focus() {
 		this.element.children[0].children[0].focus();
 	}
-}, we = class extends x {
+}, Te = class extends x {
 	constructor(e, t = {}) {
 		super(e), this.bindTemplate, this.set("isFocused", !1), this.entriesUi = t.entriesUi, this.editor = this.entriesUi.editor;
 		let n = this.editor.commands.get("insertEntry"), r = E(e);
 		r.buttonView.set({
-			label: j("Add nested content", {}, "ckeditor"),
+			label: M("Add nested content", {}, "ckeditor"),
 			icon: d,
 			tooltip: !0,
 			withText: !1
@@ -676,7 +676,7 @@ var he = class extends v {
 	focus() {
 		this.element.focus();
 	}
-}, Te = class extends v {
+}, Ee = class extends v {
 	static get requires() {
 		return [w];
 	}
@@ -688,7 +688,7 @@ var he = class extends v {
 	}
 	afterInit() {
 		this.editor.plugins.get(w).register("entriesBalloon", {
-			ariaLabel: j("Entry toolbar", {}, "ckeditor"),
+			ariaLabel: M("Entry toolbar", {}, "ckeditor"),
 			items: ["editEntryBtn"],
 			getRelatedElement: (e) => {
 				let t = e.getSelectedElement();
@@ -698,7 +698,7 @@ var he = class extends v {
 	}
 	_listenToEvents() {
 		let e = this.editor.editing.view, t = e.document;
-		e.addObserver(xe), this.editor.listenTo(t, "dblclick", (e, t) => {
+		e.addObserver(Se), this.editor.listenTo(t, "dblclick", (e, t) => {
 			if (!this.editor.isReadOnly) {
 				let e = this.editor.editing.mapper.toModelElement(t.target.parent);
 				e.name === "craftEntryModel" && this._initEditEntrySlideout(t, e);
@@ -714,15 +714,15 @@ var he = class extends v {
 	_createToolbarEntriesButtons() {
 		let e = this.editor.config.get("entryTypeOptions");
 		if (e && e.length) {
-			if (e.length == 1 && e[0].value == "fake") this.editor.ui.componentFactory.add("createEntry", (e) => new we(this.editor.locale, { entriesUi: this }));
+			if (e.length == 1 && e[0].value == "fake") this.editor.ui.componentFactory.add("createEntry", (e) => new Te(this.editor.locale, { entriesUi: this }));
 			else {
 				let t = this._getEntryTypeButtonsCollection(e ?? []), n = t.filter((e) => e.model.expanded), r = t.filter((e) => !e.model.expanded);
 				n.forEach((e, t) => {
-					this.editor.ui.componentFactory.add(`createEntry-${e.model.uid}`, (t) => new Se(this.editor.locale, {
+					this.editor.ui.componentFactory.add(`createEntry-${e.model.uid}`, (t) => new Ce(this.editor.locale, {
 						entriesUi: this,
 						entryType: e
 					}));
-				}), r.length && this.editor.ui.componentFactory.add("createEntry", (e) => new Ce(this.editor.locale, {
+				}), r.length && this.editor.ui.componentFactory.add("createEntry", (e) => new we(this.editor.locale, {
 					entriesUi: this,
 					entryTypes: r
 				}));
@@ -753,7 +753,7 @@ var he = class extends v {
 		let n = new e(t);
 		return n.set({
 			isEnabled: !0,
-			label: j("Edit {type}", { type: (Craft.elementTypeNames["CraftCms\\Cms\\Entry\\Elements\\Entry"] ?? Craft.elementTypeNames["craft\\elements\\Entry"])[2] }),
+			label: M("Edit {type}", { type: (Craft.elementTypeNames["CraftCms\\Cms\\Entry\\Elements\\Entry"] ?? Craft.elementTypeNames["craft\\elements\\Entry"])[2] }),
 			tooltip: !0,
 			withText: !0
 		}), this.listenTo(n, "execute", (e) => {
@@ -810,7 +810,7 @@ var he = class extends v {
 		o?.ownerId() && (a.ownerId = await o.prepare());
 		let s;
 		try {
-			s = (await Craft.sendActionRequest("POST", "elements/create", { data: a })).data;
+			s = (await j.post("elements/create", a)).data;
 		} catch (e) {
 			throw Craft.cp.displayError(e?.response?.data?.error), e;
 		}
@@ -834,20 +834,20 @@ var he = class extends v {
 			}), t.editing.view.focus();
 		});
 	}
-}, Ee = class extends v {
+}, De = class extends v {
 	static get requires() {
-		return [be, Te];
+		return [xe, Ee];
 	}
 	static get pluginName() {
 		return "CraftEntries";
 	}
 };
 // resources/assets/ckeditor/src/link/linkutils.js
-function De(e, t) {
+function Oe(e, t) {
 	if (t) return e.type === "bool" && e.value == 1 ? "" : t;
 }
 // resources/assets/ckeditor/src/link/linkediting.js
-var Oe = class extends v {
+var ke = class extends v {
 	static get pluginName() {
 		return "CraftLinkEditing";
 	}
@@ -905,7 +905,7 @@ var Oe = class extends v {
 					o = r?.hasAttribute("linkHref") ? O(n, "linkHref", r.getAttribute("linkHref"), e.model) : t.createRangeOn(r);
 				}
 				this.conversionData.forEach((n) => {
-					let r = De(n, i[n.model]);
+					let r = Oe(n, i[n.model]);
 					if (a.isCollapsed) r === void 0 ? t.removeAttribute(n.model, o) : t.setAttribute(n.model, r, o);
 					else {
 						let i = e.model.schema.getValidRanges(a.getRanges(), n.model);
@@ -929,13 +929,13 @@ var Oe = class extends v {
 			}));
 		}, { priority: "high" });
 	}
-}, ke = class extends x {
+}, Ae = class extends x {
 	constructor(e, t = {}) {
 		super(e), this.bindTemplate, this.set("isFocused", !1), this.linkUi = t.linkUi, this.editor = this.linkUi.editor, this.elementId = this.linkUi._getLinkElementId(), this.siteId = this.linkUi._getLinkSiteId(), this.linkOption = t.linkOption;
 		let n = this.linkUi._getLinkElementRefHandle();
 		if (this.button = null, n) {
 			let e = this.linkUi.linkTypeDropdownItemModels[n];
-			this.linkUi.linkTypeDropdownView.buttonView.label == e.label && (this.button = j("Loading"));
+			this.linkUi.linkTypeDropdownView.buttonView.label == e.label && (this.button = M("Loading"));
 		}
 		this.button ??= this._createChooseButton(), this.setTemplate({
 			tag: "div",
@@ -956,7 +956,7 @@ var Oe = class extends v {
 				icon: "plus",
 				"data-choose": !0
 			},
-			children: [j("Choose")]
+			children: [M("Choose")]
 		}), e;
 	}
 	focus() {
@@ -970,7 +970,7 @@ var Oe = class extends v {
 				let r = t.formView.displayedTextInputView.fieldView.element.value;
 				t._hideUI(!1), e._showElementSelectorModal(n, r);
 			}
-		}), this.element.children.length == 0 && Craft.sendActionRequest("POST", "ckeditor/ckeditor/render-element-with-supported-sites", { data: { elements: [{
+		}), this.element.children.length == 0 && j.post("ckeditor/ckeditor/render-element-with-supported-sites", { elements: [{
 			type: n.elementType,
 			id: this.elementId,
 			siteId: this.siteId,
@@ -980,19 +980,19 @@ var Oe = class extends v {
 				sortable: !1,
 				showActionMenu: !1
 			}]
-		}] } }).then((t) => {
+		}] }).then((t) => {
 			if (Object.keys(t.data.elements).length > 0) {
 				if (Craft.isMultiSite && this.linkUi.sitesView != null) for (let [e, n] of Object.entries(this.linkUi.sitesView.siteDropdownItemModels)) t.data.siteIds.includes(parseInt(e)) || e == "current" ? n.set("isEnabled", !0) : n.set("isEnabled", !1);
 				this.element.innerHTML = t.data.elements[this.elementId][0], Craft.appendHeadHtml(t.data.headHtml), Craft.appendBodyHtml(t.data.bodyHtml);
 				let n = this.element.firstChild, r = [{
 					icon: "arrows-rotate",
-					label: j("Replace"),
+					label: M("Replace"),
 					callback: () => {
 						this.linkUi._showElementSelectorModal(this.linkOption);
 					}
 				}, {
 					icon: "remove",
-					label: j("Remove"),
+					label: M("Remove"),
 					callback: () => {
 						this.editor.commands.get("unlink").execute();
 					}
@@ -1006,7 +1006,7 @@ var Oe = class extends v {
 			throw Craft.cp.displayError(e?.response?.data?.message), e?.response?.data?.message ?? e;
 		});
 	}
-}, Ae = class extends x {
+}, je = class extends x {
 	constructor(e, t = {}) {
 		super(e), this.bindTemplate, this.set("isFocused", !1), this.linkUi = t.linkUi, this.editor = this.linkUi.editor, this.elementId = this.linkUi._getLinkElementId(), this.siteId = this.linkUi._getLinkSiteId(), this.linkOption = t.linkOption, this.linkUi._getLinkElementRefHandle(), this.siteDropdownView = E(this.linkUi._linkUI.formView.locale), this.siteDropdownItemModels = null, this.localizedRefHandleRE = null;
 		let n = CKE_LOCALIZED_REF_HANDLES.join("|");
@@ -1036,7 +1036,7 @@ var Oe = class extends v {
 			siteId: e.id,
 			withText: !0
 		})])), this.siteDropdownItemModels.current = new S({
-			label: j("Link to the current site", {}, "ckeditor"),
+			label: M("Link to the current site", {}, "ckeditor"),
 			siteId: null,
 			withText: !0
 		}), T(this.siteDropdownView, new n([...Craft.sites.map((e) => ({
@@ -1070,16 +1070,16 @@ var Oe = class extends v {
 		} else this.siteDropdownView.buttonView.set("isVisible", !1);
 	}
 	_selectSiteDropdownItem(e) {
-		let t = this.siteDropdownItemModels[e ?? "current"], n = e ? j("Site: {name}", { name: t.label }, "ckeditor") : t.label;
+		let t = this.siteDropdownItemModels[e ?? "current"], n = e ? M("Site: {name}", { name: t.label }, "ckeditor") : t.label;
 		this.siteDropdownView.buttonView.set("label", n), Object.values(this.siteDropdownItemModels).forEach((e) => {
 			e.set("isOn", e.siteId === t.siteId);
 		});
 	}
-}, je = class extends x {
+}, Me = class extends x {
 	constructor(e, t = {}) {
 		super(e);
 		let n = this.bindTemplate;
-		this.set("label", j("Advanced")), this.linkUi = t.linkUi, this.editor = this.linkUi.editor, this.children = this.createCollection(), this.advancedChildren = this.createCollection(), this.setTemplate({
+		this.set("label", M("Advanced")), this.linkUi = t.linkUi, this.editor = this.linkUi.editor, this.children = this.createCollection(), this.advancedChildren = this.createCollection(), this.setTemplate({
 			tag: "details",
 			attributes: { class: [
 				"ck",
@@ -1118,7 +1118,7 @@ var Oe = class extends v {
 			t._focusables.remove(e), t.focusTracker.remove(e.element);
 		});
 	}
-}, Me = class extends v {
+}, Ne = class extends v {
 	static get requires() {
 		return [g];
 	}
@@ -1193,7 +1193,7 @@ var Oe = class extends v {
 		e ? (this.linkTypeDropdownView.buttonView.set("isVisible", !0), this._selectLinkTypeDropdownItem(e)) : this._selectLinkTypeDropdownItem("default");
 	}
 	_selectLinkTypeDropdownItem(e) {
-		let t = this.linkTypeDropdownItemModels[e], n = e ? j("{name}", { name: t.label }) : t.label;
+		let t = this.linkTypeDropdownItemModels[e], n = e ? M("{name}", { name: t.label }) : t.label;
 		this.linkTypeDropdownView.buttonView.set("label", n), Object.values(this.linkTypeDropdownItemModels).forEach((e) => {
 			e.set("isOn", e.handle === t.handle);
 		});
@@ -1207,20 +1207,20 @@ var Oe = class extends v {
 			withText: !0
 		}));
 		return e.push(new S({
-			label: j("URL"),
+			label: M("URL"),
 			handle: "default",
 			withText: !0
 		})), e;
 	}
 	_showLinkTypeForm(e) {
 		let { formView: t } = this._linkUI, { children: n } = t, { urlInputView: r } = t, { displayedTextInputView: i } = t;
-		i.focus(), this.linkTypeWrapperView !== null && n.remove(this.linkTypeWrapperView), e === "default" ? (this.elementInputView = r, this.sitesView !== null && this.sitesView?.siteDropdownView?.buttonView && this.sitesView.siteDropdownView.buttonView.set("isVisible", !1)) : (this.elementInputView = new ke(t.locale, {
+		i.focus(), this.linkTypeWrapperView !== null && n.remove(this.linkTypeWrapperView), e === "default" ? (this.elementInputView = r, this.sitesView !== null && this.sitesView?.siteDropdownView?.buttonView && this.sitesView.siteDropdownView.buttonView.set("isVisible", !1)) : (this.elementInputView = new Ae(t.locale, {
 			linkUi: this,
 			linkOption: e,
 			value: this._urlInputValue()
 		}), this.sitesView !== null && this.sitesView?.siteDropdownView?.buttonView && this.sitesView.siteDropdownView.buttonView.set("isVisible", !1));
 		let a = [this.linkTypeDropdownView, this.elementInputView];
-		if (Craft.isMultiSite && this.sitesView == null && (this.sitesView = new Ae(t.locale, {
+		if (Craft.isMultiSite && this.sitesView == null && (this.sitesView = new je(t.locale, {
 			linkUi: this,
 			linkOption: e
 		})), this.sitesView != null) {
@@ -1266,7 +1266,7 @@ var Oe = class extends v {
 					} else r.change((e) => {
 						let n = this._getAdvancedFieldValues(), r = { linkHref: d };
 						this.conversionData.forEach((e) => {
-							let t = De(e, n[e.model]);
+							let t = Oe(e, n[e.model]);
 							t !== void 0 && (r[e.model] = t);
 						});
 						let a = t || c.label;
@@ -1291,7 +1291,7 @@ var Oe = class extends v {
 	}
 	_addAdvancedLinkFieldInputs() {
 		let e = this.editor.commands.get("link"), { formView: t } = this._linkUI, { children: n } = t;
-		this.advancedView = new je(t.locale, { linkUi: this }), n.add(this.advancedView, 3);
+		this.advancedView = new Me(t.locale, { linkUi: this }), n.add(this.advancedView, 3);
 		for (let n of this.advancedLinkFields) {
 			let r = n.conversion?.model;
 			if (r && t[r] === void 0) {
@@ -1381,14 +1381,14 @@ var Oe = class extends v {
 			n.type === "bool" ? r[n.model] = e[n.model].element.value : r[n.model] = e[n.model].fieldView.element.value, Object.assign(t, r);
 		}), t;
 	}
-}, Ne = class extends v {
+}, Pe = class extends v {
 	static get requires() {
-		return [Oe, Me];
+		return [ke, Ne];
 	}
 	static get pluginName() {
 		return "CraftLink";
 	}
-}, Pe = /* @__PURE__ */ ae((/* @__PURE__ */ ie(((e, t, n) => {
+}, Fe = /* @__PURE__ */ oe((/* @__PURE__ */ F(((e, t, n) => {
 	(function() {
 		((e, t = {}) => {
 			if (typeof document > "u") return;
@@ -12805,7 +12805,7 @@ var Oe = class extends v {
 		};
 		return ns._editors = /* @__PURE__ */ new Map(), ns._wrapper = null, ns;
 	});
-})))(), 1), Fe = function(e) {
+})))(), 1), Ie = function(e) {
 	let t = e.plugins.get(y), n = $(e.ui.view.element), r = $(e.sourceElement), i = `ckeditor${Math.floor(Math.random() * 1e9)}`, a = [
 		"keypress",
 		"keyup",
@@ -12825,12 +12825,12 @@ var Oe = class extends v {
 			});
 		} else e.off(`.${i}`);
 	});
-}, Ie = function(e, t) {
+}, Le = function(e, t) {
 	if (t.heading !== void 0) {
 		var n = t.heading.options;
 		n.find((e) => e.view === "h1") !== void 0 && e.keystrokes.set("Ctrl+Alt+1", () => e.execute("heading", { value: "heading1" })), n.find((e) => e.view === "h2") !== void 0 && e.keystrokes.set("Ctrl+Alt+2", () => e.execute("heading", { value: "heading2" })), n.find((e) => e.view === "h3") !== void 0 && e.keystrokes.set("Ctrl+Alt+3", () => e.execute("heading", { value: "heading3" })), n.find((e) => e.view === "h4") !== void 0 && e.keystrokes.set("Ctrl+Alt+4", () => e.execute("heading", { value: "heading4" })), n.find((e) => e.view === "h5") !== void 0 && e.keystrokes.set("Ctrl+Alt+5", () => e.execute("heading", { value: "heading5" })), n.find((e) => e.view === "h6") !== void 0 && e.keystrokes.set("Ctrl+Alt+6", () => e.execute("heading", { value: "heading6" })), n.find((e) => e.model === "paragraph") !== void 0 && e.keystrokes.set("Ctrl+Alt+p", "paragraph");
 	}
-}, Le = function(e, t) {
+}, Re = function(e, t) {
 	let n = null, r = e.editing.view.document, i = e.plugins.get("ClipboardPipeline");
 	r.on("clipboardOutput", (t, r) => {
 		n = e.id;
@@ -12849,14 +12849,14 @@ var Oe = class extends v {
 					let r = RegExp("data-entry-id=\"" + i + "\"");
 					if (n !== e.id || r.test(f)) {
 						let r = null;
-						n !== e.id && (t.includes(Ee) ? r = e.config.get("entryTypeOptions").map((e) => e.value) : (Craft.cp.displayError(j("This field doesn’t allow nested entries.", {}, "ckeditor")), c = !0)), await Craft.sendActionRequest("POST", "ckeditor/ckeditor/duplicate-nested-entry", { data: {
+						n !== e.id && (t.includes(De) ? r = e.config.get("entryTypeOptions").map((e) => e.value) : (Craft.cp.displayError(M("This field doesn’t allow nested entries.", {}, "ckeditor")), c = !0)), await j.post("ckeditor/ckeditor/duplicate-nested-entry", {
 							entryId: i,
 							targetSiteId: l,
 							sourceSiteId: a,
 							targetEntryTypeIds: r,
 							targetOwnerId: u,
 							targetLayoutElementUid: d
-						} }).then((e) => {
+						}).then((e) => {
 							if (e.data.newEntryId) {
 								let t = e.data.cardHtml ? " data-card-html=\"" + Craft.escapeHtml(e.data.cardHtml).replace(/"/g, "&quot;") + "\"" : "";
 								s = s.replace("data-entry-id=\"" + i + "\"", "data-entry-id=\"" + e.data.newEntryId + "\"" + t);
@@ -12871,10 +12871,10 @@ var Oe = class extends v {
 			c || (a.content = e.data.htmlProcessor.toView(s), i.fire("inputTransformation", a));
 		}
 	});
-}, Re = async function(e, n) {
+}, ze = async function(e, n) {
 	typeof e == "string" && (e = document.querySelector(`#${e}`)), n.licenseKey = n.licenseKey || "GPL", n.attachTo = e;
 	let r = await t.create(n);
-	return window.CKE_SHOW_INSPECTOR && Craft.userIsAdmin && Pe.default.attach(r), r.editing.view.change((e) => {
+	return window.CKE_SHOW_INSPECTOR && Craft.userIsAdmin && Fe.default.attach(r), r.editing.view.change((e) => {
 		let t = r.editing.view.document.getRoot();
 		if (n.accessibleFieldName !== void 0 && n.accessibleFieldName.length) {
 			let r = t.getAttribute("aria-label");
@@ -12883,6 +12883,6 @@ var Oe = class extends v {
 		n.describedBy !== void 0 && n.describedBy.length && e.setAttribute("aria-describedby", n.describedBy, t);
 	}), r.updateSourceElement(), r.model.document.on("change:data", () => {
 		r.updateSourceElement();
-	}), n.plugins.includes(y) && Fe(r, y), n.plugins.includes(c) && Ie(r, n), Le(r, n.plugins), r;
+	}), n.plugins.includes(y) && Ie(r, y), n.plugins.includes(c) && Le(r, n), Re(r, n.plugins), r;
 };
-export { Ee as CraftEntries, le as CraftImageInsertUI, ce as CraftImageTextAlternativeUI, Ne as CraftLink, ve as ImageEditor, he as ImageTransform, Re as create };
+export { De as CraftEntries, ue as CraftImageInsertUI, le as CraftImageTextAlternativeUI, Pe as CraftLink, ye as ImageEditor, I as ImageTransform, ze as create };

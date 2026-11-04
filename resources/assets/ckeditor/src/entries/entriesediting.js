@@ -5,7 +5,7 @@ import {
   Widget,
 } from 'ckeditor5';
 import CraftEntriesCommand from './entriescommand';
-import {t as craftT} from '@craftcms/cp';
+import {actionClient, t as craftT} from '@craftcms/cp';
 
 export default class CraftEntriesEditing extends Plugin {
   /**
@@ -176,15 +176,12 @@ export default class CraftEntriesEditing extends Plugin {
     const siteId = modelItem.getAttribute('siteId') ?? null;
 
     try {
-      const {data} = await Craft.sendActionRequest(
-        'POST',
+      const {data} = await actionClient.post(
         'ckeditor/ckeditor/entry-card-html',
         {
-          data: {
-            entryId: entryId,
-            siteId: siteId,
-            layoutElementUid: layoutElementUid,
-          },
+          entryId: entryId,
+          siteId: siteId,
+          layoutElementUid: layoutElementUid,
         },
       );
       return data;

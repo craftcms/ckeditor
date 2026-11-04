@@ -5,7 +5,7 @@
  */
 
 import {ButtonView, FormRowView, ImageTextAlternativeUI} from 'ckeditor5';
-import {t as craftT} from '@craftcms/cp';
+import {actionClient, t as craftT} from '@craftcms/cp';
 
 const assetAltRefPattern = /#asset:\d+(?:@\d+)?:alt$/;
 const assetSrcRefPattern = /#asset:(\d+)(?:@(\d+))?/;
@@ -117,16 +117,10 @@ export default class CraftImageTextAlternativeUI extends ImageTextAlternativeUI 
 
     let response;
     try {
-      response = await Craft.sendActionRequest(
-        'POST',
-        'ckeditor/ckeditor/image-alt',
-        {
-          data: {
-            assetId: srcInfo.assetId,
-            siteId: srcInfo.siteId ?? this.editor.config.get('elementSiteId'),
-          },
-        },
-      );
+      response = await actionClient.post('ckeditor/ckeditor/image-alt', {
+        assetId: srcInfo.assetId,
+        siteId: srcInfo.siteId ?? this.editor.config.get('elementSiteId'),
+      });
     } catch (e) {
       Craft.cp.displayError(e?.response?.data?.message);
       throw e;

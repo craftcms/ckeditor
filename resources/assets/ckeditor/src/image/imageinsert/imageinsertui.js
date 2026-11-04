@@ -5,7 +5,7 @@
  */
 
 import {ButtonView, IconImage, ImageInsertUI} from 'ckeditor5';
-import {t as craftT} from '@craftcms/cp';
+import {actionClient, t as craftT} from '@craftcms/cp';
 
 export default class CraftImageInsertUI extends ImageInsertUI {
   static get pluginName() {
@@ -164,14 +164,11 @@ export default class CraftImageInsertUI extends ImageInsertUI {
 
     let response;
     try {
-      response = await Craft.sendActionRequest(
-        'POST',
+      response = await actionClient.post(
         'ckeditor/ckeditor/create-image-entry',
         {
-          data: {
-            ...params,
-            assetIds: [assetId],
-          },
+          ...params,
+          assetIds: [assetId],
         },
       );
     } catch (e) {
@@ -202,16 +199,10 @@ export default class CraftImageInsertUI extends ImageInsertUI {
   async _getTransformUrl(assetId, handle) {
     let response;
     try {
-      response = await Craft.sendActionRequest(
-        'POST',
-        'ckeditor/ckeditor/image-url',
-        {
-          data: {
-            assetId: assetId,
-            transform: handle,
-          },
-        },
-      );
+      response = await actionClient.post('ckeditor/ckeditor/image-url', {
+        assetId: assetId,
+        transform: handle,
+      });
     } catch {
       alert('There was an error generating the transform URL.');
     }

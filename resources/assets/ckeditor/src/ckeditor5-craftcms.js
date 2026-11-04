@@ -15,7 +15,7 @@ import CraftEntries from './entries/entries';
 import CraftLink from './link/link';
 import CKEditorInspector from '@ckeditor/ckeditor5-inspector';
 import {ClassicEditor, Heading, SourceEditing} from 'ckeditor5';
-import {t as craftT} from '@craftcms/cp';
+import {actionClient, t as craftT} from '@craftcms/cp';
 
 export {CraftEntries};
 export {CraftLink};
@@ -215,20 +215,15 @@ const handleClipboard = function (editor, plugins) {
                 }
               }
 
-              await Craft.sendActionRequest(
-                'POST',
-                'ckeditor/ckeditor/duplicate-nested-entry',
-                {
-                  data: {
-                    entryId: entryId,
-                    targetSiteId: targetSiteId,
-                    sourceSiteId: sourceSiteId,
-                    targetEntryTypeIds: targetEntryTypeIds,
-                    targetOwnerId: ownerId,
-                    targetLayoutElementUid: layoutElementUid,
-                  },
-                },
-              )
+              await actionClient
+                .post('ckeditor/ckeditor/duplicate-nested-entry', {
+                  entryId: entryId,
+                  targetSiteId: targetSiteId,
+                  sourceSiteId: sourceSiteId,
+                  targetEntryTypeIds: targetEntryTypeIds,
+                  targetOwnerId: ownerId,
+                  targetLayoutElementUid: layoutElementUid,
+                })
                 .then((response) => {
                   if (response.data.newEntryId) {
                     // pass the duplicate’s card HTML along, so it doesn’t have to be requested separately

@@ -5,6 +5,7 @@
  */
 
 import {Command} from 'ckeditor5';
+import {actionClient} from '@craftcms/cp';
 
 /**
  * The transform image command.
@@ -21,13 +22,13 @@ export default class ImageEditorCommand extends Command {
         assetId: srcInfo.assetId,
       };
 
-      Craft.sendActionRequest('POST', 'ckeditor/ckeditor/image-permissions', {
-        data,
-      }).then((response) => {
-        if (response.data.editable === false) {
-          this.isEnabled = false;
-        }
-      });
+      actionClient
+        .post('ckeditor/ckeditor/image-permissions', data)
+        .then((response) => {
+          if (response.data.editable === false) {
+            this.isEnabled = false;
+          }
+        });
     }
   }
 
@@ -113,15 +114,15 @@ export default class ImageEditorCommand extends Command {
             assetId: image.srcInfo.assetId,
           };
 
-          Craft.sendActionRequest('POST', 'ckeditor/ckeditor/image-url', {
-            data,
-          }).then((response) => {
-            let newSrc = this._getNewSrc(response.data, image);
+          actionClient
+            .post('ckeditor/ckeditor/image-url', data)
+            .then((response) => {
+              let newSrc = this._getNewSrc(response.data, image);
 
-            model.change((writer) => {
-              writer.setAttribute('src', newSrc, image.element);
+              model.change((writer) => {
+                writer.setAttribute('src', newSrc, image.element);
+              });
             });
-          });
         } else {
           let data = {
             assetId: image.srcInfo.assetId,
@@ -129,17 +130,17 @@ export default class ImageEditorCommand extends Command {
           };
 
           // get the new url
-          Craft.sendActionRequest('POST', 'assets/generate-transform', {
-            data,
-          }).then((response) => {
-            // get new src
-            let newSrc = this._getNewSrc(response.data, image);
+          actionClient
+            .post('assets/generate-transform', data)
+            .then((response) => {
+              // get new src
+              let newSrc = this._getNewSrc(response.data, image);
 
-            // and replace
-            model.change((writer) => {
-              writer.setAttribute('src', newSrc, image.element);
+              // and replace
+              model.change((writer) => {
+                writer.setAttribute('src', newSrc, image.element);
+              });
             });
-          });
         }
       }
     });

@@ -1,5 +1,5 @@
 import {View} from 'ckeditor5';
-import {t as craftT} from '@craftcms/cp';
+import {actionClient, t as craftT} from '@craftcms/cp';
 
 export default class CraftLinkElementView extends View {
   constructor(locale, options = {}) {
@@ -86,29 +86,24 @@ export default class CraftLinkElementView extends View {
     // if element doesn't have children, it means it doesn't have the "Choose" button in it,
     // so we should insert the element chip
     if (this.element.children.length == 0) {
-      Craft.sendActionRequest(
-        'POST',
-        'ckeditor/ckeditor/render-element-with-supported-sites',
-        {
-          data: {
-            elements: [
-              {
-                type: linkOption.elementType,
-                id: this.elementId,
-                siteId: this.siteId,
-                instances: [
-                  {
-                    context: 'field',
-                    ui: 'chip',
-                    sortable: false,
-                    showActionMenu: false,
-                  },
-                ],
-              },
-            ],
-          },
-        },
-      )
+      actionClient
+        .post('ckeditor/ckeditor/render-element-with-supported-sites', {
+          elements: [
+            {
+              type: linkOption.elementType,
+              id: this.elementId,
+              siteId: this.siteId,
+              instances: [
+                {
+                  context: 'field',
+                  ui: 'chip',
+                  sortable: false,
+                  showActionMenu: false,
+                },
+              ],
+            },
+          ],
+        })
         .then((response) => {
           if (Object.keys(response.data.elements).length > 0) {
             // if it's a multisite, disable sites that are not in the response

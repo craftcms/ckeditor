@@ -5,6 +5,7 @@
  */
 
 import {Command} from 'ckeditor5';
+import {actionClient} from '@craftcms/cp';
 
 /**
  * The transform image command.
@@ -88,27 +89,27 @@ export default class TransformImageCommand extends Command {
       });
 
       // load the real URL and then update the src again
-      Craft.sendActionRequest('post', 'ckeditor/ckeditor/image-url', {
-        data: {
+      actionClient
+        .post('ckeditor/ckeditor/image-url', {
           assetId: srcInfo.assetId,
           transform: options.transform,
-        },
-      }).then(({data}) => {
-        model.change((writer) => {
-          const src = data.url + hash;
-          writer.setAttribute('src', src, element);
+        })
+        .then(({data}) => {
+          model.change((writer) => {
+            const src = data.url + hash;
+            writer.setAttribute('src', src, element);
 
-          // update image width and height to match the transformed size;
-          // ckeditor insists on keeping those around:
-          // https://ckeditor.com/docs/ckeditor5/latest/features/images/images-overview.html#image-width-and-height-attributes
-          if (data.width) {
-            writer.setAttribute('width', data.width, element);
-          }
-          if (data.height) {
-            writer.setAttribute('height', data.height, element);
-          }
+            // update image width and height to match the transformed size;
+            // ckeditor insists on keeping those around:
+            // https://ckeditor.com/docs/ckeditor5/latest/features/images/images-overview.html#image-width-and-height-attributes
+            if (data.width) {
+              writer.setAttribute('width', data.width, element);
+            }
+            if (data.height) {
+              writer.setAttribute('height', data.height, element);
+            }
+          });
         });
-      });
     }
   }
 }
