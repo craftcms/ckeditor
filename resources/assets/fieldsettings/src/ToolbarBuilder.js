@@ -4,44 +4,67 @@
  * @license GPL-3.0-or-later
  */
 
-/* global Garnish, $ */
 import './fieldsettings.css';
-import * as CKEditor5 from 'ckeditor5';
 import {create} from '@craftcms/ckeditor';
 import {cpConfig} from '@craftcms/cp';
+import {
+  DragDrop,
+  getDist,
+  getOffset,
+  getOuterHeight,
+  getOuterWidth,
+  hitTest,
+} from '@craftcms/garnish';
 
-export default Garnish.Base.extend({
-  $sourceContainer: null,
-  $targetContainer: null,
-  $input: null,
-  value: null,
-  components: {},
-  drag: null,
-  $items: null,
-  draggingSourceItem: null,
-  draggingSeparator: null,
-  $insertion: null,
-  showingInsertion: false,
-  closestItem: null,
-  readOnly: false,
+/** Per-item state that used to live in jQuery’s data store. */
+const componentNames = new WeakMap();
+const sourceItems = new WeakMap();
+const midpoints = new WeakMap();
 
-  init: function (id, configOptions, plugins = []) {
-    this.$container = $(`#${id}`);
-    this.$sourceContainer = this.$container.find(
+const MARGIN_DURATION = 200;
+
+/** Animates an item’s inline margin, leaving the end value in place. */
+function animateMargin(element, property, from, to, onFinish) {
+  element.getAnimations().forEach((animation) => animation.cancel());
+  element.style.setProperty(property, from);
+  const animation = element.animate([{[property]: from}, {[property]: to}], {
+    duration: MARGIN_DURATION,
+    easing: 'ease-in-out',
+  });
+  animation.finished
+    .catch(() => {})
+    .then(() => {
+      element.style.setProperty(property, to);
+      onFinish?.();
+    });
+}
+
+export default class ToolbarBuilder {
+  constructor(id, configOptions, plugins = []) {
+    this.container = document.getElementById(id);
+    this.sourceContainer = this.container.querySelector(
       '.ckeditor-tb--source .ck-toolbar__items',
     );
-    this.$targetContainer = this.$container.find(
+    this.targetContainer = this.container.querySelector(
       '.ckeditor-tb--target .ck-toolbar__items',
     );
-    this.$input = this.$container.find('input');
-    this.value = JSON.parse(this.$input.val());
-    this.readOnly = $(`#${id}`).hasClass('disabled');
+    this.input = this.container.querySelector('input');
+    this.value = JSON.parse(this.input.value);
+    this.readOnly = this.container.classList.contains('disabled');
 
-    const editorContainer = document.createElement('DIV');
+    this.components = {};
+    this.drag = null;
+    this.items = [];
+    this.draggingSourceItem = null;
+    this.draggingSeparator = null;
+    this.insertion = null;
+    this.showingInsertion = false;
+
+    const editorContainer = document.createElement('div');
     editorContainer.classList.add('hidden');
-    const editorElement = document.createElement('DIV');
+    const editorElement = document.createElement('div');
     editorContainer.appendChild(editorElement);
-    this.$container.append(editorContainer); // CKEditor 48.1+ requires the source element to be on the page
+    this.container.append(editorContainer); // CKEditor 48.1+ requires the source element to be on the page
 
     create(editorElement, {
       linkOptions: [{elementType: 'CraftCms\\Cms\\Asset\\Elements\\Asset'}],
@@ -56,7 +79,9 @@ export default Garnish.Base.extend({
           this.components[name] = cf.create(name);
         }
 
-        const items = JSON.parse(this.$container.attr('data-available-items'));
+        const items = JSON.parse(
+          this.container.getAttribute('data-available-items'),
+        );
 
         // Flatten any groups that are only partially selected
         for (let i = 0; i < items.length; i++) {
@@ -78,50 +103,50 @@ export default Garnish.Base.extend({
         }
 
         if (!this.readOnly) {
-          this.drag = new Garnish.DragDrop({
-            dropTargets: this.$targetContainer,
-            helper: ($item) => {
-              const $outerContainer = $(
-                '<div class="offset-drag-helper ck ck-reset_all ck-editor ck-rounded-corners"/>',
-              );
-              const $innerContainer = $(
-                '<div class="ck ck-toolbar"/>',
-              ).appendTo($outerContainer);
-              $item.appendTo($innerContainer);
-              return $outerContainer;
+          this.drag = new DragDrop({
+            dropTargets: this.targetContainer,
+            helper: (item) => {
+              const outerContainer = document.createElement('div');
+              outerContainer.className =
+                'offset-drag-helper ck ck-reset_all ck-editor ck-rounded-corners';
+              const innerContainer = document.createElement('div');
+              innerContainer.className = 'ck ck-toolbar';
+              innerContainer.append(item);
+              outerContainer.append(innerContainer);
+              return outerContainer;
             },
             moveHelperToCursor: true,
             onDragStart: () => {
-              Garnish.$bod.addClass('dragging');
-              const $draggee = this.drag.$draggee;
-              this.draggingSourceItem = $.contains(
-                this.$sourceContainer[0],
-                $draggee[0],
-              );
-              this.draggingSeparator = $draggee.hasClass(
+              document.body.classList.add('dragging');
+              const [draggee] = this.drag.$draggee;
+              this.draggingSourceItem = this.sourceContainer.contains(draggee);
+              this.draggingSeparator = draggee.classList.contains(
                 'ckeditor-tb--separator',
               );
-              this.$insertion = $('<div class="ckeditor-tb--insertion"/>').css({
-                width: $draggee.outerWidth(),
-                height: $draggee.outerHeight(),
-              });
+              this.insertion = document.createElement('div');
+              this.insertion.className = 'ckeditor-tb--insertion';
+              this.insertion.style.width = `${getOuterWidth(draggee)}px`;
+              this.insertion.style.height = `${getOuterHeight(draggee)}px`;
               if (this.draggingSourceItem) {
                 if (this.draggingSeparator) {
                   // don't hide the draggee as we're just going to duplicate it
-                  $draggee.css('visibility', '');
+                  draggee.style.visibility = '';
                 } else {
                   const property =
                     cpConfig().get('orientation') === 'ltr'
                       ? 'margin-right'
                       : 'margin-left';
-                  const margin = -1 * $draggee.outerWidth();
-                  $draggee.stop().velocity({[property]: margin}, 200, () => {
-                    $draggee.addClass('hidden');
-                  });
+                  animateMargin(
+                    draggee,
+                    property,
+                    '0px',
+                    `${-1 * getOuterWidth(draggee)}px`,
+                    () => draggee.classList.add('hidden'),
+                  );
                 }
               } else {
-                $draggee.addClass('hidden');
-                this.$insertion.insertBefore($draggee);
+                draggee.classList.add('hidden');
+                draggee.before(this.insertion);
                 this.showingInsertion = true;
               }
               this.setMidpoints();
@@ -130,173 +155,174 @@ export default Garnish.Base.extend({
               this.checkForNewClosestItem();
             },
             onDragStop: () => {
-              Garnish.$bod.removeClass('dragging');
-              let $draggee = this.drag.$draggee;
+              document.body.classList.remove('dragging');
+              let [draggee] = this.drag.$draggee;
               this.checkForNewClosestItem();
               if (this.showingInsertion) {
                 if (this.draggingSourceItem) {
                   // clone the source item into the toolbar
-                  let $item;
+                  let item;
                   if (this.draggingSeparator) {
-                    $item = this.renderSeparator();
+                    item = this.renderSeparator();
                   } else {
-                    const componentNames = $draggee.data('componentNames');
-                    $item = this.renderComponentGroup(componentNames);
+                    const names = componentNames.get(draggee);
+                    item = this.renderComponentGroup(names);
                     // add any config settings
-                    for (const name of componentNames) {
-                      const item = items
+                    for (const name of names) {
+                      const match = items
                         .flat()
                         .find(({button}) => button === name);
-                      if (item && item.configOption) {
-                        configOptions.addSetting(item.configOption);
+                      if (match && match.configOption) {
+                        configOptions.addSetting(match.configOption);
                       }
                     }
                   }
-                  $item.data('sourceItem', $draggee[0]);
-                  $item.css('visibility', 'hidden');
-                  this.$insertion.replaceWith($item);
-                  this.drag.$draggee = $item;
+                  sourceItems.set(item, draggee);
+                  item.style.visibility = 'hidden';
+                  this.insertion.replaceWith(item);
+                  this.drag.$draggee = [item];
                 } else {
-                  this.$insertion.replaceWith($draggee);
-                  $draggee.removeClass('hidden');
+                  this.insertion.replaceWith(draggee);
+                  draggee.classList.remove('hidden');
                 }
               } else {
                 if (!this.draggingSourceItem) {
-                  const $sourceItem = $($draggee.data('sourceItem'));
-                  $draggee.remove();
-                  this.drag.$draggee = $draggee = $sourceItem;
+                  const sourceItem = sourceItems.get(draggee);
+                  draggee.remove();
+                  draggee = sourceItem;
+                  this.drag.$draggee = [draggee];
                   if (!this.draggingSeparator) {
                     // remove any config settings
-                    for (const name of $sourceItem.data('componentNames')) {
-                      const item = items
+                    for (const name of componentNames.get(sourceItem)) {
+                      const match = items
                         .flat()
                         .find(({button}) => button === name);
-                      if (item && item.configOption) {
-                        configOptions.removeSetting(item.configOption);
+                      if (match && match.configOption) {
+                        configOptions.removeSetting(match.configOption);
                       }
                     }
                   }
                 }
                 if (!this.draggingSeparator) {
-                  $draggee.removeClass('hidden');
+                  draggee.classList.remove('hidden');
                   const property =
                     cpConfig().get('orientation') === 'ltr'
                       ? 'margin-right'
                       : 'margin-left';
-                  const currentMargin = $draggee.css(property);
-                  $draggee.css(property, '');
-                  const targetMargin = $draggee.css(property);
-                  $draggee.css(property, currentMargin);
-                  $draggee
-                    .stop()
-                    .velocity({[property]: targetMargin}, 200, () => {
-                      $draggee.css(property, '');
-                    });
+                  const currentMargin =
+                    draggee.style.getPropertyValue(property) || '0px';
+                  draggee.style.removeProperty(property);
+                  const targetMargin =
+                    getComputedStyle(draggee).getPropertyValue(property);
+                  animateMargin(
+                    draggee,
+                    property,
+                    currentMargin,
+                    targetMargin,
+                    () => draggee.style.removeProperty(property),
+                  );
                 }
               }
               this.drag.returnHelpersToDraggees();
 
               // reset the items
-              this.$items = this.$targetContainer.children();
+              this.items = [...this.targetContainer.children];
               this.value = [];
-              for (const item of this.$items.toArray()) {
-                const $item = $(item);
-                if ($item.hasClass('ckeditor-tb--separator')) {
+              for (const item of this.items) {
+                if (item.classList.contains('ckeditor-tb--separator')) {
                   this.value.push('|');
                 } else {
-                  this.value.push(...$item.data('componentNames'));
+                  this.value.push(...componentNames.get(item));
                 }
               }
-              this.$input.val(JSON.stringify(this.value));
+              this.input.value = JSON.stringify(this.value);
             },
           });
-        } else {
-          this.drag = $();
         }
 
-        const sourceItems = {};
+        const renderedSourceItems = {};
 
-        for (let group of items) {
-          const $item = this.renderComponentGroup(group);
-          if (!$item) {
+        for (const group of items) {
+          const item = this.renderComponentGroup(group);
+          if (!item) {
             continue;
           }
-          $item.appendTo(this.$sourceContainer);
-          sourceItems[group.map((item) => item.button).join(',')] = $item[0];
+          this.sourceContainer.append(item);
+          renderedSourceItems[group.map((i) => i.button).join(',')] = item;
 
           if (this.value.includes(group[0].button)) {
-            $item.addClass('hidden');
+            item.classList.add('hidden');
           }
         }
 
-        sourceItems['|'] = this.renderSeparator().appendTo(
-          this.$sourceContainer,
-        )[0];
+        const separator = this.renderSeparator();
+        this.sourceContainer.append(separator);
+        renderedSourceItems['|'] = separator;
 
-        this.$items = $();
+        this.items = [];
 
         for (let i = 0; i < this.value.length; i++) {
           const name = this.value[i];
-          let $item, key;
+          let item, key;
           if (name === '|') {
-            $item = this.renderSeparator().appendTo(this.$targetContainer);
+            item = this.renderSeparator();
+            this.targetContainer.append(item);
             key = '|';
           } else {
-            const group = items.find((group) =>
-              group.some((item) => item.button === name),
+            const group = items.find((g) =>
+              g.some((candidate) => candidate.button === name),
             );
             if (!group) {
               // must no longer be a valid item
               continue;
             }
-            $item = this.renderComponentGroup(group);
-            if (!$item) {
+            item = this.renderComponentGroup(group);
+            if (!item) {
               continue;
             }
-            $item.appendTo(this.$targetContainer);
-            key = group.map((item) => item.button).join(',');
+            this.targetContainer.append(item);
+            key = group.map((i) => i.button).join(',');
             i += group.length - 1;
           }
-          $item.data('sourceItem', sourceItems[key]);
-          this.$items = this.$items.add($item);
+          sourceItems.set(item, renderedSourceItems[key]);
+          this.items.push(item);
         }
       })
       .catch(console.error);
-  },
+  }
 
-  renderSeparator: function () {
-    const $separator = $(
-      '<div class="ckeditor-tb--item ckeditor-tb--separator" data-cke-tooltip-text="Separator"><span class="ck ck-toolbar__separator"/></div>',
-    );
-    if (!this.readOnly) {
-      this.drag.addItems($separator);
-    } else {
-      this.drag.add($separator);
-    }
-    return $separator;
-  },
+  renderSeparator() {
+    const separator = document.createElement('div');
+    separator.className = 'ckeditor-tb--item ckeditor-tb--separator';
+    separator.setAttribute('data-cke-tooltip-text', 'Separator');
+    const bar = document.createElement('span');
+    bar.className = 'ck ck-toolbar__separator';
+    separator.append(bar);
+    this.drag?.addItems(separator);
+    return separator;
+  }
 
-  renderComponentGroup: function (group) {
-    group = group.map((item) =>
+  renderComponentGroup(group) {
+    const names = group.map((item) =>
       typeof item === 'string' ? item : item.button,
     );
     const elements = [];
     const tooltips = [];
 
-    for (const name of group) {
-      let $element;
+    for (const name of names) {
+      let element;
       try {
-        $element = this.renderComponent(name);
+        element = this.renderComponent(name);
       } catch (e) {
         console.warn(e);
         continue;
       }
-      elements.push($element);
+      elements.push(element);
       const tooltip = (
-        $element.is('[data-cke-tooltip-text]')
-          ? $element
-          : $element.find('[data-cke-tooltip-text]')
-      ).attr('data-cke-tooltip-text');
+        element.matches('[data-cke-tooltip-text]')
+          ? element
+          : element.querySelector('[data-cke-tooltip-text]')
+      )?.getAttribute('data-cke-tooltip-text');
       tooltips.push(
         tooltip
           ? tooltip.replace(/ \(.*\)$/, '')
@@ -308,18 +334,16 @@ export default Garnish.Base.extend({
       return false;
     }
 
-    const $item = $('<div class="ckeditor-tb--item"/>').append(elements);
-    $item.attr('data-cke-tooltip-text', tooltips.join(', '));
-    $item.data('componentNames', group);
-    if (!this.readOnly) {
-      this.drag.addItems($item);
-    } else {
-      this.drag.add($item);
-    }
-    return $item;
-  },
+    const item = document.createElement('div');
+    item.className = 'ckeditor-tb--item';
+    item.append(...elements);
+    item.setAttribute('data-cke-tooltip-text', tooltips.join(', '));
+    componentNames.set(item, names);
+    this.drag?.addItems(item);
+    return item;
+  }
 
-  renderComponent: function (name) {
+  renderComponent(name) {
     const component = this.components[name];
     if (!component) {
       throw `Missing component: ${name}`;
@@ -327,34 +351,28 @@ export default Garnish.Base.extend({
     if (!component.isRendered) {
       component.render();
     }
-    const $element = $(component.element.outerHTML);
-    $element.data('componentName', name);
-    return $element;
-  },
+    const template = document.createElement('template');
+    template.innerHTML = component.element.outerHTML.trim();
+    return template.content.firstElementChild;
+  }
 
-  getClosestItem: function () {
-    if (
-      !Garnish.hitTest(
-        this.drag.mouseX,
-        this.drag.mouseY,
-        this.$targetContainer,
-      )
-    ) {
+  getClosestItem() {
+    if (!hitTest(this.drag.mouseX, this.drag.mouseY, this.targetContainer)) {
       return false;
     }
 
-    if (!this.$items.length) {
+    if (!this.items.length) {
       return null;
     }
 
-    const items = this.$items.toArray();
+    const items = [...this.items];
     if (this.showingInsertion) {
-      items.push(this.$insertion[0]);
+      items.push(this.insertion);
     }
 
     const mouseDiffs = items.map((item) => {
-      const midpoint = $.data(item, 'midpoint');
-      return Garnish.getDist(
+      const midpoint = midpoints.get(item);
+      return getDist(
         midpoint.left,
         midpoint.top,
         this.drag.mouseX,
@@ -363,50 +381,49 @@ export default Garnish.Base.extend({
     });
 
     const minMouseDiff = Math.min(...mouseDiffs);
-    const index = mouseDiffs.indexOf(minMouseDiff);
-    return items[index];
-  },
+    return items[mouseDiffs.indexOf(minMouseDiff)];
+  }
 
-  checkForNewClosestItem: function () {
+  checkForNewClosestItem() {
     // Is there a new closest item?
     const closestItem = this.getClosestItem();
 
     if (closestItem === false) {
       if (this.showingInsertion) {
-        this.$insertion.remove();
+        this.insertion.remove();
         this.showingInsertion = false;
       }
       return;
     }
 
-    if (closestItem === this.$insertion[0]) {
+    if (closestItem === this.insertion) {
       return;
     }
 
     if (!closestItem) {
-      this.$insertion.appendTo(this.$targetContainer);
-    } else if (this.drag.mouseX < $.data(closestItem, 'midpoint').left) {
-      this.$insertion.insertBefore(closestItem);
+      this.targetContainer.append(this.insertion);
+    } else if (this.drag.mouseX < midpoints.get(closestItem).left) {
+      closestItem.before(this.insertion);
     } else {
-      this.$insertion.insertAfter(closestItem);
+      closestItem.after(this.insertion);
     }
 
     this.showingInsertion = true;
     this.setMidpoints();
-  },
+  }
 
-  setMidpoints: function () {
-    const items = this.$items.toArray();
+  setMidpoints() {
+    const items = [...this.items];
     if (this.showingInsertion) {
-      items.push(this.$insertion[0]);
+      items.push(this.insertion);
     }
 
     for (const item of items) {
-      const $item = $(item);
-      const offset = $item.offset();
-      const left = offset.left + $item.outerWidth() / 2;
-      const top = offset.top + $item.outerHeight() / 2;
-      $item.data('midpoint', {left, top});
+      const offset = getOffset(item);
+      midpoints.set(item, {
+        left: offset.left + getOuterWidth(item) / 2,
+        top: offset.top + getOuterHeight(item) / 2,
+      });
     }
-  },
-});
+  }
+}

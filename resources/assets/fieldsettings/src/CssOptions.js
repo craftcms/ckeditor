@@ -4,40 +4,29 @@
  * @license GPL-3.0-or-later
  */
 
-/** global: CKEditor5, Garnish, $ */
-export default Garnish.Base.extend({
-  mode: null,
-  $container: null,
-  $modeInput: null,
-  $cssContainer: null,
-  $fileContainer: null,
-
-  init: function (id, mode, hasFiles) {
+export default class CssOptions {
+  constructor(id, mode, hasFiles) {
     this.mode = mode;
-    this.$container = $(`#${id}`);
-    this.$modeInput = $(`#${id}-mode`);
-    this.$cssContainer = $(`#${id}-css-container`);
-    this.$fileContainer = $(`#${id}-file-container`);
-    const $modePicker = this.$container.children('craft-button-group');
+    this.container = document.getElementById(id);
+    this.modeInput = document.getElementById(`${id}-mode`);
+    this.cssContainer = document.getElementById(`${id}-css-container`);
+    this.fileContainer = document.getElementById(`${id}-file-container`);
 
-    const $containers = this.$cssContainer.add(this.$fileContainer);
+    this.container.addEventListener('click', (event) => {
+      const option = event.target.closest?.('[data-mode]');
+      if (!option || !this.container.contains(option)) {
+        return;
+      }
 
-    new Craft.Listbox($modePicker, {
-      onChange: ($selectedOption) => {
-        this.mode = $selectedOption.data('mode');
-        if (this.mode !== 'file' || hasFiles) {
-          this.$modeInput.val(this.mode);
-        }
-        $containers.addClass('hidden');
-        switch (this.mode) {
-          case 'css':
-            this.$cssContainer.removeClass('hidden');
-            break;
-          case 'file':
-            this.$fileContainer.removeClass('hidden');
-            break;
-        }
-      },
+      this.mode = option.dataset.mode;
+
+      // “File” isn’t a real choice until there’s a file to pick
+      if (this.mode !== 'file' || hasFiles) {
+        this.modeInput.value = this.mode;
+      }
+
+      this.cssContainer.classList.toggle('hidden', this.mode !== 'css');
+      this.fileContainer.classList.toggle('hidden', this.mode !== 'file');
     });
-  },
-});
+  }
+}
