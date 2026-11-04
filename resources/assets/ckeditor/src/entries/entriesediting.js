@@ -156,7 +156,10 @@ export default class CraftEntriesEditing extends Plugin {
         // refresh ui after drag&drop or sourceMode exit
         editor.model.change((writer) => {
           editor.ui.update();
-          $(editor.sourceElement).trigger('keyup'); // also trigger auto-save
+          // also trigger auto-save
+          editor.sourceElement.dispatchEvent(
+            new KeyboardEvent('keyup', {bubbles: true}),
+          );
         });
       });
     };
@@ -178,10 +181,9 @@ export default class CraftEntriesEditing extends Plugin {
 
     // if there's no cardHtml attribute for any reason - get the markup from Craft
     // this can happen e.g. if you make changes in the source mode and then come back to the editing mode
-    let parents = $(this.editor.sourceElement).parents('.field');
     const layoutElementUid =
       this.editor.config.get('layoutElementUid') ??
-      $(parents[0]).data('layout-element');
+      this.editor.sourceElement.closest('craft-field')?.dataset.layoutElement;
     const entryId = modelItem.getAttribute('entryId') ?? null;
     const siteId = modelItem.getAttribute('siteId') ?? null;
 

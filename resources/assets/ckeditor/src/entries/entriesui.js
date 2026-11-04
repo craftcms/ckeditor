@@ -251,8 +251,9 @@ export default class CraftEntriesUI extends Plugin {
    * @private
    */
   _getCardElement(entryId) {
-    let $container = $(this.editor.ui.element);
-    return $container.find('.element.card[data-id="' + entryId + '"]');
+    return this.editor.ui.element.querySelector(
+      `.element.card[data-id="${entryId}"]`,
+    );
   }
 
   /**
@@ -280,7 +281,7 @@ export default class CraftEntriesUI extends Plugin {
   _openNativeEditEntrySlideout(entryId, siteId, modelElement, owner) {
     const editor = this.editor;
     const model = editor.model;
-    const $element = this._getCardElement(entryId);
+    const card = this._getCardElement(entryId);
     // Identify the entry by its owner and field too, like Matrix does (see `NestedElementManager::elementEditUrl()`),
     // since an entry saved for the owner’s draft has a different owner than its canonical entry
     const params = {
@@ -289,8 +290,8 @@ export default class CraftEntriesUI extends Plugin {
     };
     // The card’s owner ID is only right as of when the card was rendered, and the owner changes when its draft is
     // created, applied or discarded, so prefer the control’s current owner
-    const ownerId = owner.ownerId() ?? $element.attr('data-owner-id');
-    const fieldId = $element.attr('data-field-id');
+    const ownerId = owner.ownerId() ?? card?.dataset.ownerId;
+    const fieldId = card?.dataset.fieldId;
     if (ownerId) {
       params.ownerId = ownerId;
     }
@@ -298,20 +299,19 @@ export default class CraftEntriesUI extends Plugin {
       params.fieldId = fieldId;
     }
 
-    const parents = $element.parents('.field');
-    if (parents.length && $(parents[0]).hasClass('has-errors')) {
+    if (card?.closest('craft-field')?.hasAttribute('has-errors')) {
       params.prevalidate = 1;
     }
 
     let draftRefreshTimeout = null;
 
     openSlideout(getActionUrl('elements/edit', params), {
-      opener: $element[0] ?? null,
+      opener: card,
       // Only move the entry into the owner’s draft if it isn’t already there, like Matrix does
       // (see `useNestedElementOperations.ts` `prepareEdit()`)
       prepareNestedOwner: async () =>
-        $element.is('[data-owner-is-canonical]') &&
-        !$element.is('[data-is-unpublished-draft]')
+        card?.hasAttribute('data-owner-is-canonical') &&
+        !card.hasAttribute('data-is-unpublished-draft')
           ? owner.prepare()
           : null,
       onSaved: (result) => {

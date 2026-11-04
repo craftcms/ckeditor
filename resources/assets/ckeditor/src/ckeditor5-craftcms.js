@@ -28,9 +28,6 @@ export {CraftLink};
 
 const trackChangesInSourceMode = function (editor) {
   const sourceEditing = editor.plugins.get(SourceEditing);
-  const $editorElement = $(editor.ui.view.element);
-  const $sourceElement = $(editor.sourceElement);
-  const ns = `ckeditor${Math.floor(Math.random() * 1000000000)}`;
   const events = [
     'keypress',
     'keyup',
@@ -40,26 +37,41 @@ const trackChangesInSourceMode = function (editor) {
     'click',
     'mousedown',
     'mouseup',
-  ]
-    .map((type) => `${type}.${ns}`)
-    .join(' ');
+  ];
+  let listeners = null;
 
   sourceEditing.on('change:isSourceEditingMode', () => {
-    const $sourceEditingContainer = $editorElement.find(
+    listeners?.abort();
+    listeners = null;
+
+    if (!sourceEditing.isSourceEditingMode) {
+      return;
+    }
+
+    const container = editor.ui.view.element.querySelector(
       '.ck-source-editing-area',
     );
 
-    if (sourceEditing.isSourceEditingMode) {
-      let content = $sourceEditingContainer.attr('data-value');
-      $sourceEditingContainer.on(events, () => {
-        if (
-          content !== (content = $sourceEditingContainer.attr('data-value'))
-        ) {
-          $sourceElement.val(content);
-        }
-      });
-    } else {
-      $sourceEditingContainer.off(`.${ns}`);
+    if (!container) {
+      return;
+    }
+
+    listeners = new AbortController();
+    let content = container.getAttribute('data-value');
+
+    for (const type of events) {
+      container.addEventListener(
+        type,
+        () => {
+          const value = container.getAttribute('data-value');
+          if (content !== value) {
+            content = value;
+            editor.sourceElement.value = content;
+          }
+        },
+        // Captured, since focus and blur don’t bubble out of the textarea.
+        {capture: true, signal: listeners.signal},
+      );
     }
   });
 };
@@ -166,7 +178,6 @@ const handleClipboard = function (editor, plugins) {
         // before we can call further events
         event.stop();
 
-        const $editorElement = $(editor.ui.view.element);
         const owner = editor.config.get('craftOwner');
 
         // get the target owner ID, in case we're pasting to a different element all together,
@@ -179,7 +190,7 @@ const handleClipboard = function (editor, plugins) {
         // get the target field id, in case we're pasting to a different field all together (not different instance, different field)
         layoutElementUid =
           editor.config.get('layoutElementUid') ??
-          $editorElement.parents('.field').data('layoutElement');
+          editor.ui.view.element.closest('craft-field')?.dataset.layoutElement;
 
         // for each nested entry ID we found
         for (let i = 0; i < matches.length; i++) {

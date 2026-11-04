@@ -20,9 +20,9 @@ export default class CraftImageInsertUI extends ImageInsertUI {
 
   constructor() {
     super(...arguments);
-    this.$container = null;
+    this.container = null;
     this.progressBar = null;
-    this.$fileInput = null;
+    this.fileInput = null;
     this.uploader = null;
   }
 
@@ -238,20 +238,22 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       return;
     }
 
-    this.$container = $(editor.sourceElement).closest('.ckeditor-container');
-    this.progressBar = $(
-      '<craft-progress-bar class="hidden mt-sm" smooth></craft-progress-bar>',
-    ).appendTo(this.$container)[0];
+    this.container = editor.sourceElement.closest('.ckeditor-container');
 
-    this.$fileInput = $('<input/>', {
-      type: 'file',
-      class: 'hidden',
-      multiple: true,
-    }).insertAfter(editor.sourceElement);
+    this.progressBar = document.createElement('craft-progress-bar');
+    this.progressBar.className = 'hidden mt-sm';
+    this.progressBar.toggleAttribute('smooth', true);
+    this.container.append(this.progressBar);
 
-    this.uploader = new Uploader(this.$container[0], {
-      dropZone: this.$container[0],
-      fileInput: this.$fileInput[0],
+    this.fileInput = document.createElement('input');
+    this.fileInput.type = 'file';
+    this.fileInput.className = 'hidden';
+    this.fileInput.multiple = true;
+    editor.sourceElement.after(this.fileInput);
+
+    this.uploader = new Uploader(this.container, {
+      dropZone: this.container,
+      fileInput: this.fileInput,
       allowedKinds: ['image'],
       on: {
         start: this._onUploadStart.bind(this),

@@ -137,7 +137,7 @@ export default class CraftLinkElementView extends View {
             await appendHeadHtml(response.data.headHtml);
             await appendBodyHtml(response.data.bodyHtml);
 
-            let $element = this.element.firstChild;
+            const chip = this.element.firstChild;
 
             const actions = [
               {
@@ -157,7 +157,7 @@ export default class CraftLinkElementView extends View {
               },
             ];
 
-            addActionsToChip($element, actions);
+            addActionsToChip(chip, actions);
 
             // only show the sites dropdown, if an element has been selected
             if (this.linkUi.sitesView?.siteDropdownView?.buttonView) {
