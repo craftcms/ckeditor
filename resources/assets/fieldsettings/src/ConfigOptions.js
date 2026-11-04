@@ -7,7 +7,7 @@
 import './fieldsettings.css';
 import {t as craftT} from '@craftcms/cp';
 
-/** jQuery’s `isPlainObject()`, for configs that came from JSON or `eval`. */
+/** Whether a parsed config is an object literal rather than an array or null. */
 function isPlainObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }

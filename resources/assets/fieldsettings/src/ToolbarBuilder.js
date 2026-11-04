@@ -16,7 +16,7 @@ import {
   hitTest,
 } from '@craftcms/garnish';
 
-/** Per-item state that used to live in jQuery’s data store. */
+/** Per-item state, keyed off the elements it belongs to. */
 const componentNames = new WeakMap();
 const sourceItems = new WeakMap();
 const midpoints = new WeakMap();
