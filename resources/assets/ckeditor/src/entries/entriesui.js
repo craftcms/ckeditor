@@ -438,7 +438,9 @@ export default class CraftEntriesUI extends Plugin {
       throw e;
     }
 
-    const slideout = Craft.createElementEditor(this.elementType, {
+    let card = null;
+
+    Craft.createElementEditor(this.elementType, {
       elementId: data.element.id,
       draftId: data.element.draftId,
       params: {
@@ -450,24 +452,31 @@ export default class CraftEntriesUI extends Plugin {
           entryId: ev.data.id,
           siteId: ev.data.siteId,
         });
+        card = model.document.selection.getSelectedElement();
       },
-    });
-
-    // set position on before the card we just created and set focus
-    slideout.on('beforeClose', () => {
-      // nullify the trigger element, so the focus is not returned to the "New entry" button in the toolbar
-      slideout.$triggerElement = null;
-      // set position
-      model.change((writer) => {
-        writer.setSelection(
-          writer.createPositionAt(
-            editor.model.document.getRoot(),
-            range.end.path[0],
-          ),
-        );
-      });
-      // set focus
-      editor.editing.view.focus();
+      onClose: () => {
+        model.change((writer) => {
+          if (card && card.root.rootName !== '$graveyard') {
+            // put the cursor after the card we just created
+            const next = card.nextSibling;
+            if (next && model.schema.checkChild(next, '$text')) {
+              writer.setSelection(next, 0);
+            } else {
+              editor.execute('insertParagraph', {
+                position: writer.createPositionAfter(card),
+              });
+            }
+          } else {
+            writer.setSelection(
+              writer.createPositionAt(
+                editor.model.document.getRoot(),
+                range.end.path[0],
+              ),
+            );
+          }
+        });
+        editor.editing.view.focus();
+      },
     });
   }
 }

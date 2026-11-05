@@ -792,7 +792,8 @@ var he = class extends v {
 		} catch (e) {
 			throw j.showError(e?.response?.data?.error), e;
 		}
-		let c = j.createElementEditor(this.elementType, {
+		let c = null;
+		j.createElementEditor(this.elementType, {
 			elementId: s.element.id,
 			draftId: s.element.draftId,
 			params: {
@@ -803,13 +804,16 @@ var he = class extends v {
 				t.commands.execute("insertEntry", {
 					entryId: e.data.id,
 					siteId: e.data.siteId
-				});
+				}), c = n.document.selection.getSelectedElement();
+			},
+			onClose: () => {
+				n.change((e) => {
+					if (c && c.root.rootName !== "$graveyard") {
+						let r = c.nextSibling;
+						r && n.schema.checkChild(r, "$text") ? e.setSelection(r, 0) : t.execute("insertParagraph", { position: e.createPositionAfter(c) });
+					} else e.setSelection(e.createPositionAt(t.model.document.getRoot(), r.end.path[0]));
+				}), t.editing.view.focus();
 			}
-		});
-		c.on("beforeClose", () => {
-			c.$triggerElement = null, n.change((e) => {
-				e.setSelection(e.createPositionAt(t.model.document.getRoot(), r.end.path[0]));
-			}), t.editing.view.focus();
 		});
 	}
 }, Ee = class extends v {
