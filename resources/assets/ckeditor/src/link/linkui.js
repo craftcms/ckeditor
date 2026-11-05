@@ -555,7 +555,8 @@ export default class CraftLinkUI extends Plugin {
       onCancel: () => {
         onCancel();
       },
-      closeOtherModals: false,
+    }).then((modal) => {
+      modal.on('close', () => modal.destroy());
     });
   }
 

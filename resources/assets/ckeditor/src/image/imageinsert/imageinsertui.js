@@ -105,7 +105,9 @@ export default class CraftImageInsertUI extends ImageInsertUI {
           editor.editing.view.focus();
         },
       },
-    );
+    ).then((modal) => {
+      modal.on('close', () => modal.destroy());
+    });
   }
 
   async _processSelectedAssets(assets, transform) {

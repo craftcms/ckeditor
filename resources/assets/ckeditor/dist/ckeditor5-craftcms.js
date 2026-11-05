@@ -123,6 +123,8 @@ var M = Object.create, te = Object.defineProperty, N = Object.getOwnPropertyDesc
 			onClose: () => {
 				t.editing.view.focus();
 			}
+		}).then((e) => {
+			e.on("close", () => e.destroy());
 		});
 	}
 	async _processSelectedAssets(e, t) {
@@ -1257,8 +1259,9 @@ var Oe = class extends v {
 			},
 			onCancel: () => {
 				c();
-			},
-			closeOtherModals: !1
+			}
+		}).then((e) => {
+			e.on("close", () => e.destroy());
 		});
 	}
 	_advancedLinkFields() {
