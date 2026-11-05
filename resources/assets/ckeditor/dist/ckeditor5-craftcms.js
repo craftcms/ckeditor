@@ -960,13 +960,13 @@ var Oe = class extends v {
 				context: "field",
 				ui: "chip",
 				sortable: !1,
-				showActionMenu: !1
+				showActionMenu: !0
 			}]
 		}] }).then(async (t) => {
 			if (Object.keys(t.data.elements).length > 0) {
 				if (j.cpConfig().get("isMultiSite") && this.linkUi.sitesView != null) for (let [e, n] of Object.entries(this.linkUi.sitesView.siteDropdownItemModels)) t.data.siteIds.includes(parseInt(e)) || e == "current" ? n.set("isEnabled", !0) : n.set("isEnabled", !1);
 				this.element.innerHTML = t.data.elements[this.elementId][0], await j.appendHeadHtml(t.data.headHtml), await j.appendBodyHtml(t.data.bodyHtml);
-				let n = this.element.firstChild, r = [{
+				let n = this.element.firstElementChild, r = [{
 					icon: "arrows-rotate",
 					label: j.t("Replace"),
 					callback: () => {

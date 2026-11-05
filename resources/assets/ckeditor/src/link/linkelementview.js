@@ -98,7 +98,7 @@ export default class CraftLinkElementView extends View {
                   context: 'field',
                   ui: 'chip',
                   sortable: false,
-                  showActionMenu: false,
+                  showActionMenu: true,
                 },
               ],
             },
@@ -129,7 +129,7 @@ export default class CraftLinkElementView extends View {
             await Craft.appendHeadHtml(response.data.headHtml);
             await Craft.appendBodyHtml(response.data.bodyHtml);
 
-            const chip = this.element.firstChild;
+            const chip = this.element.firstElementChild;
 
             const actions = [
               {
