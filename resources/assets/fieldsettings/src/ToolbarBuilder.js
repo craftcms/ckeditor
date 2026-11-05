@@ -214,7 +214,7 @@ export default class ToolbarBuilder {
                       ? 'margin-right'
                       : 'margin-left';
                   const currentMargin =
-                    draggee.style.getPropertyValue(property) || '0px';
+                    getComputedStyle(draggee).getPropertyValue(property);
                   draggee.style.removeProperty(property);
                   const targetMargin =
                     getComputedStyle(draggee).getPropertyValue(property);

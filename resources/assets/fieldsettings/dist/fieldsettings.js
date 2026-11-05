@@ -95,7 +95,7 @@ var ToolbarBuilder = class {
 						}
 						if (!this.draggingSeparator) {
 							e.classList.remove("hidden");
-							let t = Craft.cpConfig().get("orientation") === "ltr" ? "margin-right" : "margin-left", n = e.style.getPropertyValue(t) || "0px";
+							let t = Craft.cpConfig().get("orientation") === "ltr" ? "margin-right" : "margin-left", n = getComputedStyle(e).getPropertyValue(t);
 							e.style.removeProperty(t);
 							let r = getComputedStyle(e).getPropertyValue(t);
 							animateMargin(e, t, n, r, () => e.style.removeProperty(t));
