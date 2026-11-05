@@ -15,15 +15,13 @@ import CraftEntries from './entries/entries';
 import CraftLink from './link/link';
 import CKEditorInspector from '@ckeditor/ckeditor5-inspector';
 import {ClassicEditor, Heading, SourceEditing} from 'ckeditor5';
+import * as Craft from '@craftcms/cp';
 
 export {CraftEntries};
 export {CraftLink};
 
 const trackChangesInSourceMode = function (editor) {
   const sourceEditing = editor.plugins.get(SourceEditing);
-  const $editorElement = $(editor.ui.view.element);
-  const $sourceElement = $(editor.sourceElement);
-  const ns = `ckeditor${Math.floor(Math.random() * 1000000000)}`;
   const events = [
     'keypress',
     'keyup',
@@ -33,26 +31,41 @@ const trackChangesInSourceMode = function (editor) {
     'click',
     'mousedown',
     'mouseup',
-  ]
-    .map((type) => `${type}.${ns}`)
-    .join(' ');
+  ];
+  let listeners = null;
 
   sourceEditing.on('change:isSourceEditingMode', () => {
-    const $sourceEditingContainer = $editorElement.find(
+    listeners?.abort();
+    listeners = null;
+
+    if (!sourceEditing.isSourceEditingMode) {
+      return;
+    }
+
+    const container = editor.ui.view.element.querySelector(
       '.ck-source-editing-area',
     );
 
-    if (sourceEditing.isSourceEditingMode) {
-      let content = $sourceEditingContainer.attr('data-value');
-      $sourceEditingContainer.on(events, () => {
-        if (
-          content !== (content = $sourceEditingContainer.attr('data-value'))
-        ) {
-          $sourceElement.val(content);
-        }
-      });
-    } else {
-      $sourceEditingContainer.off(`.${ns}`);
+    if (!container) {
+      return;
+    }
+
+    listeners = new AbortController();
+    let content = container.getAttribute('data-value');
+
+    for (const type of events) {
+      container.addEventListener(
+        type,
+        () => {
+          const value = container.getAttribute('data-value');
+          if (content !== value) {
+            content = value;
+            editor.sourceElement.value = content;
+          }
+        },
+        // Captured, since focus and blur don’t bubble out of the textarea.
+        {capture: true, signal: listeners.signal},
+      );
     }
   });
 };
@@ -144,7 +157,7 @@ const handleClipboard = function (editor, plugins) {
       ) {
         let duplicatedContent = pasteContent;
         let errors = false;
-        const targetSiteId = Craft.siteId;
+        const targetSiteId = Craft.cpConfig().get('siteId');
         let ownerId = null;
         let layoutElementUid = null;
         const editorData = editor.getData();
@@ -159,7 +172,6 @@ const handleClipboard = function (editor, plugins) {
         // before we can call further events
         event.stop();
 
-        const $editorElement = $(editor.ui.view.element);
         const owner = editor.config.get('craftOwner');
 
         // get the target owner ID, in case we're pasting to a different element all together,
@@ -172,7 +184,7 @@ const handleClipboard = function (editor, plugins) {
         // get the target field id, in case we're pasting to a different field all together (not different instance, different field)
         layoutElementUid =
           editor.config.get('layoutElementUid') ??
-          $editorElement.parents('.field').data('layoutElement');
+          editor.ui.view.element.closest('craft-field')?.dataset.layoutElement;
 
         // for each nested entry ID we found
         for (let i = 0; i < matches.length; i++) {
@@ -199,10 +211,11 @@ const handleClipboard = function (editor, plugins) {
               if (copyFromEditorId !== editor.id) {
                 if (!plugins.includes(CraftEntries)) {
                   // if we're pasting to a different editor instance and that instance doesn't have CraftEntries plugins - bail straight away
-                  Craft.cp.displayError(
+                  Craft.showError(
                     Craft.t(
-                      'ckeditor',
                       'This field doesn’t allow nested entries.',
+                      {},
+                      'ckeditor',
                     ),
                   );
                   errors = true;
@@ -213,20 +226,15 @@ const handleClipboard = function (editor, plugins) {
                 }
               }
 
-              await Craft.sendActionRequest(
-                'POST',
-                'ckeditor/ckeditor/duplicate-nested-entry',
-                {
-                  data: {
-                    entryId: entryId,
-                    targetSiteId: targetSiteId,
-                    sourceSiteId: sourceSiteId,
-                    targetEntryTypeIds: targetEntryTypeIds,
-                    targetOwnerId: ownerId,
-                    targetLayoutElementUid: layoutElementUid,
-                  },
-                },
-              )
+              await Craft.actionClient
+                .post('ckeditor/ckeditor/duplicate-nested-entry', {
+                  entryId: entryId,
+                  targetSiteId: targetSiteId,
+                  sourceSiteId: sourceSiteId,
+                  targetEntryTypeIds: targetEntryTypeIds,
+                  targetOwnerId: ownerId,
+                  targetLayoutElementUid: layoutElementUid,
+                })
                 .then((response) => {
                   if (response.data.newEntryId) {
                     // pass the duplicate’s card HTML along, so it doesn’t have to be requested separately
@@ -256,7 +264,7 @@ const handleClipboard = function (editor, plugins) {
                 })
                 .catch((e) => {
                   errors = true;
-                  Craft.cp.displayError(e?.response?.data?.message);
+                  Craft.showError(e?.response?.data?.message);
                   console.error(e?.response?.data?.additionalMessage);
                 });
             }
@@ -285,7 +293,7 @@ export const create = async function (element, config) {
   config.attachTo = element;
   const editor = await ClassicEditor.create(config);
 
-  if (Craft.showCkeditorInspector && Craft.userIsAdmin) {
+  if (window.CKE_SHOW_INSPECTOR && Craft.cpConfig().get('userIsAdmin')) {
     CKEditorInspector.attach(editor);
   }
 

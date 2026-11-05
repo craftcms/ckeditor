@@ -4,103 +4,100 @@
  * @license GPL-3.0-or-later
  */
 
-/** global: CKEditor5, Garnish, $ */
 import './fieldsettings.css';
+import * as Craft from '@craftcms/cp';
 
-export default Garnish.Base.extend({
-  jsonSchemaUri: null,
-  jsonSchema: null,
-  mode: null,
-  lastCodeMode: null,
-  $container: null,
-  $modeInput: null,
-  $jsonContainer: null,
-  $jsContainer: null,
-  $fileContainer: null,
-  jsonEditor: null,
-  jsEditor: null,
-  defaults: null,
+/** Whether a parsed config is an object literal rather than an array or null. */
+const isPlainObject = (value) =>
+  value !== null &&
+  typeof value === 'object' &&
+  [Object.prototype, null].includes(Object.getPrototypeOf(value));
 
-  init: function (id, jsonSchemaUri, mode, hasFiles, jsonSchema = null) {
+export default class ConfigOptions {
+  constructor(id, jsonSchemaUri, mode, hasFiles, jsonSchema = null) {
     this.jsonSchemaUri = jsonSchemaUri;
     this.jsonSchema = jsonSchema;
     this.mode = mode;
-    if (this.mode !== 'file') {
-      this.lastCodeMode = mode;
-    }
-    this.$container = $(`#${id}`);
-    this.$modeInput = $(`#${id}-mode`);
-    this.$jsonContainer = $(`#${id}-json-container`);
-    this.$jsContainer = $(`#${id}-js-container`);
-    this.$fileContainer = $(`#${id}-file-container`);
+    this.lastCodeMode = mode !== 'file' ? mode : null;
+    this.container = document.getElementById(id);
+    this.modeInput = document.getElementById(`${id}-mode`);
+    this.jsonContainer = document.getElementById(`${id}-json-container`);
+    this.jsContainer = document.getElementById(`${id}-js-container`);
+    this.fileContainer = document.getElementById(`${id}-file-container`);
     // TODO(code-editor): restore once craft-code-editor supports Craft 6
     // this.jsonEditor = window.monacoEditorInstances[`${id}-json`];
     // this.jsEditor = window.monacoEditorInstances[`${id}-js`];
     this.jsonEditor = document.getElementById(`${id}-json`);
     this.jsEditor = document.getElementById(`${id}-js`);
-    const $modePicker = this.$container.children('craft-button-group');
+    const modePicker = this.container.querySelector(':scope > craft-listbox');
 
     this.defaults = {};
 
-    const $containers = this.$jsonContainer
-      .add(this.$jsContainer)
-      .add(this.$fileContainer);
+    const containers = [
+      this.jsonContainer,
+      this.jsContainer,
+      this.fileContainer,
+    ];
 
-    new Craft.Listbox($modePicker, {
-      onChange: ($selectedOption) => {
-        this.mode = $selectedOption.data('mode');
-        if (this.mode !== 'file' || hasFiles) {
-          this.$modeInput.val(this.mode);
-        }
-        $containers.addClass('hidden');
-        switch (this.mode) {
-          case 'json':
-            // was JS the previously-selected non-file mode?
-            if (this.lastCodeMode === 'js') {
-              // get the js value
-              const js = this.getValue(this.jsEditor);
-              // check if the js value has any functions in it
-              if (this.jsContainsFunctions(js)) {
-                // if it does - show the confirmation dialogue
-                if (
-                  !confirm(
-                    Craft.t(
-                      'ckeditor',
-                      'Your JavaScript config contains functions. If you switch to JSON, they will be lost. Would you like to continue?',
-                    ),
-                  )
-                ) {
-                  // if user cancels - go back to JS
-                  $modePicker.children('[data-mode="js"]')[0]?.click();
-                  break;
-                }
+    // <craft-listbox> re-emits its listbox’s `change` event
+    modePicker.addEventListener('change', (event) => {
+      if (event.target !== modePicker) {
+        return;
+      }
+
+      this.mode = event.detail.$selectedOption.dataset.mode;
+      if (this.mode !== 'file' || hasFiles) {
+        this.modeInput.value = this.mode;
+      }
+      containers.forEach((container) => container.classList.add('hidden'));
+      switch (this.mode) {
+        case 'json':
+          // was JS the previously-selected non-file mode?
+          if (this.lastCodeMode === 'js') {
+            // get the js value
+            const js = this.getValue(this.jsEditor);
+            // check if the js value has any functions in it
+            if (this.jsContainsFunctions(js)) {
+              // if it does - show the confirmation dialogue
+              if (
+                !confirm(
+                  Craft.t(
+                    'Your JavaScript config contains functions. If you switch to JSON, they will be lost. Would you like to continue?',
+                    {},
+                    'ckeditor',
+                  ),
+                )
+              ) {
+                // if user cancels - go back to JS
+                modePicker.querySelector('[data-mode="js"]')?.click();
+                break;
               }
-
-              const json = this.js2json(js);
-              this.setValue(this.jsonEditor, json || '{\n  \n}');
-              this.setValue(this.jsEditor, '');
             }
 
-            this.$jsonContainer.removeClass('hidden');
-            break;
-          case 'js':
-            if (this.lastCodeMode === 'json') {
-              const json = this.getValue(this.jsonEditor);
-              const js = this.json2js(json);
-              this.setValue(this.jsEditor, js || 'return {\n  \n}');
-              this.setValue(this.jsonEditor, '');
-            }
-            this.$jsContainer.removeClass('hidden');
-            break;
-          case 'file':
-            this.$fileContainer.removeClass('hidden');
-            break;
-        }
+            const json = this.js2json(js);
+            this.setValue(this.jsonEditor, json || '{\n  \n}');
+            this.setValue(this.jsEditor, '');
+          }
 
-        if (this.mode !== 'file') {
-          this.lastCodeMode = this.mode;
-        }
-      },
+          this.jsonContainer.classList.remove('hidden');
+          break;
+        case 'js':
+          if (this.lastCodeMode === 'json') {
+            const json = this.getValue(this.jsonEditor);
+            const js = this.json2js(json);
+            this.setValue(this.jsEditor, js || 'return {\n  \n}');
+            this.setValue(this.jsonEditor, '');
+          }
+          this.jsContainer.classList.remove('hidden');
+          break;
+        case 'file':
+          this.fileContainer.classList.remove('hidden');
+          break;
+      }
+
+      if (this.mode !== 'file') {
+        this.lastCodeMode = this.mode;
+      }
     });
 
     // Handle Paste
@@ -151,19 +148,19 @@ export default Garnish.Base.extend({
       this.jsonEditor.selectionStart = this.jsonEditor.selectionEnd =
         selectionStart + trimmed.length;
     });
-  },
+  }
 
   // TODO(code-editor): these stand in for Monaco’s getModel().getValue()/setValue() while craft-code-editor is disabled
-  getValue: function (textarea) {
+  getValue(textarea) {
     return textarea.value;
-  },
+  }
 
-  setValue: function (textarea, value) {
+  setValue(textarea, value) {
     textarea.value = value;
     textarea.dispatchEvent(new Event('input', {bubbles: true}));
-  },
+  }
 
-  getConfig: function () {
+  getConfig() {
     let json;
     if (this.mode === 'json') {
       json = this.getValue(this.jsonEditor).trim() || '{}';
@@ -177,13 +174,13 @@ export default Garnish.Base.extend({
 
     try {
       const config = JSON.parse(json);
-      return $.isPlainObject(config) ? config : false;
+      return isPlainObject(config) ? config : false;
     } catch (e) {
       return false;
     }
-  },
+  }
 
-  setConfig: function (config) {
+  setConfig(config) {
     const json = this.config2json(config);
 
     if (this.mode === 'json') {
@@ -192,9 +189,9 @@ export default Garnish.Base.extend({
       const js = this.json2js(json);
       this.setValue(this.jsEditor, js || 'return {\n  \n}');
     }
-  },
+  }
 
-  addSetting: function (setting) {
+  addSetting(setting) {
     const config = this.getConfig();
     if (!config) {
       return;
@@ -214,9 +211,9 @@ export default Garnish.Base.extend({
 
     config[setting] = this.defaults[setting];
     this.setConfig(config);
-  },
+  }
 
-  removeSetting: function (setting) {
+  removeSetting(setting) {
     const config = this.getConfig();
     if (!config) {
       return;
@@ -232,9 +229,9 @@ export default Garnish.Base.extend({
 
     delete config[setting];
     this.setConfig(config);
-  },
+  }
 
-  populateDefault: function (setting) {
+  populateDefault(setting) {
     let schema;
     // TODO(code-editor): restore once craft-code-editor supports Craft 6
     // try {
@@ -288,16 +285,16 @@ export default Garnish.Base.extend({
     }
 
     this.defaults[setting] = schema.$defs[defName].default;
-  },
+  }
 
-  replacer: function (key, value) {
+  replacer(key, value) {
     if (typeof value === 'function') {
       return '__HAS__FUNCTION__';
     }
     return value;
-  },
+  }
 
-  jsContainsFunctions: function (js) {
+  jsContainsFunctions(js) {
     let config = this.getValidJsonConfig(js);
     if (config === false) {
       return true;
@@ -309,17 +306,17 @@ export default Garnish.Base.extend({
     }
 
     return false;
-  },
+  }
 
-  config2json: function (config) {
+  config2json(config) {
     let json = JSON.stringify(config, null, 2);
     if (json === '{}') {
       json = '{\n  \n}';
     }
     return json;
-  },
+  }
 
-  getValidJsonConfig: function (js) {
+  getValidJsonConfig(js) {
     const m = (js || '').match(/return\s*(\{[\w\W]*})/);
     if (!m) {
       return false;
@@ -334,9 +331,9 @@ export default Garnish.Base.extend({
     }
 
     return config;
-  },
+  }
 
-  js2json: function (js) {
+  js2json(js) {
     let config = this.getValidJsonConfig(js);
 
     if (config === false) {
@@ -344,16 +341,16 @@ export default Garnish.Base.extend({
     }
 
     return this.config2json(config);
-  },
+  }
 
-  json2js: function (json) {
+  json2js(json) {
     let config;
     try {
       config = JSON.parse(json);
     } catch (e) {
       return false;
     }
-    if (!$.isPlainObject(config)) {
+    if (!isPlainObject(config)) {
       return false;
     }
     let js = this.jsify(config, '');
@@ -361,9 +358,9 @@ export default Garnish.Base.extend({
       js = '{\n  \n}';
     }
     return `return ${js}`;
-  },
+  }
 
-  jsify: function (value, indent) {
+  jsify(value, indent) {
     let js;
     if (Array.isArray(value)) {
       js = '[\n';
@@ -371,7 +368,7 @@ export default Garnish.Base.extend({
         js += `${indent}  ${this.jsify(v, indent + '  ')},\n`;
       }
       js += `${indent}]`;
-    } else if ($.isPlainObject(value)) {
+    } else if (isPlainObject(value)) {
       js = '{\n';
       for (const [k, v] of Object.entries(value)) {
         js += `${indent}  ${k}: ${this.jsify(v, indent + '  ')},\n`;
@@ -383,5 +380,5 @@ export default Garnish.Base.extend({
       js = JSON.stringify(value);
     }
     return js;
-  },
-});
+  }
+}

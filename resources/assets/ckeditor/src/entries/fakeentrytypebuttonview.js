@@ -1,4 +1,5 @@
 import {createDropdown, IconPlus, View} from 'ckeditor5';
+import * as Craft from '@craftcms/cp';
 
 export default class CraftFakeEntryTypeButtonView extends View {
   constructor(locale, options = {}) {
@@ -14,7 +15,7 @@ export default class CraftFakeEntryTypeButtonView extends View {
 
     const dropdownView = createDropdown(locale);
     dropdownView.buttonView.set({
-      label: Craft.t('ckeditor', 'Add nested content'),
+      label: Craft.t('Add nested content', {}, 'ckeditor'),
       icon: IconPlus,
       tooltip: true,
       withText: false,

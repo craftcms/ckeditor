@@ -14,7 +14,7 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: ['ckeditor5'],
+      external: ['ckeditor5', '@craftcms/cp', '@craftcms/garnish'],
     },
   },
 });

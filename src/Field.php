@@ -2040,9 +2040,14 @@ JS;
 $imports
 $uiTranslationImport
 import {create} from '@craftcms/ckeditor';
+import {t} from '@craftcms/cp';
 
 export default async function (element, options = {}) {
-  const $ = jQuery;
+  // Custom config JS may still refer to `$` or `Craft`, so they’re kept for when they’re on the page.
+  // (`t` is imported above rather than namespaced, so it can’t shadow `Craft` for that config.)
+  const $ = window.jQuery;
+  const isPlainObject = (value) => value !== null && typeof value === 'object' &&
+    [Object.prototype, null].includes(Object.getPrototypeOf(value));
   const customConfig = $configJs;
   const config = Object.assign({
     translations: [coreTranslations],
@@ -2056,7 +2061,7 @@ export default async function (element, options = {}) {
   });
 
 
-  if (!jQuery.isPlainObject(config.toolbar)) {
+  if (!isPlainObject(config.toolbar)) {
     config.toolbar = {};
   }
   config.toolbar.items = $toolbarJs;
@@ -2122,14 +2127,14 @@ export default async function (element, options = {}) {
     config.wordCount.onUpdate = (stats) => {
       const statText = [];
       if (config.wordCount.displayWords || typeof config.wordCount.displayWords === 'undefined') {
-        statText.push(Craft.t('ckeditor', '{num, number} {num, plural, =1{word} other{words}}', {
+        statText.push(t('{num, number} {num, plural, =1{word} other{words}}', {
           num: stats.words
-        }));
+        }, 'ckeditor'));
       }
       if (config.wordCount.displayCharacters) { // false by default
-        statText.push(Craft.t('ckeditor', '{num, number} {num, plural, =1{character} other{characters}}', {
+        statText.push(t('{num, number} {num, plural, =1{character} other{characters}}', {
           num: stats.characters
-        }));
+        }, 'ckeditor'));
       }
       const container = options.wordCountElement;
       if (container) {

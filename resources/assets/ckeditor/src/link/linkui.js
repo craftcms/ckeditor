@@ -23,6 +23,7 @@ import CraftLinkElementView from './linkelementview.js';
 import CraftLinkSitesView from './linksitesview.js';
 import CraftLinkAdvancedView from './linkadvancedview.js';
 import {resolveAdvancedFieldAttributeValue} from './linkutils.js';
+import * as Craft from '@craftcms/cp';
 
 export default class CraftLinkUI extends Plugin {
   static get requires() {
@@ -319,7 +320,7 @@ export default class CraftLinkUI extends Plugin {
 
     // update the button label
     const label = elementRefHandle
-      ? Craft.t('app', '{name}', {name: itemModel.label})
+      ? Craft.t('{name}', {name: itemModel.label})
       : itemModel.label;
     this.linkTypeDropdownView.buttonView.set('label', label);
 
@@ -348,7 +349,7 @@ export default class CraftLinkUI extends Plugin {
 
     itemDefinitions.push(
       new ViewModel({
-        label: Craft.t('app', 'URL'),
+        label: Craft.t('URL'),
         handle: 'default',
         withText: true,
       }),
@@ -406,7 +407,7 @@ export default class CraftLinkUI extends Plugin {
     ];
 
     // only add sites dropdown if this is a multisite install and we haven't done so already
-    if (Craft.isMultiSite && this.sitesView == null) {
+    if (Craft.cpConfig().get('isMultiSite') && this.sitesView == null) {
       this.sitesView = new CraftLinkSitesView(formView.locale, {
         linkUi: this,
         linkOption: linkOption,
@@ -475,12 +476,11 @@ export default class CraftLinkUI extends Plugin {
       this._linkUI._showFakeVisualSelection();
     }
 
-    Craft.createElementSelectorModal(linkOption.elementType, {
+    void Craft.createElementSelectorModal(linkOption.elementType, {
       storageKey: `ckeditor:${this.pluginName}:${linkOption.elementType}`,
       sources: linkOption.sources,
       criteria: linkOption.criteria,
       defaultSiteId: editor.config.get('elementSiteId'),
-      autoFocusSearchBox: false,
       onSelect: (elements) => {
         if (elements.length) {
           const element = elements[0];
@@ -555,7 +555,8 @@ export default class CraftLinkUI extends Plugin {
       onCancel: () => {
         onCancel();
       },
-      closeOtherModals: false,
+    }).then((modal) => {
+      modal.on('close', () => modal.destroy());
     });
   }
 

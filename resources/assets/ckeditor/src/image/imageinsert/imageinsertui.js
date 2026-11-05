@@ -5,6 +5,7 @@
  */
 
 import {ButtonView, IconImage, ImageInsertUI} from 'ckeditor5';
+import * as Craft from '@craftcms/cp';
 
 export default class CraftImageInsertUI extends ImageInsertUI {
   static get pluginName() {
@@ -13,9 +14,8 @@ export default class CraftImageInsertUI extends ImageInsertUI {
 
   constructor() {
     super(...arguments);
-    this.$container = null;
-    this.progressBar = null;
-    this.$fileInput = null;
+    this.container = null;
+    this.fileInput = null;
     this.uploader = null;
   }
 
@@ -86,24 +86,27 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       kind: 'image',
     });
 
-    Craft.createElementSelectorModal('CraftCms\\Cms\\Asset\\Elements\\Asset', {
-      ...this._imageModalSettings,
-      storageKey: `ckeditor:${this.pluginName}:'CraftCms\\Cms\\Asset\\Elements\\Asset'`,
-      sources,
-      criteria,
-      defaultSiteId: config.get('elementSiteId'),
-      transforms: config.get('transforms'),
-      autoFocusSearchBox: false,
-      multiSelect: true,
-      onSelect: (assets, transform) => {
-        this._processSelectedAssets(assets, transform).then(() => {
+    void Craft.createElementSelectorModal(
+      'CraftCms\\Cms\\Asset\\Elements\\Asset',
+      {
+        ...this._imageModalSettings,
+        storageKey: `ckeditor:${this.pluginName}:'CraftCms\\Cms\\Asset\\Elements\\Asset'`,
+        sources,
+        criteria,
+        defaultSiteId: config.get('elementSiteId'),
+        transforms: config.get('transforms'),
+        multiSelect: true,
+        onSelect: (assets, {transform}) => {
+          return this._processSelectedAssets(assets, transform).then(() => {
+            editor.editing.view.focus();
+          });
+        },
+        onClose: () => {
           editor.editing.view.focus();
-        });
+        },
       },
-      onHide: () => {
-        editor.editing.view.focus();
-      },
-      closeOtherModals: false,
+    ).then((modal) => {
+      modal.on('close', () => modal.destroy());
     });
   }
 
@@ -125,7 +128,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
 
     for (const asset of assets) {
       const siteId = asset.siteId ?? editor.config.get('elementSiteId');
-      const alt = `${asset.$element.data('alt') ?? ''}#asset:${asset.id}${siteId ? `@${siteId}` : ''}:alt`;
+      const alt = `${asset.alt ?? ''}#asset:${asset.id}${siteId ? `@${siteId}` : ''}:alt`;
 
       const hasTransform = this._isTransformUrl(asset.url);
 
@@ -163,18 +166,15 @@ export default class CraftImageInsertUI extends ImageInsertUI {
 
     let response;
     try {
-      response = await Craft.sendActionRequest(
-        'POST',
+      response = await Craft.actionClient.post(
         'ckeditor/ckeditor/create-image-entry',
         {
-          data: {
-            ...params,
-            assetIds: [assetId],
-          },
+          ...params,
+          assetIds: [assetId],
         },
       );
     } catch (e) {
-      Craft.cp.displayError();
+      Craft.showError();
       throw e;
     }
 
@@ -201,16 +201,10 @@ export default class CraftImageInsertUI extends ImageInsertUI {
   async _getTransformUrl(assetId, handle) {
     let response;
     try {
-      response = await Craft.sendActionRequest(
-        'POST',
-        'ckeditor/ckeditor/image-url',
-        {
-          data: {
-            assetId: assetId,
-            transform: handle,
-          },
-        },
-      );
+      response = await Craft.actionClient.post('ckeditor/ckeditor/image-url', {
+        assetId: assetId,
+        transform: handle,
+      });
     } catch {
       alert('There was an error generating the transform URL.');
     }
@@ -242,27 +236,21 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       return;
     }
 
-    this.$container = $(editor.sourceElement).closest('.ckeditor-container');
-    this.progressBar = $(
-      '<craft-progress-bar class="hidden mt-sm" smooth></craft-progress-bar>',
-    ).appendTo(this.$container)[0];
+    this.container = editor.sourceElement.closest('.ckeditor-container');
 
-    this.$fileInput = $('<input/>', {
-      type: 'file',
-      class: 'hidden',
-      multiple: true,
-    }).insertAfter(editor.sourceElement);
+    this.fileInput = document.createElement('input');
+    this.fileInput.type = 'file';
+    this.fileInput.className = 'hidden';
+    this.fileInput.multiple = true;
+    editor.sourceElement.after(this.fileInput);
 
-    this.uploader = new Craft.Uploaders.Uploader(this.$container[0], {
-      dropZone: this.$container[0],
-      fileInput: this.$fileInput[0],
+    this.uploader = new Craft.Uploader(this.container, {
+      dropZone: this.container,
+      fileInput: this.fileInput,
       allowedKinds: ['image'],
       on: {
-        start: this._onUploadStart.bind(this),
-        progress: this._onUploadProgress.bind(this),
         done: this._onUploadComplete.bind(this),
         fail: this._onUploadFailure.bind(this),
-        stop: this._onUploadStop.bind(this),
       },
     });
 
@@ -274,9 +262,7 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     // this ensures the image is inserted where the drop-target suggests it will and not always at the start/end of the content
     editor.editing.view.document.on(
       'drop',
-      async (event, data) => {
-        const view = editor.editing.view;
-        const model = editor.model;
+      (event, data) => {
         const mapper = editor.editing.mapper;
 
         const dropRange = data.dropRange;
@@ -293,22 +279,6 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       },
       {priority: 'high'},
     );
-  }
-
-  /**
-   * On upload start.
-   */
-  _onUploadStart() {
-    this.progressBar.progress = 0;
-    this.progressBar.classList.remove('hidden');
-  }
-
-  /**
-   * On upload progress.
-   */
-  _onUploadProgress({loaded, total}) {
-    const progress = parseInt(Math.min(loaded / total, 1) * 100, 10);
-    this.progressBar.progress = progress;
   }
 
   /**
@@ -354,19 +324,12 @@ export default class CraftImageInsertUI extends ImageInsertUI {
       if (errorMessages.length) {
         message = errorMessages.join('\n');
       } else if (filename) {
-        message = Craft.t('app', 'Upload failed for “{filename}”.', {filename});
+        message = Craft.t('Upload failed for “{filename}”.', {filename});
       } else {
-        message = Craft.t('app', 'Upload failed.');
+        message = Craft.t('Upload failed.');
       }
     }
 
-    Craft.cp.displayError(message);
-  }
-
-  /**
-   * Once all uploads have finished.
-   */
-  _onUploadStop() {
-    this.progressBar.classList.add('hidden');
+    Craft.showError(message);
   }
 }

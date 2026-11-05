@@ -1,4 +1,5 @@
 import {ButtonView, View} from 'ckeditor5';
+import * as Craft from '@craftcms/cp';
 
 export default class CraftEntryTypeButtonView extends View {
   constructor(locale, options = {}) {
@@ -17,7 +18,7 @@ export default class CraftEntryTypeButtonView extends View {
       commandValue: this.entryType.model.commandValue, //entry type id
       label: this.entryType.model.label,
       withText: !this.entryType.model.icon,
-      tooltip: Craft.t('app', 'New {type}', {
+      tooltip: Craft.t('New {type}', {
         type: this.entryType.model.label,
       }),
     };

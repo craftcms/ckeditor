@@ -5,6 +5,7 @@
  */
 
 import {Command} from 'ckeditor5';
+import * as Craft from '@craftcms/cp';
 
 /**
  * The transform image command.
@@ -21,13 +22,13 @@ export default class ImageEditorCommand extends Command {
         assetId: srcInfo.assetId,
       };
 
-      Craft.sendActionRequest('POST', 'ckeditor/ckeditor/image-permissions', {
-        data,
-      }).then((response) => {
-        if (response.data.editable === false) {
-          this.isEnabled = false;
-        }
-      });
+      Craft.actionClient
+        .post('ckeditor/ckeditor/image-permissions', data)
+        .then((response) => {
+          if (response.data.editable === false) {
+            this.isEnabled = false;
+          }
+        });
     }
   }
 
@@ -83,10 +84,10 @@ export default class ImageEditorCommand extends Command {
 
     if (srcInfo) {
       // the asset ID must be a number, otherwise Craft treats it as the editor settings
-      Craft.openAssetImageEditor(parseInt(srcInfo.assetId, 10), (data) => {
+      void Craft.openAssetImageEditor(parseInt(srcInfo.assetId, 10), (data) => {
         this._reloadImage(srcInfo.assetId, data);
       }).catch((e) => {
-        Craft.cp.displayError(e?.response?.data?.message);
+        Craft.showError(e?.response?.data?.message);
       });
     }
   }
@@ -113,15 +114,15 @@ export default class ImageEditorCommand extends Command {
             assetId: image.srcInfo.assetId,
           };
 
-          Craft.sendActionRequest('POST', 'ckeditor/ckeditor/image-url', {
-            data,
-          }).then((response) => {
-            let newSrc = this._getNewSrc(response.data, image);
+          Craft.actionClient
+            .post('ckeditor/ckeditor/image-url', data)
+            .then((response) => {
+              let newSrc = this._getNewSrc(response.data, image);
 
-            model.change((writer) => {
-              writer.setAttribute('src', newSrc, image.element);
+              model.change((writer) => {
+                writer.setAttribute('src', newSrc, image.element);
+              });
             });
-          });
         } else {
           let data = {
             assetId: image.srcInfo.assetId,
@@ -129,17 +130,17 @@ export default class ImageEditorCommand extends Command {
           };
 
           // get the new url
-          Craft.sendActionRequest('POST', 'assets/generate-transform', {
-            data,
-          }).then((response) => {
-            // get new src
-            let newSrc = this._getNewSrc(response.data, image);
+          Craft.actionClient
+            .post('assets/generate-transform', data)
+            .then((response) => {
+              // get new src
+              let newSrc = this._getNewSrc(response.data, image);
 
-            // and replace
-            model.change((writer) => {
-              writer.setAttribute('src', newSrc, image.element);
+              // and replace
+              model.change((writer) => {
+                writer.setAttribute('src', newSrc, image.element);
+              });
             });
-          });
         }
       }
     });
@@ -153,7 +154,7 @@ export default class ImageEditorCommand extends Command {
     // so that the image is reloaded after it was edited, because the URL might still be the same
     // (e.g. if using native stuff and you "just" rotated the image)
     // if revAssetUrls is on, then the asset's URL should already have a "v=" param
-    if (!Craft.revAssetUrls) {
+    if (!window.CKE_REV_ASSET_URLS) {
       newSrc += (newSrc.includes('?') ? '&' : '?') + new Date().getTime();
     }
 

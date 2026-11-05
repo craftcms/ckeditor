@@ -5,6 +5,7 @@
  */
 
 import {ButtonView, FormRowView, ImageTextAlternativeUI} from 'ckeditor5';
+import * as Craft from '@craftcms/cp';
 
 const assetAltRefPattern = /#asset:\d+(?:@\d+)?:alt$/;
 const assetSrcRefPattern = /#asset:(\d+)(?:@(\d+))?/;
@@ -87,7 +88,7 @@ export default class CraftImageTextAlternativeUI extends ImageTextAlternativeUI 
     const syncButton = new ButtonView(editor.locale);
 
     syncButton.set({
-      label: Craft.t('ckeditor', 'Sync from asset'),
+      label: Craft.t('Sync from asset', {}, 'ckeditor'),
       withText: true,
       class: 'btn',
     });
@@ -116,18 +117,12 @@ export default class CraftImageTextAlternativeUI extends ImageTextAlternativeUI 
 
     let response;
     try {
-      response = await Craft.sendActionRequest(
-        'POST',
-        'ckeditor/ckeditor/image-alt',
-        {
-          data: {
-            assetId: srcInfo.assetId,
-            siteId: srcInfo.siteId ?? this.editor.config.get('elementSiteId'),
-          },
-        },
-      );
+      response = await Craft.actionClient.post('ckeditor/ckeditor/image-alt', {
+        assetId: srcInfo.assetId,
+        siteId: srcInfo.siteId ?? this.editor.config.get('elementSiteId'),
+      });
     } catch (e) {
-      Craft.cp.displayError(e?.response?.data?.message);
+      Craft.showError(e?.response?.data?.message);
       throw e;
     }
 
@@ -138,8 +133,8 @@ export default class CraftImageTextAlternativeUI extends ImageTextAlternativeUI 
     const fieldView = this._form.labeledInput.fieldView;
 
     if (fieldView.value == alt) {
-      Craft.cp.displaySuccess(
-        Craft.t('ckeditor', 'The alternative text was already in sync.'),
+      Craft.showSuccess(
+        Craft.t('The alternative text was already in sync.', {}, 'ckeditor'),
       );
       return;
     }
@@ -150,8 +145,12 @@ export default class CraftImageTextAlternativeUI extends ImageTextAlternativeUI 
       newValue: value,
     });
 
-    Craft.cp.displaySuccess(
-      Craft.t('ckeditor', 'The alternative text was synced from the asset.'),
+    Craft.showSuccess(
+      Craft.t(
+        'The alternative text was synced from the asset.',
+        {},
+        'ckeditor',
+      ),
     );
   }
 

@@ -16,9 +16,11 @@ import laravel from 'laravel-vite-plugin';
  * so the components share the control panel’s own instances rather than bundling second copies.
  *
  * Each maps to its named exports, or `null` for a package the dev server can import itself to find them.
+ * Keep `@craftcms/cp`’s list in sync with the names declared in `resources/js/craftcms-cp.d.ts`.
  */
 const cpSharedModuleExports: Record<string, string[] | null> = {
   vue: null,
+  '@craftcms/cp': ['actionClient', 't'],
 };
 const cpSharedModules = Object.keys(cpSharedModuleExports);
 
