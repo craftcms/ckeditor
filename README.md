@@ -485,3 +485,22 @@ If you wish to use CKEditor on the front end, the safest option is to [bring you
 ```
 
 You may need to build up the top-level config object from `field.options`, `field.headingLevels`, and so on to get a complete, functional editor—be mindful that configurations may rely on plugins that are only available in the control panel! Refer to [`CraftCms\Ckeditor\Field::uiControl()`](src/Field.php) for additional steps the CKEditor plugin when normalizing configuration, for control panel editor instances.
+
+## Development workbench
+
+The workbench runs a persistent Craft 6 application with SQLite. It seeds an Articles section with plain text, CKEditor, nested Quote entries, and Photo entries backed by a local image volume.
+
+With PHP 8.5, Composer, and Node installed, run:
+
+```sh
+composer install
+npm ci
+composer workbench:setup
+composer serve
+```
+
+Open `http://localhost:8125/admin` on the machine running the server. Sign in as `admin` with the generated `WORKBENCH_ADMIN_PASSWORD` in `workbench/.env`. The workbench does not bypass authentication. Do not use it for production data.
+
+`composer workbench:setup` publishes the installed CMS assets and the plugin's committed bundles. After changing frontend source, run `npm exec npm-run-all -- -p 'build:*'` and rerun setup to publish the rebuilt bundles.
+
+The SQLite database, uploads, generated configuration, and credentials are ignored by Git. Repeated setup preserves existing content. Tests use a separate application directory and do not reset the workbench database.

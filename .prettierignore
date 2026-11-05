@@ -8,3 +8,11 @@ tests/_craft/*
 vendor/*
 resources/assets/**/dist
 public/build
+workbench/bootstrap/cache
+workbench/config/craft
+workbench/public/vendor
+workbench/public/uploads
+workbench/storage
+workbench/vendor
+.amp/in
+.amp/portals
