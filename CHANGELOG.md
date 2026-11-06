@@ -7,6 +7,7 @@
 - Added `craft\ckeditor\models\Settings`.
 - MCP tools now return CKEditor nested entry tags with `data-entry-type` and `data-entry-status` attributes. The public MCP server only returns tags for nested entries within its approved scope.
 - CKEditor fields now implement `craft\base\McpOutputFieldInterface`.
+- MCP tools now return CKEditor field values as a list of markup and nested entry chunks when the field is requested via `fields`, with nested entries expanded like Matrix entries.
 - Craft CMS 5.12.1 or later is now required.
 
 ## 5.9.0 - 2026-10-06
