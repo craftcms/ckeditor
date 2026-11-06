@@ -64,6 +64,7 @@ use craft\htmlfield\events\ModifyPurifierConfigEvent;
 use craft\htmlfield\HtmlField;
 use craft\htmlfield\HtmlFieldData;
 use craft\i18n\Locale;
+use craft\mcp\McpOutputContext;
 use craft\mcp\public\Access;
 use craft\models\CategoryGroup;
 use craft\models\EntryType;
@@ -1267,7 +1268,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     /**
      * @inheritdoc
      */
-    public function getMcpValue(mixed $value, ElementInterface $element, bool $public): mixed
+    public function getMcpValue(mixed $value, ElementInterface $element, McpOutputContext $context): mixed
     {
         $html = $this->serializeValue($value, $element);
 
@@ -1276,7 +1277,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         }
 
         $entries = $value->getEntries()->indexBy('id')->all();
-        $isPublic = $public ? $this->publicMcpEntryFilter() : null;
+        $isPublic = $context->public ? $this->publicMcpEntryFilter() : null;
 
         return $this->replaceEntryTags($html, function(array $attributes, string $tag, string $content) use ($entries, $isPublic): string {
             $entry = $entries[$attributes['data']['entry-id'] ?? null] ?? null;
