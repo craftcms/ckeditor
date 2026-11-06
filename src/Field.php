@@ -1276,6 +1276,11 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             return $html;
         }
 
+        // Explicitly requested fields return their nested entries for MCP to expand, like Matrix fields
+        if ($context->requested) {
+            return $this->mcpChunks($value);
+        }
+
         $entries = $value->getEntries()->indexBy('id')->all();
         $isPublic = $context->public ? $this->publicMcpEntryFilter() : null;
 
@@ -1295,6 +1300,27 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
 
             return Html::tag('craft-entry', $content, $attributes);
         });
+    }
+
+    /**
+     * Returns the field value as a list of markup and nested entry chunks, for MCP to expand the entries.
+     */
+    private function mcpChunks(FieldData $value): array
+    {
+        // A copy without the field, so oEmbed content isn’t fetched and `<oembed>` tags stay as stored.
+        // The value’s own cached chunks are left untouched too.
+        $data = new FieldData($value->getRawContent(), $value->getSiteId());
+        $chunks = [];
+
+        foreach ($data->getChunks(false) as $chunk) {
+            if ($chunk instanceof Markup) {
+                $chunks[] = ['type' => 'markup', 'html' => $chunk->rawHtml];
+            } elseif ($chunk instanceof EntryChunk && ($entry = $chunk->getEntry()) !== null) {
+                $chunks[] = ['type' => 'entry', 'entry' => $entry];
+            }
+        }
+
+        return $chunks;
     }
 
     /**
