@@ -13,6 +13,7 @@ use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Event;
 use craft\base\FieldInterface;
+use craft\base\McpOutputFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
@@ -63,6 +64,7 @@ use craft\htmlfield\events\ModifyPurifierConfigEvent;
 use craft\htmlfield\HtmlField;
 use craft\htmlfield\HtmlFieldData;
 use craft\i18n\Locale;
+use craft\mcp\public\Access;
 use craft\models\CategoryGroup;
 use craft\models\EntryType;
 use craft\models\ImageTransform;
@@ -90,7 +92,7 @@ use yii\validators\Validator;
  * @property CkeEntryType[] $entryTypes
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
-class Field extends HtmlField implements ElementContainerFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
+class Field extends HtmlField implements ElementContainerFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface, McpOutputFieldInterface
 {
     /**
      * @event ModifyPurifierConfigEvent The event that is triggered when creating HTML Purifier config
@@ -1245,6 +1247,9 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             return null;
         }
 
+        // Nested entry attributes added for MCP output shouldn’t be stored
+        $value = $this->stripMcpEntryAttributes($value);
+
         // Redactor to CKEditor syntax for <figure>
         // (https://github.com/craftcms/ckeditor/issues/96)
         $value = $this->_normalizeFigures($value);
@@ -1257,6 +1262,116 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             '<div class="page-break" style="page-break-after:always;"><span style="display:none;">&nbsp;</span></div>',
             $value,
         );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getMcpValue(mixed $value, ElementInterface $element, bool $public): mixed
+    {
+        $html = $this->serializeValue($value, $element);
+
+        if (!$value instanceof FieldData || !is_string($html) || stripos($html, '<craft-entry') === false) {
+            return $html;
+        }
+
+        $entries = $value->getEntries()->indexBy('id')->all();
+        $isPublic = $public ? $this->publicMcpEntryFilter() : null;
+
+        return $this->replaceEntryTags($html, function(array $attributes, string $tag, string $content) use ($entries, $isPublic): string {
+            $entry = $entries[$attributes['data']['entry-id'] ?? null] ?? null;
+
+            if ($isPublic !== null && ($entry === null || !$isPublic($entry))) {
+                return '';
+            }
+
+            if ($entry === null) {
+                return $tag;
+            }
+
+            $attributes['data']['entry-type'] = $entry->getType()->handle;
+            $attributes['data']['entry-status'] = $entry->getStatus();
+
+            return Html::tag('craft-entry', $content, $attributes);
+        });
+    }
+
+    /**
+     * Returns a callback that determines whether the public MCP server can return a nested entry,
+     * following the same scope that it applies to nested entries.
+     */
+    private function publicMcpEntryFilter(): callable
+    {
+        try {
+            /** @var Access $access */
+            $access = Craft::$app->get('mcp')->getCapabilityContainer()->get(Access::class);
+            $approved = in_array($this->id, $access->ids('nestedEntryFields'), true);
+            $flags = $access->elementFlags();
+        } catch (Throwable) {
+            // Fail closed if the public scope can’t be determined
+            return fn(Entry $entry): bool => false;
+        }
+
+        return fn(Entry $entry): bool => (
+            $approved &&
+            !$entry->trashed &&
+            ($flags['drafts'] || !$entry->getIsDraft()) &&
+            ($flags['revisions'] || !$entry->getIsRevision()) &&
+            ($flags['inactive'] || ($entry->getStatus() === Entry::STATUS_LIVE && !$entry->archived))
+        );
+    }
+
+    /**
+     * Removes the nested entry attributes that are only added to MCP output.
+     */
+    private function stripMcpEntryAttributes(string $html): string
+    {
+        if (!str_contains($html, 'data-entry-type') && !str_contains($html, 'data-entry-status')) {
+            return $html;
+        }
+
+        return $this->replaceEntryTags($html, function(array $attributes, string $tag, string $content): string {
+            if (!isset($attributes['data']['entry-type']) && !isset($attributes['data']['entry-status'])) {
+                return $tag;
+            }
+
+            unset($attributes['data']['entry-type'], $attributes['data']['entry-status']);
+
+            return Html::tag('craft-entry', $content, $attributes);
+        });
+    }
+
+    /**
+     * Replaces each `<craft-entry>` tag in the HTML with the result of a callback,
+     * which receives the tag’s attributes, the full tag, and its inner content.
+     */
+    private function replaceEntryTags(string $html, callable $callback): string
+    {
+        $result = '';
+        $offset = 0;
+
+        while (($pos = stripos($html, '<craft-entry', $offset)) !== false) {
+            $gtPos = strpos($html, '>', $pos + 12);
+
+            if ($gtPos === false) {
+                break;
+            }
+
+            $endPos = $gtPos + 1;
+            $content = '';
+            $closePos = stripos($html, '</craft-entry>', $endPos);
+
+            if ($closePos !== false) {
+                $content = substr($html, $endPos, $closePos - $endPos);
+                $endPos = $closePos + 14;
+            }
+
+            $tag = substr($html, $pos, $endPos - $pos);
+            $result .= substr($html, $offset, $pos - $offset) . $callback(Html::parseTagAttributes($html, $pos), $tag, $content);
+            $offset = $endPos;
+        }
+
+        return $result . substr($html, $offset);
     }
 
     /**
