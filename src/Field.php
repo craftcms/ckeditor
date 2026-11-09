@@ -926,6 +926,24 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
     }
 
     /**
+     * Returns the IDs of the available entry types.
+     *
+     * @return list<int>
+     */
+    public function getEntryTypeIds(): array
+    {
+        return array_map(fn (CkeEntryType $entryType) => $entryType->id, $this->getEntryTypes());
+    }
+
+    /**
+     * Returns whether nested entries of the given entry type are allowed in the field.
+     */
+    public function allowsEntryType(int $entryTypeId): bool
+    {
+        return in_array($entryTypeId, $this->getEntryTypeIds(), true);
+    }
+
+    /**
      * Returns the entry type used to store images.
      *
      * @since 5.0.0
@@ -1612,10 +1630,12 @@ JS;
     }
 
     /**
-     * Duplicates the nested entries the value references that the element doesn’t own in its site, and points the
-     * value at the duplicates.
+     * Duplicates the nested entries the value references that the element doesn’t own in its site through this field,
+     * and points the value at the duplicates.
      *
-     * That happens when the value is copied from another site, draft or revision on the Compare screen.
+     * That happens when the value is copied from another site, draft or revision on the Compare screen, or pasted
+     * from another element or field with the “Paste value” field action. Nested entries of types the field doesn’t
+     * allow are left out.
      */
     private function duplicateForeignEntries(ElementInterface $element): void
     {
@@ -1649,9 +1669,11 @@ JS;
             return;
         }
 
-        // Entries owned by the element or its canonical element (which a draft shares) are the element’s own
+        // Entries owned by the element or its canonical element (which a draft shares) through this field are the
+        // element’s own
         $ownedIds = Entry::find()
             ->id($entryIds)
+            ->fieldId($this->id)
             ->ownerId(array_values(array_unique([$element->id, $element->getCanonicalId()])))
             ->siteId($element->siteId)
             ->status(null)
@@ -1674,23 +1696,33 @@ JS;
             ->keyBy('id');
 
         $newEntryIds = [];
+        $disallowedIds = [];
         foreach ($foreignIds as $entryId) {
             $sourceEntry = $sourceEntries->get($entryId);
-            if ($sourceEntry) {
-                $newEntryIds[$entryId] = Elements::duplicateElement($sourceEntry, [
-                    'owner' => $element,
-                    'primaryOwner' => $element,
-                    'siteId' => $element->siteId,
-                    'revisionId' => null,
-                    'propagating' => false,
-                    'resaving' => false,
-                ])->id;
+            if (! $sourceEntry) {
+                continue;
             }
+
+            if (! $this->allowsEntryType($sourceEntry->typeId)) {
+                $disallowedIds[] = $entryId;
+
+                continue;
+            }
+
+            $newEntryIds[$entryId] = Elements::duplicateElement($sourceEntry, [
+                'owner' => $element,
+                'primaryOwner' => $element,
+                'fieldId' => $this->id,
+                'siteId' => $element->siteId,
+                'revisionId' => null,
+                'propagating' => false,
+                'resaving' => false,
+            ])->id;
         }
 
-        if (! empty($newEntryIds)) {
+        if (! empty($newEntryIds) || ! empty($disallowedIds)) {
             $element->setFieldValue($this->handle, self::chunksToHtml(
-                $chunks,
+                $chunks->reject(fn (BaseChunk $chunk) => $chunk instanceof EntryChunk && in_array($chunk->entryId, $disallowedIds, true)),
                 fn (EntryChunk $chunk) => $newEntryIds[$chunk->entryId] ?? $chunk->entryId,
             ));
         }
@@ -1948,6 +1980,7 @@ JS;
         return CkeditorControl::make($context->path)
             ->value($value)
             ->cards($cards)
+            ->entryTypeIds($this->getEntryTypeIds())
             ->mode($readOnly ? ($context->mode === ControlMode::Disabled ? ControlMode::Disabled : ControlMode::ReadOnly) : ControlMode::Editable)
             ->module($module)
             ->containerId($containerId)
@@ -2441,7 +2474,9 @@ JS;
     /**
      * Returns the value prepped for the input, and the card HTML for its nested entries, indexed by entry ID.
      *
-     * The card HTML is kept out of the value, so the value doesn’t change whenever the cards are rendered differently.
+     * The card HTML is kept out of the value, so the value doesn’t change whenever the cards are rendered differently,
+     * and a read-only value can be copied to another field with its nested entries intact. Read-only (static) values
+     * reference the nested entries themselves, rather than their provisional drafts.
      *
      * @param  FieldData|string|null  $value
      * @return array{0:string,1:array<int,string>}
@@ -2458,7 +2493,7 @@ JS;
             }
 
             $value = $chunks
-                ->map(function (BaseChunk $chunk) use ($static, $entries, $element, &$cards) {
+                ->map(function (BaseChunk $chunk) use ($entries, $element, &$cards) {
                     if ($chunk instanceof Markup) {
                         return $chunk->rawHtml;
                     }
@@ -2479,10 +2514,6 @@ JS;
                     } catch (RuntimeException) {
                         // this can happen e.g. when the entry type has been deleted
                         return '';
-                    }
-
-                    if ($static) {
-                        return $cardHtml;
                     }
 
                     $entryId = $entry->isProvisionalDraft ? $entry->getCanonicalId() : $entry->id;

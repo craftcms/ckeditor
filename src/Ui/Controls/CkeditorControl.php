@@ -25,7 +25,8 @@ use Override;
  * The control’s value is the field’s HTML. The Vue component (`ckeditor:editor`) loads the editor’s assets, imports
  * the field’s editor setup module, and emits the editor’s data as the value whenever it changes.
  *
- * The value can be copied to another version of the element on the Compare screen, along with the nested entries’
+ * The value can be copied to another version of the element on the Compare screen, or to another CKEditor field that
+ * allows the same entry types with the “Copy value” and “Paste value” field actions, along with the nested entries’
  * card HTML. The field duplicates any nested entries the target element doesn’t own when it’s saved.
  *
  * @since 6.0.0
@@ -51,6 +52,9 @@ class CkeditorControl extends Control implements ReadableValueControl, WritableV
 
     /** @var array<int,string> */
     private array $cards = [];
+
+    /** @var list<int> */
+    private array $entryTypeIds = [];
 
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, UiHtmlRenderer $renderer): string
     {
@@ -164,6 +168,18 @@ class CkeditorControl extends Control implements ReadableValueControl, WritableV
     }
 
     /**
+     * Sets the IDs of the entry types the field allows nested entries of.
+     *
+     * @param  list<int>  $entryTypeIds
+     */
+    public function entryTypeIds(array $entryTypeIds): static
+    {
+        $this->entryTypeIds = $entryTypeIds;
+
+        return $this;
+    }
+
+    /**
      * Returns card HTML indexed by entry ID as a list of entry ID and card HTML pairs.
      *
      * @param  array<int,string>  $cards
@@ -183,6 +199,19 @@ class CkeditorControl extends Control implements ReadableValueControl, WritableV
     public function valueProps(): array
     {
         return ['cards'];
+    }
+
+    #[Override]
+    public function getValueScope(): ?string
+    {
+        // Values are only copied between controls that allow the same entry types, unless a narrower scope is set
+        $entryTypeIds = $this->entryTypeIds;
+        sort($entryTypeIds);
+
+        $scope = parent::getValueScope();
+        $entryTypes = $entryTypeIds ? 'entryTypes:'.implode(',', $entryTypeIds) : null;
+
+        return $scope !== null && $entryTypes !== null ? "{$scope}|{$entryTypes}" : $scope ?? $entryTypes;
     }
 
     #[Override]
