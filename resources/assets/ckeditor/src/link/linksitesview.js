@@ -7,6 +7,7 @@ import {
   View,
   ViewModel,
 } from 'ckeditor5';
+import * as Craft from '@craftcms/cp';
 
 export default class CraftLinkSitesView extends View {
   constructor(locale, options = {}) {
@@ -66,18 +67,20 @@ export default class CraftLinkSitesView extends View {
     });
 
     this.siteDropdownItemModels = Object.fromEntries(
-      Craft.sites.map((site) => [
-        site.id,
-        new ViewModel({
-          label: site.name,
-          siteId: site.id,
-          withText: true,
-        }),
-      ]),
+      Craft.cpConfig()
+        .get('sites')
+        .map((site) => [
+          site.id,
+          new ViewModel({
+            label: site.name,
+            siteId: site.id,
+            withText: true,
+          }),
+        ]),
     );
 
     this.siteDropdownItemModels.current = new ViewModel({
-      label: Craft.t('ckeditor', 'Link to the current site'),
+      label: Craft.t('Link to the current site', {}, 'ckeditor'),
       siteId: null,
       withText: true,
     });
@@ -85,10 +88,12 @@ export default class CraftLinkSitesView extends View {
     addListToDropdown(
       this.siteDropdownView,
       new Collection([
-        ...Craft.sites.map((site) => ({
-          type: 'button',
-          model: this.siteDropdownItemModels[site.id],
-        })),
+        ...Craft.cpConfig()
+          .get('sites')
+          .map((site) => ({
+            type: 'button',
+            model: this.siteDropdownItemModels[site.id],
+          })),
         {
           type: 'button',
           model: this.siteDropdownItemModels.current,
@@ -148,7 +153,7 @@ export default class CraftLinkSitesView extends View {
 
     // update the button label
     const label = siteId
-      ? Craft.t('ckeditor', 'Site: {name}', {name: itemModel.label})
+      ? Craft.t('Site: {name}', {name: itemModel.label}, 'ckeditor')
       : itemModel.label;
 
     this.siteDropdownView.buttonView.set('label', label);

@@ -18,7 +18,6 @@
 /resources/assets/ckeditor/src/ export-ignore
 /resources/assets/ckeditor/vite.config.js export-ignore
 /resources/assets/fieldsettings/src/ export-ignore
-/resources/assets/fieldsettings/vite/ export-ignore
 /resources/assets/fieldsettings/vite.config.js export-ignore
 /tests/ export-ignore
 /.github/ export-ignore

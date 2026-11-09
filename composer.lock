@@ -696,12 +696,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/craftcms/cms-assets.git",
-                "reference": "6a93eae2b441621938a91cd2c32a53f8eeced839"
+                "reference": "9f2493e5f8ff9a28b5db369260d37fe76337ea4c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/cms-assets/zipball/6a93eae2b441621938a91cd2c32a53f8eeced839",
-                "reference": "6a93eae2b441621938a91cd2c32a53f8eeced839",
+                "url": "https://api.github.com/repos/craftcms/cms-assets/zipball/9f2493e5f8ff9a28b5db369260d37fe76337ea4c",
+                "reference": "9f2493e5f8ff9a28b5db369260d37fe76337ea4c",
                 "shasum": ""
             },
             "default-branch": true,
@@ -714,8 +714,8 @@
             "support": {
                 "source": "https://github.com/craftcms/cms-assets/tree/6.x"
             },
-            "time": "2026-11-03T19:07:12+00:00",
-            "published-time": "2026-11-03T19:07:41+00:00"
+            "time": "2026-11-05T11:16:26+00:00",
+            "published-time": "2026-11-05T11:16:34+00:00"
         },
         {
             "name": "craftcms/html-field",
@@ -14048,7 +14048,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-28T22:38:53+00:00"
+            "time": "2026-10-28T22:38:53+00:00",
+            "published-time": "2026-10-28T22:39:06+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",

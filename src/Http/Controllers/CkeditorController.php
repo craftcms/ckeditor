@@ -17,6 +17,7 @@ use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
@@ -29,6 +30,7 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -260,6 +262,16 @@ class CkeditorController
      */
     public function renderElementWithSupportedSites(Request $request, RenderController $renderController): JsonResponse
     {
+        // Only keep the “View in a new tab” and “Edit” actions in the chip’s action menu.
+        // The link UI adds “Replace” and “Remove” itself.
+        Event::listen(function (ElementActionMenuItemsResolving $event) {
+            $event->items = array_values(array_filter(
+                $event->items,
+                fn (array $item) => str_starts_with($item['id'] ?? '', 'action-view-') ||
+                    str_starts_with($item['id'] ?? '', 'action-edit-'),
+            ));
+        });
+
         $renderData = $renderController->elements($request)->getData(true);
         $siteIds = [];
 

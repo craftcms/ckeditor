@@ -5,6 +5,10 @@
 - Added the “License Key” plugin setting, which can be set to a commercial CKEditor license key. ([#638](https://github.com/craftcms/ckeditor/pull/638))
 - CKEditor fields now respect `licenseKey` values set via their config options. ([#638](https://github.com/craftcms/ckeditor/pull/638))
 - Added `craft\ckeditor\models\Settings`.
+- CKEditor’s control panel JavaScript no longer uses jQuery, Garnish, or the `Craft.*` globals. It imports what it needs from `@craftcms/cp` and `@craftcms/garnish` instead, so CKEditor fields work on a control panel without `craftcms/yii2-adapter` installed.
+- The `Craft.showCkeditorInspector` and `Craft.revAssetUrls` globals are now `window.CKE_SHOW_INSPECTOR` and `window.CKE_REV_ASSET_URLS`.
+- The config options and custom styles mode pickers now render as `<craft-listbox>`.
+- Upload progress is now reported by the upload notification instead of a progress bar below the field.
 
 ## 5.9.0 - 2026-10-06
 

@@ -1,4 +1,5 @@
 import {View} from 'ckeditor5';
+import * as Craft from '@craftcms/cp';
 
 export default class CraftLinkElementView extends View {
   constructor(locale, options = {}) {
@@ -22,7 +23,7 @@ export default class CraftLinkElementView extends View {
       if (
         this.linkUi.linkTypeDropdownView.buttonView.label == itemModel.label
       ) {
-        this.button = Craft.t('app', 'Loading');
+        this.button = Craft.t('Loading');
       }
     }
 
@@ -54,7 +55,7 @@ export default class CraftLinkElementView extends View {
         icon: 'plus',
         'data-choose': true,
       },
-      children: [Craft.t('app', 'Choose')],
+      children: [Craft.t('Choose')],
     });
     return button;
   }
@@ -85,33 +86,31 @@ export default class CraftLinkElementView extends View {
     // if element doesn't have children, it means it doesn't have the "Choose" button in it,
     // so we should insert the element chip
     if (this.element.children.length == 0) {
-      Craft.sendActionRequest(
-        'POST',
-        'ckeditor/ckeditor/render-element-with-supported-sites',
-        {
-          data: {
-            elements: [
-              {
-                type: linkOption.elementType,
-                id: this.elementId,
-                siteId: this.siteId,
-                instances: [
-                  {
-                    context: 'field',
-                    ui: 'chip',
-                    sortable: false,
-                    showActionMenu: false,
-                  },
-                ],
-              },
-            ],
-          },
-        },
-      )
-        .then((response) => {
+      Craft.actionClient
+        .post('ckeditor/ckeditor/render-element-with-supported-sites', {
+          elements: [
+            {
+              type: linkOption.elementType,
+              id: this.elementId,
+              siteId: this.siteId,
+              instances: [
+                {
+                  context: 'field',
+                  ui: 'chip',
+                  sortable: false,
+                  showActionMenu: true,
+                },
+              ],
+            },
+          ],
+        })
+        .then(async (response) => {
           if (Object.keys(response.data.elements).length > 0) {
             // if it's a multisite, disable sites that are not in the response
-            if (Craft.isMultiSite && this.linkUi.sitesView != null) {
+            if (
+              Craft.cpConfig().get('isMultiSite') &&
+              this.linkUi.sitesView != null
+            ) {
               for (const [siteId, model] of Object.entries(
                 this.linkUi.sitesView.siteDropdownItemModels,
               )) {
@@ -127,22 +126,22 @@ export default class CraftLinkElementView extends View {
             }
 
             this.element.innerHTML = response.data.elements[this.elementId][0];
-            Craft.appendHeadHtml(response.data.headHtml);
-            Craft.appendBodyHtml(response.data.bodyHtml);
+            await Craft.appendHeadHtml(response.data.headHtml);
+            await Craft.appendBodyHtml(response.data.bodyHtml);
 
-            let $element = this.element.firstChild;
+            const chip = this.element.firstElementChild;
 
             const actions = [
               {
                 icon: 'arrows-rotate',
-                label: Craft.t('app', 'Replace'),
+                label: Craft.t('Replace'),
                 callback: () => {
                   this.linkUi._showElementSelectorModal(this.linkOption);
                 },
               },
               {
                 icon: 'remove',
-                label: Craft.t('app', 'Remove'),
+                label: Craft.t('Remove'),
                 callback: () => {
                   const unlinkCommand = this.editor.commands.get('unlink');
                   unlinkCommand.execute();
@@ -150,8 +149,7 @@ export default class CraftLinkElementView extends View {
               },
             ];
 
-            Craft.addActionsToChip($element, actions);
-            //Craft.cp.elementThumbLoader.load($element);
+            Craft.addActionsToChip(chip, actions);
 
             // only show the sites dropdown, if an element has been selected
             if (this.linkUi.sitesView?.siteDropdownView?.buttonView) {
@@ -180,7 +178,7 @@ export default class CraftLinkElementView extends View {
           }
         })
         .catch((e) => {
-          Craft.cp.displayError(e?.response?.data?.message);
+          Craft.showError(e?.response?.data?.message);
           throw e?.response?.data?.message ?? e;
         });
     }

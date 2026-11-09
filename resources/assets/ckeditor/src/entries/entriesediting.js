@@ -5,6 +5,7 @@ import {
   Widget,
 } from 'ckeditor5';
 import CraftEntriesCommand from './entriescommand';
+import * as Craft from '@craftcms/cp';
 
 export default class CraftEntriesEditing extends Plugin {
   /**
@@ -128,8 +129,11 @@ export default class CraftEntriesEditing extends Plugin {
           null,
           function (domElement) {
             domElement.innerHTML = data.cardHtml;
-            Craft.appendHeadHtml(data.headHtml);
-            Craft.appendBodyHtml(data.bodyHtml);
+            // CKEditor fills raw elements synchronously, so the card's scripts
+            // are appended behind it, head before body.
+            void Craft.appendHeadHtml(data.headHtml).then(() =>
+              Craft.appendBodyHtml(data.bodyHtml),
+            );
           },
         );
 
@@ -139,13 +143,16 @@ export default class CraftEntriesEditing extends Plugin {
         editor.editing.view.focus();
 
         setTimeout(() => {
-          Craft.cp.elementThumbLoader.load($(editor.ui.element));
+          Craft.loadElementThumbs(editor.ui.element);
         }, 100);
 
         // refresh ui after drag&drop or sourceMode exit
         editor.model.change((writer) => {
           editor.ui.update();
-          $(editor.sourceElement).trigger('keyup'); // also trigger auto-save
+          // also trigger auto-save
+          editor.sourceElement.dispatchEvent(
+            new KeyboardEvent('keyup', {bubbles: true}),
+          );
         });
       });
     };
@@ -167,23 +174,19 @@ export default class CraftEntriesEditing extends Plugin {
 
     // if there's no cardHtml attribute for any reason - get the markup from Craft
     // this can happen e.g. if you make changes in the source mode and then come back to the editing mode
-    let parents = $(this.editor.sourceElement).parents('.field');
     const layoutElementUid =
       this.editor.config.get('layoutElementUid') ??
-      $(parents[0]).data('layout-element');
+      this.editor.sourceElement.closest('craft-field')?.dataset.layoutElement;
     const entryId = modelItem.getAttribute('entryId') ?? null;
     const siteId = modelItem.getAttribute('siteId') ?? null;
 
     try {
-      const {data} = await Craft.sendActionRequest(
-        'POST',
+      const {data} = await Craft.actionClient.post(
         'ckeditor/ckeditor/entry-card-html',
         {
-          data: {
-            entryId: entryId,
-            siteId: siteId,
-            layoutElementUid: layoutElementUid,
-          },
+          entryId: entryId,
+          siteId: siteId,
+          layoutElementUid: layoutElementUid,
         },
       );
       return data;
@@ -195,7 +198,7 @@ export default class CraftEntriesEditing extends Plugin {
         '<craft-callout variant="danger" role="alert">' +
         Craft.escapeHtml(
           e?.response?.data?.message ||
-            Craft.t('ckeditor', 'An unknown error occurred.'),
+            Craft.t('An unknown error occurred.', {}, 'ckeditor'),
         ) +
         '</craft-callout>' +
         '</craft-card>';

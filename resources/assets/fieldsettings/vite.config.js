@@ -16,10 +16,12 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: ['ckeditor5', 'jquery', '@craftcms/ckeditor'],
-      globals: {
-        jquery: '$',
-      },
+      external: [
+        'ckeditor5',
+        '@craftcms/ckeditor',
+        '@craftcms/cp',
+        '@craftcms/garnish',
+      ],
     },
   },
   plugins: [
