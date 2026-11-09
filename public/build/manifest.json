@@ -1,10 +1,10 @@
 {
-  "_assets-CsSDmrrP.js": {
-    "file": "assets/assets-CsSDmrrP.js",
+  "_assets-CSXOCj4E.js": {
+    "file": "assets/assets-CSXOCj4E.js",
     "name": "assets"
   },
   "resources/js/cp.ts": {
-    "file": "assets/cp-D4jfYMbc.js",
+    "file": "assets/cp-CceOouAr.js",
     "name": "cp",
     "src": "resources/js/cp.ts",
     "isEntry": true,
@@ -14,24 +14,24 @@
     ]
   },
   "resources/js/modules/ui/CkeditorControl.vue": {
-    "file": "assets/CkeditorControl-E1f9Ttm3.js",
+    "file": "assets/CkeditorControl-CvSmR_d1.js",
     "name": "CkeditorControl",
     "src": "resources/js/modules/ui/CkeditorControl.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_assets-CsSDmrrP.js"
+      "_assets-CSXOCj4E.js"
     ],
     "css": [
-      "assets/CkeditorControl-BIwtE5PM.css"
+      "assets/CkeditorControl-QyOl9ojH.css"
     ]
   },
   "resources/js/modules/ui/EditorConfigControl.vue": {
-    "file": "assets/EditorConfigControl-CEWUBGgy.js",
+    "file": "assets/EditorConfigControl-FKBSb13N.js",
     "name": "EditorConfigControl",
     "src": "resources/js/modules/ui/EditorConfigControl.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_assets-CsSDmrrP.js"
+      "_assets-CSXOCj4E.js"
     ]
   }
 }

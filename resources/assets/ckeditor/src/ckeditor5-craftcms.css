@@ -328,8 +328,12 @@ body.ck-fullscreen .slideout-container {
   width: 100%;
 }
 
+/* wrap and space the items like Craft 5’s `.flex` did, so the `.break` puts the sites dropdown on its own line */
 .link-type-group.ck.ck-form__row {
   justify-content: start;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--c-spacing-md, 0.5rem);
 }
 
 .ck.ck-form__row > :not(.ck-label) + * {

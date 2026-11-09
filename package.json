@@ -22,8 +22,7 @@
     "vue-tsc": "^3.3.14"
   },
   "peerDependencies": {
-    "glob": ">= 11.0",
-    "jquery": ">= 3.0.0 || >= 4.0.0"
+    "glob": ">= 11.0"
   },
   "scripts": {
     "prebuild": "npm run fix-prettier",

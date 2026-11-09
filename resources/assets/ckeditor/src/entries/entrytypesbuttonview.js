@@ -6,6 +6,7 @@ import {
   IconPlus,
   View,
 } from 'ckeditor5';
+import * as Craft from '@craftcms/cp';
 
 export default class CraftEntryTypesButtonView extends View {
   constructor(locale, options = {}) {
@@ -39,9 +40,13 @@ export default class CraftEntryTypesButtonView extends View {
             label: item.model.label,
             icon: item.model.icon,
             withText: false,
-            tooltip: Craft.t('ckeditor', 'New {type}', {
-              type: item.model.label,
-            }),
+            tooltip: Craft.t(
+              'New {type}',
+              {
+                type: item.model.label,
+              },
+              'ckeditor',
+            ),
             class: classes.join(' '),
           });
 
@@ -62,7 +67,7 @@ export default class CraftEntryTypesButtonView extends View {
     if (textButtons.length > 0) {
       const dropdownView = createDropdown(locale);
       dropdownView.buttonView.set({
-        label: Craft.t('ckeditor', 'Add nested content'),
+        label: Craft.t('Add nested content', {}, 'ckeditor'),
         icon: IconPlus,
         tooltip: true,
         withText: false,
@@ -73,7 +78,7 @@ export default class CraftEntryTypesButtonView extends View {
       dropdownView.id = crypto.randomUUID();
 
       addListToDropdown(dropdownView, () => textButtons, {
-        ariaLabel: Craft.t('ckeditor', 'Entry types list'),
+        ariaLabel: Craft.t('Entry types list', {}, 'ckeditor'),
       });
       // Execute command when an item from the dropdown is selected.
       this.listenTo(dropdownView, 'execute', (evt) => {
