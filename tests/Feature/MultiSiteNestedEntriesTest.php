@@ -100,10 +100,11 @@ describe('fields translated per site', function () {
     });
 
     it('copies content to another site with its own copies of the nested entries', function () {
-        ['field' => $field, 'owner' => $owner, 'nested' => $nested] = createMultiSiteOwner('site');
+        ['owner' => $owner, 'nested' => $nested] = createMultiSiteOwner('site');
 
+        // The Compare screen copies the value as is, and the field duplicates the nested entries on save
         $to = ownerForSite($owner, $this->secondSiteId);
-        $field->copyCrossSiteValue(ownerForSite($owner, $this->primarySiteId), $to);
+        $to->setFieldValue('body', ownerForSite($owner, $this->primarySiteId)->getFieldValue('body')->getRawContent());
         Elements::saveElement($to);
 
         $entryIds = siteEntryIds($owner, $this->secondSiteId);
@@ -122,9 +123,11 @@ describe('fields translated per site', function () {
         $owner = createEntry($setup['section'], $setup['entryType'], '<p>Hello <strong>world</strong></p>');
 
         $to = ownerForSite($owner, $this->secondSiteId);
-        $setup['field']->copyCrossSiteValue(ownerForSite($owner, $this->primarySiteId), $to);
+        $to->setFieldValue('body', ownerForSite($owner, $this->primarySiteId)->getFieldValue('body')->getRawContent());
+        Elements::saveElement($to);
 
-        expect($to->getFieldValue('body')->getRawContent())->toBe('<p>Hello <strong>world</strong></p>');
+        expect((string) ownerForSite($owner, $this->secondSiteId)->getFieldValue('body')->getRawContent())
+            ->toBe('<p>Hello <strong>world</strong></p>');
     });
 });
 
