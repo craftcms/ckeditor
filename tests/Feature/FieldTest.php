@@ -6,6 +6,7 @@ use CraftCms\Ckeditor\Data\FieldData;
 use CraftCms\Ckeditor\Events\HtmlSanitizerConfigResolving;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use Illuminate\Support\Facades\Event;
 
 it('normalizes values to field data', function () {
@@ -75,6 +76,25 @@ it('lets plugins modify the HTML sanitizer config', function () {
     $field = createCkeditorField();
 
     expect($field->serializeValue('<p><mark>Hello</mark></p>', null))->toBe('<p><mark>Hello</mark></p>');
+});
+
+it('extends named sanitizers with the markup CKEditor needs', function () {
+    HtmlSanitizers::extend('strict', ['allow_elements' => ['p' => [], 'ul' => [], 'li' => []]]);
+
+    $dispatched = false;
+    Event::listen(function (HtmlSanitizerConfigResolving $event) use (&$dispatched) {
+        $dispatched = true;
+    });
+
+    $field = createCkeditorField([
+        'toolbar' => ['bulletedList', 'createEntry'],
+        'htmlSanitizer' => 'strict',
+    ]);
+
+    $html = '<p>Hello</p><ul><li data-list-item-id="a1">One</li></ul><craft-entry data-entry-id="1"></craft-entry>';
+
+    expect($field->serializeValue($html, null))->toBe($html)
+        ->and($dispatched)->toBeTrue();
 });
 
 it('preserves page breaks', function () {

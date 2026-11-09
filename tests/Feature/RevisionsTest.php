@@ -58,3 +58,23 @@ it('points the revision’s content at its copies of the nested entries', functi
         ->toContain(sprintf('data-entry-id="%s"', $copy->id))
         ->not->toContain(sprintf('data-entry-id="%s"', $this->nested->id));
 });
+
+it('gives the owner its own copies of the nested entries when the revision’s content is copied to it', function () {
+    $revisionCopy = revisionNestedEntries($this->revisionId)[0];
+
+    // The Compare screen copies the value as is, and the field duplicates the nested entries on save
+    $this->owner->setFieldValue('body', $this->revision->getFieldValue('body')->getRawContent());
+    expect(Elements::saveElement($this->owner))->toBeTrue();
+
+    preg_match_all('/data-entry-id="(\d+)"/', (string) Entry::find()->id($this->owner->id)->one()->getFieldValue('body')->getRawContent(), $matches);
+    $entryIds = array_map('intval', $matches[1]);
+    $copy = Entry::find()->id($entryIds[0] ?? 0)->status(null)->one();
+
+    expect($entryIds)->toHaveCount(1)
+        ->and($entryIds[0])->not->toBe($revisionCopy->id)
+        ->and($copy?->getIsRevision())->toBeFalse()
+        ->and($copy?->primaryOwnerId)->toBe($this->owner->id)
+        ->and($copy?->title)->toBe('Original')
+        // The revision keeps its own copy
+        ->and(array_map(fn (Entry $entry) => $entry->id, revisionNestedEntries($this->revisionId)))->toBe([$revisionCopy->id]);
+});

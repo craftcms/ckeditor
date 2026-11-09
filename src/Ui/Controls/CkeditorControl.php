@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace CraftCms\Ckeditor\Ui\Controls;
 
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
+use CraftCms\Cms\Ui\Contracts\WritableValueControl;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\Controls\Control;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
@@ -23,9 +25,12 @@ use Override;
  * The control’s value is the field’s HTML. The Vue component (`ckeditor:editor`) loads the editor’s assets, imports
  * the field’s editor setup module, and emits the editor’s data as the value whenever it changes.
  *
+ * The value can be copied to another version of the element on the Compare screen, along with the nested entries’
+ * card HTML. The field duplicates any nested entries the target element doesn’t own when it’s saved.
+ *
  * @since 6.0.0
  */
-class CkeditorControl extends Control
+class CkeditorControl extends Control implements ReadableValueControl, WritableValueControl
 {
     private string $module = '';
 
@@ -172,6 +177,12 @@ class CkeditorControl extends Control
         }
 
         return $list;
+    }
+
+    #[Override]
+    public function valueProps(): array
+    {
+        return ['cards'];
     }
 
     #[Override]
