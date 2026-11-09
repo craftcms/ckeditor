@@ -1593,6 +1593,19 @@ JS;
 
         if (! $isNew) {
             $this->duplicateForeignEntries($element);
+
+            // When a fresh element is saved, its value gets propagated to all its other sites, even if it hasn't
+            // changed since the last save (the editor only posts changed values). Mark the field dirty so
+            // NestedElementManager duplicates the nested entries into those sites and adjusts their values too,
+            // rather than leaving them referencing this site’s nested entries.
+            if (
+                $element->propagateAll &&
+                ! $element->propagating &&
+                TranslationMethod::from($this->translationMethod) !== TranslationMethod::None &&
+                ! $element->isFieldDirty($this->handle)
+            ) {
+                $element->setDirtyFields([$this->handle]);
+            }
         }
 
         return true;

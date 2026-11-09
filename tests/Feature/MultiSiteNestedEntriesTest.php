@@ -166,4 +166,44 @@ describe('unpublished drafts', function () {
 
         expect(siteEntryIds($owner, $this->primarySiteId))->not->toBe(siteEntryIds($owner, $this->secondSiteId));
     });
+
+    it('keeps each site’s copy of a nested entry when later saves don’t post the field', function () {
+        [
+            'field' => $field,
+            'section' => $section,
+            'entryType' => $entryType,
+            'nestedEntryType' => $nestedEntryType,
+        ] = createCkeditorSetup(['translationMethod' => 'site'], withNestedEntries: true);
+
+        $entry = new Entry(['sectionId' => $section->id, 'typeId' => $entryType->id, 'title' => 'Fresh']);
+        expect(Drafts::saveElementAsDraft($entry, User::first()->id, markAsSaved: false))->toBeTrue();
+
+        $nested = createNestedEntry($entry, $field, $nestedEntryType, 'Added');
+        $draft = ownerForSite($entry, $this->primarySiteId, drafts: true);
+        $draft->setFieldValue('body', siteBody('Intro', $nested->id));
+        $draft->propagateAll = true;
+        expect(Elements::saveElement($draft))->toBeTrue();
+
+        // The editor only posts changed values, so the next autosave doesn’t include the field
+        $draft = ownerForSite($entry, $this->primarySiteId, drafts: true);
+        $draft->title = 'Fresh (edited)';
+        $draft->propagateAll = true;
+        expect(Elements::saveElement($draft))->toBeTrue();
+
+        // Neither does the full save
+        $draft = ownerForSite($entry, $this->primarySiteId, drafts: true);
+        $draft->propagateAll = true;
+        $owner = Drafts::applyDraft($draft);
+
+        foreach ([$this->primarySiteId, $this->secondSiteId] as $siteId) {
+            $entryIds = siteEntryIds($owner, $siteId);
+            $ownedIds = Entry::find()->ownerId($owner->id)->fieldId($field->id)->siteId($siteId)->status(null)->ids();
+
+            expect($entryIds)->toHaveCount(1)
+                ->and($ownedIds)->toBe($entryIds)
+                ->and(siteNestedEntry($entryIds[0], $siteId)?->title)->toBe('Added');
+        }
+
+        expect(siteEntryIds($owner, $this->secondSiteId))->not->toBe([$nested->id]);
+    });
 });
