@@ -136,19 +136,22 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     const urls = [];
 
     for (const asset of assets) {
+      const siteId = asset.siteId ?? editor.config.get('elementSiteId');
+      const alt = `${asset.$element.data('alt') ?? ''}#asset:${asset.id}${siteId ? `@${siteId}` : ''}:alt`;
+
       const hasTransform = this._isTransformUrl(asset.url);
 
       // Do we need to apply the default transform?
       if (!hasTransform && defaultTransform) {
         const url = await this._getTransformUrl(asset.id, defaultTransform);
-        urls.push(url);
+        urls.push({src: url, alt: alt});
       } else {
         const url = this._buildAssetUrl(
           asset.id,
           asset.url,
           hasTransform ? transform : defaultTransform,
         );
-        urls.push(url);
+        urls.push({src: url, alt: alt});
       }
     }
 
@@ -210,11 +213,11 @@ export default class CraftImageInsertUI extends ImageInsertUI {
   }
 
   _removeTransformFromUrl(url) {
-    return url.replace(/(^|\/)(_[^\/]+\/)([^\/]+)$/, '$1$3');
+    return url.replace(/(^|\/)_[^\/]+(\/\d+)?\/([^\/]+)$/, '$1$3');
   }
 
   _isTransformUrl(url) {
-    return /(^|\/)_[^\/]+\/[^\/]+$/.test(url);
+    return /(^|\/)_[^\/]+(\/\d+)?(\/[^\/]+)$/.test(url);
   }
 
   async _getTransformUrl(assetId, handle) {
@@ -354,8 +357,8 @@ export default class CraftImageInsertUI extends ImageInsertUI {
     const hasTransform = this._isTransformUrl(asset.url);
     let url;
 
-    // Do we need to apply the default transform?
-    if (!hasTransform && defaultTransform) {
+    // Do we need to apply the default transform, or is there no URL yet (e.g. it's a temp upload)?
+    if (!asset.url || (!hasTransform && defaultTransform)) {
       url = await this._getTransformUrl(asset.assetId, defaultTransform);
     } else {
       url = this._buildAssetUrl(

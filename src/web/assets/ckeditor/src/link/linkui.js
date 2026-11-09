@@ -22,6 +22,7 @@ import {
 import CraftLinkElementView from './linkelementview.js';
 import CraftLinkSitesView from './linksitesview.js';
 import CraftLinkAdvancedView from './linkadvancedview.js';
+import {resolveAdvancedFieldAttributeValue} from './linkutils.js';
 
 export default class CraftLinkUI extends Plugin {
   static get requires() {
@@ -39,6 +40,7 @@ export default class CraftLinkUI extends Plugin {
     this.advancedView = null;
     this.elementInputView = null;
     this.sitesView = null;
+    this.urlSuffixInputView = null;
     this.previousLinkValue = null;
 
     this.linkTypeDropdownView = null;
@@ -447,7 +449,7 @@ export default class CraftLinkUI extends Plugin {
   /**
    * Show element selector modal for given element type (link option).
    */
-  _showElementSelectorModal(linkOption) {
+  _showElementSelectorModal(linkOption, displayText) {
     const editor = this.editor;
     const model = editor.model;
     const selection = model.document.selection;
@@ -482,7 +484,10 @@ export default class CraftLinkUI extends Plugin {
       onSelect: (elements) => {
         if (elements.length) {
           const element = elements[0];
-          const url = `${element.url}#${linkOption.refHandle}:${element.id}@${element.siteId}`;
+          // include the URL suffix, in case it was provided before the element was selected
+          const urlSuffix =
+            this.urlSuffixInputView?.fieldView.element.value.trim() ?? '';
+          const url = `${element.url}${urlSuffix}#${linkOption.refHandle}:${element.id}@${element.siteId}`;
           editor.editing.view.focus();
 
           if ((!isCollapsed || currentLinkElement) && range) {
@@ -493,28 +498,44 @@ export default class CraftLinkUI extends Plugin {
             });
             const linkCommand = editor.commands.get('link');
 
-            // get all the advanced link fields and pass them to the link command
+            // get all the advanced link fields and pass them to the link command.
+            // note: these are passed as the 4th argument, not the 2nd, because the 2nd
+            // argument is reserved by CKEditor5's LinkCommand for manual decorator
+            // states (an unrelated built-in feature) - see
+            // CraftLinkEditing._adjustLinkCommand(), and
+            // https://github.com/craftcms/ckeditor/issues/612 for more info
             let values = this._getAdvancedFieldValues();
-            linkCommand.execute(url, values);
+            linkCommand.execute(url, {}, undefined, values);
           } else {
             // this is the path when adding a link without anything being pre-selected;
             // e.g. you only have a cursor flashing
             model.change((writer) => {
-              // get all the advanced link fields and pass them along with linkHref
+              // get all the advanced link fields and merge them into the attributes of
+              // the text node we're about to insert. We apply these directly (instead
+              // of going through linkCommand.execute()) because writer.insertText()
+              // doesn't have an "extra attribute values" argument to pass them through -
+              // see https://github.com/craftcms/ckeditor/issues/612 for more info
               let values = this._getAdvancedFieldValues();
+              let attributes = {linkHref: url};
 
-              writer.insertText(
-                element.label,
-                {
-                  linkHref: url,
-                },
-                selection.getFirstPosition(),
-                values,
-              );
+              this.conversionData.forEach((item) => {
+                const value = resolveAdvancedFieldAttributeValue(
+                  item,
+                  values[item.model],
+                );
+                if (value !== undefined) {
+                  attributes[item.model] = value;
+                }
+              });
+
+              const text = displayText || element.label;
+
+              writer.insertText(text, attributes, selection.getFirstPosition());
+
               if (range instanceof ModelRange) {
                 try {
                   const newRange = range.clone();
-                  newRange.end.path[1] += element.label.length;
+                  newRange.end.path[1] += text.length;
                   writer.setSelection(newRange);
                 } catch (e) {}
               }
@@ -622,66 +643,66 @@ export default class CraftLinkUI extends Plugin {
             linkCommand[attributeModel] || '';
         }
       } else if (advancedField.value === 'urlSuffix') {
-        let labeledInputView = this._addLabeledField(advancedField);
+        this.urlSuffixInputView = this._addLabeledField(advancedField);
 
         // when you focus out of the urlSuffix field, update the main URL input field value with urlSuffix
         this.listenTo(
-          labeledInputView.fieldView,
+          this.urlSuffixInputView.fieldView,
           'change:isFocused',
           (evt, name, value, oldValue) => {
             if (value !== oldValue && !value) {
-              let urlSuffix = evt.source.element.value;
-              let inputValue = null;
-
-              const match = this._urlInputRefMatch(this.urlWithRefHandleRE);
-              if (match) {
-                // match[1] is the whole URL that shows before the {refTag}
-                inputValue = match[1];
-              } else {
-                // if no match found then it's a "regular" link, e.g. https://craftcms.com or a relative one e.g. /my-page
-                inputValue = this._urlInputValue();
+              // if no link target has been set yet, don't write the suffix into the main URL field;
+              // it'll get applied once the target is chosen
+              if (this._urlInputValue().trim() === '') {
+                return;
               }
 
-              // check if it's a "valid" absolute URL, if yes - proceed as with the matches,
-              // if not still extract query params and anchor
-              try {
-                let url = new URL(inputValue);
-                let search = url.search;
-                let hash = url.hash;
-                let baseUrl = inputValue.replace(hash, '').replace(search, '');
-
-                const newUrl = this._urlInputValue().replace(
-                  inputValue,
-                  baseUrl + urlSuffix,
-                );
-                formView.urlInputView.fieldView.set('value', newUrl);
-              } catch (e) {
-                // it might be a relative URL, and we still need to proceed
-                // get the path, query params and anchor
-                let [base, hash] = inputValue.split('#');
-                let [path, search] = base.split('?');
-
-                const newUrl = this._urlInputValue().replace(
-                  inputValue,
-                  path + urlSuffix,
-                );
-                formView.urlInputView.fieldView.set('value', newUrl);
-              }
+              this._applyUrlSuffix(evt.source.element.value);
             }
           },
         );
 
         // update the URL Suffix form field when main URL field is loaded
         this.listenTo(formView.urlInputView.fieldView, 'change:value', (ev) => {
-          this._toggleUrlSuffixInputView(labeledInputView, ev.source.isEmpty);
+          this._toggleUrlSuffixInputView(
+            this.urlSuffixInputView,
+            ev.source.isEmpty,
+          );
         });
 
+        let urlWasEmptyOnFocus = false;
         // update the URL Suffix form field when main URL field is focused into and out of
         this.listenTo(
           formView.urlInputView.fieldView,
           'change:isFocused',
-          (ev) => {
-            this._toggleUrlSuffixInputView(labeledInputView, ev.source.isEmpty);
+          (ev, name, isFocused) => {
+            const urlIsEmpty = this._urlInputValue().trim() === '';
+            if (isFocused) {
+              urlWasEmptyOnFocus = urlIsEmpty;
+            }
+
+            // don't clear the URL Suffix if it was provided before the URL
+            if (urlIsEmpty) {
+              return;
+            }
+
+            // if the URL was provided after the URL Suffix, apply the suffix to it
+            const urlSuffix =
+              this.urlSuffixInputView?.fieldView.element.value.trim();
+            if (
+              !isFocused &&
+              urlWasEmptyOnFocus &&
+              urlSuffix !== '' &&
+              this._getUrlSuffix() === ''
+            ) {
+              this._applyUrlSuffix(urlSuffix);
+              return;
+            }
+
+            this._toggleUrlSuffixInputView(
+              this.urlSuffixInputView,
+              ev.source.isEmpty,
+            );
           },
         );
       }
@@ -715,40 +736,73 @@ export default class CraftLinkUI extends Plugin {
    * ensure the value is also showing in the URL Suffix advanced field.
    */
   _toggleUrlSuffixInputView(labeledInputView, isEmpty) {
-    if (isEmpty) {
-      labeledInputView.fieldView.set('value', '');
-    } else {
-      const match = this._urlInputRefMatch(this.urlWithRefHandleRE);
-      let inputValue = null;
+    labeledInputView.fieldView.set(
+      'value',
+      isEmpty ? '' : this._getUrlSuffix(),
+    );
+  }
 
-      if (match) {
-        // match[1] is the whole URL that shows before the {refTag}
-        inputValue = match[1];
-      } else {
-        // if no match found then it's a "regular" link, e.g. https://craftcms.com or a relative one e.g. /my-page
-        inputValue = this._urlInputValue();
-      }
+  /**
+   * Get the URL field value without the {refTag} portion.
+   */
+  _getUrlWithoutRefTag() {
+    const match = this._urlInputRefMatch(this.urlWithRefHandleRE);
 
-      // check if it's a "valid" absolute URL, if yes - proceed as with the matches,
-      // if not still extract query params and anchor
-      try {
-        let url = new URL(inputValue);
-        let search = url.search;
-        let hash = url.hash;
+    // match[1] is the whole URL that shows before the {refTag};
+    // if no match found then it's a "regular" link, e.g. https://craftcms.com or a relative one e.g. /my-page
+    return match ? match[1] : this._urlInputValue();
+  }
 
-        labeledInputView.fieldView.set('value', search + hash);
-      } catch (e) {
-        // it might be a relative URL, and we still need to proceed
-        // get the path, query params and anchor
-        let [base, hash] = inputValue.split('#');
-        let [path, search] = base.split('?');
+  /**
+   * Get the query params and anchor from the URL field value.
+   */
+  _getUrlSuffix() {
+    const inputValue = this._getUrlWithoutRefTag();
 
-        hash = hash ? '#' + hash : '';
-        search = search ? '?' + search : '';
+    // check if it's a "valid" absolute URL, if yes - proceed as with the matches,
+    // if not still extract query params and anchor
+    try {
+      let url = new URL(inputValue);
 
-        labeledInputView.fieldView.set('value', search + hash);
-      }
+      return url.search + url.hash;
+    } catch (e) {
+      // it might be a relative URL, and we still need to proceed
+      // get the path, query params and anchor
+      let [base, hash] = inputValue.split('#');
+      let [path, search] = base.split('?');
+
+      hash = hash ? '#' + hash : '';
+      search = search ? '?' + search : '';
+
+      return search + hash;
     }
+  }
+
+  /**
+   * Replace the query params and anchor in the URL field value with given URL suffix.
+   */
+  _applyUrlSuffix(urlSuffix) {
+    const {formView} = this._linkUI;
+    const inputValue = this._getUrlWithoutRefTag();
+    let baseUrl;
+
+    // check if it's a "valid" absolute URL, if yes - proceed as with the matches,
+    // if not still extract query params and anchor
+    try {
+      let url = new URL(inputValue);
+      baseUrl = inputValue.replace(url.hash, '').replace(url.search, '');
+    } catch (e) {
+      // it might be a relative URL, and we still need to proceed
+      // get the path as our baseUrl
+      let [base, hash] = inputValue.split('#');
+      let [baseUrl, search] = base.split('?');
+    }
+
+    const newUrl = this._urlInputValue().replace(
+      inputValue,
+      baseUrl + urlSuffix,
+    );
+    formView.urlInputView.fieldView.set('value', newUrl);
   }
 
   /**
@@ -762,18 +816,25 @@ export default class CraftLinkUI extends Plugin {
     formView.on(
       'submit',
       () => {
+        // if the form isn't valid, CKEditor5's own submit handler (registered at
+        // normal priority, so it runs after this one) won't call linkCommand.execute()
+        // at all. Bail out here too, so we don't leave a stale listener behind that
+        // could end up applying these values to some later, unrelated execute() call.
+        // see https://github.com/craftcms/ckeditor/issues/612 for more info
+        if (!formView.isValid()) {
+          return;
+        }
+
         let values = this._getAdvancedFieldValues();
 
         linkCommand.once(
           'execute',
           (evt, args) => {
-            if (args.length === 4) {
-              // if we already have extra args on the link - update the list of args
-              Object.assign(args[3], values);
-            } else {
-              // if there's no extra attrs on the link - add them to the list of args
-              args.push(values);
-            }
+            // extra Craft attribute values always live at a fixed index (the 4th
+            // argument) - see CraftLinkEditing._adjustLinkCommand() - regardless of
+            // whether CKEditor5's own manualDecoratorIds/displayedText arguments were
+            // passed, so merge into that slot rather than relying on args.length.
+            args[3] = args[3] ? Object.assign(args[3], values) : values;
           },
           {priority: 'highest'},
         );

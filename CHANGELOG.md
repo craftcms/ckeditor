@@ -1,5 +1,68 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Added the “License Key” plugin setting, which can be set to a commercial CKEditor license key. ([#638](https://github.com/craftcms/ckeditor/pull/638))
+- CKEditor fields now respect `licenseKey` values set via their config options. ([#638](https://github.com/craftcms/ckeditor/pull/638))
+- Added `craft\ckeditor\models\Settings`.
+
+## 5.9.0 - 2026-10-06
+
+- Updated CKEditor to 48.5.2. ([#633](https://github.com/craftcms/ckeditor/issues/633))
+- Fixed an `InvalidSubpathException` error that occurred when editing an element with a CKEditor field that had “Insert image” in its toolbar, if the field’s default upload location contained a variable that couldn’t be resolved yet (e.g. `{slug}`). ([#618](https://github.com/craftcms/ckeditor/issues/618), [#630](https://github.com/craftcms/ckeditor/pull/630))
+- Fixed a bug where links with styles and advanced link fields could be split into multiple links when their displayed text was changed. ([#631](https://github.com/craftcms/ckeditor/issues/631), [#632](https://github.com/craftcms/ckeditor/pull/632))
+- Fixed a bug where links with styles and advanced link fields could become difficult to edit or unlink. ([#631](https://github.com/craftcms/ckeditor/issues/631), [#632](https://github.com/craftcms/ckeditor/pull/632))
+
+## 5.8.0 - 2026-09-28
+
+- CKEditor packages registered by plugins that load after CKEditor, including from `Craft::$app->onInit()` callbacks, are now registered properly. ([#621](https://github.com/craftcms/ckeditor/issues/621))
+- CKEditor fields now only import third-party CKEditor packages, and register their asset bundles, when one of the package’s toolbar items is in the field’s toolbar. Packages without toolbar items are still loaded for every field.
+- Third-party CKEditor plugins are now referenced via namespace imports, so plugins with the same name from different packages no longer conflict. Custom config JS can still refer to them by name (e.g. `extraPlugins: [Tokens]`), as long as the name is unique.
+- Added `craft\ckeditor\Plugin::registerCkeditorPackageBundles()`.
+- Deprecated `craft\ckeditor\helpers\CkeditorConfig::getImportStatements()`.
+- Package asset bundles are no longer registered automatically whenever `CkeditorAsset` is registered.
+- Fixed a bug where package toolbar items were registered again each time a CKEditor field was rendered.
+- Fixed a bug where grouped toolbar items from third-party packages weren’t matched against the field’s toolbar.
+- Fixed a bug where all of a package’s toolbar items were shown as a single group in the toolbar builder, instead of as separately-placeable items and groups.
+- Fixed a bug where the “Displayed text” value was ignored when inserting a new element link, and the element’s title was used instead. ([#617](https://github.com/craftcms/ckeditor/pull/617))
+- Fixed a bug where links’ types would change to “URL” if a URL suffix was entered before an element was chosen. ([#619](https://github.com/craftcms/ckeditor/issues/619), [#624](https://github.com/craftcms/ckeditor/pull/624))
+- Fixed an error that could occur when uninstalling CKEditor. ([#623](https://github.com/craftcms/ckeditor/issues/623))
+
+## 5.7.0 - 2026-08-10
+
+- Assets inserted as `<img>` tags now populate the `alt` attribute with the asset’s Alternative Text value. If left unedited, the `alt` attribute will stay in sync with the asset. ([#585](https://github.com/craftcms/ckeditor/pull/585))
+- Images’ alternative text modals now have a “Sync from asset” button. ([#585](https://github.com/craftcms/ckeditor/pull/585))
+- Added Dutch translations. ([#603](https://github.com/craftcms/ckeditor/pull/603))
+- Improved Norwegian translations. ([#601](https://github.com/craftcms/ckeditor/pull/601), [#602](https://github.com/craftcms/ckeditor/pull/602))
+- Fixed a bug where selected image transforms were being forgotten, if the transform changed the file format. ([#588](https://github.com/craftcms/ckeditor/issues/588))
+- Fixed a bug where downloadable links’ `download` attributes were sometimes getting set to the value `"true"`. ([#606](https://github.com/craftcms/ckeditor/issues/606))
+- Fixed a bug where custom styles weren’t being applied in fullscreen mode. ([#614](https://github.com/craftcms/ckeditor/issues/614))
+- Fixed a bug where entry deletion blockers were factoring in drafts and revisions that referenced the to-be-deleted entry. ([#600](https://github.com/craftcms/ckeditor/issues/600))
+- Fixed a bug where images could be set to malformed URLs after saving via the Image Editor. ([#477](https://github.com/craftcms/ckeditor/issues/477), [#595](https://github.com/craftcms/ckeditor/issues/595))
+- Fixed a bug where the editor could become unresponsive after toggling an advanced link field’s lightswitch before choosing a link target. ([#612](https://github.com/craftcms/ckeditor/issues/612))
+- Fixed a styling issue with the Link modal. ([#610](https://github.com/craftcms/ckeditor/issues/610))
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. ([GHSA-jcjm-q9x2-72xv](https://github.com/craftcms/ckeditor/security/advisories/GHSA-jcjm-q9x2-72xv))
+
+## 5.6.1 - 2026-05-13
+
+- Fixed errors that could occur if the `ckeditor_references` table didn’t exist yet. ([#584](https://github.com/craftcms/ckeditor/issues/584))
+
+## 5.6.0 - 2026-05-13
+
+> [!NOTE]  
+> Elements that contain CKEditor fields must be resaved before the new deletion blocker can take effect. That can be done automatically by running the following command:
+>
+> ```sh
+> php craft resave/all --with-fields=myCkeditorField1,myCkeditorField2
+> ```
+
+- CKEditor now requires Craft CMS 5.10 or later.
+- Added a deletion blocker for elements that are referenced within CKEditor fields. ([#576](https://github.com/craftcms/ckeditor/pull/576))
+- Fixed a bug where custom `removePlugins` config values weren’t being respected. ([#578](https://github.com/craftcms/ckeditor/issues/578))
+- Fixed a bug where consecutive “Open in new tab?” and “Download” advanced link options were being displayed side-by-side. ([#575](https://github.com/craftcms/ckeditor/issues/575))
+- Fixed a bug where CKEditor fields with list items could get marked as dirty before any changes were actually made to them. ([#554](https://github.com/craftcms/ckeditor/issues/554))
+- Fixed a bug where “Copy value from site…” actions weren’t working properly with CKEditor fields. ([#580](https://github.com/craftcms/ckeditor/issues/580))
+
 ## 5.5.0 - 2026-04-27
 
 - Improved the styling of Link modals. ([#562](https://github.com/craftcms/ckeditor/pull/562))

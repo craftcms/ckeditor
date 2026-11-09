@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'A commercial CKEditor license key. If left blank, CKEditor will be used under the GPL license.' => 'A commercial CKEditor license key. If left blank, CKEditor will be used under the GPL license.',
     'Add nested content' => 'Add nested content',
     'Advanced Link Fields' => 'Advanced Link Fields',
     'Advanced' => 'Advanced',
@@ -31,6 +32,7 @@ return [
     'Image Mode' => 'Image Mode',
     'Image tags' => 'Image tags',
     'Insert link' => 'Insert link',
+    'License Key' => 'License Key',
     'Link to a category' => 'Link to a category',
     'Link to an asset' => 'Link to an asset',
     'Link to an entry' => 'Link to an entry',
@@ -47,11 +49,15 @@ return [
     'Show as a separate button' => 'Show as a separate button',
     'Show word count' => 'Show word count',
     'Site: {name}' => 'Site: {name}',
+    'Sync from asset' => 'Sync from asset',
+    'The alternative text was already in sync.' => 'The alternative text was already in sync.',
+    'The alternative text was synced from the asset.' => 'The alternative text was synced from the asset.',
     'The default transform that should be applied when inserting an image.' => 'The default transform that should be applied when inserting an image.',
     'The maximum number of words or characters the field is allowed to have.' => 'The maximum number of words or characters the field is allowed to have.',
     'The text tooltip for the entry creation button.' => 'The text tooltip for the entry creation button.',
     'The transforms that should be available when inserting images.' => 'The transforms that should be available when inserting images.',
     'The type of column this field should get in the database.' => 'The type of column this field should get in the database.',
+    'This can be set to an environment variable.' => 'This can be set to an environment variable.',
     'This field doesn’t allow nested entries.' => 'This field doesn’t allow nested entries.',
     'This field doesn’t allow nested {type} entries.' => 'This field doesn’t allow nested {type} entries.',
     'Toolbar' => 'Toolbar',

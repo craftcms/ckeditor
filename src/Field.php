@@ -41,7 +41,10 @@ use craft\elements\Entry;
 use craft\elements\NestedElementManager;
 use craft\elements\User;
 use craft\enums\PropagationMethod;
+use craft\errors\FsObjectNotFoundException;
+use craft\errors\InvalidFsException;
 use craft\errors\InvalidHtmlTagException;
+use craft\errors\InvalidSubpathException;
 use craft\events\CancelableEvent;
 use craft\events\DraftEvent;
 use craft\events\DuplicateNestedElementsEvent;
@@ -66,6 +69,7 @@ use craft\models\ImageTransform;
 use craft\models\Section;
 use craft\models\Volume;
 use craft\services\Drafts;
+use craft\services\Elements;
 use craft\services\ElementSources;
 use craft\web\View;
 use GraphQL\Type\Definition\Type;
@@ -1103,6 +1107,10 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         $view = Craft::$app->getView();
         $bundle = $view->registerAssetBundle(FieldSettingsAsset::class);
 
+        // The toolbar builder needs every package
+        [$importStatements, $pluginRefs] = CkeditorConfig::getImports();
+        Plugin::registerCkeditorPackageBundles($view);
+
         $userGroupOptions = [
             [
                 'label' => Craft::t('app', 'Admins'),
@@ -1152,12 +1160,12 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
 
         return $view->renderTemplate('ckeditor/_field-settings.twig', [
             'field' => $this,
-            'importStatements' => CkeditorConfig::getImportStatements(),
+            'importStatements' => $importStatements,
             'toolbarBuilderId' => $view->namespaceInputId('toolbar-builder'),
             'configOptionsId' => $view->namespaceInputId('config-options'),
             'cssOptionsId' => $view->namespaceInputId('css-options'),
-            'toolbarItems' => CkeditorConfig::normalizeToolbarItems(CkeditorConfig::$toolbarItems),
-            'plugins' => CkeditorConfig::getAllPlugins(),
+            'toolbarItems' => CkeditorConfig::normalizeToolbarItems(CkeditorConfig::getToolbarItems()),
+            'plugins' => $pluginRefs,
             'jsonSchema' => CkeditorConfigSchema::create(),
             'jsonSchemaUri' => $jsonSchemaUri,
             'advanceLinkOptions' => CkeditorConfig::advanceLinkOptions(),
@@ -1249,6 +1257,136 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             '<div class="page-break" style="page-break-after:always;"><span style="display:none;">&nbsp;</span></div>',
             $value,
         );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementSave(ElementInterface $element, bool $isNew): void
+    {
+        if ($element->duplicateOf || $element->isFieldDirty($this->handle)) {
+            $this->updateReferences($element, $isNew);
+        }
+
+        if (
+            $this->imageMode === self::IMAGE_MODE_IMG &&
+            $this->_hasDynamicUploadSubpath() &&
+            !$element->propagating &&
+            !$element->getRootOwner()->getIsRevision()
+        ) {
+            $this->moveTempAssets($element);
+        }
+
+        parent::afterElementSave($element, $isNew);
+    }
+
+    private function updateReferences(ElementInterface $element, bool $isNew): void
+    {
+        if (!Craft::$app->getDb()->tableExists(Plugin::TABLE_REFERENCES)) {
+            return;
+        }
+
+        $value = $element->getFieldValue($this->handle);
+        $targetIds = array_flip($this->getRefTargetIds($value));
+        $db = Craft::$app->getDb();
+
+        // Get the old references
+        if (!$isNew) {
+            $oldRefs = (new Query())
+                ->select(['id', 'targetId'])
+                ->from([Plugin::TABLE_REFERENCES])
+                ->where([
+                    'fieldId' => $this->id,
+                    'fieldInstanceUid' => $this->layoutElement->uid,
+                    'sourceId' => $element->id,
+                    'sourceSiteId' => $element->siteId,
+                ])
+                ->all($db);
+        } else {
+            $oldRefs = [];
+        }
+
+        $deleteIds = [];
+
+        foreach ($oldRefs as $ref) {
+            [$refId, $targetId] = [
+                $ref['id'],
+                $ref['targetId'],
+            ];
+
+            // Does this reference still exist?
+            if (isset($targetIds[$targetId])) {
+                // Avoid re-inserting it
+                unset($targetIds[$targetId]);
+            } else {
+                $deleteIds[] = $refId;
+            }
+        }
+
+        if (empty($deleteIds) && empty($targetIds)) {
+            // Nothing to do here
+            return;
+        }
+
+        $db->transaction(function() use ($element, $deleteIds, $targetIds, $db) {
+            // Add the new ones
+            if (!empty($targetIds)) {
+                $values = [];
+                foreach (array_keys($targetIds) as $targetId) {
+                    $values[] = [
+                        $this->id,
+                        $this->layoutElement->uid,
+                        $element->id,
+                        $element->siteId,
+                        $targetId,
+                    ];
+                }
+                Db::batchInsert(Plugin::TABLE_REFERENCES, [
+                    'fieldId',
+                    'fieldInstanceUid',
+                    'sourceId',
+                    'sourceSiteId',
+                    'targetId',
+                ], $values, $db);
+            }
+
+            if (!empty($deleteIds)) {
+                Db::delete(Plugin::TABLE_REFERENCES, [
+                    'id' => $deleteIds,
+                ], [], $db);
+            }
+        });
+    }
+
+    private function getRefTargetIds(FieldData|string|null $value, ?string $refHandle = null): array
+    {
+        if ($value instanceof FieldData) {
+            $value = $value->getRawContent();
+        }
+
+        if (!$value) {
+            return [];
+        }
+
+        $refIds = [];
+        preg_match_all(Elements::REF_TAG_PATTERN, $value, $matches);
+
+        foreach ($matches['ref'] as $i => $ref) {
+            if (
+                is_numeric($ref) &&
+                ($refHandle === null || $matches['elementType'][$i] === $refHandle)
+            ) {
+                $refIds[] = (int)$ref;
+            }
+        }
+
+        // Also look for unserialized element URLs (e.g. `foo.jpg#asset:123:url`)
+        if ($refHandle !== null) {
+            preg_match_all(sprintf('/#%s:(\d+)/', preg_quote($refHandle, '/')), $value, $matches);
+            array_push($refIds, ...array_map('intval', $matches[1]));
+        }
+
+        return array_values(array_unique($refIds));
     }
 
     /**
@@ -1475,8 +1613,11 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         $idJs = Json::encode($view->namespaceInputId($id));
         $wordCountId = "$id-counts";
         $wordCountIdJs = Json::encode($view->namespaceInputId($wordCountId));
+        $inputId = Html::id('input-ckeditor-' . $id);
+        $namespacedInputId = $view->namespaceInputId($inputId);
 
         $baseConfig = array_filter([
+            'licenseKey' => Plugin::getInstance()->getSettings()->getLicenseKey(),
             'defaultTransform' => $defaultTransform?->handle,
             'elementSiteId' => $element?->siteId,
             'accessibleFieldName' => $this->_accessibleFieldName($element),
@@ -1520,7 +1661,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             'imageModalSettings' => $this->_imageModalSettings(),
             'imageFieldHandle' => $this->getImageField()?->handle,
             'assetSelectionCriteria' => $this->_assetSelectionCriteria(),
-            'defaultUploadFolderId' => $this->_defaultUploadFolderId(),
+            'defaultUploadFolderId' => $this->_defaultUploadFolderId($element),
             'linkOptions' => $this->_linkOptions($element),
             'advancedLinkFields' => $this->_advancedLinkFields(),
             'table' => [
@@ -1559,44 +1700,23 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             $removePlugins->push('ImageTransforms');
         }
 
-        // Avoid loading plugins not included in the toolbar
-        $unusedPlugins = collect(CkeditorConfig::$pluginButtonMap)
-            ->filter(function(array $item) use ($event) {
-                $buttons = $item['buttons'] ?? [];
+        $configJs = $this->configJs();
 
-                // If there are no buttons defined, always load it
-                if (empty($buttons)) {
-                    return false;
-                }
+        // Only import (and register the asset bundles for) packages that have plugins in use, or that custom
+        // config JS refers to by name (e.g. `extraPlugins: [Tokens]`). JSON config can't refer to plugin classes.
+        [$imports, $pluginRefs, $namespaces] = CkeditorConfig::getImports(
+            $event->toolbar,
+            $removePlugins->all(),
+            isset($this->options) ? null : $configJs,
+        );
+        Plugin::registerCkeditorPackageBundles($view, $namespaces);
 
-                return collect($event->toolbar)
-                    ->doesntContain(function(string $toolbarItem) use ($buttons) {
-                        return in_array($toolbarItem, $buttons);
-                    });
-            })
-            ->map(fn(array $item) => $item['plugins'] ?? [])
-            ->flatten();
-
-        $removePlugins->push(...$unusedPlugins->all());
-
-        $plugins = CkeditorConfig::getPluginsByPackage();
-
-        $plugins = collect($plugins)
-            ->mapWithKeys(fn(array $plugins, string $namespace) => [
-                $namespace => collect($plugins)
-                    ->reject(fn($plugin) => in_array($plugin, $removePlugins->toArray())),
-            ]);
-
-        $configPlugins = '[' . $plugins->flatten()->join(',') . ']';
-
-        $imports = CkeditorConfig::getImportStatements();
+        $configPlugins = '[' . implode(',', $pluginRefs) . ']';
 
         // Add the translation import
         $uiLanguage = BaseCkeditorPackageAsset::uiLanguage();
         $importCompliantUiLanguage = BaseCkeditorPackageAsset::getImportCompliantLanguage(BaseCkeditorPackageAsset::uiLanguage());
         $uiTranslationImport = "import coreTranslations from 'ckeditor5/translations/$importCompliantUiLanguage.js';";
-
-        $configJs = $this->configJs();
 
         $view->registerScriptWithVars(fn(
             $baseConfigJs,
@@ -1606,6 +1726,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             $wordLimitJs,
             $characterLimitJs,
             $imageMode,
+            $namespacedInputIdJs,
         ) => <<<JS
 $imports
 $uiTranslationImport
@@ -1619,7 +1740,10 @@ import {create} from '@craftcms/ckeditor';
     language: $languageJs,
   }, $baseConfigJs, customConfig, {
     plugins: $configPlugins,
-    removePlugins: []
+    removePlugins: [
+      ...($baseConfigJs?.removePlugins ?? []),
+      ...(customConfig?.removePlugins ?? []),
+    ]
   });
 
 
@@ -1655,6 +1779,30 @@ import {create} from '@craftcms/ckeditor';
 
     // use the headings
     config.heading.options = Object.values(headings);
+  }
+
+  // special case for fullscreen mode and Custom Styles
+  // see https://github.com/craftcms/ckeditor/issues/614
+  if (config.toolbar.items.indexOf('fullscreen') >= 0) {
+    const fullscreenConfig = customConfig?.fullscreen ?? {};
+    const userOnEnterCallback = fullscreenConfig?.onEnterCallback;
+    const userOnLeaveCallback = fullscreenConfig?.onLeaveCallback;
+    const fieldInputId = $namespacedInputIdJs;
+    config.fullscreen = {
+      ...fullscreenConfig,
+      onEnterCallback: (container) => {
+        container.classList.add(fieldInputId);
+        if (userOnEnterCallback) {
+          userOnEnterCallback(container);
+        }
+      },
+      onLeaveCallback: (container) => {
+        if (userOnLeaveCallback) {
+          userOnLeaveCallback(container);
+        }
+        container.classList.remove(fieldInputId);
+      },
+    };
   }
 
   const extraRemovePlugins = [];
@@ -1725,13 +1873,13 @@ JS,
                 $this->wordLimit ?: 0,
                 $this->characterLimit ?: 0,
                 $this->imageMode,
+                $namespacedInputId,
             ],
             View::POS_END,
             ['type' => 'module']
         );
 
         $value = $this->prepValueForInput($value, $element);
-        $inputId = Html::id('input-ckeditor-' . $id);
         $html = Html::textarea($this->handle, $value, [
             'id' => $id,
             'class' => 'hidden',
@@ -1757,7 +1905,9 @@ JS,
             }
             $css = trim($css);
             if ($css !== '') {
-                $view->registerCss("#{$view->namespaceInputId($inputId)} { $css }");
+                // the id is needed for the regular field
+                // the class is used by the fullscreen mode (there can only be one at the time)
+                $view->registerCss("#{$namespacedInputId}, .{$namespacedInputId} { $css }");
             }
         }
 
@@ -2316,44 +2466,162 @@ JS;
     }
 
     /**
-     * Returns the default upload folder ID.
-     *
-     * @return int|null
+     * Returns the default upload folder ID for the given element.
      */
-    private function _defaultUploadFolderId(): ?int
+    private function _defaultUploadFolderId(?ElementInterface $element): ?int
     {
-        if ($this->imageMode === self::IMAGE_MODE_ENTRIES) {
-            $imageField = $this->getImageField();
-            if (
-                !$imageField?->defaultUploadLocationSource ||
-                !preg_match('/^volume:(.+)$/', $imageField->defaultUploadLocationSource, $matches)
-            ) {
-                return null;
-            }
-
-            $volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1]);
-            $subpath = $imageField->defaultUploadLocationSubpath;
-        } else {
-            if (!$this->defaultUploadLocationVolume) {
-                return null;
-            }
-
-            $volume = Craft::$app->getVolumes()->getVolumeByUid($this->defaultUploadLocationVolume);
-            $subpath = $this->defaultUploadLocationSubpath;
-        }
-
-        if (!$volume) {
+        [$uploadField, $target] = $this->_uploadField($element) ?? [null, null];
+        if (!$uploadField) {
             return null;
         }
 
-        [$subpath, $folder] = AssetsHelper::resolveSubpath($volume, trim($subpath ?? '', '/'));
+        // this kicks in when the image mode is set to image tags, and we have a dynamic upload subpath
+        // Don't create dynamic folders just by rendering the field; temp uploads get moved once the element is saved
+        if ($this->imageMode === self::IMAGE_MODE_IMG && $this->_hasDynamicUploadSubpath()) {
+            $volume = Craft::$app->getVolumes()->getVolumeByUid($this->defaultUploadLocationVolume);
+            if (!$volume) {
+                Craft::warning("Couldn’t resolve the default upload folder for the “{$this->name}” field: invalid volume.", __METHOD__);
+                return null;
+            }
 
-        // Ensure that the folder exists
-        if (!$folder) {
-            $folder = Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($subpath, $volume);
+            try {
+                [, $folder] = AssetsHelper::resolveSubpath($volume, $this->defaultUploadLocationSubpath, $target);
+            } catch (InvalidSubpathException) {
+                $folder = null;
+            }
+
+            return $folder->id ?? Craft::$app->getAssets()->getUserTemporaryUploadFolder()->id;
         }
 
-        return $folder->id;
+        // this kicks in for all other cases (including image tags with static subpath and image entries)
+        try {
+            return $uploadField->resolveDynamicPathToFolderId($target);
+        } catch (InvalidFsException $e) {
+            Craft::warning("Couldn’t resolve the default upload folder for the “{$this->name}” field: {$e->getMessage()}", __METHOD__);
+            return null;
+        } catch (InvalidSubpathException $e) {
+            // Don't take down the whole edit page over it
+            Craft::warning("Couldn’t resolve the default upload folder for the “{$this->name}” field: {$e->getMessage()}", __METHOD__);
+            return Craft::$app->getAssets()->getUserTemporaryUploadFolder()->id;
+        }
+    }
+
+    /**
+     * Returns whether images get uploaded to a dynamic subpath that’s moved into once the element is saved.
+     */
+    private function _hasDynamicUploadSubpath(): bool
+    {
+        return (
+            $this->defaultUploadLocationVolume &&
+            str_contains($this->defaultUploadLocationSubpath ?? '', '{')
+        );
+    }
+
+    /**
+     * Returns the Assets field that determines where images get uploaded to, along with the element its subpath
+     * should be resolved against.
+     *
+     * @return array{0:Assets,1:ElementInterface|null}|null
+     */
+    private function _uploadField(?ElementInterface $element): ?array
+    {
+        if ($this->imageMode === self::IMAGE_MODE_ENTRIES) {
+            $imageField = $this->getImageField();
+            $imageEntryType = $this->getImageEntryType();
+            if (!$imageField?->defaultUploadLocationSource || !$imageEntryType) {
+                return null;
+            }
+
+            // The subpath gets rendered against the nested image entry, so give it one to work with
+            $imageEntry = new Entry([
+                'typeId' => $imageEntryType->id,
+                'fieldId' => $this->id,
+                'siteId' => $element?->siteId,
+            ]);
+            $imageEntry->setOwner($element);
+
+            return [$imageField, $imageEntry];
+        }
+
+        if (!$this->defaultUploadLocationVolume) {
+            return null;
+        }
+
+        // Let a stand-in Assets field handle subpath resolution and temp folder fallbacks
+        $uploadField = new Assets([
+            'name' => $this->name,
+            'handle' => $this->handle,
+            'defaultUploadLocationSource' => "volume:$this->defaultUploadLocationVolume",
+            'defaultUploadLocationSubpath' => $this->defaultUploadLocationSubpath,
+        ]);
+
+        return [$uploadField, $element];
+    }
+
+    /**
+     * Moves any temporary image uploads referenced by the field into the default upload folder.
+     */
+    private function moveTempAssets(ElementInterface $element): void
+    {
+        $assetIds = $this->getRefTargetIds($element->getFieldValue($this->handle), Asset::refHandle());
+        if (empty($assetIds)) {
+            return;
+        }
+
+        $assetsService = Craft::$app->getAssets();
+        /** @var Asset[] $assets */
+        $assets = $assetsService->createTempAssetQuery()
+            ->id($assetIds)
+            ->all();
+
+        if (empty($assets)) {
+            return;
+        }
+
+        [$uploadField, $target] = $this->_uploadField($element) ?? [null, null];
+        if (!$uploadField) {
+            return;
+        }
+
+        // this matches what the code does for moving images with dynamic default upload locations;
+        // for canonical save, create the folder if needed and log a warning if the subpath can't be resolved;
+        // this kicks in applying an unpublished draft
+        if ($element->getRootOwner()->getIsCanonical()) {
+            try {
+                $uploadFolder = $assetsService->getFolderById($uploadField->resolveDynamicPathToFolderId($target));
+            } catch (InvalidFsException|InvalidSubpathException $e) {
+                Craft::warning("Couldn’t move temporary uploads for the “{$this->name}” field: {$e->getMessage()}", __METHOD__);
+                return;
+            }
+        } else {
+            // Like the Assets field, only move drafts’ uploads if the target folder already exists
+            $volume = Craft::$app->getVolumes()->getVolumeByUid($this->defaultUploadLocationVolume);
+            if (!$volume) {
+                return;
+            }
+
+            try {
+                [, $uploadFolder] = AssetsHelper::resolveSubpath($volume, $this->defaultUploadLocationSubpath, $target);
+            } catch (InvalidSubpathException) {
+                return;
+            }
+        }
+
+        // Nowhere better to put them yet
+        if (!$uploadFolder?->volumeId) {
+            return;
+        }
+
+        // Resolve all conflicts by keeping both
+        foreach ($assets as $asset) {
+            $asset->avoidFilenameConflicts = true;
+            try {
+                $assetsService->moveAsset($asset, $uploadFolder);
+            } catch (FsObjectNotFoundException $e) {
+                Craft::warning('Couldn’t move asset because the file doesn’t exist: ' . $e->getMessage(), __METHOD__);
+                Craft::$app->getErrorHandler()->logException($e);
+            }
+        }
     }
 
     /**
@@ -2469,6 +2737,16 @@ JS;
 
         if (in_array('bulletedList', $this->toolbar)) {
             $def?->addAttribute('ul', 'style', 'Text');
+        }
+
+        if (
+            in_array('bulletedList', $this->toolbar) ||
+            in_array('numberedList', $this->toolbar) ||
+            in_array('todoList', $this->toolbar)
+        ) {
+            // allow `data-list-item-id` attribute for the list items;
+            // complements https://github.com/craftcms/ckeditor/pull/555
+            $def?->addAttribute('li', 'data-list-item-id', 'Text');
         }
 
         if ($this->imageMode === self::IMAGE_MODE_ENTRIES || in_array('createEntry', $this->toolbar)) {

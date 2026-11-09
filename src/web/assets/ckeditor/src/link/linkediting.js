@@ -5,6 +5,7 @@
  */
 
 import {findAttributeRange, Plugin} from 'ckeditor5';
+import {resolveAdvancedFieldAttributeValue} from './linkutils.js';
 
 /**
  * These imports aren't ideal but are necessary for now because the main
@@ -81,6 +82,36 @@ export default class CraftLinkEditing extends Plugin {
         },
       });
     }
+
+    // when the link's text is changed, GHS's <a> (e.g. from a style) can get created first, and the link's <a>
+    // gets merged into it, losing the "link" custom property, which CKEditor's LinkUI relies on;
+    // this converter ensures that after a link is drawn, it finds its <a> and makes sure it's still marked as a link
+    conversion.for('editingDowncast').add((dispatcher) => {
+      dispatcher.on(
+        'attribute:linkHref',
+        (evt, data, {mapper, writer}) => {
+          // when there's no link, or when the "link" is something other than text, bail
+          if (!data.attributeNewValue || !data.item.is('$textProxy')) {
+            return;
+          }
+
+          const viewRange = mapper.toViewRange(data.range);
+
+          for (const item of viewRange.getItems()) {
+            for (const ancestor of item.getAncestors()) {
+              if (
+                ancestor.is('attributeElement', 'a') &&
+                ancestor.hasAttribute('href') &&
+                !ancestor.getCustomProperty('link')
+              ) {
+                writer.setCustomProperty('link', true, ancestor);
+              }
+            }
+          }
+        },
+        {priority: 'low'},
+      );
+    });
   }
 
   _adjustLinkCommand() {
@@ -99,43 +130,60 @@ export default class CraftLinkEditing extends Plugin {
         evt.stop();
         linking = true;
 
-        const extraAttributeValues = args[args.length - 1];
+        // Craft's extra attribute values are always passed as the 4th argument to
+        // linkCommand.execute() (see CraftLinkUI for the call sites), regardless of
+        // whether CKEditor5's own `manualDecoratorIds`/`displayedText` arguments were
+        // also passed. Using a fixed index here - rather than assuming the values are
+        // whatever the *last* argument happens to be - means this can't be confused
+        // with those unrelated built-in arguments.
+        // see https://github.com/craftcms/ckeditor/issues/612 for more info
+        const extraAttributeValues = args[3] || {};
         const selection = editor.model.document.selection;
 
         editor.model.change((writer) => {
           editor.execute('link', ...args);
 
           const firstPosition = selection.getFirstPosition();
+          let linkRange = null;
+
+          if (selection.isCollapsed) {
+            // after the display text has been changed, the link can consist of multiple text nodes,
+            // so the extra attributes have to be applied to the whole link, not just the node by the caret
+            // see https://github.com/craftcms/ckeditor/issues/469 for more info
+            const node = firstPosition.textNode || firstPosition.nodeBefore;
+            linkRange = node?.hasAttribute('linkHref')
+              ? findAttributeRange(
+                  firstPosition,
+                  'linkHref',
+                  node.getAttribute('linkHref'),
+                  editor.model,
+                )
+              : writer.createRangeOn(node);
+          }
 
           this.conversionData.forEach((item) => {
+            const value = resolveAdvancedFieldAttributeValue(
+              item,
+              extraAttributeValues[item.model],
+            );
+
             if (selection.isCollapsed) {
-              const node = firstPosition.textNode || firstPosition.nodeBefore;
-              if (extraAttributeValues[item.model]) {
-                writer.setAttribute(
-                  item.model,
-                  // for bool type options, if the value is set to true, set the attribute with empty value
-                  // see https://github.com/craftcms/ckeditor/issues/551 for more info
-                  item.type == 'bool' && item.value == true
-                    ? ''
-                    : extraAttributeValues[item.model],
-                  writer.createRangeOn(node),
-                );
+              if (value !== undefined) {
+                writer.setAttribute(item.model, value, linkRange);
               } else {
-                writer.removeAttribute(item.model, writer.createRangeOn(node));
+                writer.removeAttribute(item.model, linkRange);
               }
             } else {
+              // one case where selection is considered not collapsed is when you highlight a text, add a link to it,
+              // and then click on the "edit link" icon without closing the balloon that you see after adding a link
               const ranges = editor.model.schema.getValidRanges(
                 selection.getRanges(),
                 item.model,
               );
 
               for (const range of ranges) {
-                if (extraAttributeValues[item.model]) {
-                  writer.setAttribute(
-                    item.model,
-                    extraAttributeValues[item.model],
-                    range,
-                  );
+                if (value !== undefined) {
+                  writer.setAttribute(item.model, value, range);
                 } else {
                   writer.removeAttribute(item.model, range);
                 }
