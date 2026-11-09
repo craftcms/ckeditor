@@ -1811,7 +1811,7 @@ JS;
         }
 
         $card = app(ElementHtml::class)->elementCardData($entry, [
-            'autoReload' => ! $isRevision,
+            'autoReload' => false,
             'showDraftName' => ! $isRevision,
             'showStatus' => ! $isRevision,
             'attributes' => [
