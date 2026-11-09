@@ -496,17 +496,17 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/craftcms/cms.git",
-                "reference": "4480bd30f6d4dfd8d26d070dc8ff69b095a21fb5"
+                "reference": "4179b76ed56d2b9879535d46fed763ba7e2be9f2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/cms/zipball/4480bd30f6d4dfd8d26d070dc8ff69b095a21fb5",
-                "reference": "4480bd30f6d4dfd8d26d070dc8ff69b095a21fb5",
+                "url": "https://api.github.com/repos/craftcms/cms/zipball/4179b76ed56d2b9879535d46fed763ba7e2be9f2",
+                "reference": "4179b76ed56d2b9879535d46fed763ba7e2be9f2",
                 "shasum": ""
             },
             "require": {
                 "bacon/bacon-qr-code": "^3.0",
-                "commerceguys/addressing": "^2.1.1",
+                "commerceguys/addressing": "^2.3.0",
                 "composer/semver": "^3.3.2",
                 "craftcms/cms-assets": "self.version",
                 "craftcms/laravel-aliases": "^2.0",
@@ -578,7 +578,9 @@
                 "pestphp/pest": "^5.0",
                 "pestphp/pest-plugin-agent": "^5.0",
                 "pestphp/pest-plugin-arch": "^5.0",
+                "pestphp/pest-plugin-browser": "^5.2",
                 "pestphp/pest-plugin-laravel": "^5.0",
+                "phpbench/phpbench": "^1.7",
                 "phpstan/phpstan": "^2.1",
                 "rector/rector": "^2.3",
                 "spatie/laravel-typescript-transformer": "^3.2"
@@ -607,6 +609,7 @@
                         "Fields": "CraftCms\\Cms\\Support\\Facades\\Fields",
                         "Images": "CraftCms\\Cms\\Support\\Facades\\Images",
                         "Search": "CraftCms\\Cms\\Support\\Facades\\Search",
+                        "Anchors": "CraftCms\\Cms\\Support\\Facades\\Anchors",
                         "BulkOps": "CraftCms\\Cms\\Support\\Facades\\BulkOps",
                         "Entries": "CraftCms\\Cms\\Support\\Facades\\Entries",
                         "Folders": "CraftCms\\Cms\\Support\\Facades\\Folders",
@@ -684,8 +687,8 @@
                 "rss": "https://github.com/craftcms/cms/releases.atom",
                 "source": "https://github.com/craftcms/cms"
             },
-            "time": "2026-11-05T12:26:19+00:00",
-            "published-time": "2026-11-05T12:27:09+00:00"
+            "time": "2026-11-09T09:45:06+00:00",
+            "published-time": "2026-11-09T09:45:16+00:00"
         },
         {
             "name": "craftcms/cms-assets",
@@ -14045,7 +14048,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-28T22:38:53+00:00"
+            "time": "2026-10-28T22:38:53+00:00",
+            "published-time": "2026-10-28T22:39:06+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -15996,8 +16000,6 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "craftcms/cms": 20,
-        "craftcms/cms-assets": 20,
         "craftcms/html-field": 20
     },
     "prefer-stable": true,

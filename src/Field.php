@@ -48,7 +48,6 @@ use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Assets;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -124,7 +123,7 @@ use function CraftCms\Cms\template;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
-class Field extends HtmlField implements CrossSiteCopyableFieldInterface, ElementContainerFieldInterface, MergeableFieldInterface
+class Field extends HtmlField implements ElementContainerFieldInterface, MergeableFieldInterface
 {
     /** @since 5.0.0 */
     public const IMAGE_MODE_IMG = 'img';
@@ -1586,6 +1585,105 @@ JS;
     }
 
     #[Override]
+    public function beforeElementSave(ElementInterface $element, bool $isNew): bool
+    {
+        if (! parent::beforeElementSave($element, $isNew)) {
+            return false;
+        }
+
+        if (! $isNew) {
+            $this->duplicateForeignEntries($element);
+        }
+
+        return true;
+    }
+
+    /**
+     * Duplicates the nested entries the value references that the element doesn’t own in its site, and points the
+     * value at the duplicates.
+     *
+     * That happens when the value is copied from another site, draft or revision on the Compare screen.
+     */
+    private function duplicateForeignEntries(ElementInterface $element): void
+    {
+        if (
+            ! $element->id ||
+            $element->propagating ||
+            $element->resaving ||
+            $element->duplicateOf !== null ||
+            $element->mergingCanonicalChanges ||
+            $element->updatingFromDerivative ||
+            $element->getRootOwner()->getIsRevision() ||
+            ! $element->isFieldDirty($this->handle)
+        ) {
+            return;
+        }
+
+        /** @var FieldData|null $value */
+        $value = $element->getFieldValue($this->handle);
+        if (! $value) {
+            return;
+        }
+
+        $chunks = $value->getChunks(false);
+        $entryIds = $chunks
+            ->filter(fn (BaseChunk $chunk) => $chunk instanceof EntryChunk)
+            ->map(fn (EntryChunk $chunk) => $chunk->entryId)
+            ->unique()
+            ->values()
+            ->all();
+        if (empty($entryIds)) {
+            return;
+        }
+
+        // Entries owned by the element or its canonical element (which a draft shares) are the element’s own
+        $ownedIds = Entry::find()
+            ->id($entryIds)
+            ->ownerId(array_values(array_unique([$element->id, $element->getCanonicalId()])))
+            ->siteId($element->siteId)
+            ->status(null)
+            ->trashed(null)
+            ->ids();
+        $foreignIds = array_values(array_diff($entryIds, array_map('intval', $ownedIds)));
+        if (empty($foreignIds)) {
+            return;
+        }
+
+        // The entries may not exist in the element’s site, if they were copied from another one
+        $sourceEntries = Entry::find()
+            ->id($foreignIds)
+            ->site('*')
+            ->preferSites([$element->siteId])
+            ->unique()
+            ->status(null)
+            ->revisions(null)
+            ->collect()
+            ->keyBy('id');
+
+        $newEntryIds = [];
+        foreach ($foreignIds as $entryId) {
+            $sourceEntry = $sourceEntries->get($entryId);
+            if ($sourceEntry) {
+                $newEntryIds[$entryId] = Elements::duplicateElement($sourceEntry, [
+                    'owner' => $element,
+                    'primaryOwner' => $element,
+                    'siteId' => $element->siteId,
+                    'revisionId' => null,
+                    'propagating' => false,
+                    'resaving' => false,
+                ])->id;
+            }
+        }
+
+        if (! empty($newEntryIds)) {
+            $element->setFieldValue($this->handle, self::chunksToHtml(
+                $chunks,
+                fn (EntryChunk $chunk) => $newEntryIds[$chunk->entryId] ?? $chunk->entryId,
+            ));
+        }
+    }
+
+    #[Override]
     public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
         if (
@@ -1675,29 +1773,6 @@ JS;
         }
 
         return array_values(array_unique($refIds));
-    }
-
-    #[Override]
-    public function copyCrossSiteValue(ElementInterface $from, ElementInterface $to): void
-    {
-        /** @var FieldData|null $fromValue */
-        $fromValue = $from->getFieldValue($this->handle);
-        if (! $fromValue) {
-            $to->setFieldValue($this->handle, null);
-
-            return;
-        }
-
-        $chunks = $fromValue->getChunks(false);
-        if ($chunks->contains(fn (BaseChunk $chunk) => $chunk instanceof EntryChunk)) {
-            $toValue = self::chunksToHtml($chunks, fn (EntryChunk $chunk) => Elements::duplicateElement($chunk->getEntry(), [
-                'siteId' => $to->siteId,
-            ])->id);
-        } else {
-            $toValue = $fromValue->getRawContent();
-        }
-
-        $to->setFieldValue($this->handle, $toValue);
     }
 
     private function escapePageBreaks(string &$html): void
