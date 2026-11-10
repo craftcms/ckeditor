@@ -1,240 +1,97 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license GPL-3.0-or-later
  */
 
-namespace craft\ckeditor;
+declare(strict_types=1);
 
-use Craft;
-use craft\base\Element;
-use craft\base\Model;
-use craft\ckeditor\deletionblockers\ReferenceDeletionBlocker;
-use craft\ckeditor\helpers\CkeditorConfig;
-use craft\ckeditor\models\Settings;
-use craft\ckeditor\web\assets\BaseCkeditorPackageAsset;
-use craft\ckeditor\web\assets\ckeditor\CkeditorAsset;
-use craft\ckeditor\web\assets\fieldsettings\FieldSettingsAsset;
-use craft\elements\NestedElementManager;
-use craft\events\DefineElementDeletionBlockersEvent;
-use craft\events\ModelEvent;
-use craft\events\RegisterComponentTypesEvent;
-use craft\helpers\UrlHelper;
-use craft\services\Fields;
-use craft\web\View;
-use yii\base\Event;
+namespace CraftCms\Ckeditor;
+
+use CraftCms\Ckeditor\Console\Commands\ConvertMatrixCommand;
+use CraftCms\Ckeditor\Console\Commands\ConvertRedactorCommand;
+use CraftCms\Ckeditor\Support\CkeditorAssets;
+use CraftCms\Ckeditor\Ui\Controls\CkeditorControl;
+use CraftCms\Ckeditor\Ui\Controls\EditorConfigControl;
+use CraftCms\Cms\Cp\SelectOptions;
+use CraftCms\Cms\Field\NestedEntryFieldTypes;
+use CraftCms\Cms\Plugin\Plugin as BasePlugin;
+use CraftCms\Cms\Plugin\PluginSettings;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiControlTypes;
+use Override;
+
+use function CraftCms\Cms\t;
 
 /**
  * CKEditor plugin.
  *
  * @method static Plugin getInstance()
  * @method Settings getSettings()
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  */
-class Plugin extends \craft\base\Plugin
+class Plugin extends BasePlugin
 {
-    public const TABLE_REFERENCES = '{{%ckeditor_references}}';
+    public string $schemaVersion = '6.0.0.0';
 
-    /**
-     * Registers an asset bundle for a CKEditor package.
-     *
-     * Packages aren’t loaded until they’re needed, so this can be called from a plugin or module’s `init()`
-     * method or a `Craft::$app->onInit()` callback, regardless of load order.
-     *
-     * @param string $name The asset bundle class name. The asset bundle should extend
-     * [[\craft\ckeditor\web\assets\BaseCkeditorPackageAsset]].
-     * @param string $entry The package’s JavaScript entry file, relative to the asset bundle’s source path.
-     * @since 3.5.0
-     */
-    public static function registerCkeditorPackage(string $name, string $entry = 'index.js'): void
-    {
-        self::$ckeditorPackages[$name] = $entry;
+    public string $minVersionRequired = '5.9.0';
 
-        // If packages have already been loaded, load this one right away
-        if (self::$packagesLoaded) {
-            self::loadCkeditorPackage($name, $entry);
-        }
-    }
-
-    /**
-     * Returns the registered CKEditor packages.
-     *
-     * Packages registered via [[registerCkeditorPackage()]] are loaded the first time this is called. Any registered
-     * after that are loaded immediately.
-     *
-     * @return array<string,array{namespace:string,entry:string}> Package info, indexed by asset bundle class name
-     * @internal
-     */
-    public static function getCkeditorPackages(): array
-    {
-        if (!self::$packagesLoaded) {
-            self::$packagesLoaded = true;
-            foreach (self::$ckeditorPackages as $name => $entry) {
-                self::loadCkeditorPackage($name, $entry);
-            }
-        }
-
-        return self::$loadedPackages;
-    }
-
-    /**
-     * Registers the asset bundles for CKEditor packages.
-     *
-     * Packages that don’t provide any CKEditor plugins (e.g. global functionality) are always registered.
-     *
-     * @param View $view
-     * @param string[]|null $namespaces The package namespaces whose bundles should be registered, or `null` for all packages
-     * @since 5.8.0
-     */
-    public static function registerCkeditorPackageBundles(View $view, ?array $namespaces = null): void
-    {
-        foreach (self::getCkeditorPackages() as $name => $package) {
-            if (
-                $namespaces === null ||
-                in_array($package['namespace'], $namespaces, true) ||
-                empty(CkeditorConfig::getPluginsByPackage($package['namespace']))
-            ) {
-                $view->registerAssetBundle($name);
-            }
-        }
-    }
-
-    private static function loadCkeditorPackage(string $name, string $entry): void
-    {
-        if (isset(self::$loadedPackages[$name])) {
-            self::$loadedPackages[$name]['entry'] = $entry;
-            return;
-        }
-
-        $bundle = Craft::createObject($name);
-        if (!$bundle instanceof BaseCkeditorPackageAsset) {
-            Craft::warning("$name isn’t a CKEditor package asset bundle.", __METHOD__);
-            return;
-        }
-
-        self::$loadedPackages[$name] = [
-            'namespace' => $bundle->namespace,
-            'entry' => $entry,
-        ];
-        $bundle->registerPackage();
-    }
-
-    /**
-     * @var array<string,string> Package entry files, indexed by asset bundle class name
-     */
-    private static array $ckeditorPackages = [];
-
-    /**
-     * @var array<string,array{namespace:string,entry:string}>
-     * @see getCkeditorPackages()
-     */
-    private static array $loadedPackages = [];
-
-    /**
-     * @see getCkeditorPackages()
-     */
-    private static bool $packagesLoaded = false;
-
-    public string $schemaVersion = '5.6.0.0';
     public bool $hasCpSettings = true;
 
-    public function init(): void
+    protected array $fieldTypes = [Field::class];
+
+    protected array $commands = [
+        ConvertMatrixCommand::class,
+        ConvertRedactorCommand::class,
+    ];
+
+    protected array $publishables = [
+        __DIR__.'/../resources/assets/ckeditor/dist' => 'ckeditor',
+        __DIR__.'/../resources/assets/fieldsettings/dist' => 'fieldsettings',
+    ];
+
+    protected array $vite = [
+        'resources/js/cp.ts',
+    ];
+
+    /**
+     * Boots the plugin.
+     */
+    public function boot(NestedEntryFieldTypes $nestedEntryFieldTypes, UiControlTypes $controlTypes): void
     {
-        parent::init();
+        $nestedEntryFieldTypes->register(Field::class);
+        $controlTypes->register(CkeditorControl::class, EditorConfigControl::class);
+        $this->app->bind(Settings::class, fn () => $this->getSettings());
 
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
-            $view = Craft::$app->getView();
-            $assetManager = $view->getAssetManager();
-
-            $ckBundle = $assetManager->getBundle(CkeditorAsset::class);
-            $view->registerJsImport('ckeditor5', $assetManager->getAssetUrl($ckBundle, 'lib/ckeditor5.js', false));
-            $view->registerJsImport('ckeditor5/', UrlHelper::stripQueryString($assetManager->getAssetUrl($ckBundle, 'lib/', false)));
-            $view->registerJsImport('ckeditor5/translations/', UrlHelper::stripQueryString($assetManager->getAssetUrl($ckBundle, 'lib/translations/', false)));
-            $view->registerJsImport('@craftcms/ckeditor', $assetManager->getAssetUrl($ckBundle, 'ckeditor5-craftcms.js', false));
-
-            $configBundle = $assetManager->getBundle(FieldSettingsAsset::class);
-            $view->registerJsImport('@craftcms/ckeditor-config', $assetManager->getAssetUrl($configBundle, 'fieldsettings.js'));
-
-            // Wait until the page is being finalized, so packages registered from other plugins’ init() methods
-            // or onInit() callbacks are included regardless of load order
-            $view->on(View::EVENT_END_PAGE, function() use ($view, $assetManager) {
-                foreach (self::getCkeditorPackages() as $name => $package) {
-                    $bundle = $assetManager->getBundle($name);
-                    $view->registerJsImport($package['namespace'], $assetManager->getAssetUrl($bundle, $package['entry'], false));
-                }
-            });
+        if (request()->isCpRequest() && ! app()->runningInConsole()) {
+            // Wait until all plugins have booted, so packages registered from their boot() methods are included
+            $this->app->booted(fn () => $this->app->make(CkeditorAssets::class)->registerImportMap());
         }
-
-        Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, function(RegisterComponentTypesEvent $event) {
-            $event->types[] = Field::class;
-        });
-
-        Event::on(Fields::class, Fields::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES, function(RegisterComponentTypesEvent $event) {
-            $event->types[] = Field::class;
-        });
-
-        Event::on(Element::class, Element::EVENT_AFTER_PROPAGATE, function(ModelEvent $event) {
-            /** @var Element $element */
-            $element = $event->sender;
-            foreach ($this->entryManagers($element) as $entryManager) {
-                $entryManager->maintainNestedElements($element, $event->isNew);
-            }
-        });
-
-        Event::on(Element::class, Element::EVENT_DEFINE_DELETION_BLOCKERS, function(DefineElementDeletionBlockersEvent $event) {
-            $event->blockers[] = new ReferenceDeletionBlocker($event->elements, $event->hardDelete);
-        });
-
-        Event::on(Element::class, Element::EVENT_BEFORE_DELETE, function(ModelEvent $event) {
-            /** @var Element $element */
-            $element = $event->sender;
-            foreach ($this->entryManagers($element) as $entryManager) {
-                // Delete any entries that primarily belong to this element
-                $entryManager->deleteNestedElements($element, $element->hardDelete);
-            }
-        });
-
-        Event::on(Element::class, Element::EVENT_AFTER_RESTORE, function(Event $event) {
-            /** @var Element $element */
-            $element = $event->sender;
-            foreach ($this->entryManagers($element) as $entryManager) {
-                $entryManager->restoreNestedElements($element);
-            }
-        });
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function createSettingsModel(): ?Model
+    #[Override]
+    protected static function createSettings(): ?PluginSettings
     {
-        return new Settings();
+        return new Settings;
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function settingsHtml(): ?string
+    #[Override]
+    public function settingsUi(UiContext $context = new UiContext): ?Ui
     {
-        return Craft::$app->getView()->renderTemplate('ckeditor/_settings.twig', [
-            'settings' => $this->getSettings(),
+        return Ui::make([
+            UiField::make(t('License Key', category: 'ckeditor'), Text::make('licenseKey')
+                ->placeholder('GPL')
+                ->monospace()
+                ->textExpanderTriggers(SelectOptions::getEnvTextExpanderTriggers()))
+                ->instructions(t('A commercial CKEditor license key. If left blank, CKEditor will be used under the GPL license.', category: 'ckeditor'))
+                ->tip(t('This can be set to an environment variable.', category: 'ckeditor')),
         ]);
-    }
-
-    /**
-     * @param Element $element
-     * @return NestedElementManager[]
-     */
-    private function entryManagers(Element $element): array
-    {
-        $entryManagers = [];
-        $customFields = $element->getFieldLayout()?->getCustomFields() ?? [];
-        foreach ($customFields as $field) {
-            if ($field instanceof Field && !isset($entryManagers[$field->id])) {
-                $entryManagers[$field->id] = Field::entryManager($field);
-            }
-        }
-        return array_values($entryManagers);
     }
 }

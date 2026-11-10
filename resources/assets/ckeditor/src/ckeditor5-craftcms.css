@@ -1,0 +1,420 @@
+/* CSS variables */
+:root {
+  --ck-border-radius: var(--c-radius-sm, 3px) !important;
+  --ck-color-base-border: hsl(212deg 25% 50% / 25%) !important;
+  --ck-color-button-default-active-background: var(
+    --c-color-neutral-fill-normal,
+    #ced7e2
+  ) !important;
+  --ck-color-button-default-hover-background: var(
+    --c-color-neutral-fill-quiet,
+    #e9eef3
+  ) !important;
+  --ck-color-split-button-hover-border: transparent !important;
+  --ck-color-split-button-hover-background: color-mix(
+    in oklab,
+    var(--color-slate-400, #828fa4) 10%,
+    transparent
+  ) !important;
+  --ck-color-button-on-active-background: var(
+    --c-color-neutral-fill-normal,
+    #ced7e2
+  ) !important;
+  --ck-color-button-on-background: var(
+    --c-color-neutral-fill-normal,
+    #ced7e2
+  ) !important;
+  --ck-color-button-on-color: var(--c-text-default, #2b3549) !important;
+  --ck-color-button-on-hover-background: var(
+    --c-color-neutral-fill-normal,
+    #ced7e2
+  ) !important;
+  --ck-focus-outer-shadow: 0 0 0 var(--c-focus-outline-width, 2px)
+    var(--c-color-focus-outline, #3e74f2) !important;
+  --ck-focus-ring: 1px solid var(--ck-color-base-border) !important;
+  --ck-color-list-button-on-background-focus: var(
+    --c-color-accent-fill-normal,
+    #c1d9fb
+  ) !important;
+  --ck-color-list-button-on-background: var(
+    --c-color-accent-fill-normal,
+    #c1d9fb
+  ) !important;
+  --ck-color-shadow-drop-active: var(--ck-color-shadow-drop) !important;
+  --ck-color-shadow-drop: hsl(210deg 24% 16% / 20%) !important;
+  --ck-color-text: var(--c-text-default, #2b3549) !important;
+  --ck-color-toolbar-border: var(--ck-color-base-border) !important;
+  --ck-drop-shadow-active: var(--ck-drop-shadow) !important;
+  --ck-drop-shadow:
+    0 0 0 1px hsl(210, 24%, 16%, 0.1), 0 5px 20px hsl(210, 24%, 16%, 0.25) !important;
+  --ck-spacing-unit: 0.69em !important;
+  --ck-powered-by-line-height: 8px;
+  --ck-powered-by-padding-vertical: 0px;
+  --ck-powered-by-padding-horizontal: 0px;
+  --ck-color-base-background: var(--c-form-control-fill, #fbfcfe) !important;
+  /* fullscreen mode bg */
+  --ck-color-base-foreground: var(--c-surface-default, #fff) !important;
+  --ck-color-toolbar-background: var(--c-surface-white, #fff) !important;
+  --ck-content-font-color: var(--c-text-default, #2b3549);
+  --ck-content-font-family:
+    system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto',
+    'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+    'Helvetica Neue', sans-serif;
+
+  --ck-color-button-action-background: var(
+    --c-color-accent-fill-loud,
+    #305ce7
+  ) !important;
+  --ck-color-button-action-hover-background: hsl(
+    from var(--c-color-accent-fill-loud, #305ce7) h s calc(l - 5)
+  ) !important;
+  --ck-color-button-action-active-background: hsl(
+    from var(--c-color-accent-fill-loud, #305ce7) h s calc(l - 10)
+  ) !important;
+  --ck-color-button-action-disabled-background: #d38d8f !important;
+  --ck-color-button-action-text: var(--c-color-accent-on-loud, #fff) !important;
+
+  --ck-border-radius: var(--c-input-radius, 4px) !important;
+  --ck-color-input-border: var(
+    --c-form-control-border-color,
+    #828fa4
+  ) !important;
+  --ck-color-input-background: var(--c-form-control-fill, #fbfcfe) !important;
+  --ck-color-panel-background: var(--c-surface-white, #fff) !important;
+  --ck-ui-component-min-height: var(--c-form-control-height, 2rem) !important;
+
+  --ck-color-switch-button-on-background: var(--ck-color-base-action);
+}
+
+.ck.ck-sticky-panel .ck-sticky-panel__content_sticky .ck.ck-toolbar {
+  border-block-start-width: 0;
+}
+
+/* the block inset comes from CKEditor’s first/last child margins, so don't add padding on top of them */
+.ck.ck-editor__editable_inline {
+  padding-block: 0 !important;
+  padding-inline: var(--c-spacing-lg, 1rem) !important;
+}
+
+/* don't apply the focus ring in fullscreen */
+.ck-editor__main
+  > .ck.ck-editor__editable.ck-focused:not(.ck-editor__nested-editable) {
+  box-shadow: var(--ck-focus-outer-shadow) !important;
+}
+
+.ck.ck-dropdown__panel {
+  border: none !important;
+}
+
+.ck.ck-dropdown__panel-visible {
+  max-height: 50vh;
+  overflow-y: scroll;
+}
+
+.ck-toolbar-dropdown .ck.ck-dropdown__panel-visible {
+  overflow: visible;
+}
+
+.ck.ck-dropdown .ck-button.ck-dropdown__button.ck-on {
+  border-end-start-radius: var(--ck-border-radius) !important;
+  border-end-end-radius: var(--ck-border-radius) !important;
+}
+
+.ck-rounded-corners .ck.ck-toolbar,
+.ck.ck-toolbar.ck-rounded-corners {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.ck.ck-dropdown__panel.ck-dropdown__panel_se,
+.ck.ck-dropdown .ck-dropdown__panel .ck-list.ck-rounded-corners,
+.ck.ck-dropdown
+  .ck-dropdown__panel
+  .ck-list
+  .ck-list__item:first-child
+  .ck-button.ck-rounded-corners,
+.ck-rounded-corners .ck.ck-dropdown .ck-dropdown__panel .ck-list,
+.ck-rounded-corners
+  .ck.ck-dropdown
+  .ck-dropdown__panel
+  .ck-list
+  .ck-list__item:first-child
+  .ck-button {
+  border-start-start-radius: var(--ck-border-radius) !important;
+}
+
+/* content */
+.ck.ck-content {
+  background-clip: padding-box;
+}
+
+/* the control panel’s CSS reset removes block margins, so restore the browser defaults; `:where()` keeps CKEditor’s first/last child margins in charge */
+.ck.ck-content
+  :where(:is(p, h1, h2, h3, h4, h5, h6, ul, ol):not(.ck-widget *)) {
+  margin-block: revert;
+}
+
+.ck.ck-content ul:last-child,
+.ck.ck-content ol:last-child {
+  padding-block-end: 0 !important;
+}
+
+.ck.ck-content[dir='ltr'] :is(ul, ol) {
+  padding-inline-start: 40px;
+}
+
+.ck.ck-content[dir='rtl'] :is(ul, ol) {
+  padding-inline-end: 40px;
+}
+
+/* code blocks */
+.ck.ck-editor__editable pre[data-language]::after {
+  inset-block-start: 0 !important;
+  text-shadow: none;
+  border-radius: 0 0 var(--ck-border-radius) var(--ck-border-radius);
+}
+
+/* vertical panel dropdowns */
+.ck.ck-link-form_layout-vertical .ck.ck-dropdown {
+  display: block;
+  min-width: 50%;
+}
+
+.ck.ck-link-form_layout-vertical
+  .ck.ck-dropdown
+  .ck-button.ck-dropdown__button
+  .ck-button__label {
+  width: 100%;
+}
+
+.ck.ck-link-form_layout-vertical .ck.ck-dropdown__panel .ck.ck-list {
+  margin: 0;
+}
+
+/* word count */
+.ck-with-show-word-count .ck.ck-content {
+  border-radius: 0 !important;
+}
+
+.ck-word-count {
+  padding-block: var(--c-spacing-md, 0.5rem);
+  padding-inline: var(--c-spacing-lg, 1rem);
+  border: solid var(--ck-color-base-border);
+  border-width: 0 1px 1px;
+  border-end-start-radius: var(--ck-border-radius);
+  border-end-end-radius: var(--ck-border-radius);
+  background: var(--ck-color-base-background);
+}
+
+/* nested entries */
+.cke-entry-card {
+  margin-block: 0.9em;
+  margin-inline: auto; /* same as images */
+  border-radius: var(--c-radius-lg, 6px);
+  font-size: var(--c-text-base, 0.875rem);
+}
+
+/* the card’s own lists, e.g. its status badges, shouldn’t get the content list styles */
+.ck.ck-content .cke-entry-card ul {
+  list-style: none;
+  padding-inline: 0 !important;
+}
+/* end nested entries */
+
+.ck-toolbar .entry-type-button {
+  .icon {
+    color: var(--c-text-quiet, currentColor);
+
+    &:hover {
+      color: var(--c-text-quiet, currentColor) !important;
+    }
+
+    .ck-button__label {
+      color: var(--ck-color-text);
+    }
+  }
+}
+
+/* start fix for https://github.com/craftcms/ckeditor/issues/345 and https://github.com/craftcms/ckeditor/issues/417 */
+form[class^='lp-editor'] .ck-toolbar_grouping,
+form[class*=' lp-editor'] .ck-toolbar_grouping,
+.so-body .ck-toolbar_grouping {
+  position: relative !important;
+}
+
+form[class^='lp-editor'] .ck-toolbar_grouping .ck.ck-dropdown,
+form[class*=' lp-editor'] .ck-toolbar_grouping .ck.ck-dropdown,
+.so-body .ck-toolbar_grouping .ck.ck-dropdown {
+  position: static;
+}
+
+form[class^='lp-editor'] .ck.ck-toolbar-dropdown > .ck-dropdown__panel,
+form[class*=' lp-editor'] .ck.ck-toolbar-dropdown > .ck-dropdown__panel,
+.so-body .ck.ck-toolbar-dropdown > .ck-dropdown__panel {
+  width: 100%;
+}
+
+form[class^='lp-editor']
+  .ck.ck-editor
+  .ck-editor__top
+  .ck-sticky-panel
+  .ck-toolbar,
+form[class*=' lp-editor']
+  .ck.ck-editor
+  .ck-editor__top
+  .ck-sticky-panel
+  .ck-toolbar,
+.so-body .ck.ck-editor .ck-editor__top .ck-sticky-panel .ck-toolbar {
+  z-index: auto;
+}
+/* end fix */
+
+/* patch in https://github.com/ckeditor/ckeditor5/pull/15795 */
+.ck.ck-editor__editable_inline > :last-child,
+.ck.ck-editor__editable_inline
+  > :has(+ .ck-fake-selection-container:last-child) {
+  margin-block-end: var(--ck-spacing-large);
+}
+
+/*
+I Couldn't track down why this is necessary, but without it bookmark markers take up the full-width
+of the editor despite being `display: inline`
+ */
+.ck.ck-content .ck-bookmark {
+  display: inline-block;
+  vertical-align: middle;
+  margin-inline-end: 0.125em;
+}
+
+/* ck fullscreen */
+body.ck-fullscreen .slideout-shade {
+  z-index: calc(
+    var(--ck-z-fullscreen) + 1000
+  ); /* +1000 because of .ck.ck-balloon-panel z-index */
+}
+
+body.ck-fullscreen .slideout-container {
+  z-index: calc(var(--ck-z-fullscreen) + 1000);
+}
+
+/* link ui */
+.ck-form__row .ck.ck-button-bold,
+.ck-form__row a.ck.ck-button-bold {
+  font-weight: normal;
+}
+
+.ck.ck-labeled-field-view.ck-labeled-field-view_empty .ck.ck-label {
+  /* that's the placeholder text inside an input; e.g. link > advanced fields or bookmark > bookmark name */
+  padding-top: 3px !important;
+}
+
+.ck.ck-form .link-type-group .ck.ck-dropdown .ck-dropdown__button:not(:focus) {
+  border: none;
+  border-radius: 5px;
+}
+
+.link-type-group {
+  --ck-color-button-default-background: var(
+    --c-color-neutral-fill-quiet,
+    #e9eef3
+  ) !important;
+  --ck-color-button-default-hover-background: var(
+    --c-color-neutral-fill-normal,
+    #ced7e2
+  ) !important;
+}
+
+.link-type-group .ck.ck-labeled-field-view {
+  width: 100%;
+}
+
+/* wrap and space the items like Craft 5’s `.flex` did, so the `.break` puts the sites dropdown on its own line */
+.link-type-group.ck.ck-form__row {
+  justify-content: start;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--c-spacing-md, 0.5rem);
+}
+
+.ck.ck-form__row > :not(.ck-label) + * {
+  margin-inline-start: 0;
+}
+
+.link-type-group.ck.ck-form__row .ck.ck-labeled-field-view {
+  margin-block-start: var(--ck-spacing-small);
+}
+
+.ck.ck-link-form_layout-vertical .link-type-group .ck.ck-dropdown {
+  min-width: 47%;
+}
+
+.link-type-group.ck.ck-form__row .elementselect {
+  margin-inline: 0;
+  max-width: 50%;
+}
+
+.ck.ck-link-form_layout-vertical {
+  min-width: 24em;
+}
+
+.break {
+  flex-basis: 100%;
+  height: 0;
+}
+
+.menu {
+  z-index: calc(var(--ck-z-panel) + 1);
+}
+
+.ck.link-type-advanced {
+  padding: var(--ck-spacing-standard) var(--ck-spacing-large) 0;
+}
+
+.ck.link-type-advanced .pane.hairline {
+  border: 0;
+  padding: 0 var(--ck-spacing-large);
+}
+
+.ck.link-type-advanced .ck.ck-labeled-field-view {
+  margin-block: var(--ck-spacing-medium-small);
+}
+
+@media screen and (max-width: 600px) {
+  .ck.ck-form.ck-link-form.ck-responsive-form
+    .ck.link-type-advanced
+    .ck-labeled-field-view {
+    margin-block: var(--ck-spacing-large) 0;
+
+    &:last-child {
+      margin-block-end: var(--ck-spacing-large);
+    }
+  }
+}
+
+.ck.link-type-advanced .pane.hairline {
+  display: flex;
+  flex-direction: column;
+}
+
+.ck.link-type-advanced .pane.hairline .ck.ck-button {
+  padding: 0 !important;
+}
+
+.ck.link-type-advanced .pane.hairline .ck.ck-button .ck-button__toggle {
+  margin-inline-start: 0;
+}
+
+.ck.link-type-advanced .pane.hairline .ck-button:nth-last-child(2)::after {
+  border: none;
+}
+
+.ck.ck-read-only {
+  cursor: not-allowed;
+}
+
+.ck.ck-text-alternative-form .btn {
+  background-color: var(--c-color-neutral-fill-quiet, #e9eef3) !important;
+}
+.ck.ck-text-alternative-form .btn:hover {
+  background: var(--c-color-neutral-fill-normal, #ced7e2) !important;
+}

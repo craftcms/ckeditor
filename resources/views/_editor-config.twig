@@ -1,0 +1,190 @@
+{#
+ # The toolbar builder (`part` = `toolbar`), config options (`options`) or custom styles (`styles`) input
+ # for a CKEditor field’s settings. The field labels and instructions come from the settings UI.
+ #
+ # Rendered for the `ckeditor:editor-config` UI controls, which initialize the JavaScript.
+ # Element IDs are namespaced with the control’s container ID, so several instances can coexist.
+ #}
+{% set readOnly = readOnly ?? false %}
+
+{% if part == 'toolbar' %}
+
+    <div id="{{ 'toolbar-builder'|namespaceInputId }}" class="ckeditor-tb pane{{ readOnly ? ' disabled' : '' }}" data-available-items="{{ toolbarItems|json_encode }}">
+        <div class="ck ck-reset_all">
+            <div class="ckeditor-tb--items ckeditor-tb--source ck ck-reset ck-editor ck-rounded-corners">
+                <div class="ck ck-toolbar">
+                    <div class="ck ck-toolbar__items"></div>
+                </div>
+            </div>
+
+            <div class="ckeditor-tb--items ckeditor-tb--target ck ck-reset ck-editor ck-rounded-corners">
+                <div class="ck ck-editor__top">
+                    <div class="ck ck-toolbar">
+                        <div class="ck ck-toolbar__items"></div>
+                    </div>
+                </div>
+                <div class="ck ck-editor__main">
+                    <div class="ck ck-content ck-editor__editable ck-editor__editable_inline"></div>
+                </div>
+            </div>
+        </div>
+
+        {{ hiddenInput('toolbar', field.toolbar|json_encode) }}
+    </div>
+
+{% elseif part == 'options' %}
+
+    <div id="{{ 'config-options'|namespaceInputId }}">
+        <craft-listbox>
+            <craft-button-group aria-label="{{ 'CKEditor config option mode'|t('ckeditor') }}">
+                <craft-button type="button" variant="outline" size="small" data-mode="json" aria-pressed="{{ configMode == 'json' ? 'true' : 'false' }}"{{ configMode == 'json' ? ' active' }}>JSON</craft-button>
+                <craft-button type="button" variant="outline" size="small" data-mode="js" aria-pressed="{{ configMode == 'js' ? 'true' : 'false' }}"{{ configMode == 'js' ? ' active' }}>JavaScript</craft-button>
+                <craft-button type="button" variant="outline" size="small" data-mode="file" aria-pressed="{{ configMode == 'file' ? 'true' : 'false' }}"{{ configMode == 'file' ? ' active' }}>File</craft-button>
+            </craft-button-group>
+        </craft-listbox>
+        <input type="hidden" id="{{ 'config-options-mode'|namespaceInputId }}" name="configMode" value="{{ configMode }}">
+    </div>
+
+    {% tag 'div' with {
+        id: 'config-options-json-container'|namespaceInputId,
+        class: {
+            'mt-md': true,
+            hidden: configMode != 'json',
+            disabled: readOnly,
+        }|filter|keys,
+    } %}
+        {# TODO(code-editor): restore once craft-code-editor supports Craft 6 (as a plain `<textarea>` again)
+        tag('textarea', {
+            ...
+            data: {
+                'code-editor': 'ckeditor:EditorConfigJson',
+                'code-editor-language': 'json',
+            },
+        }) #}
+        {{ ui('textarea', {
+            id: 'config-options-json'|namespaceInputId,
+            name: 'json',
+            value: field.json ?? "{\n  \n}",
+            rows: 10,
+            monospace: true,
+            readOnly: readOnly,
+        }) }}
+    {% endtag %}
+
+    {% tag 'div' with {
+        id: 'config-options-js-container'|namespaceInputId,
+        class: {
+            'mt-md': true,
+            hidden: configMode != 'js',
+            disabled: readOnly,
+        }|filter|keys,
+    } %}
+        {# TODO(code-editor): restore once craft-code-editor supports Craft 6 (as a plain `<textarea>` again)
+        tag('textarea', {
+            ...
+            data: {
+                'code-editor': 'ckeditor:EditorConfigJs',
+                'code-editor-language': 'javascript',
+            },
+        }) #}
+        {{ ui('textarea', {
+            id: 'config-options-js'|namespaceInputId,
+            name: 'js',
+            value: field.js ?? "return {\n  \n}",
+            rows: 10,
+            monospace: true,
+            readOnly: readOnly,
+        }) }}
+    {% endtag %}
+
+    {% tag 'div' with {
+        id: 'config-options-file-container'|namespaceInputId,
+        class: {
+            'mt-md': true,
+            hidden: configMode != 'file',
+            disabled: readOnly,
+        }|filter|keys,
+    } %}
+        {% if jsFileOptions|length %}
+            <p class="text-quiet mb-xs">
+                {{ 'Choose a JS/JSON file within `config/craft/ckeditor/`.'|t('ckeditor')|md(inlineOnly=true) }}
+            </p>
+            {{ ui('select', {
+                id: 'config-options-file'|namespaceInputId,
+                name: 'jsFile',
+                options: jsFileOptions,
+                value: field.jsFile,
+            }) }}
+        {% else %}
+            {{ ui('callout', {
+                variant: 'warning',
+                content: 'No JS/JSON files exist within `config/craft/ckeditor/`.'|t('ckeditor')|md(inlineOnly=true),
+            }) }}
+        {% endif %}
+    {% endtag %}
+
+{% elseif part == 'styles' %}
+
+    <div id="{{ 'css-options'|namespaceInputId }}">
+        <craft-listbox>
+            <craft-button-group aria-label="{{ 'CSS mode'|t('ckeditor') }}">
+                <craft-button type="button" variant="outline" size="small" data-mode="css" aria-pressed="{{ cssMode == 'css' ? 'true' : 'false' }}"{{ cssMode == 'css' ? ' active' }}>CSS</craft-button>
+                <craft-button type="button" variant="outline" size="small" data-mode="file" aria-pressed="{{ cssMode == 'file' ? 'true' : 'false' }}"{{ cssMode == 'file' ? ' active' }}>File</craft-button>
+            </craft-button-group>
+        </craft-listbox>
+        <input type="hidden" id="{{ 'css-options-mode'|namespaceInputId }}" name="cssMode" value="{{ cssMode }}">
+    </div>
+
+    {% tag 'div' with {
+        id: 'css-options-css-container'|namespaceInputId,
+        class: {
+            'mt-md': true,
+            hidden: cssMode != 'css',
+            disabled: readOnly,
+        }|filter|keys,
+    } %}
+        {# TODO(code-editor): restore once craft-code-editor supports Craft 6 (as a plain `<textarea>` again)
+        tag('textarea', {
+            ...
+            data: {
+                'code-editor': 'CodeEditor',
+                'code-editor-language': 'css',
+            },
+        }) #}
+        {{ ui('textarea', {
+            id: 'css-options-css'|namespaceInputId,
+            name: 'css',
+            value: cssMode == 'css' ? field.css,
+            rows: 10,
+            monospace: true,
+            readOnly: readOnly,
+        }) }}
+    {% endtag %}
+
+    {% tag 'div' with {
+        id: 'css-options-file-container'|namespaceInputId,
+        class: {
+            'mt-md': true,
+            hidden: cssMode != 'file',
+            disabled: readOnly,
+        }|filter|keys,
+    } %}
+        {% if cssFileOptions|length %}
+            <p class="text-quiet mb-xs">
+                {{ 'Choose a CSS file within `config/craft/ckeditor/`.'|t('ckeditor')|md(inlineOnly=true) }}
+            </p>
+            {{ ui('select', {
+                id: 'css-options-file'|namespaceInputId,
+                name: 'cssFile',
+                options: cssFileOptions,
+                value: field.cssFile,
+            }) }}
+        {% else %}
+            {{ ui('callout', {
+                variant: 'warning',
+                content: 'No CSS files exist within `config/craft/ckeditor/`.'|t('ckeditor')|md(inlineOnly=true),
+            }) }}
+        {% endif %}
+    {% endtag %}
+
+{% endif %}

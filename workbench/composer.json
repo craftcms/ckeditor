@@ -1,0 +1,9 @@
+{
+  "name": "craftcms/ckeditor-workbench",
+  "type": "project",
+  "autoload": {
+    "psr-4": {
+      "Workbench\\App\\": "app/"
+    }
+  }
+}
