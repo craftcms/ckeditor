@@ -2108,7 +2108,6 @@ JS;
             ],
             'transforms' => $transforms,
             'ui' => [
-                'viewportOffset' => ['top' => 44],
                 'poweredBy' => [
                     'position' => 'outside',
                     'label' => '',
