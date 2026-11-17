@@ -1,33 +1,42 @@
 /* CSS variables */
 :root {
   --ck-border-radius: var(--c-radius-sm, 3px) !important;
-  --ck-color-base-border: hsl(212deg 25% 50% / 25%) !important;
-  --ck-color-button-default-active-background: var(
-    --c-color-neutral-fill-normal,
-    #ced7e2
+  --ck-color-base-border: var(--c-color-neutral-border-quiet) !important;
+  /* hover, press and toggled-on states like the control panel’s plain buttons */
+  --ck-color-button-default-active-background: color-mix(
+    in oklab,
+    var(--c-color-neutral-fill-quiet),
+    var(--c-color-mix-active)
   ) !important;
-  --ck-color-button-default-hover-background: var(
-    --c-color-neutral-fill-quiet,
-    #e9eef3
+  --ck-color-button-default-hover-background: color-mix(
+    in oklab,
+    var(--c-color-neutral-fill-quiet),
+    var(--c-color-mix-hover)
   ) !important;
   --ck-color-split-button-hover-border: transparent !important;
   --ck-color-split-button-hover-background: color-mix(
     in oklab,
-    var(--color-slate-400, #828fa4) 10%,
-    transparent
+    var(--c-color-neutral-fill-quiet),
+    var(--c-color-mix-hover)
   ) !important;
-  --ck-color-button-on-active-background: var(
-    --c-color-neutral-fill-normal,
-    #ced7e2
+  /* tooltips like the control panel’s, which stay dark in both themes */
+  --ck-color-tooltip-background: var(--c-color-black-fill-loud) !important;
+  --ck-color-tooltip-text: var(--c-color-black-on-loud) !important;
+  --ck-color-button-on-active-background: color-mix(
+    in oklab,
+    var(--c-color-neutral-fill-quiet),
+    var(--c-color-mix-active)
   ) !important;
-  --ck-color-button-on-background: var(
-    --c-color-neutral-fill-normal,
-    #ced7e2
+  --ck-color-button-on-background: color-mix(
+    in oklab,
+    var(--c-color-neutral-fill-quiet),
+    var(--c-color-mix-active)
   ) !important;
   --ck-color-button-on-color: var(--c-text-default, #2b3549) !important;
-  --ck-color-button-on-hover-background: var(
-    --c-color-neutral-fill-normal,
-    #ced7e2
+  --ck-color-button-on-hover-background: color-mix(
+    in oklab,
+    var(--c-color-neutral-fill-quiet),
+    var(--c-color-mix-active)
   ) !important;
   --ck-focus-outer-shadow: 0 0 0 var(--c-focus-outline-width, 2px)
     var(--c-color-focus-outline, #3e74f2) !important;
@@ -41,21 +50,55 @@
     #c1d9fb
   ) !important;
   --ck-color-shadow-drop-active: var(--ck-color-shadow-drop) !important;
-  --ck-color-shadow-drop: hsl(210deg 24% 16% / 20%) !important;
+  /* shadows like the control panel’s popovers, tinted and scaled per theme */
+  --ck-color-shadow-drop: rgb(
+    var(--c-shadow-tint) / calc(0.1 * var(--c-shadow-multiplier))
+  ) !important;
   --ck-color-text: var(--c-text-default, #2b3549) !important;
   --ck-color-toolbar-border: var(--ck-color-base-border) !important;
   --ck-drop-shadow-active: var(--ck-drop-shadow) !important;
+  /* the 1px ring stands in for the border that dropdown panels don’t have */
   --ck-drop-shadow:
-    0 0 0 1px hsl(210, 24%, 16%, 0.1), 0 5px 20px hsl(210, 24%, 16%, 0.25) !important;
+    0 0 0 1px var(--c-color-neutral-border-quiet), var(--c-shadow-overlay) !important;
   --ck-spacing-unit: 0.69em !important;
   --ck-powered-by-line-height: 8px;
   --ck-powered-by-padding-vertical: 0px;
   --ck-powered-by-padding-horizontal: 0px;
-  --ck-color-base-background: var(--c-form-control-fill, #fbfcfe) !important;
+  --ck-color-base-background: var(--c-surface-overlay, #fff) !important;
   /* fullscreen mode bg */
   --ck-color-base-foreground: var(--c-surface-default, #fff) !important;
   --ck-color-toolbar-background: var(--c-surface-white, #fff) !important;
   --ck-content-font-color: var(--c-text-default, #2b3549);
+  /* image and table captions follow the theme instead of CKEditor’s fixed light colours */
+  --ck-content-color-image-caption-background: var(
+    --c-color-neutral-fill-quiet
+  ) !important;
+  --ck-content-color-image-caption-text: var(--c-text-default) !important;
+  --ck-content-color-table-caption-background: var(
+    --c-color-neutral-fill-quiet
+  ) !important;
+  --ck-content-color-table-caption-text: var(--c-text-default) !important;
+  /* UI colours CKEditor hard-codes for a light background */
+  --ck-color-base-text: var(--c-text-default) !important;
+  --ck-color-editable-blur-selection: color-mix(
+    in oklab,
+    var(--c-text-default) 20%,
+    transparent
+  ) !important;
+  --ck-color-link-default: var(--c-text-link) !important;
+  --ck-color-input-disabled-background: var(
+    --c-status-disabled-fill
+  ) !important;
+  --ck-color-input-disabled-text: var(--c-status-disabled-text) !important;
+  --ck-color-button-on-disabled-background: var(
+    --c-status-disabled-fill
+  ) !important;
+  --ck-color-widget-blurred-border: var(
+    --c-color-neutral-border-quiet
+  ) !important;
+  --ck-color-engine-placeholder-text: var(
+    --c-form-control-placeholder
+  ) !important;
   --ck-content-font-family:
     system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto',
     'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
@@ -79,11 +122,35 @@
     --c-form-control-border-color,
     #828fa4
   ) !important;
-  --ck-color-input-background: var(--c-form-control-fill, #fbfcfe) !important;
+  --ck-color-input-background: var(
+    --c-input-fill,
+    var(--c-form-control-fill, var(--c-surface-form))
+  ) !important;
   --ck-color-panel-background: var(--c-surface-white, #fff) !important;
   --ck-ui-component-min-height: var(--c-form-control-height, 2rem) !important;
 
-  --ck-color-switch-button-on-background: var(--ck-color-base-action);
+  /* switches like the control panel’s */
+  --ck-color-switch-button-on-background: var(
+    --c-color-accent-fill-loud
+  ) !important;
+  --ck-color-switch-button-on-hover-background: hsl(
+    from var(--c-color-accent-fill-loud) h s calc(l - 5)
+  ) !important;
+  --ck-color-switch-button-off-background: var(
+    --c-color-neutral-fill-quiet
+  ) !important;
+  --ck-color-switch-button-off-hover-background: color-mix(
+    in oklab,
+    var(--c-color-neutral-fill-quiet),
+    var(--c-color-mix-hover)
+  ) !important;
+  --ck-color-switch-button-inner-background: var(--c-surface-raised) !important;
+  /* the knob’s hover halo */
+  --ck-color-switch-button-inner-shadow: color-mix(
+    in oklab,
+    var(--c-text-default) 10%,
+    transparent
+  ) !important;
 }
 
 .ck.ck-sticky-panel .ck-sticky-panel__content_sticky .ck.ck-toolbar {
@@ -148,6 +215,15 @@
   background-clip: padding-box;
 }
 
+/* match the control panel’s other inputs, which take on their container’s background */
+.ck.ck-editor__main > .ck-editor__editable,
+.ck-word-count {
+  background: var(
+    --c-input-fill,
+    var(--c-form-control-fill, var(--c-surface-form))
+  ) !important;
+}
+
 /* the control panel’s CSS reset removes block margins, so restore the browser defaults; `:where()` keeps CKEditor’s first/last child margins in charge */
 .ck.ck-content
   :where(:is(p, h1, h2, h3, h4, h5, h6, ul, ol):not(.ck-widget *)) {
@@ -165,6 +241,63 @@
 
 .ck.ck-content[dir='rtl'] :is(ul, ol) {
   padding-inline-end: 40px;
+}
+
+/* content colours CKEditor hard-codes for a light background */
+.ck.ck-content pre {
+  color: var(--c-text-default) !important;
+  border-color: var(--c-color-neutral-border-quiet) !important;
+}
+
+.ck.ck-content blockquote {
+  border-left-color: var(--c-color-neutral-border-quiet) !important;
+  border-right-color: var(--c-color-neutral-border-quiet) !important;
+}
+
+.ck.ck-content hr {
+  background: var(--c-color-neutral-border-quiet) !important;
+}
+
+/* the editor wraps the checkbox in a non-editable span; the saved markup doesn't */
+.ck.ck-content .todo-list .todo-list__label > input:not([checked])::before,
+.ck.ck-content
+  .todo-list
+  .todo-list__label
+  > span[contenteditable='false']
+  > input:not([checked])::before {
+  border-color: var(--c-form-control-border-color) !important;
+}
+
+/* hover halo, like CKEditor’s 10% black but from the theme’s text colour */
+.ck-editor__editable.ck-content
+  .todo-list
+  .todo-list__label
+  > input:hover::before,
+.ck-editor__editable.ck-content
+  .todo-list
+  .todo-list__label
+  > span[contenteditable='false']
+  > input:hover::before {
+  box-shadow: 0 0 0 5px
+    color-mix(in oklab, var(--c-text-default) 10%, transparent) !important;
+}
+
+.ck.ck-content
+  :is(table.table:not(.layout-table), figure.table:not(.layout-table) > table),
+.ck.ck-content
+  :is(table.table:not(.layout-table), figure.table:not(.layout-table) > table)
+  :is(td, th) {
+  border-color: var(--c-color-neutral-border-quiet) !important;
+}
+
+.ck.ck-content .page-break::after {
+  border-bottom-color: var(--c-color-neutral-border-quiet) !important;
+}
+
+.ck.ck-content .page-break__label {
+  color: var(--c-text-default) !important;
+  background: var(--c-surface-overlay) !important;
+  border-color: var(--c-color-neutral-border-quiet) !important;
 }
 
 /* code blocks */
@@ -203,7 +336,6 @@
   border-width: 0 1px 1px;
   border-end-start-radius: var(--ck-border-radius);
   border-end-end-radius: var(--ck-border-radius);
-  background: var(--ck-color-base-background);
 }
 
 /* nested entries */
@@ -297,6 +429,18 @@ body.ck-fullscreen .slideout-container {
   z-index: calc(var(--ck-z-fullscreen) + 1000);
 }
 
+/* while a switch is off, border its track and outline its knob, like the control panel’s; the knob’s inset outline doesn’t change its size or clash with the hover halo */
+.ck.ck-button.ck-switchbutton:not(.ck-on) .ck-button__toggle {
+  border-color: var(--c-form-control-border-color);
+}
+
+.ck.ck-button.ck-switchbutton:not(.ck-on)
+  .ck-button__toggle
+  .ck-button__toggle__inner {
+  outline: 1px solid var(--c-form-control-border-color);
+  outline-offset: -1px;
+}
+
 /* link ui */
 .ck-form__row .ck.ck-button-bold,
 .ck-form__row a.ck.ck-button-bold {
@@ -308,19 +452,22 @@ body.ck-fullscreen .slideout-container {
   padding-top: 3px !important;
 }
 
+/* style the link type dropdown like the control panel’s selects */
 .ck.ck-form .link-type-group .ck.ck-dropdown .ck-dropdown__button:not(:focus) {
-  border: none;
-  border-radius: 5px;
+  border: var(--c-form-control-border-width) var(--c-form-control-border-style)
+    var(--c-form-control-border-color);
+  border-radius: var(--c-input-radius);
 }
 
 .link-type-group {
   --ck-color-button-default-background: var(
-    --c-color-neutral-fill-quiet,
-    #e9eef3
+    --c-input-fill,
+    var(--c-form-control-fill)
   ) !important;
-  --ck-color-button-default-hover-background: var(
-    --c-color-neutral-fill-normal,
-    #ced7e2
+  --ck-color-button-default-hover-background: color-mix(
+    in oklab,
+    var(--c-input-fill, var(--c-form-control-fill)),
+    var(--c-color-mix-hover)
   ) !important;
 }
 
@@ -412,9 +559,18 @@ body.ck-fullscreen .slideout-container {
   cursor: not-allowed;
 }
 
+/* style the “Sync from asset” button like the control panel’s default `.btn` */
 .ck.ck-text-alternative-form .btn {
-  background-color: var(--c-color-neutral-fill-quiet, #e9eef3) !important;
+  color: var(--c-color-neutral-on-normal) !important;
+  background-color: var(--c-color-neutral-fill-normal) !important;
 }
 .ck.ck-text-alternative-form .btn:hover {
-  background: var(--c-color-neutral-fill-normal, #ced7e2) !important;
+  background: hsl(
+    from var(--c-color-neutral-fill-normal) h s calc(l - 5)
+  ) !important;
+}
+.ck.ck-text-alternative-form .btn:active {
+  background: hsl(
+    from var(--c-color-neutral-fill-normal) h s calc(l - 10)
+  ) !important;
 }

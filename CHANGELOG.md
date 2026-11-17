@@ -1,5 +1,10 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- CKEditor fields and the toolbar builder now use the control panel’s theme colors, so they look right in dark mode. ([#648](https://github.com/craftcms/ckeditor/issues/648))
+- Fixed a bug where CKEditor field content was hard to read in dark mode. ([#648](https://github.com/craftcms/ckeditor/issues/648))
+
 ## 6.0.0-beta.1 - 2026-11-10
 
 - Added the “License Key” plugin setting, which can be set to a commercial CKEditor license key. ([#638](https://github.com/craftcms/ckeditor/pull/638))
