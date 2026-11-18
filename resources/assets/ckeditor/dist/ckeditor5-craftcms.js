@@ -540,7 +540,7 @@ var he = class extends v {
 					"data-entry-id": r,
 					"data-site-id": i
 				});
-				return t(e, n, a), k(a, n);
+				return t(e, a), k(a, n);
 			}
 		}), e.for("dataDowncast").elementToElement({
 			model: "craftEntryModel",
@@ -552,17 +552,18 @@ var he = class extends v {
 				});
 			}
 		});
-		let t = (e, t, n) => {
+		let t = (e, t) => {
 			this._getCardHtml(e).then((e) => {
-				let r = t.createRawElement("div", null, function(t) {
-					t.innerHTML = e.cardHtml, j.appendHeadHtml(e.headHtml).then(() => j.appendBodyHtml(e.bodyHtml));
-				});
-				t.insert(t.createPositionAt(n, 0), r);
-				let i = this.editor;
-				i.editing.view.focus(), setTimeout(() => {
-					j.loadElementThumbs(i.ui.element);
-				}, 100), i.model.change((e) => {
-					i.ui.update(), i.sourceElement.dispatchEvent(new KeyboardEvent("keyup", { bubbles: !0 }));
+				let n = this.editor;
+				n.editing.view.change((n) => {
+					let r = n.createRawElement("div", null, function(t) {
+						t.innerHTML = e.cardHtml, j.appendHeadHtml(e.headHtml).then(() => j.appendBodyHtml(e.bodyHtml));
+					});
+					n.insert(n.createPositionAt(t, 0), r);
+				}), setTimeout(() => {
+					j.loadElementThumbs(n.ui.element);
+				}, 100), n.model.change((e) => {
+					n.ui.update(), n.sourceElement.dispatchEvent(new KeyboardEvent("keyup", { bubbles: !0 }));
 				});
 			});
 		};
