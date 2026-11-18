@@ -4,6 +4,7 @@
 
 - CKEditor fields and the toolbar builder now use the control panel’s theme colors, so they look right in dark mode. ([#648](https://github.com/craftcms/ckeditor/issues/648))
 - Fixed a bug where CKEditor field content was hard to read in dark mode. ([#648](https://github.com/craftcms/ckeditor/issues/648))
+- Fixed a bug where loading an element’s edit page moved keyboard focus into CKEditor fields that contained nested entries. ([#650](https://github.com/craftcms/ckeditor/issues/650))
 
 ## 6.0.0-beta.1 - 2026-11-10
 

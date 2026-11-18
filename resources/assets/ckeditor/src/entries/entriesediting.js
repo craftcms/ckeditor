@@ -99,7 +99,7 @@ export default class CraftEntriesEditing extends Plugin {
           'data-entry-id': entryId,
           'data-site-id': siteId,
         });
-        addCardHtmlToContainer(modelItem, viewWriter, cardContainer);
+        addCardHtmlToContainer(modelItem, cardContainer);
 
         // Enable widget handling on an entry element inside the editing view.
         return toWidget(cardContainer, viewWriter);
@@ -122,25 +122,27 @@ export default class CraftEntriesEditing extends Plugin {
     });
 
     // Populate card container with card HTML
-    const addCardHtmlToContainer = (modelItem, viewWriter, cardContainer) => {
+    const addCardHtmlToContainer = (modelItem, cardContainer) => {
       this._getCardHtml(modelItem).then((data) => {
-        const card = viewWriter.createRawElement(
-          'div',
-          null,
-          function (domElement) {
-            domElement.innerHTML = data.cardHtml;
-            // CKEditor fills raw elements synchronously, so the card's scripts
-            // are appended behind it, head before body.
-            void Craft.appendHeadHtml(data.headHtml).then(() =>
-              Craft.appendBodyHtml(data.bodyHtml),
-            );
-          },
-        );
-
-        viewWriter.insert(viewWriter.createPositionAt(cardContainer, 0), card);
-
         const editor = this.editor;
-        editor.editing.view.focus();
+
+        // insert in a view change block so the card renders without moving focus into the editor
+        editor.editing.view.change((writer) => {
+          const card = writer.createRawElement(
+            'div',
+            null,
+            function (domElement) {
+              domElement.innerHTML = data.cardHtml;
+              // CKEditor fills raw elements synchronously, so the card's scripts
+              // are appended behind it, head before body.
+              void Craft.appendHeadHtml(data.headHtml).then(() =>
+                Craft.appendBodyHtml(data.bodyHtml),
+              );
+            },
+          );
+
+          writer.insert(writer.createPositionAt(cardContainer, 0), card);
+        });
 
         setTimeout(() => {
           Craft.loadElementThumbs(editor.ui.element);
