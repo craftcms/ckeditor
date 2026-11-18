@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'A commercial CKEditor license key. If left blank, CKEditor will be used under the GPL license.' => 'Een commerciële CKEditor-licentiesleutel. Als dit leeg blijft, wordt CKEditor gebruikt onder de GPL-licentie.',
     'Add nested content' => 'Geneste inhoud toevoegen',
     'Advanced Link Fields' => 'Geavanceerde linkvelden',
     'Advanced' => 'Geavanceerd',
@@ -31,6 +32,7 @@ return [
     'Image Mode' => 'Afbeeldingsmodus',
     'Image tags' => 'Afbeeldingstags',
     'Insert link' => 'Link invoegen',
+    'License Key' => 'Licentiesleutel',
     'Link to a category' => 'Link naar een categorie',
     'Link to an asset' => 'Link naar een asset',
     'Link to an entry' => 'Link naar inhoud',
@@ -52,6 +54,7 @@ return [
     'The text tooltip for the entry creation button.' => 'De tekst-tooltip voor de knop om inhoud aan te maken.',
     'The transforms that should be available when inserting images.' => 'De transformaties die beschikbaar moeten zijn bij het invoegen van afbeeldingen.',
     'The type of column this field should get in the database.' => 'Het type kolom dat dit veld in de database moet krijgen.',
+    'This can be set to an environment variable.' => 'Dit kan worden ingesteld op een omgevingsvariabele.',
     'This field doesn’t allow nested entries.' => 'Dit veld staat geen geneste inhoud toe.',
     'This field doesn’t allow nested {type} entries.' => 'Dit veld staat geen geneste {type}-inhoud toe.',
     'Toolbar' => 'Werkbalk',

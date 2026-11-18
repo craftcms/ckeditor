@@ -227,6 +227,24 @@ To automatically replace `oembed` tags with the media provider’s embed HTML, e
 > [!NOTE]
 > Be sure to cache your front-end output if you enable the “Parse embeds” setting (e.g. by using a `{% cache %}` tag). Otherwise, there will be a slight performance hit on each request while CKEditor fetches the embed HTML from the provider.
 
+### License Key
+
+CKEditor is used under the GPL license by default, which displays a “Powered by CKEditor” badge within each editor. If you have a [commercial CKEditor license](https://ckeditor.com/pricing/), you can enter its key in **Settings** → **Plugins** → **CKEditor** → **License Key**. The key can be set to an environment variable (e.g. `$CKEDITOR_LICENSE_KEY`).
+
+You can also set it from `config/ckeditor.php`:
+
+```php
+<?php
+
+use craft\helpers\App;
+
+return [
+    'licenseKey' => App::env('CKEDITOR_LICENSE_KEY'),
+];
+```
+
+Individual fields can override the key via a `licenseKey` property in their **Config options**.
+
 ## Longform Content with Nested Entries
 
 CKEditor fields can be configured to manage nested entries, which will be displayed as [cards](https://craftcms.com/docs/5.x/system/elements.html#chips-cards) within your rich text content, and edited via [slideouts](https://craftcms.com/docs/5.x/system/control-panel.html#slideouts).

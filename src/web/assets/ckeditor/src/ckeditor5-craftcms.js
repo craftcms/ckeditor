@@ -281,7 +281,7 @@ export const create = async function (element, config) {
     element = document.querySelector(`#${element}`);
   }
 
-  config.licenseKey = 'GPL';
+  config.licenseKey = config.licenseKey || 'GPL';
 
   config.attachTo = element;
   const editor = await ClassicEditor.create(config);

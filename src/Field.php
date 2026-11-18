@@ -1617,6 +1617,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         $namespacedInputId = $view->namespaceInputId($inputId);
 
         $baseConfig = array_filter([
+            'licenseKey' => Plugin::getInstance()->getSettings()->getLicenseKey(),
             'defaultTransform' => $defaultTransform?->handle,
             'elementSiteId' => $element?->siteId,
             'accessibleFieldName' => $this->_accessibleFieldName($element),

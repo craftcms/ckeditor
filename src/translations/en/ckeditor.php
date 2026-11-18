@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'A commercial CKEditor license key. If left blank, CKEditor will be used under the GPL license.' => 'A commercial CKEditor license key. If left blank, CKEditor will be used under the GPL license.',
     'Add nested content' => 'Add nested content',
     'Advanced Link Fields' => 'Advanced Link Fields',
     'Advanced' => 'Advanced',
@@ -31,6 +32,7 @@ return [
     'Image Mode' => 'Image Mode',
     'Image tags' => 'Image tags',
     'Insert link' => 'Insert link',
+    'License Key' => 'License Key',
     'Link to a category' => 'Link to a category',
     'Link to an asset' => 'Link to an asset',
     'Link to an entry' => 'Link to an entry',
@@ -55,6 +57,7 @@ return [
     'The text tooltip for the entry creation button.' => 'The text tooltip for the entry creation button.',
     'The transforms that should be available when inserting images.' => 'The transforms that should be available when inserting images.',
     'The type of column this field should get in the database.' => 'The type of column this field should get in the database.',
+    'This can be set to an environment variable.' => 'This can be set to an environment variable.',
     'This field doesn’t allow nested entries.' => 'This field doesn’t allow nested entries.',
     'This field doesn’t allow nested {type} entries.' => 'This field doesn’t allow nested {type} entries.',
     'Toolbar' => 'Toolbar',
