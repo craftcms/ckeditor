@@ -30,7 +30,7 @@ return [
     'How should new images be added to the field contents?' => 'Hur ska nya bilder läggas till i fältets innehåll?',
     'Image Field' => 'Bildfält',
     'Image Mode' => 'Bildläge',
-    'Image tags' => 'Bildtaggar',
+    'Image tags' => 'HTML-bildtaggar',
     'Insert link' => 'Infoga länk',
     'License Key' => 'Licensnyckel',
     'Link to a category' => 'Länka till en kategori',

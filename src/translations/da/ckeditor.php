@@ -30,7 +30,7 @@ return [
     'How should new images be added to the field contents?' => 'Hvordan skal nye billeder tilføjes til feltets indhold?',
     'Image Field' => 'Billedfelt',
     'Image Mode' => 'Billedtilstand',
-    'Image tags' => 'Billedtags',
+    'Image tags' => 'HTML-billedtags',
     'Insert link' => 'Indsæt link',
     'License Key' => 'Licensnøgle',
     'Link to a category' => 'Link til en kategori',

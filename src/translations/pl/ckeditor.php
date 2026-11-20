@@ -30,7 +30,7 @@ return [
     'How should new images be added to the field contents?' => 'W jaki sposób nowe obrazki mają być dodawane do zawartości pola?',
     'Image Field' => 'Pole obrazka',
     'Image Mode' => 'Tryb obrazków',
-    'Image tags' => 'Znaczniki obrazków',
+    'Image tags' => 'Znaczniki HTML obrazków',
     'Insert link' => 'Wstaw link',
     'License Key' => 'Klucz licencyjny',
     'Link to a category' => 'Link do kategorii',

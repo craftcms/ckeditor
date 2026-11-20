@@ -30,7 +30,7 @@ return [
     'How should new images be added to the field contents?' => 'Как следует добавлять новые изображения в содержимое поля?',
     'Image Field' => 'Поле изображения',
     'Image Mode' => 'Режим изображений',
-    'Image tags' => 'Теги изображений',
+    'Image tags' => 'HTML-теги изображений',
     'Insert link' => 'Вставить ссылку',
     'License Key' => 'Лицензионный ключ',
     'Link to a category' => 'Ссылка на категорию',

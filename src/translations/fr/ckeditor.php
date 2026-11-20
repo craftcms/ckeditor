@@ -30,7 +30,7 @@ return [
     'How should new images be added to the field contents?' => 'Comment les nouvelles images doivent-elles être ajoutées au contenu du champ ?',
     'Image Field' => 'Champ d\'image',
     'Image Mode' => 'Mode d\'image',
-    'Image tags' => 'Balises d\'image',
+    'Image tags' => 'Balises HTML d\'image',
     'Insert link' => 'Insérer un lien',
     'License Key' => 'Clé de licence',
     'Link to a category' => 'Lien vers une catégorie',

@@ -30,7 +30,7 @@ return [
     'How should new images be added to the field contents?' => '新しい画像をフィールドのコンテンツにどのように追加しますか？',
     'Image Field' => '画像フィールド',
     'Image Mode' => '画像モード',
-    'Image tags' => '画像タグ',
+    'Image tags' => 'HTML画像タグ',
     'Insert link' => 'リンクを挿入',
     'License Key' => 'ライセンスキー',
     'Link to a category' => 'カテゴリへのリンク',

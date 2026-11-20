@@ -30,7 +30,7 @@ return [
     'How should new images be added to the field contents?' => 'Hogyan kerüljenek az új képek a mező tartalmába?',
     'Image Field' => 'Képmező',
     'Image Mode' => 'Képmód',
-    'Image tags' => 'Képcímkék',
+    'Image tags' => 'HTML-képelemek',
     'Insert link' => 'Hivatkozás beszúrása',
     'License Key' => 'Licenckulcs',
     'Link to a category' => 'Hivatkozás egy kategóriára',
