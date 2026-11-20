@@ -71,7 +71,7 @@ return [
     'Who should see the “Source” button?' => 'Who should see the “Source” button?',
     'Words' => 'Words',
     'You can save custom {name} configs as {ext} files in {path}.' => 'You can save custom {name} configs as {ext} files in {path}.',
-    'Your JavaScript config contains functions. If you switch to JSON, they will be lost. Would you like to continue?',
+    'Your JavaScript config contains functions. If you switch to JSON, they will be lost. Would you like to continue?' => 'Your JavaScript config contains functions. If you switch to JSON, they will be lost. Would you like to continue?',
     '{attribute} isn’t valid JSON.' => '{attribute} isn’t valid JSON.',
     '{field} should contain at most {max, number} {max, plural, one{character} other{characters}}.' => '{field} should contain at most {max, number} {max, plural, one{character} other{characters}}.',
     '{field} should contain at most {max, number} {max, plural, one{word} other{words}}.' => '{field} should contain at most {max, number} {max, plural, one{word} other{words}}.',
