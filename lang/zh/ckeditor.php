@@ -33,7 +33,7 @@ return [
     'How should new images be added to the field contents?' => '新图像应如何添加到字段内容中？',
     'Image Field' => '图像字段',
     'Image Mode' => '图像模式',
-    'Image tags' => '图像标签',
+    'Image tags' => 'HTML 图像标签',
     'Insert link' => '插入链接',
     'License Key' => '许可证密钥',
     'Link to a category' => '链接到分类',

@@ -33,7 +33,7 @@ return [
     'How should new images be added to the field contents?' => 'كيف يجب إضافة الصور الجديدة إلى محتوى الحقل؟',
     'Image Field' => 'حقل الصورة',
     'Image Mode' => 'وضع الصور',
-    'Image tags' => 'وسوم الصور',
+    'Image tags' => 'وسوم HTML للصور',
     'Insert link' => 'إدراج رابط',
     'License Key' => 'مفتاح الترخيص',
     'Link to a category' => 'رابط إلى فئة',

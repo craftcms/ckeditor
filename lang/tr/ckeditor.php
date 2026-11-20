@@ -33,7 +33,7 @@ return [
     'How should new images be added to the field contents?' => 'Yeni resimler alan içeriğine nasıl eklenmeli?',
     'Image Field' => 'Resim Alanı',
     'Image Mode' => 'Resim Modu',
-    'Image tags' => 'Resim etiketleri',
+    'Image tags' => 'HTML resim etiketleri',
     'Insert link' => 'Bağlantı ekle',
     'License Key' => 'Lisans Anahtarı',
     'Link to a category' => 'Bir kategoriye bağlantı',
