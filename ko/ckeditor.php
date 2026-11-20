@@ -83,6 +83,5 @@ return [
     'HTML Purifier Config' => 'HTML Purifier 구성',
     'No CSS files exist within `config/ckeditor/`.' => '`config/ckeditor/` 내에 CSS 파일이 없습니다.',
     'No JS/JSON files exist within `config/ckeditor/`.' => '`config/ckeditor/` 내에 JS/JSON 파일이 없습니다.',
-    'Purify HTML' => 'HTML 정화',
     'Removes any potentially-malicious code on save, by running the submitted data through {link}.' => '제출된 데이터를 {link}(으)로 처리하여 저장 시 악성일 수 있는 코드를 제거합니다.',
 ];

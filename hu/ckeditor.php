@@ -83,6 +83,5 @@ return [
     'HTML Purifier Config' => 'HTML Purifier-konfiguráció',
     'No CSS files exist within `config/ckeditor/`.' => 'A `config/ckeditor/` mappában nincsenek CSS-fájlok.',
     'No JS/JSON files exist within `config/ckeditor/`.' => 'A `config/ckeditor/` mappában nincsenek JS/JSON-fájlok.',
-    'Purify HTML' => 'HTML tisztítása',
     'Removes any potentially-malicious code on save, by running the submitted data through {link}.' => 'Mentéskor eltávolítja a potenciálisan kártékony kódot azáltal, hogy a beküldött adatokat átfuttatja ezen: {link}.',
 ];

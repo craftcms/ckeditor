@@ -83,6 +83,5 @@ return [
     'HTML Purifier Config' => 'پیکربندی HTML Purifier',
     'No CSS files exist within `config/ckeditor/`.' => 'هیچ فایل CSS در `config/ckeditor/` وجود ندارد.',
     'No JS/JSON files exist within `config/ckeditor/`.' => 'هیچ فایل JS/JSON در `config/ckeditor/` وجود ندارد.',
-    'Purify HTML' => 'پاک‌سازی HTML',
     'Removes any potentially-malicious code on save, by running the submitted data through {link}.' => 'هنگام ذخیره، با عبور دادن داده‌های ارسال‌شده از {link}، هر کد احتمالاً مخربی را حذف می‌کند.',
 ];

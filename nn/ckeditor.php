@@ -83,6 +83,5 @@ return [
     'HTML Purifier Config' => 'HTML Purifier-konfigurasjon',
     'No CSS files exist within `config/ckeditor/`.' => 'Det finst ingen CSS-filer i `config/ckeditor/`.',
     'No JS/JSON files exist within `config/ckeditor/`.' => 'Det finst ingen JS/JSON-filer i `config/ckeditor/`.',
-    'Purify HTML' => 'Reins HTML',
     'Removes any potentially-malicious code on save, by running the submitted data through {link}.' => 'Fjernar potensielt skadeleg kode ved lagring ved å køyre innsende data gjennom {link}.',
 ];

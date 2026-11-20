@@ -83,6 +83,5 @@ return [
     'HTML Purifier Config' => 'Konfigurasi HTML Purifier',
     'No CSS files exist within `config/ckeditor/`.' => 'Tidak ada berkas CSS di dalam `config/ckeditor/`.',
     'No JS/JSON files exist within `config/ckeditor/`.' => 'Tidak ada berkas JS/JSON di dalam `config/ckeditor/`.',
-    'Purify HTML' => 'Murnikan HTML',
     'Removes any potentially-malicious code on save, by running the submitted data through {link}.' => 'Menghapus kode yang berpotensi berbahaya saat menyimpan, dengan memproses data yang dikirim melalui {link}.',
 ];

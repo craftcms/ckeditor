@@ -83,6 +83,5 @@ return [
     'HTML Purifier Config' => 'การกำหนดค่า HTML Purifier',
     'No CSS files exist within `config/ckeditor/`.' => 'ไม่มีไฟล์ CSS ภายใน `config/ckeditor/`.',
     'No JS/JSON files exist within `config/ckeditor/`.' => 'ไม่มีไฟล์ JS/JSON ภายใน `config/ckeditor/`.',
-    'Purify HTML' => 'ทำความสะอาด HTML',
     'Removes any potentially-malicious code on save, by running the submitted data through {link}.' => 'ลบโค้ดที่อาจเป็นอันตรายเมื่อบันทึก โดยส่งข้อมูลที่ส่งมาผ่าน {link}.',
 ];

@@ -83,6 +83,5 @@ return [
     'HTML Purifier Config' => 'Διαμόρφωση HTML Purifier',
     'No CSS files exist within `config/ckeditor/`.' => 'Δεν υπάρχουν αρχεία CSS μέσα στο `config/ckeditor/`.',
     'No JS/JSON files exist within `config/ckeditor/`.' => 'Δεν υπάρχουν αρχεία JS/JSON μέσα στο `config/ckeditor/`.',
-    'Purify HTML' => 'Καθαρισμός HTML',
     'Removes any potentially-malicious code on save, by running the submitted data through {link}.' => 'Αφαιρεί κάθε δυνητικά κακόβουλο κώδικα κατά την αποθήκευση, περνώντας τα υποβληθέντα δεδομένα από το {link}.',
 ];

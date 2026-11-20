@@ -83,6 +83,5 @@ return [
     'HTML Purifier Config' => 'HTML Purifier 配置',
     'No CSS files exist within `config/ckeditor/`.' => '`config/ckeditor/` 中不存在 CSS 文件。',
     'No JS/JSON files exist within `config/ckeditor/`.' => '`config/ckeditor/` 中不存在 JS/JSON 文件。',
-    'Purify HTML' => '净化 HTML',
     'Removes any potentially-malicious code on save, by running the submitted data through {link}.' => '保存时通过 {link} 处理提交的数据，移除任何潜在的恶意代码。',
 ];

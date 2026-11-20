@@ -83,6 +83,5 @@ return [
     'HTML Purifier Config' => 'تكوين HTML Purifier',
     'No CSS files exist within `config/ckeditor/`.' => 'لا توجد ملفات CSS داخل `config/ckeditor/`.',
     'No JS/JSON files exist within `config/ckeditor/`.' => 'لا توجد ملفات JS/JSON داخل `config/ckeditor/`.',
-    'Purify HTML' => 'تنقية HTML',
     'Removes any potentially-malicious code on save, by running the submitted data through {link}.' => 'يزيل أي كود قد يكون ضارًا عند الحفظ، عن طريق تمرير البيانات المُرسلة عبر {link}.',
 ];
