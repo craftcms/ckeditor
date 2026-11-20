@@ -33,7 +33,7 @@ return [
     'How should new images be added to the field contents?' => 'כיצד יש להוסיף תמונות חדשות לתוכן השדה?',
     'Image Field' => 'שדה תמונה',
     'Image Mode' => 'מצב תמונה',
-    'Image tags' => 'תגיות תמונה',
+    'Image tags' => 'תגיות HTML של תמונות',
     'Insert link' => 'הוסף קישור',
     'License Key' => 'מפתח רישיון',
     'Link to a category' => 'קישור לקטגוריה',

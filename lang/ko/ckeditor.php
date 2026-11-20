@@ -33,7 +33,7 @@ return [
     'How should new images be added to the field contents?' => '새 이미지를 필드 콘텐츠에 어떻게 추가하시겠습니까?',
     'Image Field' => '이미지 필드',
     'Image Mode' => '이미지 모드',
-    'Image tags' => '이미지 태그',
+    'Image tags' => 'HTML 이미지 태그',
     'Insert link' => '링크 삽입',
     'License Key' => '라이선스 키',
     'Link to a category' => '카테고리에 링크',
