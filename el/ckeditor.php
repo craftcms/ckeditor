@@ -33,7 +33,7 @@ return [
     'How should new images be added to the field contents?' => 'Πώς θα προστίθενται οι νέες εικόνες στο περιεχόμενο του πεδίου;',
     'Image Field' => 'Πεδίο εικόνας',
     'Image Mode' => 'Λειτουργία εικόνων',
-    'Image tags' => 'Ετικέτες εικόνων',
+    'Image tags' => 'Ετικέτες εικόνων HTML',
     'Insert link' => 'Εισαγωγή συνδέσμου',
     'License Key' => 'Κλειδί άδειας',
     'Link to a category' => 'Σύνδεσμος σε κατηγορία',

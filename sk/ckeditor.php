@@ -33,7 +33,7 @@ return [
     'How should new images be added to the field contents?' => 'Ako sa majú nové obrázky pridávať do obsahu poľa?',
     'Image Field' => 'Pole obrázka',
     'Image Mode' => 'Režim obrázkov',
-    'Image tags' => 'Značky obrázkov',
+    'Image tags' => 'HTML značky obrázkov',
     'Insert link' => 'Vložiť odkaz',
     'License Key' => 'Licenčný kľúč',
     'Link to a category' => 'Odkaz na kategóriu',
