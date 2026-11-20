@@ -30,7 +30,7 @@ return [
     'How should new images be added to the field contents?' => 'Bagaimana gambar baru ditambahkan ke konten bidang?',
     'Image Field' => 'Bidang Gambar',
     'Image Mode' => 'Mode Gambar',
-    'Image tags' => 'Tag gambar',
+    'Image tags' => 'Tag gambar HTML',
     'Insert link' => 'Sisipkan tautan',
     'License Key' => 'Kunci Lisensi',
     'Link to a category' => 'Tautkan ke kategori',
