@@ -64,7 +64,7 @@ return [
     'The type of column this field should get in the database.' => 'Le type de colonne que ce champ doit avoir dans la base de données.',
     'This can be set to an environment variable.' => 'Ceci peut être défini sur une variable d\'environnement.',
     'This field doesn’t allow nested entries.' => 'Ce champ n\'autorise pas les entrées imbriquées.',
-    'This field doesn’t allow nested {type} entries.' => 'Ce champ n\'autorise pas les entrées {type} imbriquées.',
+    'This field doesn’t allow nested {type} entries.' => 'Ce champ n\'autorise pas les entrées imbriquées de type {type}.',
     'This should only be enabled if the field output is cached.' => 'Cette option ne doit être activée que si la sortie du champ est mise en cache.',
     'The HTML sanitizer that should be used. The default sanitizer is extended with the markup this field’s toolbar needs.' => 'Le nettoyeur HTML à utiliser. Le nettoyeur par défaut est étendu avec le balisage dont la barre d\'outils de ce champ a besoin.',
     'Toolbar' => 'Barre d\'outils',

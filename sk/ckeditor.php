@@ -9,7 +9,7 @@ return [
     'Available Transforms' => 'Dostupné transformácie',
     'CKEditor config option mode' => 'Režim možností konfigurácie pre CKEditor',
     'CSS mode' => 'Režim CSS',
-    'Changing this may result in data loss.' => 'Zmena tohoto môže mať za následok stratu údajov.',
+    'Changing this may result in data loss.' => 'Zmena tohto môže mať za následok stratu údajov.',
     'Choose a CSS file within `config/craft/ckeditor/`.' => 'Vyberte súbor CSS v priečinku `config/craft/ckeditor/`.',
     'Choose a JS/JSON file within `config/craft/ckeditor/`.' => 'Vyberte súbor JS/JSON v priečinku `config/craft/ckeditor/`.',
     'Choose which Assets field should be used to store images, from the selected entry types.' => 'Vyberte, ktoré pole typu Assety z vybraných typov záznamov sa má použiť na ukladanie obrázkov.',

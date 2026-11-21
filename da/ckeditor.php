@@ -9,7 +9,7 @@ return [
     'Available Transforms' => 'Tilgængelige transformationer',
     'CKEditor config option mode' => 'Tilstand for CKEditor-konfigurationsindstillinger',
     'CSS mode' => 'CSS-tilstand',
-    'Changing this may result in data loss.' => 'Ændring af dette kan føre til datatab',
+    'Changing this may result in data loss.' => 'Ændring af dette kan føre til datatab.',
     'Choose a CSS file within `config/craft/ckeditor/`.' => 'Vælg en CSS-fil i `config/craft/ckeditor/`.',
     'Choose a JS/JSON file within `config/craft/ckeditor/`.' => 'Vælg en JS/JSON-fil i `config/craft/ckeditor/`.',
     'Choose which Assets field should be used to store images, from the selected entry types.' => 'Vælg, hvilket Filer-felt fra de valgte posttyper der skal bruges til at gemme billeder.',

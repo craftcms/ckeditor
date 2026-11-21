@@ -64,7 +64,7 @@ return [
     'The type of column this field should get in the database.' => 'Il tipo di colonna che questo campo deve avere nel database.',
     'This can be set to an environment variable.' => 'Può essere impostato su una variabile d\'ambiente.',
     'This field doesn’t allow nested entries.' => 'Questo campo non consente articoli annidati.',
-    'This field doesn’t allow nested {type} entries.' => 'Questo campo non consente articoli {type} annidati.',
+    'This field doesn’t allow nested {type} entries.' => 'Questo campo non consente articoli annidati di tipo {type}.',
     'This should only be enabled if the field output is cached.' => 'Va abilitato solo se l\'output del campo è memorizzato nella cache.',
     'The HTML sanitizer that should be used. The default sanitizer is extended with the markup this field’s toolbar needs.' => 'Il sanitizzatore HTML da usare. Il sanitizzatore predefinito viene esteso con il markup richiesto dalla barra degli strumenti di questo campo.',
     'Toolbar' => 'Barra degli strumenti',
