@@ -20,7 +20,7 @@ return [
     'Custom Styles' => 'Користувацькі стилі',
     'Default Transform' => 'Перетворення за замовчуванням',
     'Define CSS styles that should be registered for editors, such as [style classes]({url}).' => 'Визначте стилі CSS, які мають реєструватися для редакторів, як-от [класи стилів]({url}).',
-    'Define custom [config options]({link}) which should be merged with the default config.' => 'Визначте користувацькі [параметри конфігурації]({link}), які слід об\'єднати з конфігурацією за замовчуванням.',
+    'Define custom [config options]({link}) which should be merged with the default config.' => 'Визначте користувацькі [параметри конфігурації]({link}), які слід об’єднати з конфігурацією за замовчуванням.',
     'Disable this at your own risk!' => 'Вимикайте на власний ризик!',
     'Drag toolbar items into the editor.' => 'Перетягніть елементи панелі інструментів у редактор.',
     'Entries cannot be copied between CKEditor fields.' => 'Записи не можна копіювати між полями CKEditor.',

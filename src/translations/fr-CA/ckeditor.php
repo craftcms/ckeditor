@@ -74,7 +74,7 @@ return [
     'Where images should be stored when they are uploaded directly to the field via drag & drop.' => 'Où les images doivent être stockées lorsqu’elles sont téléversées directement dans le champ par glisser-déposer.',
     'Whether `<oembed>` tags should be parsed and replaced with the provider’s embed code.' => 'Indique si les balises `<oembed>` doivent être analysées et remplacées par le code d’intégration du fournisseur.',
     'Whether entry types with icons should be shown as separate buttons in the toolbar.' => 'Indique si les types d’entrée avec icône doivent être affichés comme boutons distincts dans la barre d’outils.',
-    'Who should see the “Source” button?' => 'Qui doit voir le bouton « Source »?',
+    'Who should see the “Source” button?' => 'Qui doit voir le bouton « Source »?',
     'Words' => 'Mots',
     'You can save custom {name} configs as {ext} files in {path}.' => 'Vous pouvez enregistrer des configurations {name} personnalisées sous forme de fichiers {ext} dans {path}.',
     'Your JavaScript config contains functions. If you switch to JSON, they will be lost. Would you like to continue?' => 'Votre configuration JavaScript contient des fonctions. Si vous passez au JSON, elles seront perdues. Voulez-vous continuer?',
@@ -84,5 +84,5 @@ return [
     '{num, number} {num, plural, =1{character} other{characters}}' => '{num, number} {num, plural, =1{caractère} other{caractères}}',
     '{num, number} {num, plural, =1{word} other{words}}' => '{num, number} {num, plural, =1{mot} other{mots}}',
     '{numReferences, plural, =1{Reference} other{References}} queued to be replaced.' => '{numReferences, plural, =1{Référence mise} other{Références mises}} en file d’attente pour remplacement.',
-    '“+” Button Tooltip' => 'Infobulle du bouton « + »',
+    '“+” Button Tooltip' => 'Infobulle du bouton « + »',
 ];
