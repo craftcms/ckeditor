@@ -49,7 +49,7 @@ return [
     'No transform' => 'Bez transformacije',
     'Parse embeds' => 'Obrađuj ugrađeni sadržaj',
     'Raw content only' => 'Samo neobrađeni sadržaj',
-    'Removes any potentially-malicious code on save, by running the submitted data through an HTML sanitizer.' => 'Prilikom spremanja uklanja potencijalno zlonamjeran kôd propuštanjem poslanih podataka kroz HTML pročišćivač.',
+    'Removes any potentially-malicious code on save, by running the submitted data through an HTML sanitizer.' => 'Prilikom spremanja uklanja potencijalno zlonamjeran kôd propuštanjem poslanih podataka kroz HTML sanitizator.',
     'Sanitize HTML' => 'Pročisti HTML',
     'Show as a separate button' => 'Prikaži kao zaseban gumb',
     'Show word count' => 'Prikaži broj riječi',

@@ -34,7 +34,7 @@ return [
     'How should new images be added to the field contents?' => 'Hvernig á að bæta nýjum myndum við efni reitsins?',
     'Image Field' => 'Myndareitur',
     'Image Mode' => 'Myndahamur',
-    'Image tags' => 'HTML myndamerki',
+    'Image tags' => 'HTML-myndamerki',
     'Insert link' => 'Setja inn tengil',
     'License Key' => 'Leyfislykill',
     'Link to a category' => 'Tengill á flokk',
