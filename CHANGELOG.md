@@ -6,6 +6,7 @@
 - Fixed a bug where CKEditor field content was hard to read in dark mode. ([#648](https://github.com/craftcms/ckeditor/issues/648))
 - Fixed a bug where CKEditor toolbar stuck too far down the page when scrolling a long field. ([#649](https://github.com/craftcms/ckeditor/issues/649))
 - Fixed a bug where loading an element’s edit page moved keyboard focus into CKEditor fields that contained nested entries. ([#650](https://github.com/craftcms/ckeditor/issues/650))
+- Fixed a bug where some CKEditor field settings and advanced link field labels weren’t translated.
 
 ## 6.0.0-beta.1 - 2026-11-10
 
