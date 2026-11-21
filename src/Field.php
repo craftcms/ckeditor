@@ -2829,7 +2829,16 @@ JS;
         $wasValueEmpty = $this->isValueEmpty($to->getFieldValue($this->handle), $to);
         parent::propagateValue($from, $to);
 
-        if (!$from->propagateAll && $wasValueEmpty) {
+        /** @var FieldData|null $value */
+        $value = $to->getFieldValue($this->handle);
+
+        // The manager combines all instances of this field. An empty or text-only
+        // instance must not duplicate entries from another instance on each resave.
+        if (
+            !$from->propagateAll &&
+            $wasValueEmpty &&
+            $value?->getChunks(false)->contains(fn(BaseChunk $chunk): bool => $chunk instanceof EntryChunk)
+        ) {
             // NestedElementManager won't duplicate the nested entries automatically,
             // because the field has a value in the target site (the HTML content), so isValueEmpty() is false.
             self::entryManager($this)->duplicateNestedElements($from, $to, force: true);
