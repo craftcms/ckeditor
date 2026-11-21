@@ -67,7 +67,7 @@ return [
     'The {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} referenced by CKEditor fields in {numReferences, number} other {numReferences, plural, =1{element} other{elements}}.' => '{numTargets, plural, =1{L’élément {targetTypeSingular} est référencé} other{Les éléments {targetTypePlural} sont référencés}} par des champs CKEditor dans {numReferences, number} {numReferences, plural, =1{autre élément} other{autres éléments}}.',
     'This can be set to an environment variable.' => 'Ceci peut être défini sur une variable d’environnement.',
     'This field doesn’t allow nested entries.' => 'Ce champ n’autorise pas les entrées imbriquées.',
-    'This field doesn’t allow nested {type} entries.' => 'Ce champ n’autorise pas les entrées {type} imbriquées.',
+    'This field doesn’t allow nested {type} entries.' => 'Ce champ n’autorise pas les entrées imbriquées de type {type}.',
     'This should only be enabled if the field output is cached.' => 'Cette option ne doit être activée que si la sortie du champ est mise en cache.',
     'Toolbar' => 'Barre d’outils',
     'View available settings' => 'Voir les paramètres disponibles',

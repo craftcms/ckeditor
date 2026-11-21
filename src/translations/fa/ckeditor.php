@@ -74,7 +74,7 @@ return [
     'Where images should be stored when they are uploaded directly to the field via drag & drop.' => 'محلی که تصاویر باید هنگام آپلود مستقیم در فیلد با کشیدن و رها کردن، در آن ذخیره شوند.',
     'Whether `<oembed>` tags should be parsed and replaced with the provider’s embed code.' => 'آیا تگ‌های `<oembed>` باید تجزیه شوند و با کد جاسازی ارائه‌دهنده جایگزین شوند.',
     'Whether entry types with icons should be shown as separate buttons in the toolbar.' => 'آیا انواع محتوای دارای آیکون باید به‌صورت دکمه‌های جداگانه در نوار ابزار نمایش داده شوند.',
-    'Who should see the “Source” button?' => 'چه کسی باید دکمه «Source» را ببیند؟',
+    'Who should see the “Source” button?' => 'چه کسی باید دکمه «منبع» را ببیند؟',
     'Words' => 'کلمات',
     'You can save custom {name} configs as {ext} files in {path}.' => 'می‌توانید پیکربندی‌های سفارشی {name} را به‌صورت فایل‌های {ext} در {path} ذخیره کنید.',
     'Your JavaScript config contains functions. If you switch to JSON, they will be lost. Would you like to continue?' => 'پیکربندی JavaScript شما شامل تابع است. اگر به JSON تغییر دهید، از دست خواهند رفت. آیا می‌خواهید ادامه دهید؟',
