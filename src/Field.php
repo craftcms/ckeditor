@@ -1260,18 +1260,18 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
         );
 
         $assetNodes = [
-            UiField::make(t('Available Volumes', category: 'ckeditor'))
-                ->instructions(t('The volumes that should be available when selecting assets.', category: 'ckeditor'))
+            UiField::make(t('Available Volumes'))
+                ->instructions(t('The volumes that should be available when selecting assets.'))
                 ->control(Choice::make('availableVolumes')
                     ->multiple()
                     ->options($volumeOptions)
                     ->allOption()
                     ->value($this->availableVolumes === '*' ? ['*'] : $this->availableVolumes)),
-            UiField::make(t('Show unpermitted volumes', category: 'ckeditor'))
-                ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.', category: 'ckeditor'))
+            UiField::make(t('Show unpermitted volumes'))
+                ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
                 ->control(Lightswitch::make('showUnpermittedVolumes')->value($this->showUnpermittedVolumes)),
-            UiField::make(t('Show unpermitted files', category: 'ckeditor'))
-                ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.', category: 'ckeditor'))
+            UiField::make(t('Show unpermitted files'))
+                ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'))
                 ->control(Lightswitch::make('showUnpermittedFiles')->value($this->showUnpermittedFiles)),
             UiField::make(t('Image Mode', category: 'ckeditor'))
                 ->instructions(t('How should new images be added to the field contents?', category: 'ckeditor'))
@@ -1296,7 +1296,7 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
             );
 
             if ($this->defaultUploadLocationVolume) {
-                $assetNodes[] = UiField::make(t('Default Upload Location Subpath', category: 'ckeditor'))
+                $assetNodes[] = UiField::make(t('Default Upload Location Subpath'))
                     ->labelSrOnly()
                     ->control(Text::make('defaultUploadLocationSubpath')
                         ->placeholder(t('path/to/subfolder'))
