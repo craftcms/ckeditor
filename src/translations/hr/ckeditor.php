@@ -64,7 +64,7 @@ return [
     'The transforms that should be available when inserting images.' => 'Transformacije koje trebaju biti dostupne pri umetanju slika.',
     'The type of column this field should get in the database.' => 'Vrsta stupca koju ovo polje treba dobiti u bazi podataka.',
     'The volumes that should be available when selecting assets.' => 'Spremišta koja trebaju biti dostupna pri odabiru resursa.',
-    'The {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} referenced by CKEditor fields in {numReferences, number} other {numReferences, plural, =1{element} other{elements}}.' => '{numTargets, plural, =1{Na {targetTypeSingular} upućuju} other{Na {targetTypePlural} upućuju}} CKEditor polja u još {numReferences, number} {numReferences, plural, =1{elementu} one{elementu} few{elementa} other{elemenata}}.',
+    'The {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} referenced by CKEditor fields in {numReferences, number} other {numReferences, plural, =1{element} other{elements}}.' => '{numTargets, plural, =1{Na ovaj element ({targetTypeSingular}) upućuju} other{Na ove elemente ({targetTypePlural}) upućuju}} CKEditor polja u još {numReferences, number} {numReferences, plural, =1{elementu} one{elementu} few{elementa} other{elemenata}}.',
     'This can be set to an environment variable.' => 'Ovo se može postaviti na varijablu okruženja.',
     'This field doesn’t allow nested entries.' => 'Ovo polje ne dopušta ugniježđene unose.',
     'This field doesn’t allow nested {type} entries.' => 'Ovo polje ne dopušta ugniježđene unose vrste {type}.',

@@ -67,7 +67,7 @@ return [
     'The {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} referenced by CKEditor fields in {numReferences, number} other {numReferences, plural, =1{element} other{elements}}.' => '{numTargets, plural, =1{El elemento {targetTypeSingular} está referenciado} other{Los elementos {targetTypePlural} están referenciados}} por campos de CKEditor de {numReferences, number} {numReferences, plural, =1{otro elemento} other{otros elementos}}.',
     'This can be set to an environment variable.' => 'Esto se puede establecer en una variable de entorno.',
     'This field doesn’t allow nested entries.' => 'Este campo no admite entradas anidadas.',
-    'This field doesn’t allow nested {type} entries.' => 'Este campo no admite entradas {type} anidadas.',
+    'This field doesn’t allow nested {type} entries.' => 'Este campo no admite entradas anidadas de tipo {type}.',
     'This should only be enabled if the field output is cached.' => 'Solo debe activarse si la salida del campo se almacena en caché.',
     'Toolbar' => 'Barra de herramientas',
     'View available settings' => 'Ver ajustes disponibles',

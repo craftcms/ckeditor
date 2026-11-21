@@ -64,7 +64,7 @@ return [
     'The transforms that should be available when inserting images.' => 'Bildeomformingene som skal være tilgjengelige når bilder settes inn.',
     'The type of column this field should get in the database.' => 'Kolonnetypen dette feltet skal ha i databasen.',
     'The volumes that should be available when selecting assets.' => 'Volumene som skal være tilgjengelige ved valg av filer.',
-    'The {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} referenced by CKEditor fields in {numReferences, number} other {numReferences, plural, =1{element} other{elements}}.' => '{numTargets, plural, =1{Denne {targetTypeSingular} er} other{Disse {targetTypePlural} er}} referert til av CKEditor-felter i {numReferences, number} {numReferences, plural, =1{annet element} other{andre elementer}}.',
+    'The {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} referenced by CKEditor fields in {numReferences, number} other {numReferences, plural, =1{element} other{elements}}.' => '{numTargets, plural, =1{Dette elementet ({targetTypeSingular}) er} other{Disse {targetTypePlural} er}} referert til av CKEditor-felter i {numReferences, number} {numReferences, plural, =1{annet element} other{andre elementer}}.',
     'This can be set to an environment variable.' => 'Dette kan settes til en miljøvariabel.',
     'This field doesn’t allow nested entries.' => 'Dette feltet tillater ikke nestede artikler.',
     'This field doesn’t allow nested {type} entries.' => 'Dette feltet tillater ikke nestede artikler av typen {type}.',

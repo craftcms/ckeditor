@@ -64,7 +64,7 @@ return [
     'The transforms that should be available when inserting images.' => 'Bileteomformingane som skal vere tilgjengelege når bilete vert sette inn.',
     'The type of column this field should get in the database.' => 'Kolonnetypen dette feltet skal ha i databasen.',
     'The volumes that should be available when selecting assets.' => 'Voluma som skal vere tilgjengelege når filer vert valde.',
-    'The {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} referenced by CKEditor fields in {numReferences, number} other {numReferences, plural, =1{element} other{elements}}.' => '{numTargets, plural, =1{Denne {targetTypeSingular} er} other{Desse {targetTypePlural} er}} refererte til av CKEditor-felt i {numReferences, number} {numReferences, plural, =1{anna element} other{andre element}}.',
+    'The {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} referenced by CKEditor fields in {numReferences, number} other {numReferences, plural, =1{element} other{elements}}.' => '{numTargets, plural, =1{Dette elementet ({targetTypeSingular}) er referert} other{Desse {targetTypePlural} er refererte}} til av CKEditor-felt i {numReferences, number} {numReferences, plural, =1{anna element} other{andre element}}.',
     'This can be set to an environment variable.' => 'Dette kan setjast til ein miljøvariabel.',
     'This field doesn’t allow nested entries.' => 'Dette feltet tillèt ikkje nøsta artiklar.',
     'This field doesn’t allow nested {type} entries.' => 'Dette feltet tillèt ikkje nøsta artiklar av typen {type}.',
@@ -83,6 +83,6 @@ return [
     '{field} should contain at most {max, number} {max, plural, one{word} other{words}}.' => '{field} kan innehalde maks {max, number} {max, plural, one{ord} other{ord}}.',
     '{num, number} {num, plural, =1{character} other{characters}}' => '{num, number} {num, plural, =1{teikn} other{teikn}}',
     '{num, number} {num, plural, =1{word} other{words}}' => '{num, number} {num, plural, =1{ord} other{ord}}',
-    '{numReferences, plural, =1{Reference} other{References}} queued to be replaced.' => '{numReferences, plural, =1{Referansen} other{Referansane}} er lagde i kø for å bli erstatta.',
+    '{numReferences, plural, =1{Reference} other{References}} queued to be replaced.' => '{numReferences, plural, =1{Referansen er lagd} other{Referansane er lagde}} i kø for å bli erstatta.',
     '“+” Button Tooltip' => 'Verktøytips for «+»-knappen',
 ];
