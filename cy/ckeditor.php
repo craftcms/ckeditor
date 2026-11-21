@@ -27,7 +27,7 @@ return [
     'Entry toolbar' => 'Bar offer cofnodion',
     'Entry types list' => 'Rhestr mathau o gofnodion',
     'Expand to a separate button' => 'Ehangu i fotwm ar wahân',
-    'Field Limit Unit' => 'Uned Terfyn Meysydd',
+    'Field Limit Unit' => 'Uned Terfyn Maes',
     'HTML Sanitizer' => 'Glanhawr HTML',
     'Heading Levels' => 'Lefelau Pennawd',
     'Heading {level}' => 'Pennawd {level}',

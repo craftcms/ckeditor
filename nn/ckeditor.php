@@ -92,6 +92,6 @@ return [
     'Replace {numReferences, plural, =1{reference} other{references}}' => 'Erstatt {numReferences, plural, =1{referanse} other{referansar}}',
     'Removes any potentially-malicious code on save, by running the submitted data through {link}.' => 'Fjernar potensielt skadeleg kode ved lagring ved å køyre innsende data gjennom {link}.',
     'The volumes that should be available when selecting assets.' => 'Voluma som skal vere tilgjengelege når filer vert valde.',
-    'The {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} referenced by CKEditor fields in {numReferences, number} other {numReferences, plural, =1{element} other{elements}}.' => '{numTargets, plural, =1{Denne {targetTypeSingular} er} other{Desse {targetTypePlural} er}} refererte til av CKEditor-felt i {numReferences, number} {numReferences, plural, =1{anna element} other{andre element}}.',
-    '{numReferences, plural, =1{Reference} other{References}} queued to be replaced.' => '{numReferences, plural, =1{Referansen} other{Referansane}} er lagde i kø for å bli erstatta.',
+    'The {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} referenced by CKEditor fields in {numReferences, number} other {numReferences, plural, =1{element} other{elements}}.' => '{numTargets, plural, =1{Dette elementet ({targetTypeSingular}) er referert} other{Desse {targetTypePlural} er refererte}} til av CKEditor-felt i {numReferences, number} {numReferences, plural, =1{anna element} other{andre element}}.',
+    '{numReferences, plural, =1{Reference} other{References}} queued to be replaced.' => '{numReferences, plural, =1{Referansen er lagd} other{Referansane er lagde}} i kø for å bli erstatta.',
 ];

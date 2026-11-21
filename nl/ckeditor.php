@@ -92,6 +92,6 @@ return [
     'Replace {numReferences, plural, =1{reference} other{references}}' => '{numReferences, plural, =1{Verwijzing} other{Verwijzingen}} vervangen',
     'Removes any potentially-malicious code on save, by running the submitted data through {link}.' => 'Verwijdert bij het opslaan eventuele schadelijke code door de ingevoerde gegevens via {link} te verwerken.',
     'The volumes that should be available when selecting assets.' => 'De volumes die beschikbaar moeten zijn bij het selecteren van bestanden.',
-    'The {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} referenced by CKEditor fields in {numReferences, number} other {numReferences, plural, =1{element} other{elements}}.' => 'CKEditor-velden in {numReferences, number} {numReferences, plural, =1{ander element} other{andere elementen}} verwijzen naar {numTargets, plural, =1{dit {targetTypeSingular}} other{deze {targetTypePlural}}}.',
+    'The {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} referenced by CKEditor fields in {numReferences, number} other {numReferences, plural, =1{element} other{elements}}.' => 'CKEditor-velden in {numReferences, number} {numReferences, plural, =1{ander element} other{andere elementen}} verwijzen naar {numTargets, plural, =1{dit element ({targetTypeSingular})} other{deze {targetTypePlural}}}.',
     '{numReferences, plural, =1{Reference} other{References}} queued to be replaced.' => '{numReferences, plural, =1{Verwijzing staat} other{Verwijzingen staan}} in de wachtrij om te worden vervangen.',
 ];

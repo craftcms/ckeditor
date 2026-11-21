@@ -92,6 +92,6 @@ return [
     'Replace {numReferences, plural, =1{reference} other{references}}' => 'Erstat {numReferences, plural, =1{reference} other{referencer}}',
     'Removes any potentially-malicious code on save, by running the submitted data through {link}.' => 'Fjerner potentielt skadelig kode ved lagring ved at køre de indsendte data gennem {link}.',
     'The volumes that should be available when selecting assets.' => 'De diskenheder, der skal være tilgængelige ved valg af filer.',
-    'The {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} referenced by CKEditor fields in {numReferences, number} other {numReferences, plural, =1{element} other{elements}}.' => '{numTargets, plural, =1{Denne {targetTypeSingular} er} other{Disse {targetTypePlural} er}} refereret af CKEditor-felter i {numReferences, number} {numReferences, plural, =1{andet element} other{andre elementer}}.',
+    'The {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} referenced by CKEditor fields in {numReferences, number} other {numReferences, plural, =1{element} other{elements}}.' => '{numTargets, plural, =1{Dette element ({targetTypeSingular}) er} other{Disse {targetTypePlural} er}} refereret af CKEditor-felter i {numReferences, number} {numReferences, plural, =1{andet element} other{andre elementer}}.',
     '{numReferences, plural, =1{Reference} other{References}} queued to be replaced.' => '{numReferences, plural, =1{Reference sat} other{Referencer sat}} i kø til erstatning.',
 ];

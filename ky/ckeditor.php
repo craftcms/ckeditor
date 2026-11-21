@@ -27,7 +27,7 @@ return [
     'Entry toolbar' => 'Жазуулардын куралдар панели',
     'Entry types list' => 'Жазуу түрлөрүнүн тизмеси',
     'Expand to a separate button' => 'Өзүнчө баскычка жаюу',
-    'Field Limit Unit' => 'Талаалардын чегинин бирдиги',
+    'Field Limit Unit' => 'Талаанын чегинин бирдиги',
     'HTML Sanitizer' => 'HTML тазалагыч',
     'Heading Levels' => 'Аталыш деңгээлдери',
     'Heading {level}' => '{level}-аталыш',

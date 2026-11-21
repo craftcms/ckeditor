@@ -92,6 +92,6 @@ return [
     'Replace {numReferences, plural, =1{reference} other{references}}' => 'Skipta út {numReferences, plural, =1{tilvísun} other{tilvísunum}}',
     'Removes any potentially-malicious code on save, by running the submitted data through {link}.' => 'Fjarlægir mögulega skaðlegan kóða við vistun með því að keyra innsend gögn í gegnum {link}.',
     'The volumes that should be available when selecting assets.' => 'Söfnin sem eiga að vera tiltæk þegar skrár eru valdar.',
-    'The {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} referenced by CKEditor fields in {numReferences, number} other {numReferences, plural, =1{element} other{elements}}.' => 'Vísað er í {numTargets, plural, =1{{targetTypeSingular}} other{{targetTypePlural}}} í CKEditor-reitum í {numReferences, number} {numReferences, plural, =1{öðrum þætti} other{öðrum þáttum}}.',
+    'The {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} referenced by CKEditor fields in {numReferences, number} other {numReferences, plural, =1{element} other{elements}}.' => 'Vísað er í {numTargets, plural, =1{þennan þátt ({targetTypeSingular})} other{þessa þætti ({targetTypePlural})}} í CKEditor-reitum í {numReferences, number} {numReferences, plural, =1{öðrum þætti} other{öðrum þáttum}}.',
     '{numReferences, plural, =1{Reference} other{References}} queued to be replaced.' => '{numReferences, plural, =1{Tilvísun sett} other{Tilvísanir settar}} í biðröð til útskipta.',
 ];
