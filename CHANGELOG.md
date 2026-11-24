@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 5.10.0 - 2026-11-24
 
 - Added the “License Key” plugin setting. ([#638](https://github.com/craftcms/ckeditor/pull/638))
 - CKEditor fields now respect `licenseKey` values set via their config options. ([#638](https://github.com/craftcms/ckeditor/pull/638))
