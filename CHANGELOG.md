@@ -2,13 +2,13 @@
 
 ## Unreleased
 
-- Added the “License Key” plugin setting, which can be set to a commercial CKEditor license key. ([#638](https://github.com/craftcms/ckeditor/pull/638))
+- Added the “License Key” plugin setting. ([#638](https://github.com/craftcms/ckeditor/pull/638))
 - CKEditor fields now respect `licenseKey` values set via their config options. ([#638](https://github.com/craftcms/ckeditor/pull/638))
-- Added `craft\ckeditor\models\Settings`.
 - The “Purify HTML” field setting is now labeled “Sanitize HTML”.
-- Fixed a bug where some CKEditor field settings and advanced link field labels weren’t translated.
-- Fixed an error that occurred when outputting CKEditor fields with Twig 3.31 or later. ([#668](https://github.com/craftcms/ckeditor/issues/668))
-- Fixed a bug where `|trim|length` returned the number of content chunks for CKEditor fields with Twig 3.31 or later.
+- Added `craft\ckeditor\models\Settings`. ([#638](https://github.com/craftcms/ckeditor/pull/638))
+- Fixed an error that occurred when outputting CKEditor fields with Twig 3.31 or later. ([#668](https://github.com/craftcms/ckeditor/issues/668), [#669](https://github.com/craftcms/ckeditor/pull/669))
+- Fixed a bug where `|trim|length` returned the wrong value for CKEditor fields with Twig 3.31 or later. ([#669](https://github.com/craftcms/ckeditor/pull/669))
+- Fixed a bug where some CKEditor field settings and advanced link field labels weren’t translated. ([#660](https://github.com/craftcms/ckeditor/pull/660))
 
 ## 5.9.0 - 2026-10-06
 
