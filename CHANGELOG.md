@@ -1,6 +1,6 @@
 # Release Notes for CKEditor for Craft CMS
 
-## Unreleased
+## 6.0.0-beta.2 - 2026-11-24
 
 - CKEditor fields and the toolbar builder now use the control panel’s theme colors, so they look right in dark mode. ([#648](https://github.com/craftcms/ckeditor/issues/648), [#652](https://github.com/craftcms/ckeditor/pull/652))
 - Fixed an error that occurred when outputting CKEditor fields with Twig 3.31 or later. ([#668](https://github.com/craftcms/ckeditor/issues/668), [#669](https://github.com/craftcms/ckeditor/pull/669))
