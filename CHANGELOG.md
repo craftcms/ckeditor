@@ -2,13 +2,13 @@
 
 ## Unreleased
 
-- CKEditor fields and the toolbar builder now use the control panel’s theme colors, so they look right in dark mode. ([#648](https://github.com/craftcms/ckeditor/issues/648))
+- CKEditor fields and the toolbar builder now use the control panel’s theme colors, so they look right in dark mode. ([#648](https://github.com/craftcms/ckeditor/issues/648), [#652](https://github.com/craftcms/ckeditor/pull/652))
 - Fixed an error that occurred when outputting CKEditor fields with Twig 3.31 or later. ([#668](https://github.com/craftcms/ckeditor/issues/668), [#669](https://github.com/craftcms/ckeditor/pull/669))
 - Fixed a bug where `|trim|length` returned the wrong value for CKEditor fields with Twig 3.31 or later. ([#669](https://github.com/craftcms/ckeditor/pull/669))
-- Fixed a bug where CKEditor field content was hard to read in dark mode. ([#648](https://github.com/craftcms/ckeditor/issues/648))
-- Fixed a bug where CKEditor toolbar stuck too far down the page when scrolling a long field. ([#649](https://github.com/craftcms/ckeditor/issues/649))
-- Fixed a bug where loading an element’s edit page moved keyboard focus into CKEditor fields that contained nested entries. ([#650](https://github.com/craftcms/ckeditor/issues/650))
-- Fixed a bug where some CKEditor field settings and advanced link field labels weren’t translated.
+- Fixed a bug where CKEditor field content was hard to read in dark mode. ([#648](https://github.com/craftcms/ckeditor/issues/648), [#652](https://github.com/craftcms/ckeditor/pull/652))
+- Fixed a bug where the CKEditor toolbar stuck too far down the page when scrolling a long field. ([#649](https://github.com/craftcms/ckeditor/issues/649), [#653](https://github.com/craftcms/ckeditor/pull/653))
+- Fixed a bug where loading an element’s edit page moved keyboard focus into CKEditor fields that contained nested entries. ([#650](https://github.com/craftcms/ckeditor/issues/650), [#654](https://github.com/craftcms/ckeditor/pull/654))
+- Fixed a bug where some CKEditor field settings and advanced link field labels weren’t translated. ([#661](https://github.com/craftcms/ckeditor/pull/661))
 
 ## 6.0.0-beta.1 - 2026-11-10
 
