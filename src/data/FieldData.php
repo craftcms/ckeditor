@@ -49,6 +49,9 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
     {
         $this->rawContent = $content;
         $this->siteId = $siteId;
+
+        // Initialize Twig\Markup's properties, as Twig's escaper may read them before the content is rendered
+        TwigMarkup::__construct('', Craft::$app->charset);
     }
 
     public function __toString()

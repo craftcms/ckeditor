@@ -7,6 +7,7 @@
 - Added `craft\ckeditor\models\Settings`.
 - The “Purify HTML” field setting is now labeled “Sanitize HTML”.
 - Fixed a bug where some CKEditor field settings and advanced link field labels weren’t translated.
+- Fixed an error that occurred when outputting CKEditor fields with Twig 3.31 or later. ([#668](https://github.com/craftcms/ckeditor/issues/668))
 
 ## 5.9.0 - 2026-10-06
 
