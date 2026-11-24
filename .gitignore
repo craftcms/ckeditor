@@ -9,3 +9,4 @@ node_modules
 /.claude/settings.local.json
 /public/hot
 /.phpunit.cache
+.amp/portals/*

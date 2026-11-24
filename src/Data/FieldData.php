@@ -56,6 +56,9 @@ class FieldData extends HtmlFieldData implements Countable, IteratorAggregate
     {
         $this->rawContent = $content;
         $this->siteId = $siteId;
+
+        // Initialize Twig\Markup's properties, as Twig's escaper may read them before the content is rendered
+        TwigMarkup::__construct('', 'UTF-8');
     }
 
     public function __toString(): string
@@ -63,6 +66,16 @@ class FieldData extends HtmlFieldData implements Countable, IteratorAggregate
         $this->render();
 
         return parent::__toString();
+    }
+
+    /**
+     * Returns a plain Markup object with the given content, so Twig 3.31+’s `|trim` filter doesn’t clone the field data.
+     *
+     * @internal
+     */
+    public function withContent(string $content): TwigMarkup
+    {
+        return new TwigMarkup($content, 'UTF-8');
     }
 
     public function __get(string $name)
