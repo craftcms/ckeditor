@@ -60,6 +60,16 @@ class FieldData extends HtmlFieldData implements IteratorAggregate, Countable
         return parent::__toString();
     }
 
+    /**
+     * Returns a plain Markup object with the given content, so Twig 3.31+’s `|trim` filter doesn’t clone the field data.
+     *
+     * @internal
+     */
+    public function withContent(string $content): TwigMarkup
+    {
+        return new TwigMarkup($content, Craft::$app->charset);
+    }
+
     public function __get(string $name)
     {
         return match ($name) {
