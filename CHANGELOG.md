@@ -4,6 +4,9 @@
 
 - Added the “License Key” plugin setting, which can be set to a commercial CKEditor license key. ([#638](https://github.com/craftcms/ckeditor/pull/638))
 - CKEditor fields now respect `licenseKey` values set via their config options. ([#638](https://github.com/craftcms/ckeditor/pull/638))
+- CKEditor fields now cache their HTML Purifier HTML definitions when running Craft 5.13 or later, rather than rebuilding them every time a field value is saved. Fields don’t cache them when `craft\ckeditor\Field::EVENT_MODIFY_PURIFIER_CONFIG` has handlers. ([craftcms/cms#20847](https://github.com/craftcms/cms/issues/20847))
+- Added `craft\ckeditor\Field::EVENT_MODIFY_PURIFIER_DEFINITION`, which should be used instead of `EVENT_MODIFY_PURIFIER_CONFIG` to modify HTML Purifier’s HTML definition. ([craftcms/cms#20847](https://github.com/craftcms/cms/issues/20847))
+- Added `craft\ckeditor\events\ModifyPurifierDefinitionEvent`.
 - Added `craft\ckeditor\models\Settings`.
 - The “Purify HTML” field setting is now labeled “Sanitize HTML”.
 - Fixed a bug where some CKEditor field settings and advanced link field labels weren’t translated.

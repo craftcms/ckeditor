@@ -22,6 +22,7 @@ use craft\ckeditor\data\FieldData;
 use craft\ckeditor\data\Markup;
 use craft\ckeditor\events\DefineLinkOptionsEvent;
 use craft\ckeditor\events\ModifyConfigEvent;
+use craft\ckeditor\events\ModifyPurifierDefinitionEvent;
 use craft\ckeditor\gql\Generator;
 use craft\ckeditor\helpers\CkeditorConfig;
 use craft\ckeditor\helpers\CkeditorConfigSchema;
@@ -56,6 +57,7 @@ use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\HtmlPurifier;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -74,7 +76,6 @@ use craft\services\ElementSources;
 use craft\web\View;
 use GraphQL\Type\Definition\Type;
 use HTMLPurifier_Config;
-use HTMLPurifier_Exception;
 use HTMLPurifier_HTMLDefinition;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -115,6 +116,42 @@ class Field extends HtmlField implements ElementContainerFieldInterface, Mergeab
      * ```
      */
     public const EVENT_MODIFY_PURIFIER_CONFIG = 'modifyPurifierConfig';
+
+    /**
+     * @event ModifyPurifierDefinitionEvent The event that is triggered when HTML Purifier’s HTML definition
+     * needs to be built for the field.
+     *
+     * The definition is cached, so this is only triggered when it isn’t cached yet, and changes made to the
+     * definition are cached along with it. Each field caches its own definition, and it’s rebuilt when a plugin
+     * is installed or updated. After changing what a handler does in a module, clear “HTML Purifier caches”
+     * in the Caches utility so the definition is rebuilt.
+     *
+     * Use this rather than [[EVENT_MODIFY_PURIFIER_CONFIG]] to modify the definition. Fields don’t cache the
+     * definition when [[EVENT_MODIFY_PURIFIER_CONFIG]] has handlers.
+     *
+     * ```php
+     * use craft\ckeditor\events\ModifyPurifierDefinitionEvent;
+     * use craft\ckeditor\Field;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Field::class,
+     *     Field::EVENT_MODIFY_PURIFIER_DEFINITION,
+     *     function(ModifyPurifierDefinitionEvent $event) {
+     *         $event->definition->addAttribute('span', 'data-foo', 'Text');
+     *     }
+     * );
+     * ```
+     *
+     * @since 5.10.0
+     */
+    public const EVENT_MODIFY_PURIFIER_DEFINITION = 'modifyPurifierDefinition';
+
+    /**
+     * @var int The revision of the HTML definition changes made by `_adjustPurifierDefinition()`.
+     * Bump it whenever they change, so cached HTML definitions are rebuilt.
+     */
+    private const PURIFIER_DEFINITION_REV = 1;
 
     /**
      * @event DefineLinkOptionsEvent The event that is triggered when registering the link options for the field.
@@ -1974,6 +2011,31 @@ JS;
         // adjust the purifier config based on the CKEditor config
         $purifierConfig = $this->_adjustPurifierConfig($purifierConfig);
 
+        // Get the HTML definition AFTER setting HTML.TargetNoopener and HTML.TargetNoreferrer, otherwise none
+        // of the adjustments will work! Cache it, unless EVENT_MODIFY_PURIFIER_CONFIG handlers could modify it.
+        if (
+            method_exists(HtmlPurifier::class, 'enableDefinitionCache') &&
+            !$this->hasEventHandlers(self::EVENT_MODIFY_PURIFIER_CONFIG)
+        ) {
+            HtmlPurifier::enableDefinitionCache($purifierConfig, $this->_purifierDefinitionId());
+            // this will be null if the definition is already cached
+            $def = $purifierConfig->maybeGetRawHTMLDefinition();
+        } else {
+            $def = $purifierConfig->getDefinition('HTML', true);
+        }
+
+        if ($def) {
+            /** @var HTMLPurifier_HTMLDefinition $def */
+            $this->_adjustPurifierDefinition($def);
+
+            if ($this->hasEventHandlers(self::EVENT_MODIFY_PURIFIER_DEFINITION)) {
+                $this->trigger(self::EVENT_MODIFY_PURIFIER_DEFINITION, new ModifyPurifierDefinitionEvent([
+                    'definition' => $def,
+                    'config' => $purifierConfig,
+                ]));
+            }
+        }
+
         // Give plugins a chance to modify the HTML Purifier config, or add new ones
         $event = new ModifyPurifierConfigEvent([
             'config' => $purifierConfig,
@@ -2667,11 +2729,10 @@ JS;
     }
 
     /**
-     * Adjust HTML Purifier based on items added to the toolbar
+     * Adjusts HTML Purifier’s settings based on the field’s link options.
      *
      * @param HTMLPurifier_Config $purifierConfig
      * @return HTMLPurifier_Config
-     * @throws HTMLPurifier_Exception
      */
     private function _adjustPurifierConfig(HTMLPurifier_Config $purifierConfig): HTMLPurifier_Config
     {
@@ -2712,18 +2773,50 @@ JS;
             }
         }
 
-        // we have to get the HTML definition AFTER setting HTML.TargetNoopener, HTML.TargetNoreferrer
-        // otherwise none of the adjustments below will work!
-        /** @var HTMLPurifier_HTMLDefinition|null $def */
-        $def = $purifierConfig->getDefinition('HTML', true);
+        return $purifierConfig;
+    }
 
+    /**
+     * Returns the ID that HTML Purifier caches this field’s HTML definition with.
+     *
+     * It covers everything that affects the changes made by [[_adjustPurifierDefinition()]] and
+     * [[EVENT_MODIFY_PURIFIER_DEFINITION]] handlers. HTML Purifier’s cache key already covers the config’s
+     * `HTML.*` settings.
+     */
+    private function _purifierDefinitionId(): string
+    {
+        $data = [
+            self::PURIFIER_DEFINITION_REV,
+            in_array('ariaLabel', $this->advancedLinkFields ?? []),
+            array_values(array_intersect(['todoList', 'numberedList', 'bulletedList', 'createEntry'], $this->toolbar)),
+            $this->imageMode === self::IMAGE_MODE_ENTRIES,
+        ];
+
+        if ($this->hasEventHandlers(self::EVENT_MODIFY_PURIFIER_DEFINITION)) {
+            // Handlers may modify each field differently, and change when plugins are updated
+            $data[] = $this->uid;
+            foreach (Craft::$app->getPlugins()->getAllPlugins() as $handle => $plugin) {
+                $data[] = "$handle:$plugin->version";
+            }
+        }
+
+        return sprintf('ckeditor-%s', sha1(serialize($data)));
+    }
+
+    /**
+     * Adjusts the HTML Purifier HTML definition based on items added to the toolbar.
+     *
+     * @param HTMLPurifier_HTMLDefinition $def
+     */
+    private function _adjustPurifierDefinition(HTMLPurifier_HTMLDefinition $def): void
+    {
         if (!empty($this->advancedLinkFields) && in_array('ariaLabel', $this->advancedLinkFields)) {
-            $def?->addAttribute('a', 'aria-label', 'Text');
+            $def->addAttribute('a', 'aria-label', 'Text');
         }
 
         if (in_array('todoList', $this->toolbar)) {
             // Add input[type=checkbox][disabled][checked] to the definition
-            $def?->addElement('input', 'Inline', 'Inline', '', [
+            $def->addElement('input', 'Inline', 'Inline', '', [
                 'type' => 'Enum#checkbox',
                 'disabled' => 'Enum#disabled',
                 'checked' => 'Enum#checked',
@@ -2731,12 +2824,12 @@ JS;
         }
 
         if (in_array('numberedList', $this->toolbar)) {
-            $def?->addAttribute('ol', 'style', 'Text');
-            $def?->addAttribute('ol', 'reversed', 'Text');
+            $def->addAttribute('ol', 'style', 'Text');
+            $def->addAttribute('ol', 'reversed', 'Text');
         }
 
         if (in_array('bulletedList', $this->toolbar)) {
-            $def?->addAttribute('ul', 'style', 'Text');
+            $def->addAttribute('ul', 'style', 'Text');
         }
 
         if (
@@ -2746,17 +2839,15 @@ JS;
         ) {
             // allow `data-list-item-id` attribute for the list items;
             // complements https://github.com/craftcms/ckeditor/pull/555
-            $def?->addAttribute('li', 'data-list-item-id', 'Text');
+            $def->addAttribute('li', 'data-list-item-id', 'Text');
         }
 
         if ($this->imageMode === self::IMAGE_MODE_ENTRIES || in_array('createEntry', $this->toolbar)) {
-            $def?->addElement('craft-entry', 'Inline', 'Inline', '', [
+            $def->addElement('craft-entry', 'Inline', 'Inline', '', [
                 'data-entry-id' => 'Number',
                 'data-site-id' => 'Number',
             ]);
         }
-
-        return $purifierConfig;
     }
 
     /**
