@@ -1,5 +1,9 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- Fixed a bug where creating a revision could create duplicate nested entries, if a CKEditor field’s nested entries had their own nested entries.
+
 ## 6.0.0-beta.2 - 2026-11-24
 
 - CKEditor fields and the toolbar builder now use the control panel’s theme colors, so they look right in dark mode. ([#648](https://github.com/craftcms/ckeditor/issues/648), [#652](https://github.com/craftcms/ckeditor/pull/652))

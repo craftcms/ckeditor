@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Revisions;
 use CraftCms\Cms\User\Models\User;
 
@@ -77,4 +78,33 @@ it('gives the owner its own copies of the nested entries when the revision’s c
         ->and($copy?->title)->toBe('Original')
         // The revision keeps its own copy
         ->and(array_map(fn (Entry $entry) => $entry->id, revisionNestedEntries($this->revisionId)))->toBe([$revisionCopy->id]);
+});
+
+it('copies entries nested within nested entries as revisions, without creating live copies', function () {
+    // A nested entry type with the same CKEditor field, so its entries can have their own nested entries
+    $groupType = createEntryType('group', [$this->field]);
+    $field = Fields::getFieldById($this->field->id);
+    $field->setEntryTypes([['uid' => $this->nested->getType()->uid], ['uid' => $groupType->uid]]);
+    expect(Fields::saveField($field))->toBeTrue();
+
+    $owner = createEntry($this->owner->getSection(), $this->owner->getType(), '<p>Intro</p>', 'Another entry');
+    $group = createNestedEntry($owner, $field, $groupType, 'Group');
+    $inner = createNestedEntry($group, $field, $this->nested->getType(), 'Inner');
+    $group->setFieldValue('body', sprintf('<craft-entry data-entry-id="%s"></craft-entry>', $inner->id));
+    expect(Elements::saveElement($group))->toBeTrue();
+    $owner->setFieldValue('body', sprintf('<p>Intro</p><craft-entry data-entry-id="%s"></craft-entry>', $group->id));
+    expect(Elements::saveElement($owner))->toBeTrue();
+
+    $revisionId = Revisions::createRevision(Entry::find()->id($owner->id)->one(), force: true);
+
+    $groupRevision = revisionNestedEntries($revisionId)[0];
+    $innerCopies = Entry::find()->title('Inner')->status(null)->revisions(null)->trashed(null)->all();
+    $innerRevision = collect($innerCopies)->first(fn (Entry $entry) => $entry->getIsRevision());
+
+    expect(array_map(fn (Entry $entry) => $entry->id, $innerCopies))->toHaveCount(2)
+        ->toContain($inner->id)
+        ->and($innerRevision?->getCanonicalId())->toBe($inner->id)
+        ->and($innerRevision?->primaryOwnerId)->toBe($groupRevision->id)
+        ->and($groupRevision->getFieldValue('body')->getRawContent())
+        ->toContain(sprintf('data-entry-id="%s"', $innerRevision?->id));
 });
