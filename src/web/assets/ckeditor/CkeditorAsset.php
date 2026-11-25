@@ -66,6 +66,7 @@ class CkeditorAsset extends BaseCkeditorPackageAsset
             $this->registerRefHandles($view);
             $view->registerTranslations('app', [
                 'Edit {type}',
+                'New {type}',
             ]);
             $view->registerTranslations('ckeditor', [
                 'Add nested content',
@@ -74,7 +75,6 @@ class CkeditorAsset extends BaseCkeditorPackageAsset
                 'Entry types list',
                 'Insert link',
                 'Link to the current site',
-                'New {type}',
                 'Site: {name}',
                 'This field doesn’t allow nested entries.',
                 '{num, number} {num, plural, =1{character} other{characters}}',

@@ -148,8 +148,8 @@
   }) }}
 
   {{ forms.lightswitchField({
-    label: 'Show unpermitted volumes'|t('ckeditor'),
-    instructions: 'Whether to show volumes that the user doesn’t have permission to view.'|t('ckeditor'),
+    label: 'Show unpermitted volumes'|t('app'),
+    instructions: 'Whether to show volumes that the user doesn’t have permission to view.'|t('app'),
     id: 'showUnpermittedVolumes',
     name: 'showUnpermittedVolumes',
     on: field.showUnpermittedVolumes,
@@ -157,8 +157,8 @@
   }) }}
 
   {{ forms.lightswitchField({
-    label: 'Show unpermitted files'|t('ckeditor'),
-    instructions: 'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'|t('ckeditor'),
+    label: 'Show unpermitted files'|t('app'),
+    instructions: 'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'|t('app'),
     id: 'showUnpermittedFiles',
     name: 'showUnpermittedFiles',
     on: field.showUnpermittedFiles,
@@ -532,7 +532,7 @@
   </script>
 
   {{ forms.lightswitchField({
-    label: "Purify HTML"|t('ckeditor'),
+    label: "Sanitize HTML"|t('ckeditor'),
     instructions: 'Removes any potentially-malicious code on save, by running the submitted data through {link}.'|t('ckeditor', {
       link: '<a href="http://htmlpurifier.org/" rel="noopener" target="_blank">HTML Purifier</a>',
     }),
