@@ -529,7 +529,7 @@ final class CkeditorConfig
                 'conversion' => null,
             ],
             [
-                'label' => Craft::t('app', 'Open in new tab?'),
+                'label' => Craft::t('app', 'Open in a new tab'),
                 'value' => 'target',
                 'conversion' => [
                     'type' => 'bool',
@@ -550,7 +550,7 @@ final class CkeditorConfig
             [
                 'label' => Craft::t('app', 'Class Name'),
                 'value' => 'class',
-                'tooltip' => 'Separate multiple values with spaces.',
+                'tooltip' => Craft::t('app', 'Separate multiple values with spaces.'),
                 'conversion' => [
                     'type' => 'string',
                     'model' => 'craftClass',
@@ -567,9 +567,9 @@ final class CkeditorConfig
                 ],
             ],
             [
-                'label' => Craft::t('app', 'Relation (rel)'),
+                'label' => Craft::t('app', 'Relation ({ex})', ['ex' => 'rel']),
                 'value' => 'rel',
-                'tooltip' => 'Separate multiple values with spaces.',
+                'tooltip' => Craft::t('app', 'Separate multiple values with spaces.'),
                 'conversion' => [
                     'type' => 'string',
                     'model' => 'craftRel',
