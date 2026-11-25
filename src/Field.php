@@ -1646,6 +1646,9 @@ JS;
             $element->duplicateOf !== null ||
             $element->mergingCanonicalChanges ||
             $element->updatingFromDerivative ||
+            // A nested revision can still have its live owner loaded while its revision is being created, so check
+            // the element itself too
+            $element->getIsRevision() ||
             $element->getRootOwner()->getIsRevision() ||
             ! $element->isFieldDirty($this->handle)
         ) {
@@ -1735,6 +1738,7 @@ JS;
             $this->imageMode === self::IMAGE_MODE_IMG &&
             $this->_hasDynamicUploadSubpath() &&
             ! $element->propagating &&
+            ! $element->getIsRevision() &&
             ! $element->getRootOwner()->getIsRevision()
         ) {
             $this->moveTempAssets($element);
