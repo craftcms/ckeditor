@@ -2,8 +2,8 @@
 
 ## Unreleased
 
-- Fixed a bug where creating a revision could create duplicate nested entries, if a CKEditor field’s nested entries had their own nested entries.
-- Fixed a bug where creating a revision could move temporary image uploads for nested entries’ CKEditor fields.
+- Fixed a bug where creating a revision could create duplicate nested entries, if a CKEditor field’s nested entries had their own nested entries. ([#670](https://github.com/craftcms/ckeditor/pull/670))
+- Fixed a bug where creating a revision could move temporary image uploads for nested entries’ CKEditor fields. ([#670](https://github.com/craftcms/ckeditor/pull/670))
 
 ## 6.0.0-beta.2 - 2026-11-24
 
