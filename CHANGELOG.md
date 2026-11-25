@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where creating a revision could create duplicate nested entries, if a CKEditor field’s nested entries had their own nested entries.
+- Fixed a bug where creating a revision could move temporary image uploads for nested entries’ CKEditor fields.
 
 ## 6.0.0-beta.2 - 2026-11-24
 

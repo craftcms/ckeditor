@@ -1738,6 +1738,7 @@ JS;
             $this->imageMode === self::IMAGE_MODE_IMG &&
             $this->_hasDynamicUploadSubpath() &&
             ! $element->propagating &&
+            ! $element->getIsRevision() &&
             ! $element->getRootOwner()->getIsRevision()
         ) {
             $this->moveTempAssets($element);
