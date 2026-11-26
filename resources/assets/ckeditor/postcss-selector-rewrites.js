@@ -1,21 +1,25 @@
 /**
- * Keeps `:has()` in the subject compound of CKEditor's selectors.
+ * Rewrites CKEditor selectors that make Chromium restyle much of the page
+ * whenever any element is added or removed anywhere
+ * (https://github.com/craftcms/ckeditor/issues/673):
  *
- * When `:has()` sits in a compound that a combinator follows, as in
- * `.a:has(.b) > .c`, Chromium restyles every `.c` on the page whenever any
- * element is added or removed anywhere, because it can't tell which `.a` the
- * change affects. A few upstream CKEditor rules do this, which made every
- * insertion on an element edit page restyle hundreds of elements
- * (https://github.com/craftcms/ckeditor/issues/673).
+ * - `:has()` in a compound that a combinator follows, as in `.a:has(.b) > .c`.
+ *   Chromium can't tell which `.a` an insertion affects, so it restyles every
+ *   `.c`.
+ * - `:not()`, `*`, or a type selector inside `:has()`, as in
+ *   `:has(.a:not(.b))` or `:has(> div)`. They match most inserted elements.
+ * - `:is()` with combinators inside, followed by `> * + *`.
  *
- * This plugin rewrites those rules so `:has()` only appears in the subject, and
- * fails the build when a CKEditor update adds a new one, or changes one of
- * these so it's no longer rewritten.
+ * The plugin fails the build when a CKEditor update adds a new rule with
+ * `:has()` like the first two, or changes one of these so it's no longer
+ * rewritten. Measure on a fresh page load: once a rule has matched, removing
+ * it doesn't remove its cost.
  */
 
 /**
- * The upstream selectors to rewrite, and what replaces each one. Replacements
- * keep the original specificity, so they still win over the rules they did.
+ * The upstream selectors to rewrite, keyed with whitespace collapsed, and what
+ * replaces each one. Replacements keep the original specificity unless noted,
+ * so they still win over the rules they did.
  *
  * The widget rules are wrapped in a style query on
  * `--craft-ck-widget-has-hovered-table`, which ckeditor5-craftcms.css sets on
@@ -23,6 +27,28 @@
  * the specificity of the removed `:has(.ck-widget.table:hover)`.
  */
 const REWRITES = new Map([
+  [
+    // one more class of specificity, but the only rule it competes with is the one for hidden back buttons
+    '.ck.ck-form__header:has(.ck-button-back:not(.ck-hidden))',
+    {
+      selector:
+        '.ck.ck-form__header:has(.ck-button-back):not(:has(.ck-button-back.ck-hidden))',
+    },
+  ],
+  [
+    // one less type selector of specificity, which still beats `.ck-content .media`
+    '.ck-content .media:has( > div[data-oembed-url*="open.spotify.com"])',
+    {
+      selector:
+        '.ck-content .media:has(> [data-oembed-url*="open.spotify.com"])',
+    },
+  ],
+  ...['ltr', 'rtl'].map((dir) => [
+    `[dir="${dir}"] :is(.ck.ck-find-and-replace-form .ck-find-and-replace-form__inputs, .ck.ck-find-and-replace-form .ck-find-and-replace-form__actions) > * + *`,
+    {
+      selector: `[dir="${dir}"] .ck.ck-find-and-replace-form .ck-find-and-replace-form__inputs > * + *, [dir="${dir}"] .ck.ck-find-and-replace-form .ck-find-and-replace-form__actions > * + *`,
+    },
+  ]),
   [
     '.ck.ck-button.ck-dropdown-menu-list__nested-menu__button.ck-icon-spacing:not(:has(.ck-button__icon)) > .ck-button__label',
     {
@@ -156,10 +182,54 @@ export function hasOutsideSubject(selector) {
   }
 }
 
+/**
+ * Returns the first `:not()`, `*`, or type selector inside a `:has()`
+ * argument, or null. Skips strings, attribute selectors, and escapes.
+ *
+ * @param {string} selector
+ * @returns {string | null}
+ */
+export function costlyHasArgument(selector) {
+  // One entry per open parenthesis: whether it holds selectors inside a :has() argument.
+  const stack = [];
+  for (let i = 0; i < selector.length; i++) {
+    const char = selector[i];
+    const inHas = stack.at(-1) === true;
+    if (char === '\\') {
+      i++;
+    } else if (char === '"' || char === "'") {
+      i = selector.indexOf(char, i + 1);
+    } else if (char === '[') {
+      i = selector.indexOf(']', i);
+    } else if (char === '(') {
+      const before = selector.slice(0, i);
+      stack.push(
+        /(?<!\\):has$/i.test(before) ||
+          (inHas && /(?<!\\):(is|where|not)$/i.test(before)),
+      );
+    } else if (char === ')') {
+      stack.pop();
+    } else if (inHas) {
+      if (char === '*') {
+        return '*';
+      }
+      if (/^:not\(/i.test(selector.slice(i, i + 5))) {
+        return ':not()';
+      }
+      // a name that starts a compound, rather than following `.`, `#`, `:`, or `-`
+      const type = /^[a-z][\w-]*/i.exec(selector.slice(i));
+      if (type && /[\s(>+~,]/.test(selector[i - 1])) {
+        return type[0];
+      }
+    }
+  }
+  return null;
+}
+
 /** @returns {import('postcss').Plugin} */
-export default function hasSubject() {
+export default function selectorRewrites() {
   return {
-    postcssPlugin: 'craft-ckeditor-has-subject',
+    postcssPlugin: 'craft-ckeditor-selector-rewrites',
     Once(root, {AtRule}) {
       const found = new Set();
       root.walkRules((rule) => {
@@ -180,7 +250,11 @@ export default function hasSubject() {
           }
         } else if (hasOutsideSubject(rule.selector)) {
           throw rule.error(
-            'This selector has :has() outside its subject, which makes Chromium restyle the page on every DOM insertion. Add a rewrite for it to postcss-has-subject.js.',
+            'This selector has :has() outside its subject, which makes Chromium restyle the page on every DOM insertion. Add a rewrite for it to postcss-selector-rewrites.js.',
+          );
+        } else if (costlyHasArgument(rule.selector)) {
+          throw rule.error(
+            `This selector has ${costlyHasArgument(rule.selector)} inside :has(), which makes Chromium restyle the page on every DOM insertion. Add a rewrite for it to postcss-selector-rewrites.js.`,
           );
         }
       });
@@ -190,7 +264,7 @@ export default function hasSubject() {
         for (const selector of REWRITES.keys()) {
           if (!found.has(selector)) {
             throw new Error(
-              `postcss-has-subject.js: CKEditor's CSS no longer has \`${selector}\`. Update the rewrite for it.`,
+              `postcss-selector-rewrites.js: CKEditor's CSS no longer has \`${selector}\`. Update the rewrite for it.`,
             );
           }
         }
@@ -198,4 +272,4 @@ export default function hasSubject() {
     },
   };
 }
-hasSubject.postcss = true;
+selectorRewrites.postcss = true;

@@ -1,12 +1,12 @@
 import {defineConfig} from 'vite';
 import {resolve} from 'path';
-import hasSubject from './postcss-has-subject.js';
+import selectorRewrites from './postcss-selector-rewrites.js';
 
 export default defineConfig({
   publicDir: false,
   css: {
     postcss: {
-      plugins: [hasSubject()],
+      plugins: [selectorRewrites()],
     },
   },
   build: {

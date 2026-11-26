@@ -408,7 +408,7 @@ form[class*=' lp-editor']
   margin-block-end: var(--ck-spacing-large);
 }
 
-/* flags widgets that contain a hovered table, for the rules postcss-has-subject.js rewrites */
+/* flags widgets that contain a hovered table, for the rules postcss-selector-rewrites.js rewrites */
 .ck-widget {
   --craft-ck-widget-has-hovered-table: 0;
 }
