@@ -136,8 +136,8 @@ class CkeditorAssets
     public function editorAssetUrls(): array
     {
         return [
+            // ckeditor.css already includes CKEditor’s own CSS
             'styles' => [
-                $this->url('ckeditor/lib/ckeditor5.css'),
                 $this->url('ckeditor/ckeditor.css'),
             ],
             'scripts' => array_filter([
