@@ -1,8 +1,14 @@
 import {defineConfig} from 'vite';
 import {resolve} from 'path';
+import selectorRewrites from './postcss-selector-rewrites.js';
 
 export default defineConfig({
   publicDir: false,
+  css: {
+    postcss: {
+      plugins: [selectorRewrites()],
+    },
+  },
   build: {
     outDir: resolve(__dirname, 'dist'),
     emptyOutDir: false,
