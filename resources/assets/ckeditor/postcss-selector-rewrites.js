@@ -83,6 +83,37 @@ const REWRITES = new Map([
 ]);
 
 /**
+ * Returns the index just past the escape, string, or attribute selector that
+ * starts at `i`, or null when none does. Strings inside attribute selectors
+ * may contain `]`.
+ *
+ * @param {string} selector
+ * @param {number} i
+ * @returns {number | null}
+ */
+function skipToken(selector, i) {
+  const char = selector[i];
+  if (char === '\\') {
+    return i + 2;
+  }
+  if (char === '"' || char === "'") {
+    let j = i + 1;
+    while (j < selector.length && selector[j] !== char) {
+      j += selector[j] === '\\' ? 2 : 1;
+    }
+    return j + 1;
+  }
+  if (char === '[') {
+    let j = i + 1;
+    while (j < selector.length && selector[j] !== ']') {
+      j = skipToken(selector, j) ?? j + 1;
+    }
+    return j + 1;
+  }
+  return null;
+}
+
+/**
  * Returns whether a `:has()` in the selector (list) sits in a compound that a
  * combinator follows, including through `:is()`, `:not()`, and `:where()`, as
  * in `.a:not(:has(.b)) > .c`. Skips strings, attribute selectors, and escapes.
@@ -91,36 +122,11 @@ const REWRITES = new Map([
  * @returns {boolean}
  */
 export function hasOutsideSubject(selector) {
-  const skip = (i) => {
-    const char = selector[i];
-    if (char === '\\') {
-      return i + 2;
-    }
-    if (char === '"' || char === "'") {
-      let j = i + 1;
-      while (j < selector.length && selector[j] !== char) {
-        j += selector[j] === '\\' ? 2 : 1;
-      }
-      return j + 1;
-    }
-    if (char === '[') {
-      return skip.attribute(i);
-    }
-    return null;
-  };
-  skip.attribute = (i) => {
-    let j = i + 1;
-    while (j < selector.length && selector[j] !== ']') {
-      j = skip(j) ?? j + 1;
-    }
-    return j + 1;
-  };
-
   // Unclosed parentheses before each position, so we know whether a comma
   // ends the complex selector or just an argument of :is()/:not()/:where().
   let open = 0;
   for (let i = 0; i < selector.length; ) {
-    const next = skip(i);
+    const next = skipToken(selector, i);
     if (next !== null) {
       i = next;
       continue;
@@ -145,7 +151,7 @@ export function hasOutsideSubject(selector) {
     let depth = 0;
     let skipArgument = false;
     for (let i = start; i < selector.length; ) {
-      const next = skip(i);
+      const next = skipToken(selector, i);
       if (next !== null) {
         i = next;
         continue;
@@ -193,15 +199,14 @@ export function costlyHasArgument(selector) {
   // One entry per open parenthesis: whether it holds selectors inside a :has() argument.
   const stack = [];
   for (let i = 0; i < selector.length; i++) {
+    const next = skipToken(selector, i);
+    if (next !== null) {
+      i = next - 1;
+      continue;
+    }
     const char = selector[i];
     const inHas = stack.at(-1) === true;
-    if (char === '\\') {
-      i++;
-    } else if (char === '"' || char === "'") {
-      i = selector.indexOf(char, i + 1);
-    } else if (char === '[') {
-      i = selector.indexOf(']', i);
-    } else if (char === '(') {
+    if (char === '(') {
       const before = selector.slice(0, i);
       stack.push(
         /(?<!\\):has$/i.test(before) ||
