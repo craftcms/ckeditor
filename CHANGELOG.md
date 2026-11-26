@@ -1,5 +1,11 @@
 # Release Notes for CKEditor for Craft CMS
 
+## Unreleased
+
+- MCP tools now return CKEditor nested entry tags with `data-entry-type` and `data-entry-status` attributes. The public MCP server only returns tags for nested entries within its approved scope.
+- CKEditor fields now implement `craft\base\McpOutputFieldInterface`.
+- Craft CMS 5.12.1 or later is now required.
+
 ## 5.10.0 - 2026-11-24
 
 - Added the “License Key” plugin setting. ([#638](https://github.com/craftcms/ckeditor/pull/638))
