@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Improved the performance of element edit pages with CKEditor fields. Adding anything to the page, such as a menu, tooltip, or slideout, no longer restyles hundreds of elements. ([#673](https://github.com/craftcms/ckeditor/issues/673), [#674](https://github.com/craftcms/ckeditor/pull/674))
+- Fixed a bug where inline styles, such as text alignment and font colors, were removed when saving CKEditor fields with HTML sanitizing enabled. ([#676](https://github.com/craftcms/ckeditor/issues/676))
 
 ## 6.0.0-beta.2 - 2026-11-24
 

@@ -57,6 +57,33 @@ it('keeps the attributes CKEditor needs', function () {
     );
 });
 
+it('keeps inline styles', function (array $toolbar) {
+    $field = createCkeditorField(['toolbar' => $toolbar]);
+
+    $html = '<h2 style="text-align:right;">Title</h2>'.
+        '<p style="text-align:center;">Hello <span style="color:#ff0000;">world</span></p>'.
+        '<ol style="list-style-type:upper-roman;"><li style="text-align:center;">One</li></ol>'.
+        '<ul style="list-style-type:square;"><li>Two</li></ul>';
+
+    expect($field->serializeValue($html, null))->toContain(
+        '<h2 style="text-align:right;">',
+        '<p style="text-align:center;">',
+        '<span style="color:#ff0000;">',
+        '<li style="text-align:center;">',
+    );
+})->with([
+    'without list buttons' => [['alignment', 'fontColor']],
+    'with list buttons' => [['alignment', 'fontColor', 'bulletedList', 'numberedList']],
+]);
+
+it('keeps list styles when both list buttons are enabled', function () {
+    $field = createCkeditorField(['toolbar' => ['bulletedList', 'numberedList']]);
+
+    $html = '<ol style="list-style-type:upper-roman;"><li>One</li></ol><ul style="list-style-type:square;"><li>Two</li></ul>';
+
+    expect($field->serializeValue($html, null))->toBe($html);
+});
+
 it('only allows nested entry tags when the field can create entries', function (array $toolbar, bool $allowed) {
     $field = createCkeditorField(['toolbar' => $toolbar]);
 
