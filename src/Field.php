@@ -2386,10 +2386,12 @@ JS;
             return HtmlSanitizers::sanitizer($name);
         }
 
+        // Elements that can get a `style` attribute
+        $styleElements = [];
+
         if ($name === HtmlSanitizers::getDefaultDriver()) {
-            $config = $config
-                ->allowAttribute('class', '*')
-                ->allowAttribute('style', ['div', 'span']);
+            $config = $config->allowAttribute('class', '*');
+            $styleElements = ['div', 'span', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li'];
         }
 
         // Only allow link `target` and `rel` attributes when the field’s link options can produce them
@@ -2419,14 +2421,26 @@ JS;
         }
 
         if (in_array('numberedList', $this->toolbar)) {
+            $styleElements[] = 'ol';
             $config = $config
-                ->allowAttribute('style', ['ol'])
                 ->allowAttribute('reversed', ['ol'])
                 ->allowAttribute('start', ['ol']);
         }
 
         if (in_array('bulletedList', $this->toolbar)) {
-            $config = $config->allowAttribute('style', ['ul']);
+            $styleElements[] = 'ul';
+        }
+
+        if (! empty($styleElements)) {
+            // `allowAttribute()` removes the attribute from any element it isn’t given,
+            // so keep the elements that already allow `style` and set them all at once
+            foreach ($config->getAllowedElements() as $element => $attributes) {
+                if (isset($attributes['style'])) {
+                    $styleElements[] = $element;
+                }
+            }
+
+            $config = $config->allowAttribute('style', $styleElements);
         }
 
         if (
